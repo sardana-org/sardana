@@ -1970,6 +1970,10 @@ class CAcquisition(object):
                                            Qsize=100000,
                                            worker_cls=OmniWorker)
         except TypeError:
+            import taurus
+            taurus.warning("Your Sardana system is affected by bug"
+                           "tango-controls/pytango#307. Please use "
+                           "Taurus with taurus-org/taurus#1081.")
             self._thread_pool = ThreadPool(name="ValueBufferTH",
                                            Psize=1,
                                            Qsize=100000)

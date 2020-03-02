@@ -57,6 +57,10 @@ class OmniWorker(Worker):
                 with tango.EnsureOmniThread():
                     Worker.run(self)
             else:
+                import taurus
+                taurus.warning("Your Sardana system is affected by bug "
+                               "tango-controls/pytango#307. Please use "
+                               "PyTango with tango-controls/pytango#327.")
                 Worker.run(self)
 
 
@@ -76,5 +80,10 @@ def get_thread_pool():
                 __thread_pool = ThreadPool(name="SardanaTP", Psize=10,
                                            worker_cls=OmniWorker)
             except TypeError:
+                import taurus
+                taurus.warning("Your Sardana system is affected by bug "
+                               "tango-controls/pytango#307. Please use "
+                               "Taurus with taurus-org/taurus#1081.")
                 __thread_pool = ThreadPool(name="SardanaTP", Psize=10)
+
         return __thread_pool
