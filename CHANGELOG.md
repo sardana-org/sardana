@@ -33,6 +33,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Use `tango.EnsureOmnitThread` to protect Sardana threads
   (Tango is not thread safe) (#1298)
+* Avoid using Tango `AttributeProxy` in limits protection to not be affected
+  by bug tango-controls/pytango#315 (#1302) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
