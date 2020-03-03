@@ -38,64 +38,123 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
         msg = "{} are missing".format(expected_channels)
         self.assertEqual(len(expected_channels), 0, msg)
 
-    def test_enabled(self, elements=["_test_ct_1_1", "_test_ct_1_2"]):
+    def test_enabled(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                     "_test_2d_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
+
+            # Check initial state of all kind of channels, nonexistent
+            # channels for the feature return None as result.
             enabled = mg.getEnabled(*elements)
-            self._assertResult(enabled, elements, True)
+            expected = [True, True, True]
+            self._assertMultipleResults(enabled, elements, expected)
+
+            # Check if the nonexistent channels raise error if trying to set
+            with self.assertRaises(Exception):
+                mg.setEnabled(True, *elements[-1])
+
+            # Redefine elements to ony use existing values
+            elements = ["_test_ct_1_1", "_test_ct_1_2"]
+
+            # Test every possible combination of setting values
+            # Check that changing one channel doesn't affect the other
             mg.setEnabled(False, *elements)
             enabled = mg.getEnabled(*elements)
             self._assertResult(enabled, elements, False)
-            enabled = mg.getEnabled("_test_ct_ctrl_1")
+            mg.setEnabled(True, elements[0])
+            result = mg.getEnabled(*elements)
+            expected = [False] * len(elements)
+            expected[0] = True
+            self._assertMultipleResults(result, elements, expected)
+            mg.setEnabled(False, *elements)
+            enabled = mg.getEnabled(*elements)
             self._assertResult(enabled, elements, False)
-            mg.setEnabled(True, *elements)
+
+            # Set values using the controller instead of channels
+            mg.setEnabled(True, "_test_ct_ctrl_1")
             enabled = mg.getEnabled(*elements)
             self._assertResult(enabled, elements, True)
-            # enabled = mg.getEnabled(*elements, ret_full_name=True)
+
+            # Get values by controller
+            mg.setEnabled(False, *elements)
+            enabled = mg.getEnabled("_test_ct_ctrl_1")
+            self._assertResult(enabled, elements, False)
+
+            # Check ret_full_name
             v = TangoDeviceNameValidator()
             full_names = [v.getNames(element)[0] for element in elements]
             enabled = mg.getEnabled(*full_names)
-            self._assertResult(enabled, elements, True)
-            # TODO Fix ret_full_name error and make a test
+            self._assertResult(enabled, elements, False)
+            mg.setEnabled(True, *full_names)
+            enabled = mg.getEnabled(*elements, ret_full_name=True)
+            self._assertResult(enabled, full_names, True)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2"]):
+    def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                     "_test_2d_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
 
         try:
             mg = Device(mg_name)
-            is_output = mg.getOutput(*elements)
-            self._assertResult(is_output, elements, True)
+
+            # Check initial state of all kind of channels, nonexistent
+            # channels for the feature return None as result.
+            enabled = mg.getOutput(*elements)
+            expected = [True, True, True]
+            self._assertMultipleResults(enabled, elements, expected)
+
+            # Check if the nonexistent channels raise error if trying to set
+            with self.assertRaises(Exception):
+                mg.setOutput(True, *elements[-1])
+
+            # Redefine elements to ony use existing values
+            elements = ["_test_ct_1_1", "_test_ct_1_2"]
+
+            # Test every possible combination of setting values
+            # Check that changing one channel doesn't affect the other
             mg.setOutput(False, *elements)
             is_output = mg.getOutput(*elements)
             self._assertResult(is_output, elements, False)
-            is_output = mg.getOutput("_test_ct_ctrl_1")
+            mg.setOutput(True, elements[0])
+            result = mg.getOutput(*elements)
+            expected = [False] * len(elements)
+            expected[0] = True
+            self._assertMultipleResults(result, elements, expected)
+            mg.setOutput(False, *elements)
+            is_output = mg.getOutput(*elements)
             self._assertResult(is_output, elements, False)
-            mg.setOutput(True, *elements)
+
+            # Set values using the controller instead of channels
+            mg.setOutput(True, "_test_ct_ctrl_1")
             is_output = mg.getOutput(*elements)
             self._assertResult(is_output, elements, True)
-            # is_output = mg.getOutput(*elements, ret_full_name=True)
+
+            # Get values by controller
+            mg.setOutput(False, *elements)
+            is_output = mg.getOutput("_test_ct_ctrl_1")
+            self._assertResult(is_output, elements, False)
+
+            # Check ret_full_name
             v = TangoDeviceNameValidator()
-            full_names = []
-            for element in elements:
-                full_names.append(v.getNames(element)[0])
-            print(full_names)
+            full_names = [v.getNames(element)[0] for element in elements]
             is_output = mg.getOutput(*full_names)
-            self._assertResult(is_output, elements, True)
-            # TODO Fix ret_full_name error and make a test
+            self._assertResult(is_output, elements, False)
+            mg.setOutput(True, *full_names)
+            is_output = mg.getOutput(*elements, ret_full_name=True)
+            self._assertResult(is_output, full_names, True)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                      "_test_ct_1_3"]):
+                                      "_test_ct_1_3", "_test_2d_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -107,19 +166,42 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setPlotType("Image", elements[0])
             mg.setPlotType("Spectrum", elements[1])
             mg.setPlotType("No", elements[2])
+            mg.setPlotType("Image", elements[3])
             plottype = mg.getPlotType()
-            expected_values = [2, 1, 0]
+            expected_values = [2, 1, 0, 2]
             self._assertMultipleResults(plottype, elements, expected_values)
             with self.assertRaises(ValueError):
                 mg.setPlotType("asdf", elements[2])
             print(mg.getPlotType())
+
+            # Redefine elements
+            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+
+            # Set values using the controller instead of channels
+            mg.setPlotType("Image", "_test_ct_ctrl_1")
+            plottype = mg.getPlotType(*elements)
+            self._assertResult(plottype, elements, 2)
+
+            # Get values by controller
+            mg.setPlotType("Spectrum", *elements)
+            plottype = mg.getPlotType("_test_ct_ctrl_1")
+            self._assertResult(plottype, elements, 1)
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            plottype = mg.getPlotType(*full_names)
+            self._assertResult(plottype, elements, 1)
+            mg.setPlotType("Image", *full_names)
+            plottype = mg.getPlotType(*elements, ret_full_name=True)
+            self._assertResult(plottype, full_names, 2)
 
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
     def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                      "_test_ct_1_3"]):
+                                      "_test_ct_1_3", "_test_2d_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -129,21 +211,27 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setPlotType("Image", elements[0])
             mg.setPlotType("Spectrum", elements[1])
             mg.setPlotType("No", elements[2])
+            mg.setPlotType("Image", elements[3])
             result = mg.getPlotAxes()
             self._assertResult(result, elements, [])
+
+            mg.setPlotAxes(["<idx>", "<idx>"], elements[3])
             mg.setPlotAxes(["<idx>", "<idx>"], elements[0])
             mg.setPlotAxes(["<mov>"], elements[1])
             result = mg.getPlotAxes()
-            expected_result = [['<idx>', '<idx>'], ['<mov>'], []]
+            expected_result = [['<idx>', '<idx>'], ['<mov>'], [],
+                               ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
             mg.setPlotAxes(["<mov>", "<idx>"], elements[0])
             mg.setPlotAxes(["<idx>"], elements[1])
             result = mg.getPlotAxes()
-            expected_result = [['<mov>', '<idx>'], ['<idx>'], []]
+            expected_result = [['<mov>', '<idx>'], ['<idx>'], [],
+                               ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
             mg.setPlotAxes(["<mov>", "<mov>"], elements[0])
             result = mg.getPlotAxes()
-            expected_result = [['<mov>', '<mov>'], ['<idx>'], []]
+            expected_result = [['<mov>', '<mov>'], ['<idx>'], [],
+                               ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
 
             with self.assertRaises(RuntimeError):
@@ -153,6 +241,28 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             with self.assertRaises(ValueError):
                 mg.setPlotAxes(["<mov>"], elements[0])
             print(mg.getPlotAxes())
+
+            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+            # Set values using the controller instead of channels
+            with self.assertRaises(RuntimeError):
+                mg.setPlotAxes(["<mov>"], "_test_ct_ctrl_1")
+            # TODO get method by controller doesn't give the order
+            # Get values by controller
+            result = mg.getPlotAxes("_test_ct_ctrl_1")
+            expected_result = [['<mov>', '<mov>'], ['<idx>'], []]
+            self._assertMultipleResults(result, elements, expected_result)
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            result = mg.getPlotAxes(*full_names)
+            expected_result = [['<mov>', '<mov>'], ['<idx>'], []]
+            self._assertMultipleResults(result, elements, expected_result)
+            mg.setPlotAxes(["<idx>", "<idx>"], full_names[0])
+            mg.setPlotAxes(["<mov>"], full_names[1])
+            result = mg.getPlotAxes(*elements, ret_full_name=True)
+            expected_result = [['<idx>', '<idx>'], ['<mov>'], []]
+            self._assertMultipleResults(result, full_names, expected_result)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
@@ -172,6 +282,16 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self._assertResult(mg.getTimer(ret_by_ctrl=True),
                                ['_test_ct_ctrl_1'], '_test_ct_1_3')
 
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            mg.setTimer(full_names[0])
+            result = mg.getTimer()
+            self._assertResult(result, elements, '_test_ct_1_1')
+            # TODO ret_full_name gives controler name
+            mg.setTimer("_test_ct_1_2")
+            result = mg.getTimer(*elements, ret_full_name=True)
+            self._assertResult(result, full_names, "_test_ct_1_2")
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
@@ -191,6 +311,16 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self._assertResult(mg.getMonitor(ret_by_ctrl=True),
                                ['_test_ct_ctrl_1'], '_test_ct_1_2')
 
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            mg.setMonitor(full_names[0])
+            result = mg.getMonitor()
+            self._assertResult(result, elements, '_test_ct_1_1')
+            # TODO ret_full_name gives controler name
+            mg.setMonitor("_test_ct_1_2")
+            result = mg.getMonitor(*elements, ret_full_name=True)
+            self._assertResult(result, full_names, "_test_ct_1_2")
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
@@ -214,21 +344,46 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self._assertResult(result, ['_test_ct_ctrl_1'], 'software')
             with self.assertRaises(Exception):
                 mg.setSynchronizer('asdf')
-            self._assertResult(result, ['_test_ct_ctrl_1'], 'software')
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            full_name_tg = v.getNames('_test_tg_1_2')[0]
+            mg.setSynchronizer(full_name_tg)
+            result = mg.getSynchronizer()
+            self._assertResult(result, elements, '_test_tg_1_2')
+            # TODO ret_full_name gives controler name
+            mg.setSynchronizer('software', *full_names)
+            result = mg.getSynchronizer(*elements, ret_full_name=True)
+            self._assertResult(result, full_names, 'software')
 
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
-                                             ]):
+                                             "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
+
+            # Check initial state of all kind of channels, nonexistent
+            # channels for the feature return None as result.
             enabled = mg.getValueRefEnabled(*elements)
-            self._assertResult(enabled, elements, False)
+            expected = [False, False, None]
+            self._assertMultipleResults(enabled, elements, expected)
+
+            # Check if the nonexistent channels raise error if trying to set
+            with self.assertRaises(Exception):
+                mg.setValueRefEnabled(True, *elements[-1])
+
+            # Redefine elements to ony use existing values
+            elements = ["_test_2d_1_1", "_test_2d_1_2"]
+
+            # Test every possible combination of setting values
+            # Check that changing one channel doesn't affect the other
             mg.setValueRefEnabled(True, *elements)
             enabled = mg.getValueRefEnabled(*elements)
             self._assertResult(enabled, elements, True)
@@ -240,53 +395,76 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setValueRefEnabled(True, *elements)
             enabled = mg.getValueRefEnabled(*elements)
             self._assertResult(enabled, elements, True)
+
+            # Set values using the controller instead of channels
+            mg.setValueRefEnabled(True, "_test_2d_ctrl_1")
+            enabled = mg.getValueRefEnabled(*elements)
+            self._assertResult(enabled, elements, True)
+
+            # Get values by controller
+            mg.setValueRefEnabled(False, *elements)
+            enabled = mg.getValueRefEnabled("_test_2d_ctrl_1")
+            self._assertResult(enabled, elements, False)
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            enabled = mg.getValueRefEnabled(*full_names)
+            self._assertResult(enabled, elements, False)
+            mg.setValueRefEnabled(True, *full_names)
+            enabled = mg.getValueRefEnabled(*elements, ret_full_name=True)
+            self._assertResult(enabled, full_names, True)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_ValueRefEnabledCounters(self, elements=["_test_ct_1_3"]):
+    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
+                                             "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
-            result = mg.getValueRefEnabled(*elements)
-            self._assertResult(result, elements, None)
+
+            # Check initial state of all kind of channels, nonexistent
+            # channels for the feature return None as result.
+            pattern = mg.getValueRefPattern(*elements)
+            expected = ['', '', None]
+            self._assertMultipleResults(pattern, elements, expected)
+
+            # Check if the nonexistent channels raise error if trying to set
             with self.assertRaises(Exception):
-                mg.setValueRefEnabled(True, *elements)
-        finally:
-            mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+                mg.setValueRefPattern('/tmp/test_foo.txt', *elements[-1])
 
-    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2"]):
-        mg_name = str(uuid.uuid1())
-        argin = [mg_name] + elements
-        self.pool.CreateMeasurementGroup(argin)
-        try:
-            mg = Device(mg_name)
-            pattern = mg.getValueRefEnabled(*elements)
-            self._assertResult(pattern, elements, False)
-            mg.setValueRefEnabled('/tmp/test_foo.txt', *elements)
-            pattern = mg.getValueRefEnabled(*elements)
-            self._assertResult(pattern, elements, '/tmp/test_foo.txt')
-            pattern = mg.getValueRefEnabled("_test_2d_ctrl_1")
+            # Redefine elements to ony use existing values
+            elements = ["_test_2d_1_1", "_test_2d_1_2"]
+
+            # Test every possible combination of setting values
+            # Check that changing one channel doesn't affect the other
+            mg.setValueRefPattern('/tmp/test_foo.txt', *elements)
+            pattern = mg.getValueRefPattern(*elements)
             self._assertResult(pattern, elements, '/tmp/test_foo.txt')
 
+            # Set values using the controller instead of channels
+            mg.setValueRefPattern('/tmp/test_foo2.txt', "_test_2d_ctrl_1")
+            pattern = mg.getValueRefPattern(*elements)
+            self._assertResult(pattern, elements, '/tmp/test_foo2.txt')
+
+            # Get values by controller
+            mg.setValueRefPattern('/tmp/test_foo.txt', *elements)
+            pattern = mg.getValueRefPattern("_test_2d_ctrl_1")
+            self._assertResult(pattern, elements, '/tmp/test_foo.txt')
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            full_names = [v.getNames(element)[0] for element in elements]
+            pattern = mg.getValueRefPattern(*full_names)
+            self._assertResult(pattern, elements, '/tmp/test_foo.txt')
+            mg.setValueRefPattern('/tmp/test_foo2.txt', *full_names)
+            pattern = mg.getValueRefPattern(*elements, ret_full_name=True)
+            self._assertResult(pattern, full_names, '/tmp/test_foo2.txt')
+
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_ValueRefPatternCounter(self, elements=["_test_ct_1_3"]):
-        mg_name = str(uuid.uuid1())
-        argin = [mg_name] + elements
-        self.pool.CreateMeasurementGroup(argin)
-        try:
-            mg = Device(mg_name)
-            pattern = mg.getValueRefEnabled(*elements)
-            self._assertResult(pattern, elements, None)
-            with self.assertRaises(Exception):
-                mg.setValueRefEnabled('/tmp/test_foo.txt', *elements)
-
-        finally:
-            mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
