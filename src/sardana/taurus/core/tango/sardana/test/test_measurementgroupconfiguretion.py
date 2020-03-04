@@ -39,7 +39,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
         self.assertEqual(len(expected_channels), 0, msg)
 
     def test_enabled(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                     "_test_2d_1_3"]):
+                                     "_test_2d_1_3",
+                                     "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -49,21 +50,14 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             # Check initial state of all kind of channels, nonexistent
             # channels for the feature return None as result.
             enabled = mg.getEnabled(*elements)
-            expected = [True, True, True]
+            expected = [True] * len(elements)
             self._assertMultipleResults(enabled, elements, expected)
-
-            # Check if the nonexistent channels raise error if trying to set
-            with self.assertRaises(Exception):
-                mg.setEnabled(True, *elements[-1])
-
-            # Redefine elements to ony use existing values
-            elements = ["_test_ct_1_1", "_test_ct_1_2"]
 
             # Test every possible combination of setting values
             # Check that changing one channel doesn't affect the other
-            mg.setEnabled(False, *elements)
-            enabled = mg.getEnabled(*elements)
-            self._assertResult(enabled, elements, False)
+            enabled = mg.setEnabled(False, *elements)
+            expected = [False] * len(elements)
+            self._assertMultipleResults(enabled, elements, expected)
             mg.setEnabled(True, elements[0])
             result = mg.getEnabled(*elements)
             expected = [False] * len(elements)
@@ -72,6 +66,9 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setEnabled(False, *elements)
             enabled = mg.getEnabled(*elements)
             self._assertResult(enabled, elements, False)
+
+            # Redefine elements to ony use existing values
+            elements = ["_test_ct_1_1", "_test_ct_1_2"]
 
             # Set values using the controller instead of channels
             mg.setEnabled(True, "_test_ct_ctrl_1")
@@ -96,7 +93,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                     "_test_2d_1_3"]):
+                                    "_test_2d_1_3",
+                                    "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -107,15 +105,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             # Check initial state of all kind of channels, nonexistent
             # channels for the feature return None as result.
             enabled = mg.getOutput(*elements)
-            expected = [True, True, True]
+            expected = [True] * len(elements)
             self._assertMultipleResults(enabled, elements, expected)
-
-            # Check if the nonexistent channels raise error if trying to set
-            with self.assertRaises(Exception):
-                mg.setOutput(True, *elements[-1])
-
-            # Redefine elements to ony use existing values
-            elements = ["_test_ct_1_1", "_test_ct_1_2"]
 
             # Test every possible combination of setting values
             # Check that changing one channel doesn't affect the other
@@ -130,6 +121,9 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setOutput(False, *elements)
             is_output = mg.getOutput(*elements)
             self._assertResult(is_output, elements, False)
+
+            # Redefine elements to ony use existing values
+            elements = ["_test_ct_1_1", "_test_ct_1_2"]
 
             # Set values using the controller instead of channels
             mg.setOutput(True, "_test_ct_ctrl_1")
@@ -154,7 +148,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                      "_test_ct_1_3", "_test_2d_1_3"]):
+                                      "_test_ct_1_3", "_test_2d_1_3",
+                                     "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -167,8 +162,9 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setPlotType("Spectrum", elements[1])
             mg.setPlotType("No", elements[2])
             mg.setPlotType("Image", elements[3])
+            mg.setPlotType("Image", elements[4])
             plottype = mg.getPlotType()
-            expected_values = [2, 1, 0, 2]
+            expected_values = [2, 1, 0, 2, 2]
             self._assertMultipleResults(plottype, elements, expected_values)
             with self.assertRaises(ValueError):
                 mg.setPlotType("asdf", elements[2])
@@ -201,7 +197,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                      "_test_ct_1_3", "_test_2d_1_3"]):
+                                      "_test_ct_1_3", "_test_2d_1_3",
+                                      "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -212,15 +209,17 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setPlotType("Spectrum", elements[1])
             mg.setPlotType("No", elements[2])
             mg.setPlotType("Image", elements[3])
+            mg.setPlotType("Image", elements[4])
             result = mg.getPlotAxes()
             self._assertResult(result, elements, [])
 
+            mg.setPlotAxes(["<idx>", "<idx>"], elements[4])
             mg.setPlotAxes(["<idx>", "<idx>"], elements[3])
             mg.setPlotAxes(["<idx>", "<idx>"], elements[0])
             mg.setPlotAxes(["<mov>"], elements[1])
             result = mg.getPlotAxes()
             expected_result = [['<idx>', '<idx>'], ['<mov>'], [],
-                               ['<idx>', '<idx>']]
+                               ['<idx>', '<idx>'], ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
             mg.setPlotAxes(["<mov>", "<idx>"], elements[0])
             mg.setPlotAxes(["<idx>"], elements[1])
@@ -268,18 +267,32 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                   "_test_ct_1_3"]):
+                                   "_test_ct_1_3",
+                                   "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
-            previous = mg.getTimer()
+
+            previous = mg.getTimer(elements[-1])
+            # TODO see if 2d channels should rise exception on setting
+            with self.assertRaises(Exception):
+                mg.setTimer(elements[-1], "_test_2d_1_2")
+            self.assertEqual(mg.getTimer(*elements), previous)
+            previous = mg.getTimer(elements[-2])
+            with self.assertRaises(Exception):
+                mg.setTimer(elements[-2], "_test_mt_1_3")
+            self.assertEqual(mg.getTimer(*elements), previous)
+
+            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+
+            previous = mg.getTimer(*elements)
             print(previous)
             mg.setTimer('_test_ct_1_3')
-            self.assertNotEqual(mg.getTimer(), previous)
-            self._assertResult(mg.getTimer(), elements, '_test_ct_1_3')
-            self._assertResult(mg.getTimer(ret_by_ctrl=True),
+            self.assertNotEqual(mg.getTimer(*elements), previous)
+            self._assertResult(mg.getTimer(*elements), elements, '_test_ct_1_3')
+            self._assertResult(mg.getTimer(*elements, ret_by_ctrl=True),
                                ['_test_ct_ctrl_1'], '_test_ct_1_3')
 
             # Check ret_full_name
@@ -297,25 +310,40 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                     "_test_ct_1_3"]):
+                                     "_test_ct_1_3", "_test_2d_1_1",
+                                     "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
-            previous = mg.getMonitor()
+
+            previous = mg.getMonitor(elements[-1])
+            # TODO see if 2d channels should rise exception on setting
+            with self.assertRaises(Exception):
+                mg.setMonitor(elements[-1], "_test_2d_1_2")
+            self.assertEqual(mg.getMonitor(*elements), previous)
+            previous = mg.getMonitor(elements[-2])
+            with self.assertRaises(Exception):
+                mg.setMonitor(elements[-2], "_test_mt_1_3")
+            self.assertEqual(mg.getMonitor(*elements), previous)
+
+            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+
+            previous = mg.getMonitor(*elements)
             print(previous)
             mg.setMonitor("_test_ct_1_2")
-            self.assertNotEqual(mg.getMonitor(), previous)
-            self._assertResult(mg.getMonitor(), elements, '_test_ct_1_2')
-            self._assertResult(mg.getMonitor(ret_by_ctrl=True),
+            self.assertNotEqual(mg.getMonitor(*elements), previous)
+            self._assertResult(mg.getMonitor(*elements), elements,
+                               '_test_ct_1_2')
+            self._assertResult(mg.getMonitor(*elements, ret_by_ctrl=True),
                                ['_test_ct_ctrl_1'], '_test_ct_1_2')
 
             # Check ret_full_name
             v = TangoDeviceNameValidator()
             full_names = [v.getNames(element)[0] for element in elements]
             mg.setMonitor(full_names[0])
-            result = mg.getMonitor()
+            result = mg.getMonitor(*elements)
             self._assertResult(result, elements, '_test_ct_1_1')
             # TODO ret_full_name gives controler name
             mg.setMonitor("_test_ct_1_2")
@@ -326,14 +354,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
-                                          "_test_ct_1_3"]):
+                                          "_test_ct_1_3", "_test_2d_1_1",
+                                          "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
             result = mg.getSynchronizer()
-            self._assertResult(result, elements, 'software')
+            expected = ['', '', '', None, None]
+            self._assertResult(result, elements, expected)
+            with self.assertRaises(Exception):
+                mg.setSynchronizer('_test_tg_1_2', elements[-1])
+            with self.assertRaises(Exception):
+                mg.setSynchronizer('_test_tg_1_2', elements[-2])
+
+            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+
             mg.setSynchronizer('_test_tg_1_2')
             result = mg.getSynchronizer()
             self._assertResult(result, elements, '_test_tg_1_2')
@@ -362,7 +399,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
-                                             "_test_ct_1_3"]):
+                                             "_test_ct_1_3",
+                                             "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -372,10 +410,12 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             # Check initial state of all kind of channels, nonexistent
             # channels for the feature return None as result.
             enabled = mg.getValueRefEnabled(*elements)
-            expected = [False, False, None]
+            expected = [False, False, None, None]
             self._assertMultipleResults(enabled, elements, expected)
 
             # Check if the nonexistent channels raise error if trying to set
+            with self.assertRaises(Exception):
+                mg.setValueRefEnabled(True, *elements[-2])
             with self.assertRaises(Exception):
                 mg.setValueRefEnabled(True, *elements[-1])
 
@@ -419,7 +459,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
-                                             "_test_ct_1_3"]):
+                                             "_test_ct_1_3",
+                                             "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -429,10 +470,12 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             # Check initial state of all kind of channels, nonexistent
             # channels for the feature return None as result.
             pattern = mg.getValueRefPattern(*elements)
-            expected = ['', '', None]
+            expected = ['', '', None, None]
             self._assertMultipleResults(pattern, elements, expected)
 
             # Check if the nonexistent channels raise error if trying to set
+            with self.assertRaises(Exception):
+                mg.setValueRefPattern('/tmp/test_foo.txt', *elements[-2])
             with self.assertRaises(Exception):
                 mg.setValueRefPattern('/tmp/test_foo.txt', *elements[-1])
 
