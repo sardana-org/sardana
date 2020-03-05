@@ -34,13 +34,7 @@ to be used within a TaurusGui for managing panels for:
 .. note:: This module was originally implemented in taurus as
           `taurus.qt.qtgui.taurusgui.macrolistener`
 """
-
-
-
-from builtins import object
-
 import datetime
-import collections
 
 import numpy
 
@@ -54,7 +48,6 @@ from taurus.qt.qtgui.base import TaurusBaseComponent
 from taurus.core.util.containers import ArrayBuffer, LoopList
 
 from sardana.taurus.core.tango.sardana import PlotType
-
 
 __all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
 
