@@ -56,7 +56,8 @@ __docformat__ = 'restructuredtext'
 COLORS = [Qt.QColor(Qt.Qt.red),
           Qt.QColor(Qt.Qt.green),
           Qt.QColor(Qt.Qt.magenta),
-          Qt.QColor(Qt.Qt.blue),
+          Qt.QColor('cornflowerblue'),
+          Qt.QColor('crimson'),
           Qt.QColor(Qt.Qt.cyan),
           Qt.QColor(Qt.Qt.yellow),
           Qt.QColor(Qt.Qt.white)]
