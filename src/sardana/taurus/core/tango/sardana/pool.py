@@ -1848,6 +1848,7 @@ class MGConfiguration(object):
 
         for ctrl_name in ctrls_names:
             if ctrl_name == '__tango__':
+                result[ctrl_name] = None
                 continue
             ctrl = self._get_ctrl_data(ctrl_name)
 
