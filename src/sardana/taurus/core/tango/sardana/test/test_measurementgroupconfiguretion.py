@@ -1,6 +1,6 @@
 import uuid
+from unittest import TestCase
 from taurus import Device
-from taurus.external.unittest import TestCase
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 from sardana.taurus.core.tango.sardana.pool import registerExtensions
 from sardana.tango.pool.test.base_sartest import SarTestTestCase
