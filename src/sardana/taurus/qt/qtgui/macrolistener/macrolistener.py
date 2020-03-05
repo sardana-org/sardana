@@ -35,6 +35,7 @@ to be used within a TaurusGui for managing panels for:
           `taurus.qt.qtgui.taurusgui.macrolistener`
 """
 import datetime
+import itertools
 
 import numpy
 
@@ -44,8 +45,8 @@ except ImportError:
     pyqtgraph = None
 
 from taurus.external.qt import Qt
+from taurus.core.util.containers import ArrayBuffer
 from taurus.qt.qtgui.base import TaurusBaseComponent
-from taurus.core.util.containers import ArrayBuffer, LoopList
 
 from sardana.taurus.core.tango.sardana import PlotType
 
@@ -84,6 +85,84 @@ def find_nearest(array, value):
     return (numpy.abs(array.contents() - value)).argmin()
 
 
+class Plot:
+
+    LinePen = pyqtgraph.mkPen(color='w', width=1)
+
+    def __init__(self, x_axis, curves, styles, nb_points=2**16):
+        nb_curves = len(curves)
+        labels = dict(bottom=x_axis['label'])
+        if nb_curves == 1:
+            labels['left'] = curves[0]['label']
+
+        self.plot = pyqtgraph.PlotItem(labels=labels)
+        self.plot.showGrid(x=True, y=True)
+        self.vLine = pyqtgraph.InfiniteLine(angle=90,
+                                            pen=self.LinePen,
+                                            movable=False)
+        self.vLine.setVisible(False)
+        self.plot.addItem(self.vLine, ignoreBounds=True)
+        if nb_curves > 1:
+            self.plot.addLegend()
+        self.x_axis = dict(x_axis, data=empty_data(nb_points))
+        self.curves = []
+        for curve in curves:
+            pen, symbol = next(styles)
+            style = dict(pen=pen, symbol=symbol,
+                         symbolSize=5, symbolPen=pen, symbolBrush=pen)
+            curve_item = self.plot.plot(name=curve['label'], **style)
+            curve_item.curve_data = empty_data(nb_points)
+            curve_item.curve_id = curve['name']
+            self.curves.append(curve_item)
+        self.highlights = pyqtgraph.ScatterPlotItem(
+            pos=(),
+            symbol="s",
+            brush="35393C88",
+            pxMode=True,
+            size=10,
+        )
+        self.highlights._UImodifiable = False
+        self.plot.addItem(self.highlights, ignoreBounds=True)
+
+    def on_new_point(self,  data):
+        x_axis = self.x_axis
+        x_data = x_axis['data']
+        x_data.append(data[x_axis['name']])
+        for curve in self.curves:
+            y_data = curve.curve_data
+            y_data.append(data[curve.curve_id])
+
+    def do_update(self):
+        x_axis = self.x_axis
+        x_data = x_axis['data'].contents()
+        for curve in self.curves:
+            y_data = curve.curve_data.contents()
+            curve.setData(x_data, y_data)
+
+    def point_inside(self, point):
+        plot = self.plot
+        if plot.vb.sceneBoundingRect().contains(point):
+            view_point = plot.vb.mapSceneToView(point)
+            x_data = self.x_axis['data']
+            index = find_nearest(x_data, view_point.x())
+            if index >= 0 and index < len(x_data):
+                return view_point, index
+
+    def on_mouse_move(self, point):
+        info = self.point_inside(point)
+        highlights = ()
+        if info is not None:
+            view_point, index = info
+            x_axis = self.x_axis
+            x_value = x_axis['data'][index]
+            highlights = [(x_value, curve.curve_data[index])
+                          for curve in self.curves]
+            self.vLine.setPos(view_point.x())
+        self.vLine.setVisible(info is not None)
+        self.highlights.setData(pos=highlights)
+        return info
+
+
 class MultiPlotWidget(Qt.QWidget):
 
     def __init__(self, parent=None):
@@ -93,7 +172,7 @@ class MultiPlotWidget(Qt.QWidget):
         self.label = Qt.QLabel()
         layout.addWidget(self.win)
         layout.addWidget(self.label)
-        self._plots = {}
+        self._plots = []
         self._timer = None
         self._event_nb = 0
         self._last_event_nb = 0
@@ -101,104 +180,54 @@ class MultiPlotWidget(Qt.QWidget):
         self._sig_proxy = pyqtgraph.SignalProxy(
             scene.sigMouseMoved, rateLimit=20, slot=self.on_mouse_move)
 
-    def find_plot_for_mouse_point(self, point):
-        for plot in self._plots:
-            if plot.vb.sceneBoundingRect().contains(point):
-                view_point = plot.vb.mapSceneToView(point)
-                x_data = plot.x_axis['data']
-                index = find_nearest(x_data, view_point.x())
-                if index >= 0 and index < len(x_data):
-                    return plot, view_point, index
-
     def on_mouse_move(self, evt):
-        mouse_point = evt[0]
-        info = self.find_plot_for_mouse_point(mouse_point)
+        point = evt[0]
+        info = None
+        curves = []
+        for plot in self._plots:
+            curves.extend(plot.curves)
+            i = plot.on_mouse_move(point)
+            if i is not None:
+                info = plot, i
         if info is None:
             text = 'No point selected'
-            for plot in self._plots:
-                plot.vLine.setVisible(False)
-                plot.highlights.setData(pos=())
-            info = None
         else:
-            plot, view_point, index = info
+            focus_plot, (view_point, index) = info
             x_axis = plot.x_axis
-            x_name = x_axis['name']
             x_value = x_axis['data'][index]
-            curves = (c for plot, curves in self._plots.items()
-#                      if plot.x_axis['name'] == x_name
-                      for c in curves.values())
-            points = ((c.name(), c.curve_data[index]) for c in curves)
-            points = ' '.join('{}={:.3f}'.format(label, y)
-                              for label, y in points)
+            points_text = []
+            for curve in curves:
+                txt = '{}={:.3f}'.format(curve.name(), curve.curve_data[index])
+                if curve in focus_plot.curves:
+                    txt = '<b>{}</b>'.format(txt)
+                points_text.append(txt)
             text = 'x={:.3f} y={:.3f} | {}={:.3f} {}'.format(
                 view_point.x(), view_point.y(), x_axis['label'],
-                x_value, points)
-            plot.vLine.setVisible(True)
-            plot.vLine.setPos(view_point.x())
-            highlights = [(x_value, curve.curve_data[index])
-                          for curve in self._plots[plot].values()]
-            plot.highlights.setData(pos=highlights)
+                x_value, ' '.join(points_text))
         self.label.setText(text)
 
     def prepare(self, plots, nb_points=None):
         self.win.clear()
-        plot_widgets = {}
+        plts = []
         nb_points = 2**16 if nb_points is None else nb_points
         plots_per_row = int(len(plots)**0.5)
-        styles = LoopList(CURVE_STYLES)
-        line_pen = pyqtgraph.mkPen(color='w', width=1)
+        styles = itertools.cycle(CURVE_STYLES)
         for idx, plot in enumerate(plots):
-            plot_curves = {}
             x_axis, curves = plot['x_axis'], plot['curves']
             if idx % plots_per_row == 0:
                 self.win.nextRow()
-            nb_curves = len(curves)
-            labels = dict(bottom=x_axis['label'])
-            if nb_curves == 1:
-                labels['left'] = curves[0]['label']
-            plot_widget = self.win.addPlot(labels=labels)
-            plot_widget.showGrid(x=True, y=True)
-            vLine = pyqtgraph.InfiniteLine(angle=90, pen=line_pen,
-                                           movable=False)
-            vLine.setVisible(False)
-            plot_widget.addItem(vLine, ignoreBounds=True)
-            plot_widget.vLine = vLine
-            if nb_curves > 1:
-                plot_widget.addLegend()
-            plot_widget.x_axis = dict(x_axis, data=empty_data(nb_points))
-            for curve in curves:
-                pen, symbol = styles.current()
-                styles.next()
-                style = dict(pen=pen, symbol=symbol,
-                             symbolSize=5, symbolPen=pen, symbolBrush=pen)
-                curve_item = plot_widget.plot(name=curve['label'], **style)
-                curve_item.curve_data = empty_data(nb_points)
-                plot_curves[curve['name']] = curve_item
-            highlights = pyqtgraph.ScatterPlotItem(
-                pos=(),
-                symbol="s",
-                brush="35393C88",
-                pxMode=True,
-                size=10,
-            )
-            highlights._UImodifiable = False
-            plot_widget.highlights = highlights
-            plot_widget.addItem(highlights, ignoreBounds=True)
-            plot_widgets[plot_widget] = plot_curves
-        self._plots = plot_widgets
+            plot = Plot(x_axis, curves, styles, nb_points)
+            plts.append(plot)
+            self.win.addItem(plot.plot)
+        self._plots = plts
         self._event_nb = 0
         self._last_event_nb = 0
         self._start_update()
 
-    def onNewPoint(self, data):
+    def on_new_point(self, data):
         # update internal data and mark the new event
-        for plot_widget, curves in self._plots.items():
-            x_axis = plot_widget.x_axis
-            x_data = x_axis['data']
-            x_data.append(data[x_axis['name']])
-            for curve_name, curve_item in curves.items():
-                y_data = curve_item.curve_data
-                y_data.append(data[curve_name])
+        for plot in self._plots:
+            plot.on_new_point(data)
         self._event_nb += 1
 
     def onEnd(self, data):
@@ -209,12 +238,8 @@ class MultiPlotWidget(Qt.QWidget):
         if self._event_nb == self._last_event_nb:
             return
         self._last_event_nb = self._event_nb
-        for plot_widget, curves in self._plots.items():
-            x_axis = plot_widget.x_axis
-            x_data = x_axis['data'].contents()
-            for curve_name, curve_item in curves.items():
-                y_data = curve_item.curve_data.contents()
-                curve_item.setData(x_data, y_data)
+        for plot in self._plots:
+            plot.do_update()
 
     def _start_update(self):
         self._end_update()
@@ -322,7 +347,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             if event_type == 'data_desc':
                 self.prepare(data)
             elif event_type == 'record_data':
-                self.newPoint(data)
+                self.new_point(data)
             elif event_type == 'record_end':
                 self.end(data)
 
@@ -401,9 +426,9 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         self.newShortMessage.emit(
             self.message_template.format(progress='Preparing...'))
 
-    def newPoint(self, point):
+    def new_point(self, point):
         data = point['data']
-        self._plot.onNewPoint(data)
+        self._plot.on_new_point(data)
         point_nb = 'Point #{}'.format(data['point_nb'])
         msg = self.message_template.format(progress=point_nb)
         self.newShortMessage.emit(msg)
