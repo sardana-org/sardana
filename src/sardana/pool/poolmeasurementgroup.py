@@ -667,56 +667,69 @@ class MeasurementConfiguration(object):
             user_config['controllers'][ctrl_name] = user_config_ctrl = {}
             ctrl_conf = {}
 
-            synchronizer = ctrl_data.get('synchronizer', 'software')
-            conf_synch = None
-            if synchronizer is None or synchronizer == 'software':
-                ctrl_conf['synchronizer'] = 'software'
-                user_config_ctrl['synchronizer'] = 'software'
+            # The external controllers should not have synchronizer
+
+            if external:
+                if 'synchronizer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have synchronizer')
+                if 'monitor' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have monitor')
+                if 'timer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have timer')
             else:
-                if to_fqdn:
-                    synchronizer = _to_fqdn(synchronizer,
-                                            logger=self._parent)
-
-                user_config_ctrl['synchronizer'] = synchronizer
-                pool_synch = pool.get_element_by_full_name(synchronizer)
-                pool_synch_ctrl = pool_synch.controller
-                conf_synch_ctrl = None
+                synchronizer = ctrl_data.get('synchronizer', 'software')
                 conf_synch = None
-                for conf_ctrl_created in synch_ctrls:
-                    if pool_synch_ctrl == conf_ctrl_created.element:
-                        conf_synch_ctrl = conf_ctrl_created
-                        for conf_synch_created in \
-                                conf_ctrl_created.get_channels():
-                            if pool_synch == conf_synch_created.element:
-                                conf_synch = conf_synch_created
-                                break
-                        break
+                if synchronizer is None or synchronizer == 'software':
+                    ctrl_conf['synchronizer'] = 'software'
+                    user_config_ctrl['synchronizer'] = 'software'
+                else:
+                    if to_fqdn:
+                        synchronizer = _to_fqdn(synchronizer,
+                                                logger=self._parent)
 
-                if conf_synch_ctrl is None:
-                    conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
-                    synch_ctrls.append(conf_synch_ctrl)
+                    user_config_ctrl['synchronizer'] = synchronizer
+                    pool_synch = pool.get_element_by_full_name(synchronizer)
+                    pool_synch_ctrl = pool_synch.controller
+                    conf_synch_ctrl = None
+                    conf_synch = None
+                    for conf_ctrl_created in synch_ctrls:
+                        if pool_synch_ctrl == conf_ctrl_created.element:
+                            conf_synch_ctrl = conf_ctrl_created
+                            for conf_synch_created in \
+                                    conf_ctrl_created.get_channels():
+                                if pool_synch == conf_synch_created.element:
+                                    conf_synch = conf_synch_created
+                                    break
+                            break
 
-                if conf_synch is None:
-                    conf_synch = SynchronizerConfiguration(pool_synch)
-                    conf_synch_ctrl.add_channel(conf_synch)
+                    if conf_synch_ctrl is None:
+                        conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
+                        synch_ctrls.append(conf_synch_ctrl)
 
-                ctrl_conf['synchronizer'] = conf_synch
+                    if conf_synch is None:
+                        conf_synch = SynchronizerConfiguration(pool_synch)
+                        conf_synch_ctrl.add_channel(conf_synch)
 
-            try:
-                synchronization = ctrl_data['synchronization']
-            except KeyError:
-                # backwards compatibility for configurations before SEP6
+                    ctrl_conf['synchronizer'] = conf_synch
+
                 try:
-                    synchronization = ctrl_data['trigger_type']
-                    msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply "
-                           "configuration in order to upgrade.")
-                    self._parent.warning(msg)
+                    synchronization = ctrl_data['synchronization']
                 except KeyError:
-                    synchronization = AcqSynchType.Trigger
+                    # backwards compatibility for configurations before SEP6
+                    try:
+                        synchronization = ctrl_data['trigger_type']
+                        msg = ("trigger_type configuration parameter is deprecated"
+                               " in favor of synchronization. Re-apply "
+                               "configuration in order to upgrade.")
+                        self._parent.warning(msg)
+                    except KeyError:
+                        synchronization = AcqSynchType.Trigger
 
-            ctrl_conf['synchronization'] = synchronization
-            user_config_ctrl['synchronization'] = synchronization
+                ctrl_conf['synchronization'] = synchronization
+                user_config_ctrl['synchronization'] = synchronization
 
             acq_synch = None
             if external:

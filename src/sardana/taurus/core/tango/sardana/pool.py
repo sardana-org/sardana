@@ -1830,8 +1830,8 @@ class MGConfiguration(object):
             ctrls_names = self.controllers.keys()
 
         for ctrl_name in ctrls_names:
-            if ctrl_name == '__tango__':
-                continue
+            # if ctrl_name == '__tango__':
+            #     continue
             ctrl = self._get_ctrl_data(ctrl_name)
             ctrl[key] = value
         if apply_cfg:
