@@ -706,7 +706,8 @@ class MeasurementConfiguration(object):
                             break
 
                     if conf_synch_ctrl is None:
-                        conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
+                        conf_synch_ctrl = \
+                            ControllerConfiguration(pool_synch_ctrl)
                         synch_ctrls.append(conf_synch_ctrl)
 
                     if conf_synch is None:
@@ -721,7 +722,8 @@ class MeasurementConfiguration(object):
                     # backwards compatibility for configurations before SEP6
                     try:
                         synchronization = ctrl_data['trigger_type']
-                        msg = ("trigger_type configuration parameter is deprecated"
+                        msg = ("trigger_type configuration parameter "
+                               "is deprecated"
                                " in favor of synchronization. Re-apply "
                                "configuration in order to upgrade.")
                         self._parent.warning(msg)
@@ -842,7 +844,7 @@ class MeasurementConfiguration(object):
                     # Skip controllers disabled
                     pass
                 elif acq_synch in (AcqSynch.SoftwareTrigger,
-                                 AcqSynch.SoftwareGate):
+                                   AcqSynch.SoftwareGate):
                     if ctrl_item.timer.index < master_timer_idx_sw:
                         master_timer_sw = ctrl_item.timer
                         master_timer_idx_sw = ctrl_item.timer.index
