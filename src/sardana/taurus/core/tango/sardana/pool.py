@@ -1411,8 +1411,9 @@ class MGConfiguration(object):
                 if ctrl_name != '__tango__':
                     proxy = DeviceProxy(ctrl_name)
                     ctrl_name = proxy.alias()
-                    controllers_names[ctrl_name] = ctrl_data
-                    controllers_channels[ctrl_name] = []
+
+                controllers_names[ctrl_name] = ctrl_data
+                controllers_channels[ctrl_name] = []
             except Exception:
                 pass
             for channel_name, channel_data in \
@@ -1422,11 +1423,10 @@ class MGConfiguration(object):
                 channels_names[name] = channel_data
                 label = channel_data['label']
                 channels_labels[name] = channel_data
-                if ctrl_name != '__tango__':
-                    ch_data = {'fullname': channel_name,
-                               'label': label,
-                               'name': name}
-                    controllers_channels[ctrl_name].append(ch_data)
+                ch_data = {'fullname': channel_name,
+                           'label': label,
+                           'name': name}
+                controllers_channels[ctrl_name].append(ch_data)
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
