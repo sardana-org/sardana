@@ -262,8 +262,12 @@ class PoolBaseElement(PoolObject):
                                              ctrl_status=status)
         return status_info[0], new_status
 
-    def set_state_info(self, state_info, propagate=1):
-        self._set_state_info(state_info, propagate=propagate)
+    def set_state_info(self, state_info, propagate=1, safe=False):
+        if safe:
+            with self:
+                self._set_state_info(state_info, propagate=propagate)
+        else:
+            self._set_state_info(state_info, propagate=propagate)
 
     def _set_state_info(self, state_info, propagate=1):
         state_info = self.calculate_state_info(state_info)

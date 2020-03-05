@@ -7,7 +7,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* Support to Python >= 3.5 (#1089, #1173, 1201)
+* Support to Python >= 3.5 (#1089, #1173, #1201)
+* Showscan online based on pyqtgraph (#1285)
+  * multiple plots in the same MultiPlot widget (as opposed to different panels before)
+  * option to group curves by x-axis or individual plot per curve
+  * new showscan console script
+  * support fast scans: update curves at a fix rate (5Hz)
+  * better curve colors and symbols
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Instruments creation and configuration in sar_demo (#1198)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
@@ -25,6 +31,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Use `tango.EnsureOmnitThread` to protect Sardana threads
+  (Tango is not thread safe) (#1298)
+* Avoid using Tango `AttributeProxy` in limits protection to not be affected
+  by bug tango-controls/pytango#315 (#1302) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
@@ -38,14 +48,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
   (#1260)
+* Fix fast operations (motion & acq) by propertly clearing operation context and
+  resetting of acq ctrls dicts (#1300)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
-  pyplot.draw() to make sure that the plot is refreshed (#1280)
+  `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
+* Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
+* Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
 
 ### Deprecated
 
