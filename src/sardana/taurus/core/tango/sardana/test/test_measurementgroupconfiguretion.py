@@ -49,45 +49,46 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
 
             # Check initial state of all kind of channels, nonexistent
             # channels for the feature return None as result.
-            enabled = mg.getEnabled(*elements)
+            result = mg.getEnabled(*elements)
             expected = [True] * len(elements)
-            self._assertMultipleResults(enabled, elements, expected)
+            self._assertMultipleResults(result, elements, expected)
 
             # Test every possible combination of setting values
             # Check that changing one channel doesn't affect the other
-            enabled = mg.setEnabled(False, *elements)
+            mg.setEnabled(False, *elements)
+            result = mg.getEnabled(*elements)
             expected = [False] * len(elements)
-            self._assertMultipleResults(enabled, elements, expected)
+            self._assertMultipleResults(result, elements, expected)
             mg.setEnabled(True, elements[0])
             result = mg.getEnabled(*elements)
             expected = [False] * len(elements)
             expected[0] = True
             self._assertMultipleResults(result, elements, expected)
             mg.setEnabled(False, *elements)
-            enabled = mg.getEnabled(*elements)
-            self._assertResult(enabled, elements, False)
+            resutl = mg.getEnabled(*elements)
+            self._assertResult(resutl, elements, False)
 
             # Redefine elements to ony use existing values
             elements = ["_test_ct_1_1", "_test_ct_1_2"]
 
             # Set values using the controller instead of channels
             mg.setEnabled(True, "_test_ct_ctrl_1")
-            enabled = mg.getEnabled(*elements)
-            self._assertResult(enabled, elements, True)
+            resutl = mg.getEnabled(*elements)
+            self._assertResult(resutl, elements, True)
 
             # Get values by controller
             mg.setEnabled(False, *elements)
-            enabled = mg.getEnabled("_test_ct_ctrl_1")
-            self._assertResult(enabled, elements, False)
+            resutl = mg.getEnabled("_test_ct_ctrl_1")
+            self._assertResult(resutl, elements, False)
 
             # Check ret_full_name
             v = TangoDeviceNameValidator()
             full_names = [v.getNames(element)[0] for element in elements]
-            enabled = mg.getEnabled(*full_names)
-            self._assertResult(enabled, elements, False)
+            resutl = mg.getEnabled(*full_names)
+            self._assertResult(resutl, elements, False)
             mg.setEnabled(True, *full_names)
-            enabled = mg.getEnabled(*elements, ret_full_name=True)
-            self._assertResult(enabled, full_names, True)
+            resutl = mg.getEnabled(*elements, ret_full_name=True)
+            self._assertResult(resutl, full_names, True)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
