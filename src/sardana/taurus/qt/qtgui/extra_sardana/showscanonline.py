@@ -91,7 +91,7 @@ class TaurusGuiLite(TaurusGui):
               help='group curves')
 @click.option('--taurus-log-level',
               type=click.Choice(['critical', 'error', 'warning', 'info',
-                                 'debug', 'trace'], case_sensitive=False),
+                                 'debug', 'trace']),
               default='error', show_default=True,
               help='Show only logs with priority LEVEL or above')
 @click.argument('door')
