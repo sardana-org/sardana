@@ -246,9 +246,11 @@ class DoorAttrListener(Qt.QObject):
 if __name__ == "__main__":
     import sys
     import taurus
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
     args = app.get_command_line_args()
 
     doorOutput = DoorOutput()

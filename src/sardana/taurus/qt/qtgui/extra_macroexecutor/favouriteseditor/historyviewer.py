@@ -169,9 +169,11 @@ def test():
     import sys
     import taurus
     import time
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
 
     historyViewer = HistoryMacrosViewer()
 

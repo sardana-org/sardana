@@ -381,7 +381,8 @@ if __name__ == '__main__':
     parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
-                            app_version=taurus.Release.version)
+                            app_version=taurus.Release.version,
+                            cmd_line_parser=parser)
 
     args = app.get_command_line_args()
 
