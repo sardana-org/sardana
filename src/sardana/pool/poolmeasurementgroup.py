@@ -655,7 +655,8 @@ class MeasurementConfiguration(object):
             if ch_count == 0:
                 continue
 
-            external = ctrl_name.startswith('__')
+            external = ctrl_name in ['__tango__']
+
             if external:
                 ctrl = ctrl_name
             else:
