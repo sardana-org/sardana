@@ -1075,10 +1075,18 @@ def createMacroExecutor(args):
 
 
 def main():
+    from taurus.core.util import argparse
     from taurus.qt.qtgui.application import TaurusApplication
-    import taurus
 
-    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
+    parser = argparse.get_taurus_parser()
+    parser.set_usage("%prog [options]")
+    parser.set_description("Sardana macro executor.\n"
+                           "It allows execution of macros, keeping history "
+                           "of previous executions and favourites.")
+    app = TaurusApplication(sys.argv,
+                            cmd_line_parser=parser,
+                            app_name="macroexecutor",
+                            app_version=sardana.Release.version)
     args = app.get_command_line_args()
 
     app.setOrganizationName("Taurus")
