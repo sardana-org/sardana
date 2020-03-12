@@ -91,3 +91,6 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 #:   this documentation it is not available for conda.
 #: - "dumb" - worst performance but directly available with Python 3.
 MS_ENV_SHELVE_BACKEND = None
+
+#: macroexecutor maximum number of macros stored in the history
+MACROEXECUTOR_MAX_HISTORY = 100

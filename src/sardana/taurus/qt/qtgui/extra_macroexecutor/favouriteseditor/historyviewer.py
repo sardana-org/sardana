@@ -28,6 +28,7 @@ historyviewer.py:
 """
 import copy
 
+from sardana import sardanacustomsettings
 from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
@@ -49,6 +50,10 @@ class HistoryMacrosViewer(TaurusWidget):
 
         self.list = HistoryMacrosList(self)
         self._model = MacrosListModel()
+        max_history = getattr(sardanacustomsettings,
+                              "MACROEXECUTOR_MAX_HISTORY",
+                              None)
+        self._model.setMaxLen(max_history)
         self.list.setModel(self._model)
 
 # self.registerConfigDelegate(self.list)
