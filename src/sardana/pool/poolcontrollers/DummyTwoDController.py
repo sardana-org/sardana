@@ -264,7 +264,7 @@ class BasicDummyTwoDController(TwoDController):
         if self._armed:
             sta = State.Moving
             status = "Armed"
-        elif axis in self.counting_channels:
+        elif axis in self.counting_channels and self.start_time is not None:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
@@ -342,12 +342,16 @@ class BasicDummyTwoDController(TwoDController):
                                      AcqSynch.HardwareGate):
             self._disconnect_hardware_synchronization()
             self._armed = False
+        self.start_time = None
 
     def AbortOne(self, axis):
         if axis not in self.counting_channels:
             return
         now = time.time()
-        elapsed_time = now - self.start_time
+        if self.start_time is not None:
+            elapsed_time = now - self.start_time
+        else:
+            elapsed_time = 0
         self._finish(elapsed_time, axis)
 
     def getAmplitude(self, axis):
