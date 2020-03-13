@@ -343,7 +343,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, ctrls, expected)
 
             # Check ret_full_name
-            # Check ret_full_name
             v = TangoDeviceNameValidator()
             counters = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3",
                         '_test_2d_1_1', '_test_2d_1_2']
@@ -368,37 +367,40 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
         try:
             mg = Device(mg_name)
             result = mg.getSynchronizer()
-            expected = ['', '', '', None, None]
-            self._assertResult(result, elements, expected)
+            expected = ['software', 'software', 'software', 'software', None]
+            self._assertMultipleResults(result, elements, expected)
             with self.assertRaises(Exception):
-                mg.setSynchronizer('_test_tg_1_2', elements[-1])
-            with self.assertRaises(Exception):
-                mg.setSynchronizer('_test_tg_1_2', elements[-2])
+                mg.setSynchronizer('_test_tg_1_2', "_test_mt_1_3/position")
 
-            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+            mg.setSynchronizer('_test_tg_1_2', "_test_ct_ctrl_1",
+                               "_test_2d_ctrl_1")
 
-            mg.setSynchronizer('_test_tg_1_2')
+            expected = ['_test_tg_1_2', '_test_tg_1_2', '_test_tg_1_2',
+                        '_test_tg_1_2', None]
             result = mg.getSynchronizer()
-            self._assertResult(result, elements, '_test_tg_1_2')
-            mg.setSynchronizer('software')
+            self._assertMultipleResults(result, elements, expected)
+
+            mg.setSynchronizer('software', "_test_ct_ctrl_1",
+                               "_test_2d_ctrl_1")
             result = mg.getSynchronizer()
-            self._assertResult(result, elements, 'software')
-            result = mg.getSynchronizer(ret_by_ctrl=True)
-            self._assertResult(result, ['_test_ct_ctrl_1'], 'software')
+            expected = ['software', 'software', 'software', 'software', None]
+            self._assertMultipleResults(result, elements, expected)
+
             with self.assertRaises(Exception):
-                mg.setSynchronizer('asdf')
+                mg.setSynchronizer('asdf', "_test_ct_ctrl_1",
+                                   "_test_2d_ctrl_1")
 
             # Check ret_full_name
             v = TangoDeviceNameValidator()
-            full_names = [v.getNames(element)[0] for element in elements]
-            full_name_tg = v.getNames('_test_tg_1_2')[0]
-            mg.setSynchronizer(full_name_tg)
-            result = mg.getSynchronizer()
-            self._assertResult(result, elements, '_test_tg_1_2')
-            # TODO ret_full_name gives controler name
-            mg.setSynchronizer('software', *full_names)
-            result = mg.getSynchronizer(*elements, ret_full_name=True)
-            self._assertResult(result, full_names, 'software')
+            counters = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3",
+                        '_test_2d_1_1']
+            full_names = [v.getNames(counter)[0] for counter in counters]
+            mg.setSynchronizer('_test_tg_1_2', "_test_ct_ctrl_1",
+                               "_test_2d_ctrl_1")
+
+            result = mg.getSynchronizer(*counters, ret_full_name=True)
+
+            self._assertResult(result, full_names, '_test_tg_1_2')
 
         finally:
             mg.cleanUp()
