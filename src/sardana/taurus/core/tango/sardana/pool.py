@@ -2827,10 +2827,10 @@ class MeasurementGroup(PoolElement):
         return config._getValueRefPatternChannels(channels,
                                                   use_fullname=ret_full_name)
 
-    def _get_value_per_channel(self, config, ctrls_values):
+    def _get_value_per_channel(self, config, ctrls_values, use_fullname=False):
         channels_values = collections.OrderedDict({})
         for ctrl, value in ctrls_values.items():
-            for channel in config._get_ctrl_channels(ctrl):
+            for channel in config._get_ctrl_channels(ctrl, use_fullname):
                 channels_values[channel] = value
         return channels_values
 
@@ -2892,7 +2892,8 @@ class MeasurementGroup(PoolElement):
         if ret_by_ctrl:
             return ctrls_timers
         else:
-            return self._get_value_per_channel(config, ctrls_timers)
+            return self._get_value_per_channel(config, ctrls_timers,
+                                               use_fullname=ret_full_name)
 
     def setMonitor(self, monitor, *elements, apply=True):
         """Set the monitor configuration for the given channels of the same
@@ -2953,7 +2954,8 @@ class MeasurementGroup(PoolElement):
         if ret_by_ctrl:
             return ctrls_monitor
         else:
-            return self._get_value_per_channel(config, ctrls_monitor)
+            return self._get_value_per_channel(config, ctrls_monitor,
+                                               use_fullname=ret_full_name)
 
     def setSynchronizer(self, synchronizer, *elements, apply=True):
         """Set the synchronizer configuration for the given channels or
@@ -3016,7 +3018,8 @@ class MeasurementGroup(PoolElement):
         if ret_by_ctrl:
             return ctrls_sync
         else:
-            return self._get_value_per_channel(config, ctrls_sync)
+            return self._get_value_per_channel(config, ctrls_sync,
+                                               use_fullname=ret_full_name)
 
     # NbStarts Methods
     def getNbStartsObj(self):
