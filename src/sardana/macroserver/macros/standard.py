@@ -659,7 +659,16 @@ def _value_to_repr(data):
         return data
 
 
-class ct(Macro, Hookable):
+class _ct:
+
+    def dump_information(self, elements):
+        msg = ["Elements ended acquisition with:"]
+        for element in elements:
+            msg.append(element.information())
+        self.info("\n".join(msg))
+
+
+class ct(Macro, Hookable, _ct):
     """Count for the specified time on the measurement group
        or experimental channel given as second argument
        (if not given the active measurement group is used)"""
@@ -701,7 +710,20 @@ class ct(Macro, Hookable):
         for preAcqHook in self.getHooks('pre-acq'):
             preAcqHook()
 
-        state, data = self.countable_elem.count(integ_time)
+        try:
+            state, data = self.countable_elem.count(integ_time)
+        except Exception:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+            raise
+        if state != DevState.ON:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+                raise ValueError("Acquisition ended with {}".format(state))
 
         for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
@@ -726,7 +748,7 @@ class ct(Macro, Hookable):
             self.output(line)
 
 
-class uct(Macro):
+class uct(Macro, _ct):
     """Count on the active measurement group and update"""
 
     param_def = [
@@ -785,14 +807,26 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            _, data = self.countable_elem.count(integ_time)
-            self.setData(Record(data))
+            state, data = self.countable_elem.count(integ_time)
+        except Exception:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+            raise
         finally:
             self.finish()
+        if state != DevState.ON:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+                raise ValueError("Acquisition ended with {}".format(state))
+        self.setData(Record(data))
+        self.printAllValues()
 
     def finish(self):
         self._clean()
-        self.printAllValues()
 
     def _clean(self):
         for channel in self.channels:
