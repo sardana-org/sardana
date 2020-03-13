@@ -1927,7 +1927,14 @@ class MGConfiguration(object):
             self.set_data(self._pending_event_data, force=True)
             raise RuntimeError('The configuration changed on the server '
                                'during your changes.')
-        self._mg.setConfiguration(self._raw_data)
+        try:
+            self._mg.setConfiguration(self._raw_data)
+        except Exception as e:
+            self._local_changes = False
+            self._pending_event_data = None
+            data = self._mg.getConfigurationAttrEG().readValue(force=True)
+            self.set_data(data, force=True)
+            raise e
         self._local_changes = False
         self._pending_event_data = None
         t1 = time.time()
