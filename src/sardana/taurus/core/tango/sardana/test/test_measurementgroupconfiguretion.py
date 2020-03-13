@@ -281,35 +281,36 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
         try:
             mg = Device(mg_name)
 
-            previous = mg.getTimer(elements[-1])
-            # TODO see if 2d channels should rise exception on setting
+            result = mg.getTimer("_test_mt_1_3/position")
             with self.assertRaises(Exception):
-                mg.setTimer(elements[-1], "_test_2d_1_2")
-            self.assertEqual(mg.getTimer(*elements), previous)
-            previous = mg.getTimer(elements[-2])
-            with self.assertRaises(Exception):
-                mg.setTimer(elements[-2], "_test_mt_1_3")
-            self.assertEqual(mg.getTimer(*elements), previous)
-
-            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
-
-            previous = mg.getTimer(*elements)
-            print(previous)
+                mg.setTimer("_test_mt_1_3/position")
+            self._assertResult(result,  ["_test_mt_1_3/position"], None)
             mg.setTimer('_test_ct_1_3')
-            self.assertNotEqual(mg.getTimer(*elements), previous)
-            self._assertResult(mg.getTimer(*elements), elements, '_test_ct_1_3')
-            self._assertResult(mg.getTimer(*elements, ret_by_ctrl=True),
-                               ['_test_ct_ctrl_1'], '_test_ct_1_3')
+            result = mg.getTimer(*elements)
+            expected = ['_test_ct_1_3', '_test_ct_1_3', '_test_ct_1_3', None]
+            self._assertMultipleResults(result, elements, expected)
+
+            mg.setTimer('_test_ct_1_2')
+            result = mg.getTimer(*elements)
+            expected = ['_test_ct_1_2', '_test_ct_1_2', '_test_ct_1_2', None]
+            self._assertMultipleResults(result, elements, expected)
+
+            result = mg.getTimer(*elements, ret_by_ctrl=True)
+            self._assertMultipleResults(result,
+                                        ['_test_ct_ctrl_1', '__tango__'],
+                                        ['_test_ct_1_2', None])
 
             # Check ret_full_name
             v = TangoDeviceNameValidator()
-            full_names = [v.getNames(element)[0] for element in elements]
-            mg.setTimer(full_names[0])
+            counters = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+            full_names = [v.getNames(counter)[0] for counter in counters]
+            mg.setTimer(v.getNames('_test_ct_1_1')[0])
             result = mg.getTimer()
-            self._assertResult(result, elements, '_test_ct_1_1')
+            expected = ['_test_ct_1_1', '_test_ct_1_1', '_test_ct_1_1', None]
+            self._assertMultipleResults(result, elements, expected)
             # TODO ret_full_name gives controler name
             mg.setTimer("_test_ct_1_2")
-            result = mg.getTimer(*elements, ret_full_name=True)
+            result = mg.getTimer(*counters, ret_full_name=True)
             self._assertResult(result, full_names, "_test_ct_1_2")
         finally:
             mg.cleanUp()
