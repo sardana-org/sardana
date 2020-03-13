@@ -39,7 +39,6 @@ class MacrosListModel(Qt.QAbstractListModel):
         Qt.QAbstractListModel.__init__(self, parent)
         self.list = []
         self._max_len = None
-        self._len = 0
 
     def setMaxLen(self, max_len):
         self._max_len = max_len
@@ -63,10 +62,8 @@ class MacrosListModel(Qt.QAbstractListModel):
     def insertRow(self, macroNode, row=0):
         self.beginInsertRows(Qt.QModelIndex(), row, row)
         self.list.insert(row, macroNode)
-        self._len += 1
-        if self._max_len is not None and self._len > self._max_len:
-            self.list.pop(self._len - 1)
-            self._len -= 1
+        if self._max_len is not None and len(self.list) > self._max_len:
+            self.list.pop()
         self.endInsertRows()
         return self.index(row)
 
@@ -109,10 +106,9 @@ class MacrosListModel(Qt.QAbstractListModel):
         self.beginResetModel()
         listElement = etree.fromstring(xmlString)
         for childElement in listElement.iterchildren("macro"):
-            if self._max_len is not None and self._len >= self._max_len:
+            if self._max_len is not None and len(self.list) >= self._max_len:
                 break
             macroNode = macro.MacroNode()
             macroNode.fromXml(childElement)
             self.list.append(macroNode)
-            self._len += 1
         self.endResetModel()
