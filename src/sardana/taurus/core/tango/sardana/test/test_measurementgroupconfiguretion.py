@@ -318,44 +318,43 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                      "_test_ct_1_3", "_test_2d_1_1",
+                                     '_test_2d_1_2',
                                      "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
+        print(mg_name)
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
 
-            previous = mg.getMonitor(elements[-1])
-            # TODO see if 2d channels should rise exception on setting
             with self.assertRaises(Exception):
-                mg.setMonitor(elements[-1], "_test_2d_1_2")
-            self.assertEqual(mg.getMonitor(*elements), previous)
-            previous = mg.getMonitor(elements[-2])
-            with self.assertRaises(Exception):
-                mg.setMonitor(elements[-2], "_test_mt_1_3")
-            self.assertEqual(mg.getMonitor(*elements), previous)
+                mg.setMonitor("_test_mt_1_3/position")
 
-            elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
+            mg.setMonitor('_test_2d_1_2')
+            mg.setMonitor("_test_ct_1_3")
+            expected = ["_test_ct_1_3", "_test_ct_1_3", "_test_ct_1_3",
+                        "_test_2d_1_2", '_test_2d_1_2', None]
+            result = mg.getMonitor()
+            self._assertMultipleResults(result, elements, expected)
 
-            previous = mg.getMonitor(*elements)
-            print(previous)
-            mg.setMonitor("_test_ct_1_2")
-            self.assertNotEqual(mg.getMonitor(*elements), previous)
-            self._assertResult(mg.getMonitor(*elements), elements,
-                               '_test_ct_1_2')
-            self._assertResult(mg.getMonitor(*elements, ret_by_ctrl=True),
-                               ['_test_ct_ctrl_1'], '_test_ct_1_2')
+            expected = ["_test_ct_1_3", '_test_2d_1_2', None]
+            result = mg.getMonitor(ret_by_ctrl=True)
+            ctrls = ['_test_ct_ctrl_1', '_test_2d_ctrl_1', '__tango__']
+            self._assertMultipleResults(result, ctrls, expected)
 
             # Check ret_full_name
+            # Check ret_full_name
             v = TangoDeviceNameValidator()
-            full_names = [v.getNames(element)[0] for element in elements]
-            mg.setMonitor(full_names[0])
-            result = mg.getMonitor(*elements)
-            self._assertResult(result, elements, '_test_ct_1_1')
-            # TODO ret_full_name gives controler name
-            mg.setMonitor("_test_ct_1_2")
-            result = mg.getMonitor(*elements, ret_full_name=True)
-            self._assertResult(result, full_names, "_test_ct_1_2")
+            counters = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3",
+                        '_test_2d_1_1', '_test_2d_1_2']
+            full_names = [v.getNames(counter)[0] for counter in counters]
+            mg.setMonitor(v.getNames('_test_ct_1_1')[0])
+            mg.setMonitor(v.getNames('_test_2d_1_2')[0])
+
+            result = mg.getMonitor(*counters, ret_full_name=True)
+            expected = ["_test_ct_1_1", "_test_ct_1_1", "_test_ct_1_1",
+                        "_test_2d_1_2", '_test_2d_1_2']
+            self._assertMultipleResults(result, full_names, expected)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
