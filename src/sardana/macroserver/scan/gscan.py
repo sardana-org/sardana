@@ -1157,10 +1157,17 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        if self._deterministic_scan:
-            state, data_line = mg.count_raw()
-        else:
-            state, data_line = mg.count(integ_time)
+        try:
+            if self._deterministic_scan:
+                state, data_line = mg.count_raw()
+            else:
+                state, data_line = mg.count(integ_time)
+        except InterruptException:
+            raise
+        except Exception:
+            channels = [self.macro.getExpChannel(ch) for ch in mg.ElementList]
+            self.dump_information(n, step, channels)
+            raise
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
