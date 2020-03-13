@@ -72,7 +72,7 @@ class MacrosListModel(Qt.QAbstractListModel):
 
     def removeRow(self, row):
         self.beginRemoveRows(Qt.QModelIndex(), row, row)
-
+        self.list.pop(row)
         self.endRemoveRows()
         if row == self.rowCount():
             row = row - 1
