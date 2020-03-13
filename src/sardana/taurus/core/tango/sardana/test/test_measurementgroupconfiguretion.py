@@ -214,24 +214,29 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             result = mg.getPlotAxes()
             self._assertResult(result, elements, [])
 
-            mg.setPlotAxes(["<idx>", "<idx>"], elements[4])
-            mg.setPlotAxes(["<idx>", "<idx>"], elements[3])
             mg.setPlotAxes(["<idx>", "<idx>"], elements[0])
             mg.setPlotAxes(["<mov>"], elements[1])
+            with self.assertRaises(Exception):
+                mg.setPlotAxes(['<mov>'], elements[2])
+            mg.setPlotAxes(["<idx>", "<idx>"], elements[3])
+            mg.setPlotAxes(["<idx>", "<idx>"], elements[4])
+
             result = mg.getPlotAxes()
             expected_result = [['<idx>', '<idx>'], ['<mov>'], [],
                                ['<idx>', '<idx>'], ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
+
             mg.setPlotAxes(["<mov>", "<idx>"], elements[0])
             mg.setPlotAxes(["<idx>"], elements[1])
             result = mg.getPlotAxes()
             expected_result = [['<mov>', '<idx>'], ['<idx>'], [],
-                               ['<idx>', '<idx>']]
+                               ['<idx>', '<idx>'], ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
+
             mg.setPlotAxes(["<mov>", "<mov>"], elements[0])
             result = mg.getPlotAxes()
             expected_result = [['<mov>', '<mov>'], ['<idx>'], [],
-                               ['<idx>', '<idx>']]
+                               ['<idx>', '<idx>'], ['<idx>', '<idx>']]
             self._assertMultipleResults(result, elements, expected_result)
 
             with self.assertRaises(RuntimeError):
@@ -244,7 +249,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
             elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
             # Set values using the controller instead of channels
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(Exception):
                 mg.setPlotAxes(["<mov>"], "_test_ct_ctrl_1")
             # TODO get method by controller doesn't give the order
             # Get values by controller
