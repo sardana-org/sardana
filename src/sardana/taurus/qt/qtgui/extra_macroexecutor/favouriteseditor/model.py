@@ -61,9 +61,9 @@ class MacrosListModel(Qt.QAbstractListModel):
 
     def insertRow(self, macroNode, row=0):
         self.beginInsertRows(Qt.QModelIndex(), row, row)
-        self.list.insert(row, macroNode)
-        if self._max_len is not None and len(self.list) > self._max_len:
+        if self._max_len is not None and len(self.list) == self._max_len:
             self.list.pop()
+        self.list.insert(row, macroNode)
         self.endInsertRows()
         return self.index(row)
 
