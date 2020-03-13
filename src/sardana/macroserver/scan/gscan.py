@@ -1165,8 +1165,9 @@ class SScan(GScan):
         except InterruptException:
             raise
         except Exception:
-            channels = [self.macro.getExpChannel(ch) for ch in mg.ElementList]
-            self.dump_information(n, step, channels)
+            names = mg.ElementList
+            elements = [self.macro.getObj(name) for name in names]
+            self.dump_information(n, step, elements)
             raise
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
