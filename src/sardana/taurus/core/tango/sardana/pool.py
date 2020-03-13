@@ -1404,13 +1404,16 @@ class MGConfiguration(object):
         self.channels_labels = channels_labels = CaselessDict()
         self.controllers_names = controllers_names = CaselessDict()
         self.controllers_channels = controllers_channels = CaselessDict()
+        self.controllers_alias = CaselessDict()
 
         # TODO private controllers attr
         for ctrl_name, ctrl_data in list(self.controllers.items()):
             try:
                 if ctrl_name != '__tango__':
                     proxy = DeviceProxy(ctrl_name)
+                    ctrl_full_name = ctrl_name
                     ctrl_name = proxy.alias()
+                    self.controllers_alias[ctrl_full_name] = ctrl_name
 
                 controllers_names[ctrl_name] = ctrl_data
                 controllers_channels[ctrl_name] = []
@@ -1894,6 +1897,8 @@ class MGConfiguration(object):
 
     def _get_ctrl_channels(self, ctrl, use_fullname=False):
         channels = []
+        if ctrl not in self.controllers_channels:
+            ctrl = self.controllers_alias[ctrl]
         channels_datas = self.controllers_channels[ctrl]
         for channel_data in channels_datas:
             if use_fullname:
