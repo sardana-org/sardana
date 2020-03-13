@@ -1118,7 +1118,7 @@ class SScan(GScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, self.motion.moveable_list)
             raise
         self.debug("[ END ] motion")
 
@@ -1213,11 +1213,10 @@ class SScan(GScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 
