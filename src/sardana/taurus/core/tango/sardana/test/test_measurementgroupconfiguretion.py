@@ -1,12 +1,12 @@
 import uuid
-from unittest import TestCase
+import unittest
 from taurus import Device
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 from sardana.taurus.core.tango.sardana.pool import registerExtensions
 from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
 
-class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
+class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def setUp(self):
         SarTestTestCase.setUp(self)
