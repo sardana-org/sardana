@@ -518,4 +518,3 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
-
