@@ -150,7 +150,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
-                                     "_test_mt_1_3/position"]):
+                                      "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
