@@ -60,6 +60,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Remove deprecation warning revealed when running test suite (#1267)
 * Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
 * Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
+* Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
+* Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
+  (#1188, #1309)
 
 ### Deprecated
 
