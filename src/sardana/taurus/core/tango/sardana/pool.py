@@ -1426,9 +1426,11 @@ class MGConfiguration(object):
                 channels_names[name] = channel_data
                 label = channel_data['label']
                 channels_labels[name] = channel_data
+                index = channel_data['index']
                 ch_data = {'fullname': channel_name,
                            'label': label,
-                           'name': name}
+                           'name': name,
+                           'index': index}
                 controllers_channels[ctrl_name].append(ch_data)
 
         #####################
@@ -1896,7 +1898,7 @@ class MGConfiguration(object):
         return result
 
     def _get_ctrl_channels(self, ctrl, use_fullname=False):
-        channels = []
+        idx_channel = {}
         if ctrl not in self.controllers_channels:
             ctrl = self.controllers_alias[ctrl]
         channels_datas = self.controllers_channels[ctrl]
@@ -1905,7 +1907,12 @@ class MGConfiguration(object):
                 name = channel_data['fullname']
             else:
                 name = channel_data['label']
-            channels.append(name)
+            idx = channel_data['index']
+            idx_channel[idx] = name
+        channels = []
+        for idx in sorted(idx_channel):
+            channels.append(idx_channel[idx])
+
         return channels
 
     def _get_channels_for_element(self, element, use_fullname=False):
