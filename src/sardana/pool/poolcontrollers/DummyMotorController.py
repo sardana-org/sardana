@@ -148,6 +148,12 @@ class Motion(BaseMotion):
     def getMaxVelocity(self):
         return self.max_vel
 
+    def setMaxUserVelocity(self, vel):
+        self.setMaxVelocity(vel * self.step_per_unit)
+
+    def getMaxUserVelocity(self):
+        return self.getMaxVelocity() / self.step_per_unit
+
     def setAccelerationTime(self, at):
         """Sets the time to go from minimum velocity to maximum velocity in seconds"""
         at = float(at)
@@ -528,7 +534,7 @@ class BasicDummyMotorController(MotorController):
         if self.m[idx] is None:
             m = Motion()
             m.setMinVelocity(0)
-            m.setMaxVelocity(100)
+            m.setMaxUserVelocity(100)
             m.setAccelerationTime(2)
             m.setDecelerationTime(2)
             m.setCurrentPosition(0)
@@ -690,7 +696,7 @@ class DiscreteDummyMotorController(BasicDummyMotorController):
         idx = axis - 1
         m = self.m[idx]
         m.setMinVelocity(0)
-        m.setMaxVelocity(1)
+        m.setMaxUserVelocity(1)
         m.setAccelerationTime(0.01)
         m.setDecelerationTime(0.01)
         m.setCurrentPosition(0)
@@ -764,7 +770,7 @@ class DummyMotorController(BasicDummyMotorController):
         elif name == "base_rate":
             m.setMinVelocity(value)
         elif name == "velocity":
-            m.setMaxVelocity(value)
+            m.setMaxUserVelocity(value)
         elif name == "step_per_unit":
             m.setStepPerUnit(value)
 
@@ -779,7 +785,7 @@ class DummyMotorController(BasicDummyMotorController):
         elif name == "base_rate":
             v = m.getMinVelocity()
         elif name == "velocity":
-            v = m.getMaxVelocity()
+            v = m.getMaxUserVelocity()
         elif name == "step_per_unit":
             v = m.getStepPerUnit()
         return v
