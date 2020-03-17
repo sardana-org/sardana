@@ -667,6 +667,7 @@ class MeasurementConfiguration(object):
 
             user_config['controllers'][ctrl_name] = user_config_ctrl = {}
             ctrl_conf = {}
+            conf_synch = None
 
             # The external controllers should not have synchronizer
 
@@ -682,7 +683,6 @@ class MeasurementConfiguration(object):
                                      'to have timer')
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
-                conf_synch = None
                 if synchronizer is None or synchronizer == 'software':
                     ctrl_conf['synchronizer'] = 'software'
                     user_config_ctrl['synchronizer'] = 'software'
