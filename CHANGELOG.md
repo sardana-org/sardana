@@ -63,6 +63,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
 * Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
   (#1188, #1309)
+* Fix dummy motor velocity so it respects steps_per_unit (#1310)
 
 ### Deprecated
 
