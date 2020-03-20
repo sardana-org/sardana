@@ -1701,10 +1701,9 @@ class MeasurementGroup(PoolElement):
         codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
-    def cleanUp(self):
-        PoolElement.cleanUp(self)
-        f = self.factory()
-        f.removeExistingAttribute(self.__cfg_attr)
+    def setZombie(self, zombie=True):
+        PoolElement.setZombie(self, zombie)
+        self.__cfg_attr.setZombie(zombie)
 
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
@@ -2241,10 +2240,9 @@ class Pool(TangoDevice, MoveableSource):
         self.__elements_attr = self.getAttribute("Elements")
         self.__elements_attr.addListener(self.on_elements_changed)
 
-    def cleanUp(self):
-        TangoDevice.cleanUp(self)
-        f = self.factory()
-        f.removeExistingAttribute(self.__elements_attr)
+    def setZombie(self, zombie=True):
+        TangoDevice.setZombie(self, zombie)
+        self.__elements_attr.setZombie(zombie)
 
     def getObject(self, element_info):
         elem_type = element_info.getType()
