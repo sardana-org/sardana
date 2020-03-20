@@ -340,14 +340,16 @@ class PoolElement(BaseElement, TangoDevice):
     def cleanUp(self):
         TangoDevice.cleanUp(self)
         self._reserved = None
-        f = self.factory()
 
-        attr_map = self._attrEG
-        for attr_name in list(attr_map.keys()):
-            attrEG = attr_map.pop(attr_name)
-            attr = attrEG.getAttribute()
-            attrEG = None
-            f.removeExistingAttribute(attr)
+    def setZombie(self, zombie=True):
+        TangoDevice.setZombie(self, zombie)
+        while True:
+            try:
+                _, attrEG = self._attrEG.popitem()
+                attr = attrEG.getAttribute()
+                attr.setZombie(zombie)
+            except KeyError:
+                break
 
     def reserve(self, obj):
         if obj is None:
@@ -385,7 +387,7 @@ class PoolElement(BaseElement, TangoDevice):
         attrEG = self._getAttrEG(name)
         if attrEG is None:
             return None
-        return attrEG.readValue(force=force)
+        return attrEG.readValue(force=force )
 
     def _getAttrEG(self, name):
         attrEG = self.getAttrEG(name)
@@ -1459,15 +1461,12 @@ class MGConfiguration(object):
                 dev_data = tg_dev_chs.get(dev_name)
                 # technical debt: read Value or ValueRef attribute
                 # ideally the source configuration should include this info
-                # Use DeviceProxy instead of taurus to avoid crashes in Py3
-                # See: tango-controls/pytango#292
-                # channel = Device(dev_name)
-                # if (isinstance(channel, ExpChannel)
-                #         and channel.isReferable()
-                #         and channel_data.get("value_ref_enabled", False)):
-                if (_is_referable(dev_name)
+                channel = Device(dev_name)
+                if (isinstance(channel, ExpChannel)
+                        and channel.isReferable()
                         and channel_data.get("value_ref_enabled", False)):
                     attr_name += "Ref"
+
                 if dev_data is None:
                     # Build tango device
                     dev = None
@@ -1908,11 +1907,9 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            # Use DeviceProxy instead of taurus to avoid crashes in Py3
-            # See: tango-controls/pytango#292
-            if _is_referable(full_name) and value_ref_enabled:
-                continue
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 self._value_buffer_cb = cb
@@ -1934,11 +1931,9 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            # Use DeviceProxy instead of taurus to avoid crashes in Py3
-            # See: tango-controls/pytango#292
-            if _is_referable(full_name) and value_ref_enabled:
-                continue
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
@@ -1977,13 +1972,11 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            # Use DeviceProxy instead of taurus to avoid crashes in Py3
-            # See: tango-controls/pytango#292
-            if not _is_referable(full_name):
+            channel = Device(full_name)
+            if not channel.isReferable():
                 continue
             if not value_ref_enabled:
                 continue
-            channel = Device(full_name)
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
                 self._value_ref_buffer_cb = cb
@@ -2005,13 +1998,11 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            # Use DeviceProxy instead of taurus to avoid crashes in Py3
-            # See: tango-controls/pytango#292
-            if not _is_referable(full_name):
+            channel = Device(full_name)
+            if not channel.isReferable():
                 continue
             if not value_ref_enabled:
                 continue
-            channel = Device(full_name)
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
                 value_ref_buffer_obj.unsubscribeEvent(
