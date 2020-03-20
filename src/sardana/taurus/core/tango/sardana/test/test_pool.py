@@ -77,7 +77,7 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
                       (value, channel_name)
                 self.assertTrue(is_numerical(value), msg)
         finally:
-            mg.cleanUp()
+            mg.setZombie()
             self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
@@ -116,8 +116,8 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
                       (value, channel_name)
                 self.assertTrue(is_pure_str(value), msg)
         finally:
-            channel.cleanUp()
-            mg.cleanUp()
+            channel.setZombie()
+            mg.setZombie()
             self.pool.DeleteElement(mg_name)
 
     def test_value_ref_disabled(self):
@@ -137,8 +137,8 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
                       (value, channel_name)
                 self.assertTrue(is_numerical(value), msg)
         finally:
-            channel.cleanUp()
-            mg.cleanUp()
+            channel.setZombie()
+            mg.setZombie()
             self.pool.DeleteElement(mg_name)
 
     def tearDown(self):

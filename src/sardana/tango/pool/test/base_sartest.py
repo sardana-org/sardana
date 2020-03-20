@@ -27,6 +27,7 @@ import PyTango
 import taurus
 
 from sardana.tango.pool.test import BasePoolTestCase
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 
 __all__ = ['SarTestTestCase']
@@ -165,12 +166,9 @@ class SarTestTestCase(BasePoolTestCase):
             # devices are created and destroyed within the testsuite.
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
-            if elem_name in f.tango_alias_devs:
-                _cleanup_device(elem_name)
-            try:
-                self.pool.DeleteElement(elem_name)
-            except:
-                dirty_elems.append(elem_name)
+            elem = f.tango_alias_devs.get(elem_name)
+            if elem is not None:
+                elem.setZombie()
 
         for ctrl_name in self.ctrl_list:
             # Cleanup eventual taurus devices. This is especially important
@@ -178,14 +176,14 @@ class SarTestTestCase(BasePoolTestCase):
             # devices are created and destroyed within the testsuite.
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
-            if ctrl_name in f.tango_alias_devs:
-                _cleanup_device(ctrl_name)
-            try:
-                self.pool.DeleteElement(ctrl_name)
-            except:
-                dirty_ctrls.append(ctrl_name)
-
-        _cleanup_device(self.pool_name)
+            ctrl = f.tango_alias_devs.get(elem_name)
+            if ctrl is not None:
+                ctrl.setZombie()
+        names = TangoDeviceNameValidator().getNames(self.pool_name)
+        pool_full_name, _, _ = names
+        pool = f.tango_devs.get(pool_full_name)
+        if pool is not None:
+            pool.setZombie()
 
         BasePoolTestCase.tearDown(self)
 
