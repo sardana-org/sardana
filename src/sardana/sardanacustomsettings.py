@@ -93,6 +93,8 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 MS_ENV_SHELVE_BACKEND = None
 
 #: macroexecutor maximum number of macros stored in the history
+#: Available options:
+#:
 #: - None (or no setting) - unlimited history (may slow down the GUI operation
 #:   if grows too big)
 #: - 0 - history will not be filled
