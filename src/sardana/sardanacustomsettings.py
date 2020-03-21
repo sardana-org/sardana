@@ -30,7 +30,7 @@ aspects of Sardana.
 """
 
 #: UnitTest door name: the door to be used by unit tests.
-#: UNITTEST_DOOR_NAME Must be defined for running sardana unittests.
+#: UNITTEST_DOOR_NAME must be defined for running sardana unittests.
 UNITTEST_DOOR_NAME = "door/demo1/1"
 #: UnitTests Pool DS name: Pool DS to use in unit tests.
 UNITTEST_POOL_DS_NAME = "unittest1"
@@ -92,7 +92,7 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 #: - "dumb" - worst performance but directly available with Python 3.
 MS_ENV_SHELVE_BACKEND = None
 
-#: macroexecutor maximum number of macros stored in the history
+#: macroexecutor maximum number of macros stored in the history. 
 #: Available options:
 #:
 #: - None (or no setting) - unlimited history (may slow down the GUI operation
