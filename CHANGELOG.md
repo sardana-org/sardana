@@ -45,6 +45,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use of env and hints in `macro` function decorator (#1239)
 * PMTV widget not updating the following attributes: limit switches, state
   and status (#1244)
+* Avoid Taurus GUI slowness on startup and changing of perspectives due to too
+  large macroexecutor history by limitting it to 100 -
+  configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
   (#1260)
