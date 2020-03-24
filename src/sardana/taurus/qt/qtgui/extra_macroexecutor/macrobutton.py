@@ -45,6 +45,8 @@ from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
 from taurus.qt.qtgui.util.ui import UILoadable
 
+from sardana.util.parser import ParamParser
+
 
 class DoorStateListener(Qt.QObject):
     '''A listener of Change and periodic events from a Door State attribute.
@@ -289,13 +291,12 @@ class MacroButton(TaurusWidget):
         '''execute the macro with the current arguments'''
         if self.door is None:
             return
-
-        # TODO: make macrobutton compatible with macros with advanced usage of
-        # repeat parameters e.g. multiple repeat parameters, nested repeat
-        # parameters, etc.
-        macro_args = shlex.split(' '.join(self.macro_args))
+        param_defs = self.door.macro_server.getMacroInfoObj(
+            self.macro_name).parameters
+        parser = ParamParser(param_defs)
+        parameters = parser.parse(" ".join(self.macro_args))
         try:
-            self.door.runMacro(self.macro_name, macro_args)
+            self.door.runMacro(self.macro_name, parameters)
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
