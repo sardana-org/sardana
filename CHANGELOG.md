@@ -57,6 +57,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
+* MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
