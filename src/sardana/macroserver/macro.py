@@ -55,19 +55,16 @@ from taurus.console.list import List
 
 from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
+from sardana.util.thread import _asyncexc
 
 from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat, \
     Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
-    MacroWrongParameterType, UnknownEnv, UnknownMacro, LibraryError
+    ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
+    LibraryError
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
-
-asyncexc = ctypes.pythonapi.PyThreadState_SetAsyncExc
-# first define the async exception function args. This is
-# absolutely necessary for 64 bits machines.
-asyncexc.argtypes = (ctypes.c_long, ctypes.py_object)
 
 
 class OverloadPrint(object):
@@ -2382,6 +2379,8 @@ class Macro(Logger):
         protecting it against exceptions"""
         try:
             self.on_abort()
+        except ReleaseException:
+            pass
         except Exception:
             Logger.error(self, "Error in on_abort(): %s",
                          traceback.format_exc())
@@ -2409,7 +2408,7 @@ class Macro(Logger):
             th = self._macro_thread
             th_id = ctypes.c_long(th.ident)
             Logger.debug(self, "Sending AbortException to %s", th.name)
-            ret = asyncexc(th_id, ctypes.py_object(AbortException))
+            ret = _asyncexc(th_id, ctypes.py_object(AbortException))
             i += 1
             if ret == 0:
                 # try again
