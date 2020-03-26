@@ -1822,8 +1822,8 @@ class MacroExecutor(Logger):
         """Free the macro reserved objects"""
         if macro_obj is None:
             return
-        # remove stopped objects to not keep reference to them
-        self._stopped_macro_obj.pop(macro_obj)
+        # remove eventually stopped objects to not keep reference to them
+        self._stopped_macro_objs.pop(macro_obj, None)
         objs = self._reserved_macro_objs.get(macro_obj)
         if objs is None:
             return
