@@ -366,6 +366,19 @@ class Door(SardanaDevice):
     def is_Abort_allowed(self):
         return True
 
+    def ReleaseMacro(self):
+        macro = self.getRunningMacro()
+        if macro is None:
+            return
+        self.debug("releasing %s" % macro._getDescription())
+        self.macro_executor.release()
+
+    def is_ReleaseMacro_allowed(self):
+        is_release_allowed = (self.get_state() == Macro.Running
+                              or self.get_state() == Macro.Pause)
+        return is_release_allowed
+
+
     def PauseMacro(self):
         macro = self.getRunningMacro()
         if macro is None:
@@ -464,6 +477,9 @@ class DoorClass(SardanaDeviceClass):
             [[DevVoid, ""],
              [DevVoid, ""]],
         'AbortMacro':
+            [[DevVoid, ""],
+             [DevVoid, ""]],
+        'ReleaseMacro':
             [[DevVoid, ""],
              [DevVoid, ""]],
         'StopMacro':

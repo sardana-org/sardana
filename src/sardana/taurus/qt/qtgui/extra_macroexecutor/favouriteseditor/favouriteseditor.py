@@ -29,7 +29,6 @@ favouriteseditor.py:
 import copy
 
 from taurus.external.qt import Qt, compat
-from taurus.qt.qtgui.resource import getIcon
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from .model import MacrosListModel
@@ -110,27 +109,27 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
         self.setSelectionMode(Qt.QListView.ExtendedSelection)
 
-        self.removeAction = Qt.QAction(getIcon(":/actions/list-remove.svg"),
+        self.removeAction = Qt.QAction(Qt.QIcon("actions:list-remove.svg"),
                                        "Remove from favourites", self)
         self.removeAction.triggered.connect(self.removeMacros)
         self.removeAction.setToolTip(
             "Clicking this button will remove selected macros "
             "from favourites.")
 
-        self.removeAllAction = Qt.QAction(getIcon(":/places/user-trash.svg"),
+        self.removeAllAction = Qt.QAction(Qt.QIcon("places:user-trash.svg"),
                                           "Remove all from favourites", self)
         self.removeAllAction.triggered.connect(self.removeAllMacros)
         self.removeAllAction.setToolTip(
             "Clicking this button will remove all macros from favourites.")
 
-        self.moveUpAction = Qt.QAction(getIcon(":/actions/go-up.svg"),
+        self.moveUpAction = Qt.QAction(Qt.QIcon("actions:go-up.svg"),
                                        "Move up", self)
         self.moveUpAction.triggered.connect(self.upMacro)
         self.moveUpAction.setToolTip(
             "Clicking this button will move the macro up "
             "in the favourites hierarchy.")
 
-        self.moveDownAction = Qt.QAction(getIcon(":/actions/go-down.svg"),
+        self.moveDownAction = Qt.QAction(Qt.QIcon("actions:go-down.svg"),
                                          "Move down", self)
         self.moveDownAction.triggered.connect(self.downMacro)
         self.moveDownAction.setToolTip(
@@ -221,9 +220,11 @@ def test():
     import sys
     import taurus
     import time
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
 
     favouritesEditor = FavouritesMacrosEditor()
 

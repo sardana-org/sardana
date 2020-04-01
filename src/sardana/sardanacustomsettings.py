@@ -30,7 +30,7 @@ aspects of Sardana.
 """
 
 #: UnitTest door name: the door to be used by unit tests.
-#: UNITTEST_DOOR_NAME Must be defined for running sardana unittests.
+#: UNITTEST_DOOR_NAME must be defined for running sardana unittests.
 UNITTEST_DOOR_NAME = "door/demo1/1"
 #: UnitTests Pool DS name: Pool DS to use in unit tests.
 UNITTEST_POOL_DS_NAME = "unittest1"
@@ -51,9 +51,14 @@ SPOCK_INPUT_HANDLER = "CLI"
 
 #: Use this map in order to avoid ambiguity with scan recorders (file) if
 #: extension is intended to be the recorder selector.
-#: dict<str, str>
-#: key   - scan file extension e.g. ".h5"
-#: value - recorder name
+#: Set it to a dict<str, str> where:
+#:
+#: - key   - scan file extension e.g. ".h5"
+#: - value - recorder name
+#:
+#: The SCAN_RECORDER_MAP will make an union with the dynamically (created map
+#: at the MacroServer startup) taking precedence in case the extensions repeats
+#: in both of them.
 SCAN_RECORDER_MAP = None
 
 #: Filter for macro logging: name of the class to be used as filter
@@ -86,3 +91,12 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 #:   this documentation it is not available for conda.
 #: - "dumb" - worst performance but directly available with Python 3.
 MS_ENV_SHELVE_BACKEND = None
+
+#: macroexecutor maximum number of macros stored in the history. 
+#: Available options:
+#:
+#: - None (or no setting) - unlimited history (may slow down the GUI operation
+#:   if grows too big)
+#: - 0 - history will not be filled
+#: - <int> - max number of macros stored in the history
+MACROEXECUTOR_MAX_HISTORY = 100

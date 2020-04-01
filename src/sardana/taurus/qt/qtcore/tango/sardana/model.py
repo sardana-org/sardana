@@ -42,15 +42,16 @@ try:
 except:
     pygments = None
 
-from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
-from taurus.core.util.enumeration import Enumeration
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel, \
     TaurusBaseProxyModel
 from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_LIST_MIME_TYPE, \
     TAURUS_MODEL_MIME_TYPE
 
-_MOD, _CLS, _FNC, _TNG = ":/python-module.png", ":/class.png", ":/function.png", ":/tango.png"
+_MOD = ":python-module.png"
+_CLS = ":class.png"
+_FNC = ":function.png"
+_TNG = ":tango.png"
 
 TYPE_MAP = {
     "ControllerLibrary": ("Controller libraries", _MOD, "Controller library",),
@@ -78,9 +79,8 @@ def getElementTypeLabel(t):
 
 
 def getElementTypeIcon(t):
-    import taurus.qt.qtgui.resource
     try:
-        return taurus.qt.qtgui.resource.getIcon(TYPE_MAP.get(t, (None, _TNG))[1])
+        return Qt.QIcon(TYPE_MAP.get(t, (None, _TNG))[1])
     except:
         return None
 

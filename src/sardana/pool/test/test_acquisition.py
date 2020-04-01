@@ -27,7 +27,7 @@ import threading
 
 import numpy
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 from taurus.test import insertTest
 
 from sardana.sardanautils import is_number, is_pure_str

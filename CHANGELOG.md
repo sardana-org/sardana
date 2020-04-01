@@ -7,14 +7,72 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* Support to Python >= 3.5 (#1089, #1173, #1201, #1313)
+* Showscan online based on pyqtgraph (#1285)
+  * multiple plots in the same MultiPlot widget (as opposed to different panels before)
+  * option to group curves by x-axis or individual plot per curve
+  * new showscan console script
+  * support fast scans: update curves at a fix rate (5Hz)
+  * better curve colors and symbols
+* Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Instruments creation and configuration in sar_demo (#1198)
+* Documentation to Taurus Extensions of Sardana Devices: MacroServer part
+  and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
+* Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
+* Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
+* Possibility to view debug messages in `DoorOutput` widget - enable/disable
+  using context menu option (#1242)
+* Store PMTV (motor widget) configurations: *expert view* and *write mode*
+  (relative or absolute) permanently as TaurusGUI settings.
+* Improve documentation (#1241)
+* Better macro exception message and hint to use `www` (#1191)
+* Add basic information to "how to write custom recorder" to
+  the documentation (#1275)
 
 ### Fixed
 
+* Use `tango.EnsureOmnitThread` to protect Sardana threads
+  (Tango is not thread safe) (#1298)
+* Avoid using Tango `AttributeProxy` in limits protection to not be affected
+  by bug tango-controls/pytango#315 (#1302) 
 * Default macro parameter values in macroexecutor (#1153)
+* Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
+* Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
+* Macro functions which define results now really report the result (#1238)
+* Use of env and hints in `macro` function decorator (#1239)
+* PMTV widget not updating the following attributes: limit switches, state
+  and status (#1244)
+* Avoid Taurus GUI slowness on startup and changing of perspectives due to too
+  large macroexecutor history by limitting it to 100 -
+  configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
+* OutputBlock view option when macros produce outputs at high rate (#1245)
+* `showscan online` shows only the online trend and not erroneously online and offline
+  (#1260)
+* Fix fast operations (motion & acq) by propertly clearing operation context and
+  resetting of acq ctrls dicts (#1300)
+* Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
+* Reintroduce backwards compatibility for measurement groups' configurations (URIs)
+  created with Taurus 3 (#1266, #1271)
+* Measurement groups renaming with `renameelem` macro(#951)
+* MacroButton with repeat parameters (#1172, #1314)
+* Macro plotting in new versions of ipython and matplotlib require extra call to
+  `pyplot.draw()` to make sure that the plot is refreshed (#1280)
+* Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
+* Remove TangoAttribute controllers from Sardana (#181, #1279)
+* Remove deprecation warning revealed when running test suite (#1267)
+* Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
+* Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
+* Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
+* Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
+  (#1188, #1309)
+* Fix dummy motor velocity so it respects steps_per_unit (#1310)
+
+### Deprecated
+
+* `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
 
 ### Changed
 
@@ -22,7 +80,24 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Removed
 
+* Support to Python < 3.5 (#1089, #1173, #1201, #1263)
+* "Show/hide plots" button in `expconf` (#960, #1255, #1257)
+* `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
+* `showscan online_raw` magic command in spock (#1260)
+* `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+
+## [2.8.4] 2019-11-13
+
+### Fixed
+
+* fix compatibility with python 2.6 when overwritting macros 
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
 
 ## [2.8.3] 2019-09-16
 
@@ -742,7 +817,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.3...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.4...HEAD
+[2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
 [2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0

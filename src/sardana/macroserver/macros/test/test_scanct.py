@@ -26,7 +26,7 @@
 """Tests for continuous scans (ct-like)"""
 import time
 import PyTango
-from taurus.external import unittest
+import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase, testRun,
                                              testStop)
 from sardana.pool import AcqSynchType

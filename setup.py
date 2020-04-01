@@ -61,7 +61,8 @@ install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
     'taurus>4.5.4',
-    'lxml>=2.3'
+    'lxml>=2.3',
+    'click',
 ]
 
 
@@ -78,7 +79,8 @@ gui_scripts = [
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
     "sequencer = sardana.taurus.qt.qtgui.extra_macroexecutor.sequenceeditor:main",
-    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main"
+    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main",
+    "showscan = sardana.taurus.qt.qtgui.extra_sardana.showscanonline:main"
 ]
 
 entry_points = {'console_scripts': console_scripts,

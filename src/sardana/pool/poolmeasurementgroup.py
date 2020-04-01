@@ -35,12 +35,8 @@ __docformat__ = 'restructuredtext'
 import threading
 import weakref
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
@@ -720,8 +716,14 @@ class MeasurementConfiguration(object):
                 acq_synch = AcqSynch.from_synch_type(is_software,
                                                      synchronization)
                 ctrl_acq_synch[ctrl] = acq_synch
-                ctrl_conf["timer"] = ctrl_data.get("timer")
-                ctrl_conf["monitor"] = ctrl_data.get("monitor")
+                timer = ctrl_data.get("timer")
+                if timer is not None and to_fqdn:
+                    timer = _to_fqdn(timer, self._parent)
+                ctrl_conf["timer"] = timer
+                monitor = ctrl_data.get("monitor")
+                if monitor is not None and to_fqdn:
+                    monitor = _to_fqdn(monitor, self._parent)
+                ctrl_conf["monitor"] = monitor
                 ctrl_item = TimerableControllerConfiguration(ctrl, ctrl_conf)
             else:
                 ctrl_item = ControllerConfiguration(ctrl, ctrl_conf)
@@ -733,7 +735,7 @@ class MeasurementConfiguration(object):
                 if external:
                     validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getParams(full_name)
+                    params = validator.getUriGroups(full_name)
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
@@ -766,11 +768,17 @@ class MeasurementConfiguration(object):
                 msg_error = ''
                 if ctrl_item.timer is None:
                     timer_name = ctrl_data['timer']
+                    if to_fqdn:
+                        timer_name = _to_fqdn(timer_name,
+                                              logger=self._parent)
                     ch_timer = pool.get_element_by_full_name(timer_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'timer. '.format(ch_timer.name)
                 if ctrl_item.monitor is None:
                     monitor_name = ctrl_data['monitor']
+                    if to_fqdn:
+                        monitor_name = _to_fqdn(monitor_name,
+                                                logger=self._parent)
                     ch_monitor = pool.get_element_by_full_name(monitor_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'monitor.'.format(ch_monitor.name)
@@ -840,8 +848,11 @@ class MeasurementConfiguration(object):
         elif master_timer_sw_start is not None:
             user_config['timer'] = master_timer_sw_start.full_name
         else:  # Measurement Group with all channel synchronized by hardware
-            if 'timer' in cfg:
-                user_config['timer'] = cfg['timer']
+            mnt_grp_timer = cfg.get('timer')
+            if mnt_grp_timer:
+                if to_fqdn:
+                    mnt_grp_timer = _to_fqdn(mnt_grp_timer, self._parent)
+                user_config['timer'] = mnt_grp_timer
             else:
                 # for backwards compatibility use a random monitor
                 user_config['timer'] = user_config_ctrl['timer']
@@ -851,8 +862,11 @@ class MeasurementConfiguration(object):
         elif master_monitor_sw_start is not None:
             user_config['monitor'] = master_monitor_sw_start.full_name
         else:  # Measurement Group with all channel synchronized by hardware
-            if 'monitor' in cfg:
-                user_config['monitor'] = cfg['monitor']
+            mnt_grp_monitor = cfg.get('monitor')
+            if mnt_grp_monitor:
+                if to_fqdn:
+                    mnt_grp_monitor = _to_fqdn(mnt_grp_monitor, self._parent)
+                user_config['monitor'] = mnt_grp_monitor
             else:
                 # for backwards compatibility use a random monitor
                 user_config['monitor'] = user_config_ctrl['monitor']
@@ -1006,6 +1020,22 @@ class PoolMeasurementGroup(PoolGroupElement):
             if element.get_type() is ElementType.TriggerGate:
                 return
         return PoolGroupElement.add_user_element(self, element, index)
+
+    def rename_element(self, old_name, new_name, propagate=1):
+        """Rename element in the controller.
+
+        :param old_name: old name of the element
+        :type old_name: :obj:`str`
+        :param new_name: new name of the element
+        :type new_name: :obj:`str`
+        :param propagate: 0 for not propagating, 1 to propagate,
+               2 propagate with priority
+        :type propagate: :obj:`int`
+        """
+        self._config['label'] = new_name
+        self.fire_event(EventType("configuration", priority=propagate),
+                        self._config)
+
     # -------------------------------------------------------------------------
     # configuration
     # -------------------------------------------------------------------------

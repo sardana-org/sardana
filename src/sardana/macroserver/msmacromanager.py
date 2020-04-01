@@ -46,11 +46,7 @@ import time
 
 from PyTango import DevFailed
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
@@ -69,8 +65,9 @@ from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
     Hookable
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
-    MacroServerException, UnknownEnv
+    ReleaseException, MacroServerException, UnknownEnv
 from sardana.util.parser import ParamParser
+from sardana.util.thread import raise_in_thread
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
@@ -719,7 +716,6 @@ class MacroManager(MacroServerManager):
     def _createMacroNode(self, macro_name, macro_params_raw):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
-        # merge params to a single, space separated, string (spock like)
         macro_params_str = " ".join(macro_params_raw)
         param_parser = ParamParser(params_def)
         # parse string with macro params to the correct list representation
@@ -1069,6 +1065,11 @@ class MacroExecutor(Logger):
         # key Macro - macro object
         # value - sequence of reserverd objects by the macro
         self._reserved_macro_objs = {}
+        # dict<Macro, seq<PoolElement>>
+        # key Macro - macro object
+        # value - sequence of reserverd objects by the macro
+        #   which were already successfully stopped
+        self._stopped_macro_objs = {}
 
         # reset the stacks
 #        self._macro_stack = None
@@ -1076,9 +1077,12 @@ class MacroExecutor(Logger):
         self._macro_stack = []
         self._xml_stack = []
         self._macro_pointer = None
+        self._abort_thread = None
         self._aborted = False
+        self._stop_thread = None
         self._stopped = False
         self._paused = False
+        self._released = False
         self._last_macro_status = None
         # threading events for synchronization of stopping/abortting of
         # reserved objects
@@ -1136,7 +1140,26 @@ class MacroExecutor(Logger):
             xml_root = xml_seq = etree.Element('sequence')
             macro_name = par_str_list[0]
             macro_params = par_str_list[1:]
-            macro_node = self._createMacroNode(macro_name, macro_params)
+
+            def quote_string(string):
+                # if string contains double quotes, use single quotes,
+                # otherwise use double quotes
+                if re.search('"', string):
+                    return "'{}'".format(string)
+                else:
+                    return '"{}"'.format(string)
+
+            # param parser relies on whitespace separation of parameter values
+            # quote string parameter values containing whitespaces
+            macro_params_quoted = []
+            for param in macro_params:
+                if (not re.match(r".*\s+.*", param)  # no white spaces
+                        or re.match(r"^'.*\s+.*'$", param)  # already quoted
+                        or re.match(r'^".*\s+.*"$', param)):  # already quoted
+                    macro_params_quoted.append(param)
+                else:
+                    macro_params_quoted.append(quote_string(param))
+            macro_node = self._createMacroNode(macro_name, macro_params_quoted)
             xml_macro = macro_node.toXml()
             xml_seq.append(xml_macro)
         else:
@@ -1373,8 +1396,15 @@ class MacroExecutor(Logger):
 
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
-        for _, objs in list(self._reserved_macro_objs.items()):
+        for macro, objs in list(self._reserved_macro_objs.items()):
+            if self._aborted:
+                break  # someone aborted, no sense to stop anymore
+            self._stopped_macro_objs[macro] = stopped_macro_objs = []
             for obj in objs:
+                if self._aborted:
+                    break  # someone aborted, no sense to stop anymore
+                self.output(
+                    "Stopping {} reserved by {}".format(obj, macro._name))
                 try:
                     obj.stop()
                 except AttributeError:
@@ -1382,11 +1412,19 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to stop %s" % obj)
                     self.debug("Details:", exc_info=1)
+                else:
+                    self.output("{} stopped".format(obj))
+                    stopped_macro_objs.append(obj)
 
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
-        for _, objs in list(self._reserved_macro_objs.items()):
+        for macro, objs in list(self._reserved_macro_objs.items()):
+            stopped_macro_objs = self._stopped_macro_objs[macro]
             for obj in objs:
+                if obj in stopped_macro_objs:
+                    continue
+                self.output(
+                    "Aborting {} reserved by {}".format(obj, macro._name))
                 try:
                     obj.abort()
                 except AttributeError:
@@ -1394,6 +1432,8 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to abort %s" % obj)
                     self.debug("Details:", exc_info=1)
+                else:
+                    self.output("{} aborted".format(obj))
 
     def _setStopDone(self, _):
         self._stop_done.set()
@@ -1401,29 +1441,66 @@ class MacroExecutor(Logger):
     def _waitStopDone(self, timeout=None):
         self._stop_done.wait(timeout)
 
+    def _isStopDone(self):
+        return self._stop_done.is_set()
+
     def _setAbortDone(self, _):
         self._abort_done.set()
 
     def _waitAbortDone(self, timeout=None):
         self._abort_done.wait(timeout)
 
+    def _isAbortDone(self):
+        return self._abort_done.is_set()
+
     def abort(self):
+        """**Internal method**. Aborts the macro abruptly."""
+        # carefull: Inside this method never call a method that has the
+        # mAPI decorator
+        self._aborted = True
+        if not self._isStopDone():
+            Logger.debug(self, "Break stopping...")
+            raise_in_thread(ReleaseException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)
 
+    def release(self):
+        """**Internal method**. Release the macro from hang situations
+
+        Hanged situations:
+        * hanged process of aborting reserved objects
+        * hanged macro on_abort method.
+        """
+        # carefull: Inside this method never call a method that has the
+        # mAPI decorator
+        self._released = True
+        if self._isAbortDone():
+            m = self.getRunningMacro()
+            Logger.debug(self, "Break {}.on_abort...".format(m._name))
+            raise_in_thread(ReleaseException, m._macro_thread)
+        else:
+            Logger.debug(self, "Break aborting...")
+            raise_in_thread(ReleaseException, self._abort_thread)
+
+
     def stop(self):
+        self._stopped = True
         self.macro_server.add_job(self._stop, self._setStopDone)
 
     def _abort(self):
+        self._abort_thread = threading.current_thread()
+        if self._stopped:
+            # stopping did not finish on its own - we are aborting it
+            # but need to wait anyway so its thread finishes
+            self._waitStopDone()
         m = self.getRunningMacro()
         if m is not None:
-            self._aborted = True
             m.abort()
         self.__abortObjects()
 
     def _stop(self):
+        self._stop_thread = threading.current_thread()
         m = self.getRunningMacro()
         if m is not None:
-            self._stopped = True
             m.stop()
             if m.isPaused():
                 m.resume(cb=self._macroResumed)
@@ -1593,19 +1670,21 @@ class MacroExecutor(Logger):
                         'args': err.args,
                         'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)
-        finally:
-            self.returnObjs(self._macro_pointer)
 
         # make sure the macro's on_abort is called and that a proper macro
         # status is sent
-        if self._stopped:
-            self._waitStopDone()
-            macro_obj._stopOnError()
-            self.sendMacroStatusStop()
-        elif self._aborted:
+        if self._aborted:
             self._waitAbortDone()
+            self.output("Executing {}.on_abort method...".format(name))
             macro_obj._abortOnError()
             self.sendMacroStatusAbort()
+        elif self._stopped:
+            self._waitStopDone()
+            self.output("Executing {}.on_stop method...".format(name))
+            macro_obj._stopOnError()
+            self.sendMacroStatusStop()
+
+        self.returnObjs(self._macro_pointer)
 
         # From this point on don't call any method of macro_obj which is part
         # of the mAPI (methods decorated with @mAPI) to avoid throwing an
@@ -1618,8 +1697,11 @@ class MacroExecutor(Logger):
             if isinstance(macro_exp, MacroServerException):
                 if macro_obj.parent_macro is None:
                     door.debug(macro_exp.traceback)
-                    door.error("An error occurred while running %s:\n%s" %
-                               (macro_obj.description, macro_exp.msg))
+                    msg = ("An error occurred while running {}:\n"
+                           "{!r}").format(macro_obj.getName(), macro_exp)
+                    door.error(msg)
+                    msg = "Hint: in Spock execute `www`to get more details"
+                    door.info(msg)
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
@@ -1740,6 +1822,8 @@ class MacroExecutor(Logger):
         """Free the macro reserved objects"""
         if macro_obj is None:
             return
+        # remove eventually stopped objects to not keep reference to them
+        self._stopped_macro_objs.pop(macro_obj, None)
         objs = self._reserved_macro_objs.get(macro_obj)
         if objs is None:
             return

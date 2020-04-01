@@ -27,7 +27,7 @@
 
 from lxml import etree
 
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.taurus.core.tango.sardana.macro import MacroNode
 from sardana.taurus.core.tango.sardana.macro import createMacroNode

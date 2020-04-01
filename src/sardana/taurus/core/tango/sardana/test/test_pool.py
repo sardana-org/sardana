@@ -28,7 +28,7 @@ import uuid
 import numpy
 
 from taurus import Device
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 from taurus.test.base import insertTest
 from sardana.sardanautils import is_number, is_non_str_seq, is_pure_str
 from sardana.taurus.core.tango.sardana.pool import registerExtensions

@@ -31,7 +31,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
 __docformat__ = 'restructuredtext'
 
 from operator import __getitem__
-from taurus.external.enum import IntEnum
+from enum import IntEnum
 from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 

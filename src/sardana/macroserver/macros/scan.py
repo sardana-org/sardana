@@ -155,7 +155,7 @@ class aNscan(Hookable):
 
         if mode == StepMode:
             self.nr_interv = scan_length
-            self.nr_points = self.nr_interv + 1
+            self.nb_points = self.nr_interv + 1
             self.interv_sizes = (self.finals - self.starts) / self.nr_interv
             self.name = opts.get('name', 'a%iscan' % self.N)
             self._gScan = SScan(self, self._stepGenerator,
@@ -181,7 +181,7 @@ class aNscan(Hookable):
                                      constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_interv = scan_length
-                self.nr_points = self.nr_interv + 1
+                self.nb_points = self.nr_interv + 1
                 mg_name = self.getEnv('ActiveMntGrp')
                 mg = self.getMeasurementGroup(mg_name)
                 mg_latency_time = mg.getLatencyTime()
@@ -198,7 +198,7 @@ class aNscan(Hookable):
                                      extrainfodesc)
         elif mode == HybridMode:
             self.nr_interv = scan_length
-            self.nr_points = self.nr_interv + 1
+            self.nb_points = self.nr_interv + 1
             self.interv_sizes = (self.finals - self.starts) / self.nr_interv
             self.name = opts.get('name', 'a%iscanh' % self.N)
             self._gScan = HScan(self, self._stepGenerator,
@@ -224,7 +224,7 @@ class aNscan(Hookable):
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for point_no in range(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step
@@ -255,8 +255,8 @@ class aNscan(Hookable):
         step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
             '_NOHINTS_')
         step["check_func"] = []
-        step["active_time"] = self.nr_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -312,7 +312,7 @@ class aNscan(Hookable):
                 max_step_time = max(max_step_time, path.duration)
             motion_time = max_step0_time + self.nr_interv * max_step_time
             # calculate acquisition time
-            acq_time = self.nr_points * self.integ_time
+            acq_time = self.nb_points * self.integ_time
             total_time = motion_time + acq_time
 
         elif mode == ContinuousMode:
@@ -329,12 +329,19 @@ class aNscan(Hookable):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_points
+        nb_of_points = self.nb_points
         scan = self._gScan
         nb_of_records = len(scan.data.records)
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
 
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 class dNscan(aNscan):
     """
@@ -881,7 +888,7 @@ motor2 sqrt(y*x+3)
         self.paths = [[SafeEvaluator(globals).eval(
             func) for globals in globals_lst] for func in self.funcstrings]
 
-        self.integ_time = numpy.array(eval(args[1]), dtype='d')
+        self._integ_time = numpy.array(eval(args[1]), dtype='d')
 
         self.opts = opts
         if len(self.motors) == len(self.paths) > 0:
@@ -906,14 +913,14 @@ motor2 sqrt(y*x+3)
                                      (self.funcstrings[0], fs, npoints,
                                       len(p)))
             raise  # the problem wasn't a shape mismatch
-        self.nr_points = npoints
+        self._nb_points = npoints
 
-        if self.integ_time.size == 1:
-            self.integ_time = self.integ_time * \
-                numpy.ones(self.nr_points)  # extend integ_time
-        elif self.integ_time.size != self.nr_points:
+        if self._integ_time.size == 1:
+            self._integ_time = self._integ_time * \
+                numpy.ones(self._nb_points)  # extend integ_time
+        elif self._integ_time.size != self._nb_points:
             raise ValueError('time_integ must either be a scalar or '
-                             'length=npoints (%i)' % self.nr_points)
+                             'length=npoints (%i)' % self._nb_points)
 
         self.name = opts.get('name', 'fscan')
 
@@ -946,15 +953,24 @@ motor2 sqrt(y*x+3)
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for i in range(self.nr_points):
+        for i in range(self._nb_points):
             step["positions"] = self.paths[:, i]
-            step["integ_time"] = self.integ_time[i]
+            step["integ_time"] = self._integ_time[i]
             step["point_id"] = i
             yield step
 
     def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
+
 
 
 class ascanh(aNscan, Macro):
@@ -1705,7 +1721,7 @@ class meshct(Macro, Hookable):
         # Number of intervals of the first motor which is doing the
         # continuous scan.
         self.nr_interv = m1_nr_interv
-        self.nr_points = self.nr_interv + 1
+        self.nb_points = self.nr_interv + 1
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
 
@@ -1768,8 +1784,8 @@ class meshct(Macro, Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nr_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
 
         points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
@@ -1802,12 +1818,20 @@ class meshct(Macro, Hookable):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_points
+        nb_of_points = self.nb_points
         scan = self._gScan
         nb_of_total_records = len(scan.data.records)
         nb_of_records = nb_of_total_records - self.point_id
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class timescan(Macro, Hookable):
@@ -1827,7 +1851,7 @@ class timescan(Macro, Hookable):
 
     def prepare(self, nr_interv, integ_time, latency_time):
         self.nr_interv = nr_interv
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.integ_time = integ_time
         self.latency_time = latency_time
         self._gScan = TScan(self)
@@ -1845,7 +1869,15 @@ class timescan(Macro, Hookable):
     def getTimeEstimation(self):
         mg_latency_time = self._gScan.measurement_group.getLatencyTime()
         latency_time = max(self.latency_time, mg_latency_time)
-        return self.nr_points * (self.integ_time + latency_time)
+        return self.nb_points * (self.integ_time + latency_time)
 
     def getIntervalEstimation(self):
         return self.nr_interv
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
