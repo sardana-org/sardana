@@ -469,7 +469,7 @@ class SpockBaseDoor(BaseDoor):
         if data is None:
             return
         data = data[1]
-        if data['type'] == 'function':
+        if 'type' in data.keys() and data['type'] == 'function':
             func_name = data['func_name']
             if func_name.startswith("pyplot."):
                 func_name = self.MathFrontend + "." + func_name
