@@ -347,7 +347,7 @@ class regscan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
@@ -408,7 +408,7 @@ class reg2scan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
@@ -473,7 +473,7 @@ class reg3scan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
