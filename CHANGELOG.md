@@ -71,6 +71,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1320, #1319)
 * Use `utf8_json` as default codec (in Tango) if `Macro.sendRecordData()` does not specify one
   (#1320, #1319
+* Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
+  position(s) (#1326)
 
 ### Deprecated
 
