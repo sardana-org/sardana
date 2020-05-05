@@ -54,8 +54,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
-* Reintroduce backwards compatibility for measurement groups' configurations (URIs)
-  created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
 * MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
@@ -86,6 +84,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+
+## [2.8.5] 2020-04-27
+
+### Fixed
+
+* Reintroduce backwards compatibility for measurement groups' configurations
+  (URIs) created with Taurus 3 (#1266, #1271)
 
 ## [2.8.4] 2019-11-13
 
@@ -817,7 +822,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.4...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
 [2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
