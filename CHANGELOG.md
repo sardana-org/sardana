@@ -67,6 +67,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
   (#1188, #1309)
 * Fix dummy motor velocity so it respects steps_per_unit (#1310)
+* Make handling of `Macro.sendRecordData()` with arbitrary data more robust in Spock
+  (#1320, #1319)
+* Use `utf8_json` as default codec (in Tango) if `Macro.sendRecordData()` does not specify one
+  (#1320, #1319
 
 ### Deprecated
 
