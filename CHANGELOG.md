@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
+## [2.8.5] 2020-04-27
+
+### Fixed
+
+* Reintroduce backwards compatibility for measurement groups' configurations
+  (URIs) created with Taurus 3 (#1266, #1271)
+
 ## [2.8.4] 2019-11-13
 
 ### Fixed
@@ -733,7 +740,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.3...HEAD
+[2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
+[2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
 [2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
