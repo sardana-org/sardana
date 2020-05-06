@@ -109,13 +109,14 @@ class Controller(object):
     :keyword kwargs:
     """
 
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.ctrl_properties` instead
     class_prop = {}
 
     #: A sequence of :obj:`str` representing the controller features
     ctrl_features = []
-
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.axis_attributes` instead
     ctrl_extra_attributes = {}
@@ -1522,7 +1523,7 @@ class IORegisterController(Controller, Readable):
     """Base class for a IORegister controller. Inherit from this class to
     implement your own IORegister controller for the device pool.
     """
-
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.axis_attributes` instead
     predefined_values = ()

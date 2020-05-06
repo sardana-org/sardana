@@ -299,3 +299,13 @@ intersphinx_mapping = {
     'https://matplotlib.org/': None,
     'https://pythonhosted.org/guiqwt/': None,
 }
+
+
+def _skip_read_attr_hardware(app, what, name, obj, skip, options):
+    if what == "class" and name == "read_attr_hardware":
+        return True
+
+
+def setup(app):
+    # due to tango-controls/pytango#352 we need to exclude read_attr_hardware
+    app.connect('autodoc-skip-member', _skip_read_attr_hardware)
