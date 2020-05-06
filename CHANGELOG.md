@@ -73,6 +73,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1320, #1319
 * Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
   position(s) (#1326)
+* Build docs with Sphinx 3 (#1330) 
 
 ### Deprecated
 
