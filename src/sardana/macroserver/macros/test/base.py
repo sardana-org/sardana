@@ -44,7 +44,7 @@ _NOT_PASSED = __NotPassedType()
 
 def macroTest(klass=None, helper_name=None, test_method_name=None,
               test_method_doc=None, **helper_kwargs):
-    """This decorator is an specialization of :function::`taurus.test.insertTest`
+    """This decorator is an specialization of `taurus.test.insertTest`
     for macro testing. It inserts test methods from a helper method that may
     accept arguments.
 
@@ -110,7 +110,7 @@ def macroTest(klass=None, helper_name=None, test_method_name=None,
         class FooTest(RunMacroTestCase, unittest.TestCase):
             macro_name = 'twice'
 
-    .. seealso:: :function::`taurus.test.insertTest`
+    .. seealso:: `taurus.test.insertTest`
 
     """
     # recipe to allow decorating with and without arguments
