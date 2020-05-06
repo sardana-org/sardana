@@ -289,7 +289,7 @@ graphviz_output_format = 'png'  # 'svg'
 # -- Options for reference to other documentation ------------------------
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5', None),
+    'python': ('https://docs.python.org/3', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'ipython': ('http://ipython.org/ipython-doc/stable/', None),
