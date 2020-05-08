@@ -36,7 +36,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import re
-from taurus.external import unittest
+import unittest
 import sardana
 
 
@@ -90,7 +90,7 @@ def run(exclude_pattern='(?!)'):
 
 def main():
     import sys
-    from taurus.external import argparse
+    import argparse
     from sardana import Release
 
     parser = argparse.ArgumentParser(description='Main test suite for Sardana')

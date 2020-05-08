@@ -30,6 +30,7 @@ It contains specific part of sardana device pool"""
 import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",
+           "ReleaseException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
@@ -105,6 +106,10 @@ class StopException(InterruptException):
 
 
 class AbortException(InterruptException):
+    pass
+
+
+class ReleaseException(InterruptException):
     pass
 
 
@@ -226,12 +231,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         if evt_value is None:
             v = None
         else:
-            v = evt_value.value
+            v = evt_value.rvalue
+            if hasattr(v, "magnitude"):
+                v = v.magnitude
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            last_val = self._attr.read(cache=not force).rvalue
+            if hasattr(last_val, "magnitude"):
+                last_val = last_val.magnitude
+            self.last_val = last_val
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -301,7 +311,7 @@ class PoolElement(BaseElement, TangoDevice):
         self.getStateEG()
 
     def _find_pool_obj(self):
-        pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        pool = get_pool_for_device(self.getParentObj(), self.getDeviceProxy())
         return pool
 
     def _find_pool_data(self):
@@ -486,17 +496,23 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        # Due to taurus-org/taurus #573 we need to divide the timeout
-        # in two intervals
-        if timeout is not None:
+        if timeout is None:
+            # 0.1 s of timeout with infinite retries facilitates aborting
+            # by raising exceptions from a different threads
+            timeout = 0.1
+            retries = -1
+        else:
+            # Due to taurus-org/taurus #573 we need to divide the timeout
+            # in two intervals
             timeout = timeout / 2
+            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=1)
+                               timeout=timeout, retries=retries)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
@@ -1439,7 +1455,7 @@ class MGConfiguration(object):
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
-            params = tg_attr_validator.getParams(data_source)
+            params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
@@ -1727,7 +1743,7 @@ class MeasurementGroup(PoolElement):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
+        self._setConfiguration(evt_value.rvalue)
 
     def getTimerName(self):
         return self.getTimer()['name']
@@ -2148,9 +2164,12 @@ class MeasurementGroup(PoolElement):
         cfg = self.getConfiguration()
         cfg.prepare()
         self.setSynchronization(synchronization)
+        self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
-        self.count_raw(start_time)
-        self.unsubscribeValueBuffer(value_buffer_cb)
+        try:
+            self.count_raw(start_time)
+        finally:
+            self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"

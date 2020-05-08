@@ -43,11 +43,7 @@ import PyTango
 import taurus
 import collections
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
@@ -55,7 +51,9 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
+from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
@@ -484,12 +482,16 @@ class GScan(Logger):
         macro = self.macro
         try:
             scan_dir = macro.getEnv('ScanDir')
+            if scan_dir == '' or None:
+                macro.warning('ScanDir value is empty')
+                raise Exception('ScanDir value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv '
-                          'ScanDir <abs directory>") to enable it')
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanDir <abs directory>")')
             return ()
 
         if not isinstance(scan_dir, str):
@@ -498,12 +500,16 @@ class GScan(Logger):
 
         try:
             file_names = macro.getEnv('ScanFile')
+            if file_names == [''] or None:
+                macro.warning('ScanFile value is empty')
+                raise Exception('ScanFile value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv '
-                          'ScanFile <scan file(s)>") to enable it')
+                          'be stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanFile <scan file(s)>")')
             return ()
 
         scan_recorders = []
@@ -1957,8 +1963,21 @@ class CSScan(CScan):
 class CAcquisition(object):
 
     def __init__(self):
-        self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
-                                       Qsize=100000)
+        # protect older versions of Taurus (without the worker_cls argument)
+        # remove it whenever we bump Taurus dependency
+        try:
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000,
+                                           worker_cls=OmniWorker)
+        except TypeError:
+            import taurus
+            taurus.warning("Your Sardana system is affected by bug"
+                           "tango-controls/pytango#307. Please use "
+                           "Taurus with taurus-org/taurus#1081.")
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 
@@ -2035,18 +2054,12 @@ class CAcquisition(object):
         .. todo:: add validation for psuedo counters
         """
         non_compatible_channels = []
+        validator = TangoDeviceNameValidator()
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
             name = channel_info["name"]
-            try:
-                # Use DeviceProxy instead of taurus to avoid crashes in Py3
-                # See: tango-controls/pytango#292
-                # taurus.Device(full_name)
-                PyTango.DeviceProxy(full_name)
-            except Exception:
-                # external channels are attributes so Device constructor fails
+            if not validator.isValid(full_name):
                 non_compatible_channels.append(name)
-                continue
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
 
@@ -2765,6 +2778,7 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
+        measurement_group.setNbStarts(1)
         measurement_group.count_continuous(synchronization,
                                            self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")

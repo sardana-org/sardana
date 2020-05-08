@@ -95,8 +95,8 @@ class QDoor(BaseDoor, Qt.QObject):
     def logReceived(self, log_name, output):
         res = BaseDoor.logReceived(self, log_name, output)
         log_name = log_name.lower()
-        recordDataUpdated = getattr(self, "%sUpdated" % log_name)
-        recordDataUpdated.emit(output)
+        logUpdated = getattr(self, "%sUpdated" % log_name)
+        logUpdated.emit(output)
         return res
 
     def _prepare_connections(self):

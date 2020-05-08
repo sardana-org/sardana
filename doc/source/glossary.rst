@@ -264,6 +264,11 @@ Glossary
         mapping rather than a sequence because the lookups use arbitrary
         :term:`immutable` keys rather than integers.
 
+    singleton pattern
+        Singleton pattern is a software design pattern that restricts the
+        instantiation of a class to one "single" instance. This is useful when
+        exactly one object is needed to coordinate actions across the system.
+
     slice
         An object usually containing a portion of a :term:`sequence`.  A slice is
         created using the subscript notation, ``[]`` with colons between numbers

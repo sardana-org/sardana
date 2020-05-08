@@ -31,6 +31,7 @@ __all__ = ["MotionState", "MotionMap", "PoolMotion", "PoolMotionItem"]
 __docformat__ = 'restructuredtext'
 
 import time
+import functools
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -390,9 +391,11 @@ class PoolMotion(PoolAction):
                     # ... but before protect the motor so that the monitor
                     # doesn't come in between the two instructions below and
                     # send a state event on it's own
-                    with moveable:
-                        moveable.clear_operation()
-                    moveable.set_state_info(real_state_info, propagate=2)
+                    set_state_info = functools.partial(moveable.set_state_info,
+                                                       state_info,
+                                                       propagate=2,
+                                                       safe=True)
+                    self.add_finish_hook(set_state_info, False)
 
                 # Then update the state
                 if not stopped_now:

@@ -286,6 +286,33 @@ def __get_last_write_value(attribute):
     return lrv
 
 
+def _check_attr_range(dev_name, attr_name, attr_value):
+    util = PyTango.Util.instance()
+    dev = util.get_device_by_name(dev_name)
+    multi_attr = dev.get_device_attr()
+    attr = multi_attr.get_w_attr_by_name(attr_name)
+    try:
+        min_value = attr.get_min_value()
+    # not specified min value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value < min_value:
+            msg = "w_value {} of {}/{} is lower than min_value {}".format(
+                  attr_value, dev_name, attr_name, min_value)
+            raise ValueError(msg)
+    try:
+        max_value = attr.get_max_value()
+    # not specified max value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value > max_value:
+            msg = "w_value {} of {}/{} is greater than max_value {}".format(
+                  attr_value, dev_name, attr_name, max_value)
+            raise ValueError(msg)
+
+
 def memorize_write_attribute(write_attr_func):
     """The main purpose is to use this as a decorator for write_<attr_name>
        device methods.
@@ -726,7 +753,7 @@ def prepare_server(args, tango_args):
     else:
         inst_name = tango_args[1].lower()
 
-    if "-nodb" in tango_args:
+    if nodb:
         return log_messages
 
     db = Database()

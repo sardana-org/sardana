@@ -49,6 +49,7 @@ from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolmonitor import PoolMonitor
 from sardana.pool.poolmetacontroller import TYPE_MAP_OBJ
 from sardana.pool.poolcontrollermanager import ControllerManager
+from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 
 class Graph(dict):
@@ -538,7 +539,10 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def rename_element(self, old_name, new_name):
         elem = self.get_element_by_name(old_name)
-        elem.controller.rename_element(old_name, new_name)
+        if type(elem) == PoolMeasurementGroup:
+            elem.rename_element(old_name, new_name)
+        else:
+            elem.controller.rename_element(old_name, new_name)
         PoolContainer.rename_element(self, old_name, new_name)
         elem = self.get_element_by_name(new_name)
         self.fire_event(EventType("ElementChanged"), elem)
@@ -576,6 +580,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.remove_element(elem)
 
         self.fire_event(EventType("ElementDeleted"), elem)
+        if hasattr(elem, "get_controller"):
+            elem.set_deleted(True)
 
     def create_instrument(self, full_name, klass_name, id=None):
         is_root = full_name.count('/') == 1

@@ -1,5 +1,5 @@
 from taurus.test.base import insertTest
-from taurus.external import unittest
+import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.pooldefs import SynchDomain, SynchParam
