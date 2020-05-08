@@ -48,6 +48,7 @@ import sys
 import time
 import traceback
 import weakref
+from datetime import datetime
 import numpy
 
 import PyTango
@@ -565,37 +566,43 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            state_value = self.stateObj.read().rvalue
+            t = time.time()
+            state_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: use expiration_period=float("inf") to always use event
+            #  value (taurus-org/taurus#1105)
+            state = self.stateObj.read()
+            state_time = state.time.strftime("%H:%M:%S.%f")
             # state_value is DevState enumeration (IntEnum)
-            state = state_value.name.capitalize()
+            state = state.rvalue.name.capitalize()
         except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                state = traceback.format_exception_only(*e_info)
-        except:
+                state = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            state = traceback.format_exception_only(*e_info)
-        try:
-            msg.append(tab + "   State: " + state)
-        except TypeError:
-            msg.append(tab + "   State: " + state[0])
+            state = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "   State: " + state + " ({})".format(state_time))
 
         try:
-            e_info = sys.exc_info()[:2]
-            status = self.status()
-            status = status.replace('\n', indent)
+            t = time.time()
+            status_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: ideally status should come from the event and no extra
+            #  readout should be made
+            status = self.read_attribute("status")
+            status_time = status.time.strftime("%H:%M:%S.%f")
+            status = status.value.replace('\n', indent)
         except DevFailed as df:
             if len(df.args):
                 status = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                status = traceback.format_exception_only(*e_info)
-        except:
+                status = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            status = traceback.format_exception_only(*e_info)
-        msg.append(tab + "  Status: " + status)
+            status = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "  Status: " + status + " ({})".format(status_time))
 
         return msg
 
