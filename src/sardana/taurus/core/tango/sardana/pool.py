@@ -569,7 +569,7 @@ class PoolElement(BaseElement, TangoDevice):
             else:
                 e_info = sys.exc_info()[:2]
                 state = traceback.format_exception_only(*e_info)[0].rstrip()
-        except:
+        except Exception:
             e_info = sys.exc_info()[:2]
             state = traceback.format_exception_only(*e_info)[0].rstrip()
         msg.append(tab + "   State: " + state + " ({})".format(state_time))
@@ -588,7 +588,7 @@ class PoolElement(BaseElement, TangoDevice):
             else:
                 e_info = sys.exc_info()[:2]
                 status = traceback.format_exception_only(*e_info)[0].rstrip()
-        except:
+        except Exception:
             e_info = sys.exc_info()[:2]
             status = traceback.format_exception_only(*e_info)[0].rstrip()
         msg.append(tab + "  Status: " + status + " ({})".format(status_time))
