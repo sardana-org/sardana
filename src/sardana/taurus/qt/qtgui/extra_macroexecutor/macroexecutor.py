@@ -1083,14 +1083,17 @@ def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
     macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
-    settings = macroExecutor.getQSettings()
-    taurus_config_raw = settings.value("TaurusConfig")
-    taurus_config = pickle.loads(taurus_config_raw.data())
-    oldmodel = taurus_config['__itemConfigurations__']['model']
+    load_settings = True
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.doorChanged.emit(args[1])
-    if args[0] == oldmodel:
+        settings = macroExecutor.getQSettings()
+        taurus_config_raw = settings.value("TaurusConfig")
+        taurus_config = pickle.loads(taurus_config_raw.data())
+        oldmodel = taurus_config['__itemConfigurations__']['model']
+        if args[0] == oldmodel:
+            load_settings = False
+    if load_settings:
         macroExecutor.loadSettings()
     return macroExecutor
 
