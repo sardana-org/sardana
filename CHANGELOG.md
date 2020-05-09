@@ -57,6 +57,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   resetting of acq ctrls dicts (#1300)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
 * Measurement groups renaming with `renameelem` macro(#951)
+* `macroexecutor` correctly loads macro combo box if it was started with server down and 
+  server started afterwards (#599, #1278)
+* `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
 * MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
