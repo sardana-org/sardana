@@ -159,8 +159,10 @@ First select favourite macro, button with '-' sign appears enabled. After pressi
 Using history viewer
 --------------------
 
-Once a macreo is used, it gets registered in the history viewer with the same values it has been executed.
+Once a macro is used, it gets registered in the history viewer with the same
+values it has been executed.
 
-To load a macro from the history viewer, doubleclick on the macro of the history viewer.
+To load a macro from the history viewer, click on the macro in the history
+viewer.
 
-To remove all history, click on the bin button.
+To remove all history, click on the *bin* button.
