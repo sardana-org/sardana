@@ -30,6 +30,7 @@ It contains specific part of sardana device pool"""
 import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",
+           "ReleaseException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
@@ -47,6 +48,7 @@ import sys
 import time
 import traceback
 import weakref
+from datetime import datetime
 import numpy
 
 import PyTango
@@ -105,6 +107,10 @@ class StopException(InterruptException):
 
 
 class AbortException(InterruptException):
+    pass
+
+
+class ReleaseException(InterruptException):
     pass
 
 
@@ -491,17 +497,23 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        # Due to taurus-org/taurus #573 we need to divide the timeout
-        # in two intervals
-        if timeout is not None:
+        if timeout is None:
+            # 0.1 s of timeout with infinite retries facilitates aborting
+            # by raising exceptions from a different threads
+            timeout = 0.1
+            retries = -1
+        else:
+            # Due to taurus-org/taurus #573 we need to divide the timeout
+            # in two intervals
             timeout = timeout / 2
+            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=1)
+                               timeout=timeout, retries=retries)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
@@ -554,37 +566,43 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            state_value = self.stateObj.read().rvalue
+            t = time.time()
+            state_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: use expiration_period=float("inf") to always use event
+            #  value (taurus-org/taurus#1105)
+            state = self.stateObj.read()
+            state_time = state.time.strftime("%H:%M:%S.%f")
             # state_value is DevState enumeration (IntEnum)
-            state = state_value.name.capitalize()
+            state = state.rvalue.name.capitalize()
         except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                state = traceback.format_exception_only(*e_info)
-        except:
+                state = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            state = traceback.format_exception_only(*e_info)
-        try:
-            msg.append(tab + "   State: " + state)
-        except TypeError:
-            msg.append(tab + "   State: " + state[0])
+            state = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "   State: " + state + " ({})".format(state_time))
 
         try:
-            e_info = sys.exc_info()[:2]
-            status = self.status()
-            status = status.replace('\n', indent)
+            t = time.time()
+            status_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: ideally status should come from the event and no extra
+            #  readout should be made
+            status = self.read_attribute("status")
+            status_time = status.time.strftime("%H:%M:%S.%f")
+            status = status.value.replace('\n', indent)
         except DevFailed as df:
             if len(df.args):
                 status = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                status = traceback.format_exception_only(*e_info)
-        except:
+                status = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            status = traceback.format_exception_only(*e_info)
-        msg.append(tab + "  Status: " + status)
+            status = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "  Status: " + status + " ({})".format(status_time))
 
         return msg
 
@@ -2153,6 +2171,7 @@ class MeasurementGroup(PoolElement):
         cfg = self.getConfiguration()
         cfg.prepare()
         self.setSynchronization(synchronization)
+        self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
         try:
             self.count_raw(start_time)

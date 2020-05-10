@@ -195,6 +195,8 @@ class PoolAction(Logger):
     """A generic class to handle any type of operation (like motion or
     acquisition)"""
 
+    OperationContextClass = OperationContext
+
     def __init__(self, main_element, name="GlobalAction"):
         Logger.__init__(self, name)
         self._action_run_lock = threading.Lock()
@@ -336,7 +338,7 @@ class PoolAction(Logger):
 
         if synch:
             try:
-                with OperationContext(self) as context:
+                with self.OperationContextClass(self) as context:
                     self.start_action(*args, **kwargs)
                     self._started = False
                     self.action_loop()
@@ -344,7 +346,7 @@ class PoolAction(Logger):
                 self._started = False
                 self._running = False
         else:
-            context = OperationContext(self)
+            context = self.OperationContextClass(self)
             context.enter()
             try:
                 self.start_action(*args, **kwargs)
