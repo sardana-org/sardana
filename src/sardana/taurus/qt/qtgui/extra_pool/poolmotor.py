@@ -1060,7 +1060,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
             hw_limits = self.taurusValueBuddy().hasHwLimits()
             self.btn_lim_neg.setEnabled(hw_limits)
             self.btn_lim_pos.setEnabled(hw_limits)
-        if self.lbl_enc_read and self.lbl_enc is not None:
+        if self.lbl_enc_read is not None:
             self.lbl_enc.setVisible(False)
             self.lbl_enc_read.setVisible(False)
             if expertView and self.taurusValueBuddy().motor_dev is not None:
@@ -1077,7 +1077,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
         btn.setMaximumSize(25, 25)
         btn.setText('')
 
-    def create_encoder(self):
+    def _create_encoder(self):
         if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
             self.lbl_enc = Qt.QLabel('Encoder')
             self.layout().addWidget(self.lbl_enc, 1, 0)
@@ -1097,13 +1097,10 @@ class PoolMotorTVReadWidget(TaurusWidget):
             self.lbl_enc_read.setVisible(False)
 
     def setModel(self, model):
-        if hasattr(self, 'taurusValueBuddy'):
-            self.create_encoder()
-            try:
-                self.taurusValueBuddy().expertViewChanged.disconnect(
-                    self.setExpertView)
-            except TypeError:
-                pass
+        if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
+            self._create_encoder()
+            self.taurusValueBuddy().expertViewChanged.disconnect(
+                self.setExpertView)
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.lbl_read.setModel(model)
@@ -1112,7 +1109,8 @@ class PoolMotorTVReadWidget(TaurusWidget):
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.lbl_read.setModel(model + '/Position')
-        if self.lbl_enc_read and self.taurusValueBuddy().motor_dev is not None:
+        if (self.lbl_enc_read is not None
+                and self.taurusValueBuddy().motor_dev is not None):
             self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert view
         self.setExpertView(self.taurusValueBuddy()._expertView)
