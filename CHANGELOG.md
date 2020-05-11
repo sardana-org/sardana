@@ -26,6 +26,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   using context menu option (#1242)
 * Store PMTV (motor widget) configurations: *expert view* and *write mode*
   (relative or absolute) permanently as TaurusGUI settings.
+* Do not create encoder widget in PMTV if the motod does not have encoder
+  in order to avoid errors comming from the polling (#209, #1288)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
 * Add basic information to "how to write custom recorder" to
