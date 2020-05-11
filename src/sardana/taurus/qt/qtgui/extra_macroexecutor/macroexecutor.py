@@ -654,7 +654,6 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         actionsLayout.addWidget(addToFavouritsButton)
 
         self.macroComboBox = MacroComboBox(self)
-        self.macroComboBox.setModelInConfig(True)
         self.macroComboBox.setModelColumn(0)
         actionsLayout.addWidget(self.macroComboBox)
         stopMacroButton = Qt.QToolButton()
@@ -686,13 +685,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self._favouritesBuffer = None
         self.favouritesMacrosEditor = FavouritesMacrosEditor(self)
         self.registerConfigDelegate(self.favouritesMacrosEditor)
-        self.favouritesMacrosEditor.setModelInConfig(True)
         self.favouritesMacrosEditor.setFocusPolicy(Qt.Qt.NoFocus)
 
         self._historyBuffer = None
         self.historyMacrosViewer = HistoryMacrosViewer(self)
         self.registerConfigDelegate(self.historyMacrosViewer)
-        self.historyMacrosViewer.setModelInConfig(True)
         self.historyMacrosViewer.setFocusPolicy(Qt.Qt.NoFocus)
 
         self.tabMacroListsWidget = Qt.QTabWidget(self)
@@ -1071,7 +1068,6 @@ class TaurusMacroExecutor(MacroExecutionWindow):
 
 def createMacroExecutorWidget(args):
     macroExecutor = TaurusMacroExecutorWidget()
-    macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
@@ -1081,7 +1077,6 @@ def createMacroExecutorWidget(args):
 
 def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
-    macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
     load_settings = True
     if len(args) == 2:
