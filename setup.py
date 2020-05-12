@@ -84,7 +84,7 @@ gui_scripts = [
 ]
 
 form_factories = [
-    "sdn_pool = sardana.taurus.qt.qtgui.extra_pool.formitemfactory:pool_item_factory"
+    "sdn_pool = sardana.taurus.qt.qtgui.extra_pool.formitemfactory:pool_item_factory"  # noqa
 ]
 
 entry_points = {

@@ -55,6 +55,6 @@ def pool_item_factory(model):
     try:
         key = model.getDeviceProxy().info().dev_class
         klass = T_FORM_POOL_WIDGET_MAP.get(key)
-    except:
+    except Exception:
         return None
     return klass()
