@@ -83,9 +83,15 @@ gui_scripts = [
     "showscan = sardana.taurus.qt.qtgui.extra_sardana.showscanonline:main"
 ]
 
-entry_points = {'console_scripts': console_scripts,
-                'gui_scripts': gui_scripts,
-                }
+form_factories = [
+    "sdn_pool = sardana.taurus.qt.qtgui.extra_pool.formitemfactory:pool_item_factory"
+]
+
+entry_points = {
+    'console_scripts': console_scripts,
+    'gui_scripts': gui_scripts,
+    'taurus.qt.taurusform.item_factories': form_factories,
+}
 
 classifiers = [
     'Development Status :: 4 - Beta',
