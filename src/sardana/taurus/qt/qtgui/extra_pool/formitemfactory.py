@@ -54,7 +54,7 @@ def pool_item_factory(model):
     # TODO: use sardana element types instead of tango classes
     try:
         key = model.getDeviceProxy().info().dev_class
-        klass = T_FORM_POOL_WIDGET_MAP.get[key]
+        klass = T_FORM_POOL_WIDGET_MAP.get(key)
     except:
         return None
     return klass()
