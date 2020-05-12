@@ -645,17 +645,17 @@ spock console:
 Using spock as a Tango_ console
 -------------------------------
 
-As metioned in the beggining of this chapter, the sardana spock automatically
-activates the PyTango_ 's ipython console extension. Therefore all Tango_
+As mentioned in the beginning of this chapter, the sardana spock automatically
+activates the PyTango_ 's ipython console extension [#]_. Therefore all Tango_
 features are automatically available on the sardana spock console. For example,
-creating a :class:`~PyTango.DeviceProxy` will work inside the sardana spock
+creating a :class:`tango.DeviceProxy` will work inside the sardana spock
 console:
 
 .. sourcecode:: spock
 
-    LAB-01-D01 [1]: tgtest = PyTango.DeviceProxy("sys/tg_test/1")
+    LAB-01-D01 [1]: tgtest = Device("sys/tg_test/1")
     
-    LAB-01-D01 [2]: print( tgtest.state() )
+    LAB-01-D01 [2]: print(tgtest.state())
     RUNNING
 
 .. rubric:: Footnotes

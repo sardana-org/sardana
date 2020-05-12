@@ -53,8 +53,11 @@ Options::
 
     
 The model list is optional and is a space-separated list of two device names: macro server and door.
-If not provided at the application startup, models can be later on changed in configuration dialog.   
-   
+If not provided at the application startup, models can be later on changed in configuration dialog.
+
+If the macro server and door are changed in the configuration dialog, the favourites list and the history will
+be discarded.
+
 Extra functionalities:
 
 - Changing macro configuration
@@ -143,10 +146,23 @@ with current macro and its current settings.
 
 To restore macro from favourites list just select it in the list and macro parameters editor will immediately populate with stored settings.
 
-- modifying favouites list
+- modifying favourites list
 
 First select favourite macro and buttons with arrows becomes enable (if it is feasible to change order)
 
 - removing a favourite
 
 First select favourite macro, button with '-' sign appears enabled. After pressing this button, previously selected macro disappears from the list.
+
+.. _using_history_viewer:
+
+Using history viewer
+--------------------
+
+Once a macro is used, it gets registered in the history viewer with the same
+values it has been executed.
+
+To load a macro from the history viewer, click on the macro in the history
+viewer.
+
+To remove all history, click on the *bin* button.

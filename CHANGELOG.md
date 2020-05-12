@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* Support to Python >= 3.5 (#1089, #1173, #1201)
+* Support to Python >= 3.5 (#1089, #1173, #1201, #1313)
 * Showscan online based on pyqtgraph (#1285)
   * multiple plots in the same MultiPlot widget (as opposed to different panels before)
   * option to group curves by x-axis or individual plot per curve
@@ -15,6 +15,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   * support fast scans: update curves at a fix rate (5Hz)
   * better curve colors and symbols
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
+* Add timestamp to element's dumped information (#1308)
 * Instruments creation and configuration in sar_demo (#1198)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
@@ -24,6 +26,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   using context menu option (#1242)
 * Store PMTV (motor widget) configurations: *expert view* and *write mode*
   (relative or absolute) permanently as TaurusGUI settings.
+* Do not create encoder widget in PMTV if the motod does not have encoder
+  in order to avoid errors comming from the polling (#209, #1288)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
 * Add basic information to "how to write custom recorder" to
@@ -45,17 +49,23 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use of env and hints in `macro` function decorator (#1239)
 * PMTV widget not updating the following attributes: limit switches, state
   and status (#1244)
+* Avoid Taurus GUI slowness on startup and changing of perspectives due to too
+  large macroexecutor history by limitting it to 100 -
+  configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
   (#1260)
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
-* Reintroduce backwards compatibility for measurement groups' configurations (URIs)
-  created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
+* `macroexecutor` correctly loads macro combo box if it was started with server down and 
+  server started afterwards (#599, #1278)
+* `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
+* MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
+* Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
 * Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
@@ -63,6 +73,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
 * Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
   (#1188, #1309)
+* Fix dummy motor velocity so it respects steps_per_unit (#1310)
+* Make handling of `Macro.sendRecordData()` with arbitrary data more robust in Spock
+  (#1320, #1319)
+* Use `utf8_json` as default codec (in Tango) if `Macro.sendRecordData()` does not specify one
+  (#1320, #1319
+* Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
+  position(s) (#1326)
+* Build docs with Sphinx 3 (#1330) 
 
 ### Deprecated
 
@@ -80,6 +98,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+
+## [2.8.5] 2020-04-27
+
+### Fixed
+
+* Reintroduce backwards compatibility for measurement groups' configurations
+  (URIs) created with Taurus 3 (#1266, #1271)
 
 ## [2.8.4] 2019-11-13
 
@@ -811,7 +836,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.4...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
 [2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1

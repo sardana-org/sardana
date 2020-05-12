@@ -480,6 +480,33 @@ class BaseDoor(MacroServerDevice):
             evt_wait.unlock()
             evt_wait.disconnect()
 
+    def release(self, synch=True):
+        if not synch:
+            try:
+                self.command_inout("ReleaseMacro")
+            except PyTango.DevFailed as df:
+                # Macro already finished - no need to release
+                if df.args[0].reason == "API_CommandNotAllowed":
+                    pass
+            return
+
+        evt_wait = AttributeEventWait(self.getAttribute("state"))
+        evt_wait.lock()
+        try:
+            time_stamp = time.time()
+            try:
+                self.command_inout("ReleaseMacro")
+            except PyTango.DevFailed as df:
+                # Macro already finished - no need to release
+                if df.args[0].reason == "API_CommandNotAllowed":
+                    return
+            evt_wait.waitEvent(self.Running, equal=False,
+                               after=time_stamp,
+                               timeout=self.InteractiveTimeout)
+        finally:
+            evt_wait.unlock()
+            evt_wait.disconnect()
+
     def stop(self, synch=True):
         if not synch:
             self.command_inout("StopMacro")
