@@ -1390,7 +1390,7 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 
 class MGConfiguration(object):
     def __init__(self, mg, data):
-        self._mg = weakref.ref(mg)()
+        self._mg = weakref.ref(mg)
         self._raw_data = None
         self._pending_event_data = None
         self._local_changes = False
@@ -1958,17 +1958,17 @@ class MGConfiguration(object):
             raise RuntimeError('The configuration changed on the server '
                                'during your changes.')
         try:
-            self._mg.setConfiguration(self._raw_data)
+            self._mg().setConfiguration(self._raw_data)
         except Exception as e:
             self._local_changes = False
             self._pending_event_data = None
-            data = self._mg.getConfigurationAttrEG().readValue(force=True)
+            data = self._mg().getConfigurationAttrEG().readValue(force=True)
             self.set_data(data, force=True)
             raise e
         self._local_changes = False
         self._pending_event_data = None
         t1 = time.time()
-        while self._mg._flg_event:
+        while self._mg()._flg_event:
             time.sleep(0.01)
             if (time.time() - t1) >= timeout:
                 raise RuntimeError('Timeout on applying configuration')
