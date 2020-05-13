@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import Except, DevVoid, DevLong, DevDouble, DevString, \
-    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR
+    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR, Util
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.log import DebugIt
@@ -237,6 +237,11 @@ class MeasurementGroup(PoolGroupDevice):
     def write_Configuration(self, attr):
         data = attr.get_write_value()
         cfg = CodecFactory().decode(('json', data))
+        util = Util.instance()
+        if util.is_svr_starting():
+            self.measurement_group._config._value_ref_compat = True
+        else:
+            self.measurement_group._config._value_ref_compat = False
         self.measurement_group.set_configuration_from_user(cfg)
 
     def read_NbStarts(self, attr):

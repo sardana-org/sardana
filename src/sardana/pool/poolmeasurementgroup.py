@@ -454,6 +454,9 @@ class MeasurementConfiguration(object):
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
         self.changed = False
+        # provide back. compatibility for value_ref_{enabled,pattern}
+        # config parameters created with Sardana < 3.
+        self._value_ref_compat = False
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -953,9 +956,18 @@ class MeasurementConfiguration(object):
             channel_data['value_ref_pattern'] = value_ref_pattern
         elif 'value_ref_enabled' in channel_data or 'value_ref_pattern' in \
                 channel_data:
-            msg = 'The channel {} is not referable. You can not set the ' \
-                  'enable and/or the pattern parameters.'.format(name)
-            raise ValueError(msg)
+            if self._value_ref_compat:
+                msg = 'value_ref_pattern/value_ref_enabled is deprecated ' \
+                      'for non-referable channels since Jul20. Re-apply ' \
+                      'configuration in order to upgrade.'
+                self._parent.warning(msg)
+                channel_data.pop('value_ref_enabled')
+                channel_data.pop('value_ref_pattern')
+            else:
+                msg = 'The channel {} is not referable. You can not set ' \
+                      'the enabled and/or the pattern parameters.'.format(
+                    name)
+                raise ValueError(msg)
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
