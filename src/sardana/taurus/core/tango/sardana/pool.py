@@ -49,6 +49,7 @@ import weakref
 import json
 from datetime import datetime
 import numpy
+import threading
 import PyTango
 import collections
 
@@ -1957,21 +1958,19 @@ class MGConfiguration(object):
             self.set_data(self._pending_event_data, force=True)
             raise RuntimeError('The configuration changed on the server '
                                'during your changes.')
+        mg = self._mg()
         try:
-            self._mg().setConfiguration(self._raw_data)
+            mg.setConfiguration(self._raw_data)
         except Exception as e:
             self._local_changes = False
             self._pending_event_data = None
-            data = self._mg().getConfigurationAttrEG().readValue(force=True)
+            data = mg.getConfigurationAttrEG().readValue(force=True)
             self.set_data(data, force=True)
             raise e
         self._local_changes = False
         self._pending_event_data = None
-        t1 = time.time()
-        while self._mg()._flg_event:
-            time.sleep(0.01)
-            if (time.time() - t1) >= timeout:
-                raise RuntimeError('Timeout on applying configuration')
+        if not mg._flg_event.wait(timeout):
+            raise RuntimeError('timeout on applying configuration')
 
     def _getValueRefEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
@@ -2395,9 +2394,9 @@ class MeasurementGroup(PoolElement):
         self._last_integ_time = None
         self.call__init__(PoolElement, name, **kw)
 
+        self._flg_event = threading.Event()
         self.__cfg_attr = self.getAttribute('configuration')
         self.__cfg_attr.addListener(self.on_configuration_changed)
-        self._flg_event = False
 
         self._value_buffer_cb = None
         self._value_buffer_channels = None
@@ -2432,7 +2431,7 @@ class MeasurementGroup(PoolElement):
         return self._getAttrEG('Configuration')
 
     def setConfiguration(self, configuration):
-        self._flg_event = True
+        self._flg_event.clear()
         codec = CodecFactory().getCodec('json')
         f, data = codec.encode(('', configuration))
         self.write_attribute('configuration', data)
@@ -2454,7 +2453,7 @@ class MeasurementGroup(PoolElement):
             return
         self.info("Configuration changed")
         self._setConfiguration(evt_value.rvalue)
-        self._flg_event = False
+        self._flg_event.set()
 
     # TODO, should be removed
     def getChannelsInfo(self):
