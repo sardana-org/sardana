@@ -2290,54 +2290,40 @@ class MGConfiguration(object):
             synchronizer = sync.fullname
         self._set_ctrls_key('synchronizer', synchronizer, ctrls, apply_cfg)
 
-    def getTimerName(self):
-        return self.getTimer()['name']
+    def _getTimerName(self):
+        return self._getTimer()['name']
 
-    def getTimer(self):
+    def _getTimer(self):
         return self.channels[self.timer]
 
-    def getTimerValue(self):
-        return self.getTimerName()
+    def _getTimerValue(self):
+        return self._getTimerName()
 
-    def getMonitorName(self):
-        return self.getMonitor()['name']
+    def _getMonitorName(self):
+        return self._getMonitor()['name']
 
-    def getMonitor(self):
+    def _getMonitor(self):
         return self.channels[self.monitor]
 
     def getValues(self, parallel=True):
         return self.read(parallel=parallel)
 
-    def setTimer(self, timer, apply_cfg=True):
-        """
-        Set the Global Timer to the measurement group, also it changes the
-        timer in the controllers with the previous timer.
-
-        :param timer: <str> timer name
-        """
-        result = self._get_ctrl_for_channel([timer], unique=True)
-
-        for timer, ctrl in result.items():
-            self._local_changes = True
-            self._raw_data['timer'] = timer
-            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
-
-    def getCounters(self):
+    def _getCounters(self):
         return [c for c in self.getChannels() if c['full_name'] != self.timer]
 
-    def getChannelNames(self):
+    def _getChannelNames(self):
         return [ch['name'] for ch in self.getChannels()]
 
-    def getCounterNames(self):
+    def _getCounterNames(self):
         return [ch['name'] for ch in self.getCounters()]
 
-    def getChannelLabels(self):
+    def _getChannelLabels(self):
         return [ch['label'] for ch in self.getChannels()]
 
-    def getCounterLabels(self):
+    def _getCounterLabels(self):
         return [ch['label'] for ch in self.getCounters()]
 
-    def getChannel(self, name):
+    def _getChannel(self, name):
         return self.channels[name]
 
     def getChannelsEnabledInfo(self):
@@ -2354,23 +2340,33 @@ class MGConfiguration(object):
     def getCountersInfo(self):
         return self.getCountersInfoList()
 
-    def enableChannels(self, channels, apply_cfg=True):
-        """
-        Enable acquisition of the indicated channels.
+    def setTimer(self, timer, apply_cfg=True):
+        """DEPRECATED: Set the Global Timer to the measurement group.
 
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        """
-        self._setEnabledChannels(True, channels, apply_cfg)
+        Also it changes the timer in the controllers with the previous timer.
 
-    def disableChannels(self, channels, apply_cfg=True):
+        :param timer: <str> timer name
         """
-        Disable acquisition of the indicated channels.
+        self._mg().warning("setTimer() is deprecated since Jul20. "
+                           "Global measurement group timer does not exist")
+        result = self._get_ctrl_for_channel([timer], unique=True)
 
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        """
-        self._setEnabledChannels(False, channels, apply_cfg)
+        for timer, ctrl in result.items():
+            self._local_changes = True
+            self._raw_data['timer'] = timer
+            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
+
+    def getTimer(self):
+        """DEPRECATED"""
+        self._mg().warning("getTimer() is deprecated since Jul20. "
+                          "Global measurement group timer does not exist")
+        return self._getTimer()
+
+    def getMonitor(self):
+        """DEPRECATED"""
+        self._mg().warning("getMonitor() is deprecated since Jul20. "
+                     "Global measurement group monitor does not exist")
+        return self._getMonitor()
 
     def __repr__(self):
         return json.dumps(self._raw_data, indent=4, sort_keys=True)
@@ -2405,16 +2401,6 @@ class MeasurementGroup(PoolElement):
         f = self.factory()
         f.removeExistingAttribute(self.__cfg_attr)
 
-    def __getattr__(self, item):
-        try:
-            return PoolElement.__getattr__(self, item)
-        except Exception:
-            try:
-                return self._configuration.__getattribute__(item)
-            except Exception:
-                raise AttributeError("'{0}' object has not attribute "
-                                     "'{1}'".format('MeasurementGroup', item))
-
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
@@ -2446,12 +2432,6 @@ class MeasurementGroup(PoolElement):
         self.info("Configuration changed")
         self._setConfiguration(evt_value.rvalue)
         self._flg_event.set()
-
-    # TODO, should be removed
-    def getChannelsInfo(self):
-        self.warning('Deprecation warning: you should use '
-                     '"getChannelsInfoList" instead of "getChannelsInfo"')
-        return self.getConfiguration().getChannelsInfoList()
 
     def getValueBuffers(self):
         value_buffers = []
@@ -3025,8 +3005,8 @@ class MeasurementGroup(PoolElement):
             configurations
         :rtype: dict(str, str)
         """
-        # TODO: Implement solution to set the timer per channel when it is
-        #  allowed.
+        # TODO: Implement solution to set the synchronizer per channel when it
+        #  is allowed.
         ctrls = self._get_ctrl_for_elements(elements)
         config = self.getConfiguration()
         ctrls_sync = config._getCtrlsSynchronizer(ctrls,
@@ -3036,6 +3016,92 @@ class MeasurementGroup(PoolElement):
         else:
             return self._get_value_per_channel(config, ctrls_sync,
                                                use_fullname=ret_full_name)
+
+    #########################################################################
+    # TODO: review the following API
+
+    def getChannelsEnabledInfo(self):
+        """Returns information about **only enabled** channels present in the
+        measurement group in a form of ordered, based on the channel index,
+        list.
+        :return: list with channels info
+        :rtype: list<TangoChannelInfo>
+        """
+        return self.getConfiguration().getChannelsInfoList(only_enabled=True)
+
+    def getCountersInfo(self):
+        return self.getConfiguration().getCountersInfoList()
+
+    def getValues(self, parallel=True):
+        return self.getConfiguration().getValues(parallel)
+
+    def getChannels(self):
+        return self.getConfiguration().getChannels()
+
+    def getCounters(self):
+        return self.getConfiguration()._getCounters()
+
+    def getChannelNames(self):
+        return self.getConfiguration()._getChannelNames()
+
+    def getCounterNames(self):
+        return self.getConfiguration()._getCounterNames()
+
+    def getChannelLabels(self):
+        return self.getConfiguration()._getChannelLabels()
+
+    def getCounterLabels(self):
+        return self.getConfiguration()._getCounterLabels()
+
+    def getChannel(self, name):
+        return self.getConfiguration()._getChannel(name)
+
+    def getChannelInfo(self, name):
+        return self.getConfiguration().getChannelInfo(name)
+
+    #########################################################################
+
+    def getChannelsInfo(self):
+        """DEPRECATED"""
+        self.warning('Deprecation warning: you should use '
+                     '"getChannelsInfoList" instead of "getChannelsInfo"')
+        return self.getConfiguration().getChannelsInfoList()
+
+    def getMonitorName(self):
+        """DEPRECATED"""
+        self.warning("getMonitorName() is deprecated since Jul20. "
+                     "Global measurement group monitor does not exist.")
+        return self.getConfiguration()._getMonitorName()
+
+    def getTimerName(self):
+        """DEPRECATED"""
+        self.warning("getTimerName() is deprecated since Jul20. "
+                     "Global measurement group timer does not exist.")
+        return self.getConfiguration()._getTimerName()
+
+    def getTimerValue(self):
+        """DEPRECATED"""
+        self.warning("getTimerValue() is deprecated since Jul20. "
+                     "Global measurement group timer does not exist.")
+        return self.getConfiguration()._getTimerValue()
+
+    def enableChannels(self, channels):
+        '''DEPRECATED: Enable acquisition of the indicated channels.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        '''
+        self.warning("enableChannels() in deprecated since Jul20. "
+                     "Use setEnabled() instead.")
+        self.setEnabled(True, *channels)
+
+    def disableChannels(self, channels):
+        '''Disable acquisition of the indicated channels.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        '''
+        self.warning("enableChannels() in deprecated since Jul20. "
+                     "Use setEnabled() instead.")
+        self.setEnabled(False, *channels)
 
     # NbStarts Methods
     def getNbStartsObj(self):
