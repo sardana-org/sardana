@@ -37,11 +37,7 @@ import copy
 import types
 import inspect
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core import ManagerState
 from taurus.core.util.log import Logger
@@ -148,7 +144,7 @@ class ControllerManager(Singleton, Logger):
             problems of type class A != class A)."""
         p = []
         for item in controller_path:
-            p.extend(item.split(":"))
+            p.extend(item.split(os.pathsep))
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]
@@ -164,7 +160,7 @@ class ControllerManager(Singleton, Logger):
 
         controller_file_names = self._findControllerLibNames()
 
-        for mod_name, file_name in controller_file_names.iteritems():
+        for mod_name, file_name in controller_file_names.items():
             dir_name = os.path.dirname(file_name)
             path = [dir_name]
             try:
@@ -212,16 +208,17 @@ class ControllerManager(Singleton, Logger):
         return f_name
 
     def getOrCreateControllerLib(self, lib_name, controller_name=None):
-        """Gets the exiting controller lib or creates a new controller lib file.
-        If name is not None, a controller template code for the given controller
-        name is appended to the end of the file.
+        """
+        Gets the exiting controller lib or creates a new controller lib file.
+        If name is not None, a controller template code for the given
+        controller name is appended to the end of the file.
 
-        :param str lib_name: module name, python file name, or full file name
-                             (with path)
-        :param str controller_name: an optional controller name. If given a
-                                    controller template code is appended to the
-                                    end of the file [default: None, meaning no
-                                    controller code is added)
+        :param :obj:`str` lib_name: module name, python file name, or full file
+                        name (with path)
+        :param :obj:`str` controller_name: an optional controller name. If
+                        given a controller template code is appended to the
+                        end of the file [default: None, meaning no controller
+                        code is added)
 
         :return: a sequence with three items: full_filename, code, line number
                  line number is 0 if no controller is created or n representing
@@ -237,7 +234,7 @@ class ControllerManager(Singleton, Logger):
                 f_name, code = self.createControllerLib(lib_name), ''
             else:
                 f_name = controller_lib.get_file_name()
-                f = file(f_name)
+                f = open(f_name)
                 code = f.read()
                 f.close()
         else:
@@ -253,7 +250,7 @@ class ControllerManager(Singleton, Logger):
                 else:
                     _, line_nb = controller.getCode()
                     f_name = controller.getFileName()
-                    f = file(f_name)
+                    f = open(f_name)
                     code = f.read()
                     f.close()
 
@@ -263,8 +260,8 @@ class ControllerManager(Singleton, Logger):
         """Creates a new controller library file with the given name and code.
         The new module is imported and becomes imediately available.
 
-        :param str lib_name: name of the new library
-        :param str code: python code of the new library"""
+        :param :obj:`str` lib_name: name of the new library
+        :param :obj:`str` code: python code of the new library"""
         f_name = self._fromNameToFileName(lib_name)
         f = open(f_name, 'w')
         f.write(code)
@@ -338,7 +335,8 @@ class ControllerManager(Singleton, Logger):
                  in case the controller is unknown or :exc:`ImportError` if
                  the reload process is not successfull
 
-        :param str controller_name: controller class name
+        :param controller_name: controller class name
+        :type controller_name: :obj:`str`
         :param seq<str> path: a list of absolute path to search for libraries
                               [default: None, meaning the current ControllerPath
                               will be used]"""
@@ -393,7 +391,8 @@ class ControllerManager(Singleton, Logger):
                  in case the controller is unknown or :exc:`ImportError` if
                  the reload process is not successful
 
-        :param str module_name: controller library name (=python module name)
+        :param module_name: controller library name (=python module name)
+        :type module_name: :obj:`str`
         :param seq<str> path: a list of absolute path to search for libraries
                               [default: None, meaning the current ControllerPath
                               will be used]
@@ -410,7 +409,7 @@ class ControllerManager(Singleton, Logger):
             path.reverse()
 
         # if there was previous Controller Lib info remove it
-        if self._modules.has_key(module_name):
+        if module_name in self._modules:
             self._modules.pop(module_name)
 
         m, exc_info = None, None
@@ -485,7 +484,7 @@ class ControllerManager(Singleton, Logger):
         ret, expr = [], None
         if filter is not None:
             expr = re.compile(filter, re.IGNORECASE)
-        for name, lib in self._modules.iteritems():
+        for name, lib in self._modules.items():
             if lib.has_errors() or (expr is not None and expr.match(name) is None):
                 continue
             ret.append(lib)
@@ -497,7 +496,7 @@ class ControllerManager(Singleton, Logger):
             return sorted(self._controller_dict.values())
         expr = re.compile(filter, re.IGNORECASE)
 
-        ret = sorted([kls for n, kls in self._controller_dict.iteritems()
+        ret = sorted([kls for n, kls in self._controller_dict.items()
                       if not expr.match(n) is None])
         return ret
 
@@ -516,12 +515,12 @@ class ControllerManager(Singleton, Logger):
     def getControllerLib(self, name):
         if os.path.isabs(name):
             abs_file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_path == abs_file_name:
                     return lib
         elif name.count(os.path.extsep):
             file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_name == file_name:
                     return lib
         module_name = name
@@ -543,7 +542,7 @@ class ControllerManager(Singleton, Logger):
             raise RuntimeError('Controller name not specified')
         controller_name_or_klass = in_par_list[0]
         controller_class = controller_name_or_klass
-        if type(controller_class) in types.StringTypes:
+        if isinstance(controller_class, str):
             controller_class = self.getControllerClass(controller_class)
         if controller_class is None:
             raise UnknownController("Unknown controller %s" %

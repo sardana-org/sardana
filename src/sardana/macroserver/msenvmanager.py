@@ -32,12 +32,39 @@ __docformat__ = 'restructuredtext'
 
 import os
 import shelve
+from itertools import zip_longest
 import operator
 
 from taurus.core.util.containers import CaselessDict
 
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.msexception import UnknownEnv
+from sardana import sardanacustomsettings
+import collections
+
+
+def _dbm_gnu(filename):
+    import dbm.gnu
+    return dbm.gnu.open(filename, "c")
+
+
+def _dbm_dumb(filename):
+    import dbm.dumb
+    return dbm.dumb.open(filename, "c")
+
+
+def _dbm_shelve(filename, backend):
+    if backend is None:
+        try:
+            return _dbm_gnu(filename)
+        except ImportError:
+            return _dbm_dumb(filename)
+    elif backend == "gnu":
+        return _dbm_gnu(filename)
+    elif backend == "dumb":
+        return _dbm_dumb(filename)
+    else:
+        raise ValueError("'{}' is not a supported backend".format(backend))
 
 
 class EnvironmentManager(MacroServerManager):
@@ -112,17 +139,26 @@ class EnvironmentManager(MacroServerManager):
             try:
                 self.info("Creating environment directory: %s" % dir_name)
                 os.makedirs(dir_name)
-            except OSError, ose:
+            except OSError as ose:
                 self.error("Creating environment: %s" % ose.strerror)
                 self.debug("Details:", exc_info=1)
                 raise ose
-        try:
-            self._env = shelve.open(f_name, flag='c', protocol=0,
-                                    writeback=False)
-        except:
-            self.error("Failed to create/access environment in %s", f_name)
-            self.debug("Details:", exc_info=1)
-            raise
+        if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
+            try:
+                self._env = shelve.open(f_name, flag='w', writeback=False)
+            except Exception:
+                self.error("Failed to access environment in %s", f_name)
+                self.debug("Details:", exc_info=1)
+                raise
+        else:
+            backend = getattr(sardanacustomsettings, "MS_ENV_SHELVE_BACKEND",
+                              None)
+            try:
+                self._env = shelve.Shelf(_dbm_shelve(f_name, backend))
+            except Exception:
+                self.error("Failed to create environment in %s", f_name)
+                self.debug("Details:", exc_info=1)
+                raise
 
         self.info("Environment is being stored in %s", f_name)
 
@@ -136,7 +172,7 @@ class EnvironmentManager(MacroServerManager):
     def _fillEnvironmentCaches(self, env):
         # fill the three environment caches
         env_dict = self._global_env
-        for k, v in env.items():
+        for k, v in list(env.items()):
             k_parts = k.split('.', 1)
             key = k_parts[0]
 
@@ -298,9 +334,9 @@ class EnvironmentManager(MacroServerManager):
         door.
 
         :param door_name:  the door name (case insensitive)
-        :type door_name: str
+        :type door_name: :obj:`str`
         :param macro_name: the macro name
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return: a dictionary with the resulting environment"""
         door_name = door_name.lower()
@@ -315,7 +351,7 @@ class EnvironmentManager(MacroServerManager):
         m_env = self._macro_env.get(macro_name, {})
 
         # put the doors global environment
-        for k, v in d_env.iteritems():
+        for k, v in d_env.items():
             if k.count('.') == 0:
                 ret[k] = v
 
@@ -323,7 +359,7 @@ class EnvironmentManager(MacroServerManager):
         ret.update(m_env)
 
         # put the door and macro specific environment
-        for k, v in d_env.iteritems():
+        for k, v in d_env.items():
             if k.count('.') > 0:
                 m_name, key = k.split('.', 1)
                 if m_name is macro_name:
@@ -346,7 +382,7 @@ class EnvironmentManager(MacroServerManager):
         if keys is None:
             return self.getAllDoorMacroEnv(door_name, macro_name)
 
-        if isinstance(keys, (str, unicode)):
+        if isinstance(keys, str):
             keys = (keys,)
 
         door_name = door_name.lower()
@@ -372,18 +408,18 @@ class EnvironmentManager(MacroServerManager):
 
         return ret
 
-    def _pairwise(self, iterable):
-        itnext = iter(iterable).next
-        while True:
-            yield itnext(), itnext()
+    def _grouper(self, iterable):
+        # https://docs.python.org/3/library/itertools.html#itertools-recipes
+        args = [iter(iterable)] * 2
+        return zip_longest(*args)
 
     def _dictFromSequence(self, seq):
-        return dict(self._pairwise(seq))
+        return dict(self._grouper(seq))
 
     def _encode(self, d):
         ret = {}
-        for k, v in d.iteritems():
-            if isinstance(v, (str, unicode)):
+        for k, v in d.items():
+            if isinstance(v, str):
                 try:
                     v = eval(v)
                 except:
@@ -453,14 +489,14 @@ class EnvironmentManager(MacroServerManager):
 
         @return a dict representing the added environment"""
 
-        if operator.isSequenceType(obj) and \
-           not isinstance(obj, (str, unicode)):
+        if isinstance(obj, collections.Sequence) and \
+           not isinstance(obj, str):
             obj = self._dictFromSequence(obj)
-        elif not operator.isMappingType(obj):
+        elif not isinstance(obj, collections.Mapping):
             raise TypeError("obj parameter must be a sequence or a map")
 
         obj = self._encode(obj)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             self._setOneEnv(k, v)
         return obj
 
@@ -480,7 +516,7 @@ class EnvironmentManager(MacroServerManager):
 
         :param key: the key for the environment to be unset
         :return: the sequence of keys which have been removed"""
-        if isinstance(key, (str, unicode)):
+        if isinstance(key, str):
             key = (key,)
         self._unsetEnv(key)
         return key

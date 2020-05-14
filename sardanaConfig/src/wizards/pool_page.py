@@ -149,7 +149,7 @@ def t1(tg_host=None, sardana=None):
 
 def main():
     tg_host, sardana = None, None
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         tg_host = sys.argv[1]
     if len(sys.argv) > 2:
         sardana = sys.argv[2]

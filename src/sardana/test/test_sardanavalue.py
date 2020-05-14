@@ -25,7 +25,7 @@
 
 """Unit tests for sardanavalue module"""
 
-from taurus.external import unittest
+import unittest
 from sardana.sardanavalue import SardanaValue
 
 
@@ -72,7 +72,7 @@ class SardanaValueTestCase(unittest.TestCase):
         self.assertEqual(sar_val.error, True,
                          'The error attribute should be True.')
 
-        self.assertRegexpMatches(representation, ".*<Error>.*",
+        self.assertRegex(representation, ".*<Error>.*",
                                  'The SardanaValue representation does not contain <Error>.')
 
     def testSardanaValueWithNoExceptionInfo(self):
@@ -84,7 +84,7 @@ class SardanaValueTestCase(unittest.TestCase):
         sar_val = SardanaValue(value=value)
         returned_string = sar_val.__repr__()
 
-        self.assertRegexpMatches(returned_string, repr(value),
+        self.assertRegex(returned_string, repr(value),
                                  'The SardanaValue representation does not contain its value')
 
         self.assertEqual(sar_val.error, False,

@@ -21,11 +21,11 @@
 ##
 ##############################################################################
 
-"""This is the standard macro module"""
+"""This is the demo macro module"""
 
-from __future__ import print_function
 
-__all__ = ["sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
+
+__all__ = ["sar_demo", "clear_sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
 
 import PyTango
 
@@ -84,6 +84,11 @@ def clear_sar_demo(self):
     self.print("Removing controllers...")
     for ctrl in SAR_DEMO.get("controllers", ()):
         self.udefctrl(ctrl)
+
+    self.print("Removing instruments...")
+    pool = self.getPools()[0]
+    for instrument in SAR_DEMO.get("instruments", ()):
+        pool.DeleteElement(instrument)
 
     self.unsetEnv(_ENV)
 
@@ -172,6 +177,11 @@ def sar_demo(self):
         self.print("Creating trigger element", tg_name, "...")
         self.defelem(tg_name, tg_ctrl_name, axis)
 
+    ct_ctrl = self.getController(ct_ctrl_name)
+    ct_ctrl.getAttribute("synchronizer").write(tg_name)
+    self.print("Connecting trigger/gate element", tg_name,
+               "with counter/timer controller", ct_ctrl_name)
+
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)
     for axis, ior_name in enumerate(ior_names, 1):
@@ -187,14 +197,29 @@ def sar_demo(self):
         self.print("Setting %s as ActiveMntGrp" % mg_name)
         self.setEnv("ActiveMntGrp", mg_name)
 
+    self.print("Creating instruments: /slit, /mirror and /monitor ...")
+    pool.createInstrument('/slit', 'NXcollimator')
+    pool.createInstrument('/mirror', 'NXmirror')
+    pool.createInstrument('/monitor', 'NXmonitor')
+
+    self.print("Assigning elements to instruments...")
+    self.getMotor(motor_names[0]).setInstrumentName('/slit')
+    self.getMotor(motor_names[1]).setInstrumentName('/slit')
+    self.getPseudoMotor(gap).setInstrumentName('/slit')
+    self.getPseudoMotor(offset).setInstrumentName('/slit')
+    self.getMotor(motor_names[2]).setInstrumentName('/mirror')
+    self.getMotor(motor_names[3]).setInstrumentName('/mirror')
+    self.getCounterTimer(ct_names[0]).setInstrumentName('/monitor')
+
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
         zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
         tg_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
         zerod_names + oned_names + twod_names + tg_names + \
         ior_names
+    instruments = ["/slit", "/mirror", "/monitor"]
     d = dict(controllers=controllers, elements=elements,
-             measurement_groups=[mg_name])
+             measurement_groups=[mg_name], instruments=instruments)
 
     self.setEnv(_ENV, d)
 
@@ -204,7 +229,7 @@ def sar_demo(self):
 @macro([["motor", Type.Moveable, None, '']])
 def mym2(self, pm):
     self.output(pm.getMotorNames())
-    elements = map(self.getMoveable, pm.elements)
+    elements = list(map(self.getMoveable, pm.elements))
     self.output(elements)
     self.output(type(pm))
     self.output(type(elements[0]))

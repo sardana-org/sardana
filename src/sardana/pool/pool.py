@@ -25,8 +25,8 @@
 
 """This module contains the main pool class"""
 
-from __future__ import print_function
-from __future__ import with_statement
+
+
 
 __all__ = ["Pool"]
 
@@ -35,12 +35,7 @@ __docformat__ = 'restructuredtext'
 import os.path
 import logging.handlers
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.containers import CaselessDict
 
 from sardana import InvalidId, ElementType, TYPE_ACQUIRABLE_ELEMENTS, \
@@ -54,6 +49,7 @@ from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolmonitor import PoolMonitor
 from sardana.pool.poolmetacontroller import TYPE_MAP_OBJ
 from sardana.pool.poolcontrollermanager import ControllerManager
+from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 
 class Graph(dict):
@@ -154,7 +150,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         log_file_name = os.path.join(path, 'controller.log.txt')
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
                                                        maxBytes=1E7,
                                                        backupCount=5)
@@ -179,7 +175,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
         :param host: host name [default: None, meaning use the machine host name
                      as returned by :func:`socket.gethostname`].
-        :type host: str
+        :type host: :obj:`str`
         :param port: port number [default: None, meaning use
                      :data:`logging.handlers.DEFAULT_TCP_LOGGING_PORT`"""
         log = logging.getLogger("Controller")
@@ -326,7 +322,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_elements_str_info(self, obj_type=None):
         if obj_type is None:
-            objs = self.get_element_id_map().values()
+            objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
             objs.extend(self.get_controller_libs())
         elif obj_type == ElementType.ControllerClass:
@@ -340,7 +336,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_elements_info(self, obj_type=None):
         if obj_type is None:
-            objs = self.get_element_id_map().values()
+            objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
             objs.extend(self.get_controller_libs())
             objs.append(self)
@@ -355,18 +351,18 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_acquisition_elements_info(self):
         ret = []
-        for _, element in self.get_element_name_map().items():
+        for _, element in list(self.get_element_name_map().items()):
             if element.get_type() not in TYPE_ACQUIRABLE_ELEMENTS:
                 continue
             acq_channel = element.get_default_acquisition_channel()
             full_name = "{0}/{1}".format(element.full_name, acq_channel)
             info = dict(name=element.name, full_name=full_name, origin='local')
             ret.append(info)
-        ret.extend(self._extra_acquisition_element_names.values())
+        ret.extend(list(self._extra_acquisition_element_names.values()))
         return ret
 
     def get_acquisition_elements_str_info(self):
-        return map(self.str_object, self.get_acquisition_elements_info())
+        return list(map(self.str_object, self.get_acquisition_elements_info()))
 
     def create_controller(self, **kwargs):
         ctrl_type = kwargs['type']
@@ -410,7 +406,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             ctrl_prop_info = {}
         else:
             ctrl_prop_info = ctrl_class_info.ctrl_properties
-        for k, v in kwargs['properties'].items():
+        for k, v in list(kwargs['properties'].items()):
             info = ctrl_prop_info.get(k)
             if info is None:
                 props[k] = v
@@ -525,7 +521,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 self.pool.get_element(id=elem_id)
             else:
                 tg_attr_validator = TangoAttributeNameValidator()
-                params = tg_attr_validator.getParams(elem_id)
+                params = tg_attr_validator.getUriGroups(elem_id)
                 if params is None:
                     raise Exception("Invalid channel name %s" % elem_id)
 
@@ -543,7 +539,10 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def rename_element(self, old_name, new_name):
         elem = self.get_element_by_name(old_name)
-        elem.controller.rename_element(old_name, new_name)
+        if type(elem) == PoolMeasurementGroup:
+            elem.rename_element(old_name, new_name)
+        else:
+            elem.controller.rename_element(old_name, new_name)
         PoolContainer.rename_element(self, old_name, new_name)
         elem = self.get_element_by_name(new_name)
         self.fire_event(EventType("ElementChanged"), elem)
@@ -581,6 +580,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.remove_element(elem)
 
         self.fire_event(EventType("ElementDeleted"), elem)
+        if hasattr(elem, "get_controller"):
+            elem.set_deleted(True)
 
     def create_instrument(self, full_name, klass_name, id=None):
         is_root = full_name.count('/') == 1
@@ -617,14 +618,50 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def stop(self):
+        msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
-            controller.stop_all()
+            if controller.is_pseudo():
+                continue
+            elif ElementType.IORegister in controller.get_ctrl_types():
+                # Skip IOR since they are not stoppable
+                continue
+            error_elements = controller.stop_elements()
+            if len(error_elements) > 0:
+                element_names = ""
+                for element in error_elements:
+                    element_names += element.name + " "
+                msg += ("Controller %s -> %s\n" %
+                        (controller.name, element_names))
+                self.error("Unable to stop %s controller: "
+                           "Stop of elements %s failed" %
+                           (controller.name, element_names))
+        if msg:
+            msg_init = "Elements which could not be stopped:\n"
+            raise Exception(msg_init + msg)
 
     def abort(self):
+        msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
-            controller.abort_all()
+            if controller.is_pseudo():
+                continue
+            elif ElementType.IORegister in controller.get_ctrl_types():
+                # Skip IOR since they are not stoppable
+                continue
+            error_elements = controller.abort_elements()
+            if len(error_elements) > 0:
+                element_names = ""
+                for element in error_elements:
+                    element_names += element.name + " "
+                msg += ("Controller %s -> %s\n" %
+                        (controller.name, element_names))
+                self.error("Unable to abort %s controller: "
+                           "Abort of elements %s failed" %
+                           (controller.name, element_names))
+        if msg:
+            msg_init = "Elements which could not be aborted:\n"
+            raise Exception(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # (Re)load code
@@ -652,8 +689,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             new_elements.extend(new_lib.get_controllers())
             new_elements.append(new_lib)
         else:
-            new_names = set([ctrl.name for ctrl in new_lib.get_controllers()])
-            old_names = set([ctrl.name for ctrl in old_lib.get_controllers()])
+            new_names = {ctrl.name for ctrl in new_lib.get_controllers()}
+            old_names = {ctrl.name for ctrl in old_lib.get_controllers()}
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
@@ -719,6 +756,6 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         for elem_type in TYPE_MOVEABLE_ELEMENTS:
             moveable_elems_map.update(elem_type_map[elem_type])
         graph = Graph()
-        for moveable in moveable_elems_map.values():
+        for moveable in list(moveable_elems_map.values()):
             self._build_element_dependencies(moveable, graph)
         return graph

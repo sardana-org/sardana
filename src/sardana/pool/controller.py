@@ -29,9 +29,11 @@ __all__ = ["DataAccess", "SardanaValue", "Type", "Access", "Description",
            "DefaultValue", "FGet", "FSet",
            "Memorized", "MemorizedNoInit", "NotMemorized", "MaxDimSize",
            "Controller", "Readable", "Startable", "Stopable", "Loadable",
+           "Referable", "Synchronizer",
            "MotorController", "CounterTimerController", "ZeroDController",
-           "OneDController", "TwoDController",
-           "PseudoMotorController", "IORegisterController"]
+           "OneDController", "TwoDController", "TriggerGateController",
+           "PseudoMotorController", "PseudoCounterController",
+           "IORegisterController"]
 
 __docformat__ = 'restructuredtext'
 
@@ -96,21 +98,25 @@ MaxDimSize = "maxdimsize"
 
 
 class Controller(object):
-    """Base controller class. Do **NOT** inherit from this class directly
+    """
+    Base controller class. Do **NOT** inherit from this class directly
 
-    :param str inst: controller instance name
-    :param dict props: a dictionary containning pairs of property name,
-                       property value
+    :param :obj:`str` inst: controller instance name
+    :param dict props: a dictionary containing pairs of property name,
+    property value
+
     :arg args:
-    :keyword kwargs:"""
+    :keyword kwargs:
+    """
 
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.ctrl_properties` instead
     class_prop = {}
 
     #: A sequence of :obj:`str` representing the controller features
     ctrl_features = []
-
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.axis_attributes` instead
     ctrl_extra_attributes = {}
@@ -303,7 +309,7 @@ class Controller(object):
         self._args = args
         self._kwargs = kwargs
         self._api_version = self._findAPIVersion()
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             setattr(self, prop_name, prop_value)
 
     def _findAPIVersion(self):
@@ -346,7 +352,7 @@ class Controller(object):
         """**Controller API**. The controller instance name.
 
         :return: the controller instance name
-        :rtype: str
+        :rtype: :obj:`str`
 
         .. versionadded:: 1.0"""
         return self._inst_name
@@ -355,7 +361,7 @@ class Controller(object):
         """**Controller API**. The axis name.
 
         :return: the axis name
-        :rtype: str
+        :rtype: :obj:`str`
 
         .. versionadded:: 1.0"""
         ctrl = self._getPoolController()
@@ -501,9 +507,9 @@ class Controller(object):
         Sends a string to the controller.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param str stream: stream to be sent
+        :param :obj:`str` stream: stream to be sent
         :return: any relevant information e.g. response of the controller
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         raise NotImplementedError("SendToCtrl not implemented")
 
 
@@ -551,6 +557,22 @@ class Stopable(object):
 
     .. note: Do not inherit directly from :class:`Stopable`."""
 
+    def PreAbortAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare a abort of all axis (whatever pre-abort means).
+        Default implementation does nothing."""
+        pass
+
+    def PreAbortOne(self, axis):
+        """**Controller API**. Override if necessary.
+        Called to prepare a abort of the given axis (whatever pre-abort means).
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :return: True means a successfull pre-abort or False for a failure
+        :rtype: bool"""
+        return True
+
     def AbortOne(self, axis):
         """**Controller API**. Override is MANDATORY!
         Default implementation raises :exc:`NotImplementedError`.
@@ -561,20 +583,25 @@ class Stopable(object):
 
     def AbortAll(self):
         """**Controller API**. Override if necessary.
-        Aborts all active axis of this controller. Default implementation
-        calls :meth:`~Controller.AbortOne` on each active axis.
+        Aborts all active axis of this controller.
+        Default implementation does nothing."""
+        pass
 
-        .. versionadded:: 1.0"""
-        exceptions = []
-        axes = self._getPoolController().get_element_axis().keys()
-        for axis in axes:
-            try:
-                self.AbortOne(axis)
-            except:
-                import sys
-                exceptions.append(sys.exc_info())
-        if len(exceptions) > 0:
-            raise Exception(exceptions)
+    def PreStopAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare a stop of all axis (whatever pre-stop means).
+        Default implementation does nothing."""
+        pass
+
+    def PreStopOne(self, axis):
+        """**Controller API**. Override if necessary.
+        Called to prepare a stop of the given axis (whatever pre-stop means).
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :return: True means a successfull pre-stop or False for a failure
+        :rtype: bool"""
+        return True
 
     def StopOne(self, axis):
         """**Controller API**. Override if necessary.
@@ -590,21 +617,8 @@ class Stopable(object):
     def StopAll(self):
         """**Controller API**. Override if necessary.
         Stops all active axis of this controller.
-        *This method is reserved for future implementation.*
-        Default implementation calls :meth:`~Controller.StopOne` on each
-        active axis.
-
-        .. versionadded:: 1.0"""
-        exceptions = []
-        axes = self._getPoolController().get_element_axis().keys()
-        for axis in axes:
-            try:
-                self.StopOne(axis)
-            except:
-                import sys
-                exceptions.append(sys.exc_info())
-        if len(exceptions) > 0:
-            raise Exception(exceptions)
+        Default implementation does nothing."""
+        pass
 
 
 class Readable(object):
@@ -650,22 +664,40 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
+    #: axis of the default timer
+    default_timer = None
+
+    def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        """**Controller API**. Override if necessary.
+        Called to prepare the master channel axis with the measurement
+        parameters.
+        Default implementation does nothing.
+
+        :param int axis: axis number
+        :param int repetitions: number of repetitions
+        :param float value: integration time / monitor count
+        :param float latency: latency time
+        :param int nb_starts: number of starts
+        """
+        pass
+
     def PreLoadAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare loading the integration time / monitor value.
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value, repetitions):
+    def PreLoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override if necessary.
-        Called to prepare loading the master channel axis with the integration
-        time / monitor value.
+        Called to prepare loading the master channel axis with the
+        acquisition parameters.
         Default implementation returns True.
 
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
-        :return: True means a successfull PreLoadOne or False for a failure
+        :param float latency: latency time
+        :return: True means a successful PreLoadOne or False for a failure
         :rtype: bool"""
         return True
 
@@ -675,7 +707,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
@@ -683,8 +715,34 @@ class Loadable(object):
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
+        :param float latency: latency time
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
+
+
+class Referable(object):
+    """A Referable interface. A controller for which it's axis can
+    report data references (like a 1D or 2D for example) should implement
+    this interface
+
+    .. note: Inherit from Referable together with either OneDController or
+        TwoDController
+
+    .. note::
+        The Referable class has been included in Sardana on a provisional
+        basis. Backwards incompatible changes (up to and including removal
+        of the class) may occur if deemed necessary by the core developers.
+    """
+
+    def RefOne(self, axis):
+        """**Controller API**. Override is MANDATORY!
+        Default implementation raises :exc:`NotImplementedError`
+
+        :param int axis: axis number
+        :return: the axis value
+        :rtype: object
+        """
+        raise NotImplementedError("RefOne must be defined in the controller")
 
 
 class Synchronizer(object):
@@ -858,7 +916,8 @@ class MotorController(Controller, Startable, Stopable, Readable):
         pass
 
 
-class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable):
+class CounterTimerController(Controller, Readable, Startable, Stopable,
+                             Loadable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
 
@@ -871,10 +930,16 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -931,14 +996,13 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         pass
 
     def StartAllCT(self):
-        """**Counter/Timer Controller API**. Override is MANDATORY!
-        Called to start an acquisition of a selected axis.
-        Default implementation raises :exc:`NotImplementedError`.
+        """**Counter/Timer Controller API**.
+        Called to start an acquisition of a group of channels.
+        Default implementation does nothing.
 
         .. deprecated:: 1.0
             use :meth:`~CounterTimerController.StartAll` instead"""
-        raise NotImplementedError("StartAll must be defined in the "
-                                  "controller")
+        pass
 
     def PreStartAll(self):
         """**Controller API**. Override if necessary.
@@ -977,10 +1041,10 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         return self.StartOneCT(axis)
 
     def StartAll(self):
-        """**Controller API**. Override is MANDATORY!
+        """**Controller API**.
         Default implementation calls deprecated
-        :meth:`~CounterTimerController.StartAllCT` which, by default, raises
-        :exc:`NotImplementedError`."""
+        :meth:`~CounterTimerController.StartAllCT` which, by default, does
+        nothing."""
         return self.StartAllCT()
 
 
@@ -1003,10 +1067,14 @@ class ZeroDController(Controller, Readable, Stopable):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1028,11 +1096,17 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     .. versionadded:: 1.2"""
 
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': (float,),
                   'description': 'Value',
                   'maxdimsize': (16 * 1024,)},
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1047,9 +1121,12 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
@@ -1064,9 +1141,17 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     implement your own 2D controller for the device pool."""
 
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': ((float,),),
                   'description': 'Value',
                   'maxdimsize': (4 * 1024, 4 * 1024)},
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1080,9 +1165,12 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
@@ -1340,9 +1428,9 @@ class PseudoMotorController(PseudoController):
         dict_ids = self._getPoolController().get_element_ids()
         dict_axis = self._getPoolController().get_element_axis()
         pseudo_motor_ids = []
-        for akey, aname in dict_axis.items():
+        for akey, aname in list(dict_axis.items()):
             pseudo_motor_ids.append(
-                dict_ids.keys()[dict_ids.values().index(aname)])
+                list(dict_ids.keys())[list(dict_ids.values()).index(aname)])
         return self._getElem(index_or_role, self.pseudo_motor_roles,
                              self.__pseudo_motor_role_elements,
                              pseudo_motor_ids)
@@ -1372,10 +1460,14 @@ class PseudoCounterController(Controller):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Data', },
     }
 
     #: A :obj:`str` representing the controller gender
@@ -1431,7 +1523,7 @@ class IORegisterController(Controller, Readable):
     """Base class for a IORegister controller. Inherit from this class to
     implement your own IORegister controller for the device pool.
     """
-
+    #:
     #: .. deprecated:: 1.0
     #:     use :attr:`~Controller.axis_attributes` instead
     predefined_values = ()

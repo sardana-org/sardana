@@ -8,36 +8,69 @@ services:
   - docker
 
 python:
-  - "2.7"
+  - "3.5"
 
 env:
+  global:
+    # Doctr deploy key for sardana-org/sardana-doc
+    - secure: "p/0UgVZzPKJQqcvQ/97qMgo9kPCE0cZ6vI+308YEJ2o9xj4a3FsfHCZ/vWtjdsrp1sQbtKVDesx+xmK4CLDzQeC2+Xskv8OZDjaG2jYkHcVosZEM3EGW8rLVKzoDWLr6cTy2wexLgjHPCsmrjukPs49/i5p+WU0no64YoLlZdp9TT+gvWSQJLIk6R4eqt4FHMszPybLv0pvb1SEiCzimlX1WM1pBrE0LHgchd2ZBYSUWTTwe+Koi4HCS4Bads8j20K2e3fFKcmR2u9DfmU+7Mf5HRJsj1LYJgBUF76lUG2/fZfpoDe8sWi+eUewTa3zNM4bhRLpV+pmG0ypplM4pIcdvwiHV03nGSGu6XK6OGQ/Mgsw0fmud4JR4f5g9DgEfERlyJKI4A9mPZQ327OmEwOOl33x2AFJAL05Qvm0yXCkf1dwgYXnZl44SQbAczY1NHFL90t6xbHtmTitJrE2Xb+4BLzMe3OOZj6j/0QeiXA4z1FnZr1s8UoAsm68iW194IuFg1RRG9FTISFWaBew5wzwvAJak0DxkpG0k43VkHiVC7sPHqr5CxXMXO/MuaptK2ti6iLK9xBAEUpO9HluOkeJq5WDIIxBiBS9tPi0i3vIpq87RjHkdw5n7pdIqnuJ1nXUjpWsuUyV3fLkY12fFxSbZgqmNhIE5/o9c5VP/69Y="
+
+  matrix:
   - TEST="flake8"
-  - TEST="testsuite"
+  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test
+  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test
+
 
 before_install:
   # install flake8 to perform python code style check in the script part
   # install it using pip in order to get the newest version
   - if [ $TEST == "flake8" ]; then sudo apt-get update -qq ; fi
-  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python-pip; fi
-  - if [ $TEST == "flake8" ]; then sudo pip install flake8; fi
+  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python3-pip; fi
+  - if [ $TEST == "flake8" ]; then sudo pip3 install flake8; fi
 
 install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
-  - if [ $TEST == "testsuite" ]; then docker pull reszelaz/sardana-test; fi
-  - if [ $TEST == "testsuite" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test; fi
+  - if [ $TEST != "flake8" ]; then docker pull $DOCKER_IMG; fi
+  - if [ $TEST != "flake8" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana $DOCKER_IMG; fi
 
   # wait approx. 10 s (supervisor starts mysql and Tango DB)
   - if [ $TEST == "testsuite" ]; then sleep 10; fi
 
   # install sardana in order to create the launcher scripts for servers
-  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python setup.py install"; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python3 setup.py install"; fi
 
   # start Pool and MacroServer necessary for macro tests
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start MacroServer; fi
 
 script:
+  # make the script fail if a line fails
+  - set -e
   # run flake8 check on all python files in the project
   - if [ $TEST == "flake8" ]; then ci/flake8_diff.sh; fi
   # run the full testsuite
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
+  # build docs
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ; fi
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ; fi
+
+deploy:
+  # deploy to pypi when a version tag is pushed to the official repo
+  - provider: pypi
+    user: sardana_bot
+    password:
+      secure: "HvZGtw8qFlacssi7FE92+gFgQPRRPvurpPxi/Gq74TeKWU0X4EbWVT3XMdi7sb7yA7JQlOGIGtY3ofzEdrKgKcEsrxxKbeSW7foDf3+AlmMF7c31ePxkqBCGMSAxsaCjKJR2sVtBNiycp0I7LWYeKlzFNY2W8aZW9dnpkC9aD/oGdNRJlCVGq912xaTnXRxmUrh+2IeUqsXKqfih7E0Qw99VXOLFdHIHtoPGN5ka+tvLp+zNFMi1q2HUyix4P/aQ10BwE5t1onfdSBBh7bzZTINoUVuN1bstNXYcoqfVMAbOoeArIIr7z41eYd8G8WMTXJp2MFrO61AW6xK8htB07RX2eaEWq7KT4zazG5vP/Skayr7ofnB/d3Rs1BOre9ttScJIxwyQLhL60WeM9NyCoHVjNdKYK5gNHX4se/6FOzmHm1VgQgI9bzyfIIAoSSyUL/5KOGdOwhMPSij5AT1YIy8RSe7efm+xw3md+wcmEsbaMX9VEy2YgTL0/nmFHrEA+9HV0I5xkFBQ8BHuK0YFubQ9rG99B1GwF0Vl85M+Ylp5D1/p70sXCHEUk3SbOcg9Kz0TTisDMuDT2ajJYGylg7/OskI5OwOBbEndP8OUPesm62V1ciQcKjH2L81yWajRPSfd/OPjoMwG+XdaG5rR7m2FACXvyhEOIeK1Mt41MvM="
+    on:
+      repo: sardana-org/sardana
+      tags: true
+      condition: "$TEST == testsuite && $DOCKER_IMG == reszelaz/sardana-test && $TRAVIS_TAG =~ ^[0-9]+.[0-9]+.[0-9]+$"
+  - provider: pages
+    local_dir: build/sphinx/html
+    repo: sardana-org/sardana-doc
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+    keep_history: true
+    fqdn: sardana-controls.org  # Set custom domain
+    on:
+      branch: develop
+      condition: "$TEST == doc"

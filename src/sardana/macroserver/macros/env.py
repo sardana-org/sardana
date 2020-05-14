@@ -23,12 +23,16 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv"]
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
+           "lsvo", "setvo", "usetvo",
+           "lsgh", "defgh", "udefgh"]
 
 __docformat__ = 'restructuredtext'
 
+import taurus
 from taurus.console.list import List
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.msexception import UnknownEnv
 
 ##########################################################################
 #
@@ -53,7 +57,7 @@ class dumpenv(Macro):
     def run(self):
         env = self.getGlobalEnv()
         out = List(['Name', 'Value', 'Type'])
-        for k, v in env.iteritems():
+        for k, v in env.items():
             str_v = reprValue(v)
             type_v = type(v).__name__
             out.appendRow([str(k), str_v, type_v])
@@ -68,7 +72,7 @@ class lsvo(Macro):
     def run(self):
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
-        for key, value in vo.items():
+        for key, value in list(vo.items()):
             out.appendRow([key, str(value)])
 
         for line in out.genOutput():
@@ -76,7 +80,20 @@ class lsvo(Macro):
 
 
 class setvo(Macro):
-    """Sets the given view option to the given value"""
+    """Sets the given view option to the given value.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+
+    """
+
+
 
     param_def = [['name', Type.String, None, 'View option name'],
                  ['value', Type.String, None, 'View option value']]
@@ -90,7 +107,17 @@ class setvo(Macro):
 
 
 class usetvo(Macro):
-    """Resets the value of the given view option"""
+    """Resets the value of the given view option.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+    """
 
     param_def = [['name', Type.String, None, 'View option name']]
 
@@ -293,3 +320,245 @@ class load_env(Macro):
             for parameter in misc_tree:
                 if parameter.tag != "name":
                     self.setEnv(parameter.tag, parameter.text)
+
+
+class lsgh(Macro):
+    """List general hooks.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def run(self):
+        try:
+            general_hooks = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            self.output("No general hooks")
+            return
+
+        out = List(['Hook place', 'Hook(s)'])
+        default_dict = {}
+        for hook in general_hooks:
+            name = hook[0]
+            places = hook[1]
+            for place in places:
+                if place not in list(default_dict.keys()):
+                    default_dict[place] = []
+                default_dict[place].append(name)
+        for pos in list(default_dict.keys()):
+            pos_set = 0
+            for hook in default_dict[pos]:
+                if pos_set:
+                    out.appendRow(["", hook])
+                else:
+                    out.appendRow([pos, hook])
+                pos_set = 1
+        for line in out.genOutput():
+            self.output(line)
+
+
+class defgh(Macro):
+    """Define general hook:
+
+    >>> defgh "mv [[mot02 9]]" pre-scan
+    >>> defgh "ct 0.1" pre-scan
+    >>> defgh lsm pre-scan
+    >>> defgh "mv mot03 10" pre-scan
+    >>> defgh "Print 'Hello world'" pre-scan
+
+    .. note::
+        The `defgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+
+    """
+
+    param_def = [
+        ['macro_name', Type.String, None, ('Macro name with parameters. '
+                                           'Ex.: "mv exp_dmy01 10"')],
+        ['hookpos_list',
+         ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
+         None, 'List of positions where the hook has to be executed'],
+    ]
+
+    def run(self, macro_name, position):
+
+        self.info("Defining general hook")
+        self.output(macro_name)
+        try:
+            macros_list = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            macros_list = []
+
+        hook_tuple = (macro_name, position)
+        self.debug(hook_tuple)
+        macros_list.append(hook_tuple)
+        self.setEnv("_GeneralHooks", macros_list)
+        self.debug("General hooks:")
+        self.debug(macros_list)
+
+
+class udefgh(Macro):
+    """Undefine general hook. Without arguments undefine all.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    param_def = [
+        ['macro_name', Type.String, "all", 'General hook to be undefined'],
+        ['hook_pos', Type.String, "all", ('Position to undefine the general '
+                                          'hook from')],
+    ]
+
+    def run(self, macro_name, hook_pos):
+        try:
+            gh_macros_list = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            return
+
+        if macro_name == "all":
+            self.unsetEnv("_GeneralHooks")
+            self.info("Undefine all general hooks")
+        else:
+            macros_list = []
+            for el in gh_macros_list:
+                if el[0] != macro_name:
+                    macros_list.append(el)
+                else:
+                    self.info("Hook %s is undefineed" % macro_name)
+
+            self.setEnv("_GeneralHooks", macros_list)
+
+
+class lssnap(Macro):
+    """List pre-scan snapshot group.
+
+    .. todo:: print in form of a table
+
+    .. note::
+        The `lssnap` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def run(self):
+        try:
+            snapshot_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            self.output("No pre-scan snapshot")
+            return
+        out = List(['Snap item', 'Snap item full name'])
+        for full_name, label in snapshot_items:
+            out.appendRow([label, full_name])
+        for line in out.genOutput():
+            self.output(line)
+
+
+class defsnap(Macro):
+    """Define snapshot group item(s). Accepts:
+    - Pool moveables: motor, pseudo motor
+    - Pool experimental channels: counter/timer, 0D, 1D, 2D, pseudo counter
+    - Taurus attributes
+
+    .. note::
+        The `addsnap` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    param_def = [
+        ["snap_names", [[
+            "name", Type.String, None, "Name of an item to be added to the "
+                                       "pre-scan snapshot group"]],
+            None,
+            "Items to be added to the pre-scan snapshot group"],
+    ]
+
+    def run(self, snap_names):
+
+        def get_item_info(item):
+            if isinstance(item, taurus.core.TaurusAttribute):
+                return item.fullname, item.label
+            else:
+                return item.full_name, item.name
+        try:
+            snap_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            snap_items = []
+        snap_full_names = [item[0] for item in snap_items]
+        new_snap_items = []
+        for name in snap_names:
+            obj = self.getObj(name)
+            if obj is None:
+                try:
+                    obj = taurus.Attribute(name)
+                except taurus.TaurusException:
+                    raise ValueError("item is neither Pool element not "
+                                     "Taurus attribute")
+            elif obj.type == "MotorGroup":
+                raise ValueError("MotorGroup item type is not accepted")
+            new_full_name, new_label = get_item_info(obj)
+            if new_full_name in snap_full_names:
+                msg = "{} already in pre-scan snapshot".format(name)
+                raise ValueError(msg)
+            new_snap_items.append((new_full_name, new_label))
+        self.setEnv("PreScanSnapshot", snap_items + new_snap_items)
+
+
+class udefsnap(Macro):
+    """Undefine snapshot group item(s). Without arguments undefine all.
+
+    .. note::
+        The `udefsnap` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    param_def = [
+        ["snap_names", [[
+            "name", Type.String, None, "Name of an item to be removed "
+                                       "from the pre-scan snapshot group",
+            ], {"min": 0}],
+         None,
+         "Items to be remove from the pre-scan snapshot group"],
+    ]
+
+    def run(self, snap_names):
+        if len(snap_names) == 0:
+            self.unsetEnv("PreScanSnapshot")
+            return
+        try:
+            snap_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            raise RuntimeError("no pre-scan snapshot defined")
+        snap_full_names = {}
+        for i, item in enumerate(snap_items):
+            snap_full_names[item[0]] = i
+        for name in snap_names:
+            obj = self.getObj(name)
+            if obj is None:
+                try:
+                    obj = taurus.Attribute(name)
+                except taurus.TaurusException:
+                    raise ValueError("item is neither Pool element not "
+                                     "Taurus attribute")
+            elif obj.type == "MotorGroup":
+                raise ValueError("MotorGroup item type is not accepted")
+            rm_full_name = obj.fullname
+            if rm_full_name not in snap_full_names.keys():
+                msg = "{} not in pre-scan snapshot".format(name)
+                raise ValueError(msg)
+            i = snap_full_names[rm_full_name]
+            snap_items.pop(i)
+        self.setEnv("PreScanSnapshot", snap_items)

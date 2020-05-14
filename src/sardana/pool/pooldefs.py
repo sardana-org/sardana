@@ -31,7 +31,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
 __docformat__ = 'restructuredtext'
 
 from operator import __getitem__
-from taurus.external.enum import IntEnum
+from enum import IntEnum
 from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 
@@ -68,7 +68,8 @@ class SynchDomain(SynchEnum):
 
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
-    - Monitor - not used at the moment but foreseen for synchronization on monitor
+    - Monitor - not used at the moment but foreseen for synchronization on
+      monitor
 
     .. note::
         The SynchDomain class has been included in Sardana
@@ -80,8 +81,10 @@ class SynchDomain(SynchEnum):
     Position = 1
     Monitor = 2
 #     - Default - the controller selects the most appropriate domain:
-#       for active events the precedence should be first Position and then Time
-#       for passive events the precedence should be first Time and then Position
+#       for active events the precedence should be first Position and then
+#       Time
+#       for passive events the precedence should be first Time and then
+#       Position
 #    Default = 3
 
 
@@ -107,24 +110,63 @@ class SynchParam(SynchEnum):
     Repeats = 3
     Initial = 4
 
-# TODO: convert to to python enums, but having in ming problems with
-# JSON serialization: https://bugs.python.org/issue18264
-# class AcqSynchType(Enumeration):
-#
-#     Trigger = 0
-#     Gate = 1
 
-AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate"])
+AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])
+AcqSynchType.__doc__ = \
+    """Enumeration of synchronization types.
+
+    Options:
+
+    - Trigger - Start each acquisition (experimental channel will decide on
+      itself when to end, based on integration time / monitor count)
+    - Gate - Start and end each acquisition
+    - Start - Start only the first acquisition (experimental channel will
+      drive the acquisition based on integration time / monitor count, latency
+      time and number of repetitions)
+
+    .. todo:: convert to python enums, but having in mind problems with
+             JSON serialization: https://bugs.python.org/issue18264
+    """
 
 
-# TODO: convert to to python enums, but having in ming problems with
-# JSON serialization: https://bugs.python.org/issue18264
-class AcqSynch(Enumeration):
+class AcqSynch(IntEnum):
+    """Enumeration of synchronization options.
 
+    Uses software/hardware naming to refer to internal (software
+    synchronizer) or external (hardware synchronization device)
+    synchronization modes. See :obj:`~sardana.pool.pooldefs.AcqSynchType`
+    to get more details about the synchronization type e.g. trigger, gate or
+    start.
+    """
     SoftwareTrigger = 0
+    """Internal (software) trigger
+    
+    .. image:: /_static/acqsynch_softtrig.png
+    """
     HardwareTrigger = 1
+    """External (hardware) trigger
+    
+    .. image:: /_static/acqsynch_hardtrig.png
+    """
     SoftwareGate = 2
+    """Internal (software) gate - not implemented
+    """
     HardwareGate = 3
+    """External (hardware) gate
+    
+    .. image:: /_static/acqsynch_hardgate.png
+    """
+    SoftwareStart = 4
+    """
+    Internal (software) start (triggers just the first acquisition)
+    
+    .. image:: /_static/acqsynch_softstart.png
+    """
+    HardwareStart = 5
+    """External (hardware) start (triggers just the first acquisition)
+    
+    .. image:: /_static/acqsynch_hardstart.png
+    """
 
     @classmethod
     def from_synch_type(self, software, synch_type):
@@ -141,6 +183,11 @@ class AcqSynch(Enumeration):
                 return AcqSynch.SoftwareGate
             else:
                 return AcqSynch.HardwareGate
+        elif synch_type is AcqSynchType.Start:
+            if software:
+                return AcqSynch.SoftwareStart
+            else:
+                return AcqSynch.HardwareStart
         else:
             raise ValueError("Unable to determine AcqSynch from %s" %
                              synch_type)

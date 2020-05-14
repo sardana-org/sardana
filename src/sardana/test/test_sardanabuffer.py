@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 
 from sardana.sardanabuffer import SardanaBuffer
 

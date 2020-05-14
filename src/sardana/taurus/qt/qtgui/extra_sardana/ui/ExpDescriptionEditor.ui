@@ -72,19 +72,6 @@
            </property>
           </spacer>
          </item>
-         <item>
-          <widget class="QToolButton" name="plotsButton" >
-           <property name="toolTip" >
-            <string>If checked, the configured plots are shown</string>
-           </property>
-           <property name="text" >
-            <string>plots</string>
-           </property>
-           <property name="checkable" >
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
        <item>

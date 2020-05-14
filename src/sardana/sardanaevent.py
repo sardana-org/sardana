@@ -26,7 +26,7 @@
 """This module is part of the Python Pool libray. It defines the base classes
 for pool event mechanism"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["EventGenerator", "EventReceiver", "EventType"]
 
@@ -179,12 +179,12 @@ class EventType(object):
         """Returns this event name
 
         :return: this event name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.name
 
     def get_priority(self):
         """Returns this event priority
 
         :return: this event priority
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.priority

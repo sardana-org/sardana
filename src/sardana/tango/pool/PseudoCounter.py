@@ -32,7 +32,7 @@ __docformat__ = 'restructuredtext'
 import sys
 import time
 
-from PyTango import Except, READ, SCALAR, DevDouble, \
+from PyTango import Except, READ, SCALAR, SPECTRUM, IMAGE, DevDouble, \
     DevVarStringArray, DevVarDoubleArray, DevState, AttrQuality, DevFailed
 
 from taurus.core.util.log import DebugIt
@@ -76,7 +76,7 @@ class PseudoCounter(PoolExpChannelDevice):
     def init_device(self):
         PoolExpChannelDevice.init_device(self)
 
-        self.Elements = map(int, self.Elements)
+        self.Elements = list(map(int, self.Elements))
         pseudo_counter = self.pseudo_counter
         if pseudo_counter is None:
             full_name = self.get_full_name()
@@ -113,10 +113,6 @@ class PseudoCounter(PoolExpChannelDevice):
         timestamp = time.time()
         name = event_type.name.lower()
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
 
         try:
             attr = self.get_attribute_by_name(attr_name)
@@ -176,19 +172,29 @@ class PseudoCounter(PoolExpChannelDevice):
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
-            # type (between long and float)
+            # type (between long and float) and data format (scalar, spectrum
+            # or image)
             value = std_attrs.get('value')
             if value is not None:
                 _, data_info, attr_info = value
-                ttype, _ = to_tango_type_format(attr_info.dtype)
+                ttype, tformat = to_tango_type_format(attr_info.dtype,
+                                                      attr_info.dformat)
                 data_info[0][0] = ttype
+                data_info[0][1] = tformat
+                if tformat == SPECTRUM:
+                    shape = attr_info.maxdimsize
+                    data_info[0].append(shape[0])
+                elif tformat == IMAGE:
+                    shape = attr_info.maxdimsize
+                    data_info[0].append(shape[0])
+                    data_info[0].append(shape[1])
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
         attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -214,7 +220,7 @@ class PseudoCounter(PoolExpChannelDevice):
         state = pseudo_counter.get_state(cache=use_cache, propagate=0)
         if state == State.Moving:
             quality = AttrQuality.ATTR_CHANGING
-        timestamp = value_attr.value
+        timestamp = value_attr.timestamp
         self.set_attribute(attr, value=value, quality=quality,
                            priority=0, timestamp=timestamp)
 

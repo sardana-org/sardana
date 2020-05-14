@@ -36,10 +36,12 @@ Projects related to Sardana
 .. toctree::
     :hidden:
 
-    Home Page <http://sardana-controls.org>
+    Home Page <http://www.sardana-controls.org>
     Project Page <https://github.com/sardana-org/sardana>
     Download from PyPI <http://pypi.python.org/pypi/sardana>
-    docs
+    Documentation <docs>
+    Plugins Catalogue <http://github.com/sardana-org/sardana-plugins>
+    Wiki <http://github.com/sardana-org/sardana/wiki>
 
 .. _ALBA: http://www.albasynchrotron.es
 .. _DESY: http://www.desy.de

@@ -12,7 +12,7 @@ The basics
 An example of a hypothetical *Springfield* trigger/gate controller will be build
 incrementally from scratch to aid in the explanation.
 
-By now you should have read the general controller basics chapter. You should
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. You should
 be able to create a TriggerGateController with:
 
 - a proper constructor
@@ -146,7 +146,7 @@ of length 0.1 second equally spaced on a distance of 100 units.
             SynchParam.Initial: {SynchDomain.Time: None, SynchDomain.Position: 0},
             SynchParam.Active:  {SynchDomain.Time: 0.1, SynchDomain.Position: 1},
             SynchParam.Total:   {SynchDomain.Time: 1, SynchDomain.Position: 10},
-            SynchParam.Repeats: 10},
+            SynchParam.Repeats: 10,
         }
     ]
 

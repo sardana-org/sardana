@@ -30,12 +30,7 @@ __all__ = ["PoolBaseGroup"]
 
 __docformat__ = 'restructuredtext'
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
 from sardana.pool.poolexternal import PoolExternalObject
@@ -75,7 +70,7 @@ class PoolBaseGroup(PoolContainer):
     def _set_action_cache(self, action_cache):
         physical_elements = self.get_physical_elements()
         if self._action_cache is not None:
-            for ctrl_physical_elements in physical_elements.values():
+            for ctrl_physical_elements in list(physical_elements.values()):
                 for physical_element in ctrl_physical_elements:
                     action_cache.remove_element(physical_element)
 
@@ -86,7 +81,7 @@ class PoolBaseGroup(PoolContainer):
             action_cache = self._create_action_cache()
         if physical_elements is None:
             physical_elements = self.get_physical_elements()
-        for _, ctrl_physical_elements in physical_elements.items():
+        for _, ctrl_physical_elements in list(physical_elements.items()):
             for physical_element in ctrl_physical_elements:
                 action_cache.add_element(physical_element)
         return action_cache
@@ -113,7 +108,7 @@ class PoolBaseGroup(PoolContainer):
                 # lock!
                 si = elem.inspect_state(), elem.inspect_status()
                 state_info[elem] = si
-        for elem, elem_state_info in state_info.items():
+        for elem, elem_state_info in list(state_info.items()):
             elem_type = elem.get_type()
             if elem_type == ElementType.External:
                 continue
@@ -175,12 +170,8 @@ class PoolBaseGroup(PoolContainer):
             # a tango channel or non internal element (ex: ioregister or motor
             # in measurement group)
             if not internal:
-                # TODO: for Taurus4 compatibility
                 validator = TangoAttributeNameValidator()
-                params = validator.getParams(user_element_id)
-                if params is None:
-                    user_element_id = "tango://%s" % user_element_id
-                    params = validator.getParams(user_element_id)
+                params = validator.getUriGroups(user_element_id)
                 params['pool'] = self._get_pool()
                 user_element = PoolExternalObject(**params)
             self.add_user_element(user_element)
@@ -261,7 +252,7 @@ class PoolBaseGroup(PoolContainer):
 
         :return: an iterator over the physical elements.
         :rtype: iter<:class:`~sardana.pool.poolelement.PoolElement` >"""
-        for _, elements in self.get_physical_elements().items():
+        for _, elements in list(self.get_physical_elements().items()):
             for element in elements:
                 yield element
 
@@ -321,7 +312,8 @@ class PoolBaseGroup(PoolContainer):
             own_elements.add(element)
             physical_elements_set.add(element)
         else:
-            for ctrl, elements in element.get_physical_elements().items():
+            elem_physical_elements = element.get_physical_elements()
+            for ctrl, elements in list(elem_physical_elements.items()):
                 own_elements = physical_elements.get(ctrl)
                 if own_elements is None:
                     physical_elements[ctrl] = own_elements = set()
@@ -360,33 +352,61 @@ class PoolBaseGroup(PoolContainer):
     # --------------------------------------------------------------------------
 
     def stop(self):
-        for ctrl, elements in self.get_physical_elements().items():
-            self.debug("Stopping %s %s", ctrl.name, [e.name for e in elements])
+        msg = ""
+        for ctrl, elements in list(self.get_physical_elements().items()):
+            self.debug("Stopping %s %s", ctrl.name,
+                       [e.name for e in elements])
             try:
-                ctrl.stop_elements(elements=elements)
-            except:
+                error_elements = ctrl.stop_elements(elements=elements)
+                if len(error_elements) > 0:
+                    element_names = [elem.name for elem in error_elements]
+                    msg += ("Controller %s -> %s\n" %
+                            (ctrl.name, element_names))
+                    self.error("Unable to stop %s controller: "
+                               "Stop of elements %s failed" %
+                               (ctrl.name, element_names))
+            except Exception:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
+        if msg:
+            msg_init = "Elements which could not be stopped:\n"
+            # TODO: think about a more specific type of exception
+            raise Exception(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # abort
     # --------------------------------------------------------------------------
 
     def abort(self):
-        for ctrl, elements in self.get_physical_elements().items():
-            self.debug("Aborting %s %s", ctrl.name, [e.name for e in elements])
+        msg = ""
+        for ctrl, elements in list(self.get_physical_elements().items()):
+            self.debug("Aborting %s %s", ctrl.name,
+                       [e.name for e in elements])
             try:
-                ctrl.abort_elements(elements=elements)
-            except:
+                error_elements = ctrl.abort_elements(elements=elements)
+                # TODO: report elements that could not be aborted by their
+                # names
+                if len(error_elements) > 0:
+                    element_names = [elem.name for elem in error_elements]
+                    msg += ("Controller %s -> %s\n" %
+                            (ctrl.name, element_names))
+                    self.error("Unable to abort %s controller: "
+                               "Abort of axes %s failed" %
+                               (ctrl.name, element_names))
+            except Exception:
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
+        if msg:
+            msg_init = "Elements which could not be aborted:\n"
+            # TODO: think about a more specific type of exception
+            raise Exception(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # involved in an operation
     # --------------------------------------------------------------------------
 
     def get_operation(self):
-        for _, elements in self.get_physical_elements().items():
+        for _, elements in list(self.get_physical_elements().items()):
             for element in elements:
                 op = element.get_operation()
                 if op is not None:

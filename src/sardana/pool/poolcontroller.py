@@ -33,19 +33,22 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import weakref
-import StringIO
+import io
 import traceback
 import functools
 
 from taurus.core.util.containers import CaselessDict
 
-from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
+from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS,\
+    TYPE_PSEUDO_ELEMENTS
 from sardana.sardanaevent import EventType
 from sardana.sardanavalue import SardanaValue
 from sardana.sardanautils import is_non_str_seq, is_number
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
+from sardana.pool.controller import Referable, Access, DataAccess,\
+    Description, Type
 
 
 class PoolBaseController(PoolBaseElement):
@@ -68,7 +71,7 @@ class PoolBaseController(PoolBaseElement):
         raise NotImplementedError
 
     def get_ctrl_type_names(self):
-        return map(ElementType.whatis, self.get_ctrl_types())
+        return list(map(ElementType.whatis, self.get_ctrl_types()))
 
     def is_online(self):
         return True
@@ -81,7 +84,7 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
-        sio = StringIO.StringIO()
+        sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
         s = sio.getvalue()
         sio.close()
@@ -115,9 +118,9 @@ class PoolBaseController(PoolBaseElement):
 
     def remove_element(self, elem, propagate=1):
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
-        f = self._element_ids.has_key(eid)
+        f = eid in self._element_ids
         if not f:
-            f = self._pending_element_ids.has_key(eid)
+            f = eid in self._pending_element_ids
             if not f:
                 raise Exception("element '%s' is not in controller")
             del self._pending_element_ids[eid]
@@ -141,12 +144,12 @@ class PoolBaseController(PoolBaseElement):
         """Rename element in the controller.
 
         :param old_name: old name of the element
-        :type old_name: str
+        :type old_name: :obj:`str`
         :param new_name: new name of the element
-        :type new_name: str
+        :type new_name: :obj:`str`
         :param propagate: 0 for not propagating, 1 to propagate,
                2 propagate with priority
-        :type propagate: int
+        :type propagate: :obj:`int`
         """
         element = self._element_names.pop(old_name, None)
         if element is None:
@@ -159,9 +162,9 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_axis(self, axis, propagate=1):
-        f = self._element_axis.has_key(axis)
+        f = axis in self._element_axis
         if not f:
-            f = self._pending_element_axis.has_key(axis)
+            f = axis in self._pending_element_axis
             if not f:
                 raise Exception("element '%s' is not in controller")
             elem = self._pending_element_axis[axis]
@@ -377,7 +380,7 @@ class PoolController(PoolBaseController):
             self._ctrl_info = self._lib_info.get_controller(class_name)
         self._init()
 
-        for elem in elem_axis.values():
+        for elem in list(elem_axis.values()):
             self.add_element(elem, propagate=0)
 
         state, status = State.Fault, ""
@@ -396,6 +399,15 @@ class PoolController(PoolBaseController):
     def is_timerable(self):
         for t in self._ctrl_info.types:
             if t in TYPE_TIMERABLE_ELEMENTS:
+                return True
+        return False
+
+    def is_referable(self):
+        return isinstance(self.ctrl, Referable)
+
+    def is_pseudo(self):
+        for t in self._ctrl_info.types:
+            if t in TYPE_PSEUDO_ELEMENTS:
                 return True
         return False
 
@@ -450,7 +462,26 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def get_axis_attributes(self, axis):
-        return self.ctrl.GetAxisAttributes(axis)
+        axis_attrs = self.ctrl.GetAxisAttributes(axis)
+        if self.is_referable():
+            referable_axis_attrs = {
+                "ValueRef": {Type: str,
+                             Access: DataAccess.ReadOnly,
+                             Description: "Value reference", },
+                # TODO: in case of Tango ValueBuffer type is overridden
+                # by DevEncoded
+                "ValueRefBuffer": {Type: str,
+                                   Access: DataAccess.ReadOnly,
+                                   Description: "Value reference buffer", },
+                "ValueRefPattern": {Type: str,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: "Value reference template"},
+                "ValueRefEnabled": {Type: bool,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: "Value reference enabled"}
+                }
+            axis_attrs.update(referable_axis_attrs)
+        return axis_attrs
 
     @check_ctrl
     def get_ctrl_attr(self, name):
@@ -536,7 +567,7 @@ class PoolController(PoolBaseController):
             information for each axis and a boolean telling if an error occured
         :rtype: dict<PoolElement, state info>, bool"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_states is None:
             ctrl_states = {}
 
@@ -587,17 +618,19 @@ class PoolController(PoolBaseController):
 
     def _read_axis_value(self, element):
 
-        def is_chunk(type_, value):
-            if type_ == ElementType.CTExpChannel and is_non_str_seq(value):
+        def is_chunk(type_, obj):
+            if not is_non_str_seq(obj):
+                return False
+            if type_ == ElementType.CTExpChannel:
                 return True
-            elif (type_ == ElementType.OneDExpChannel and
-                  is_non_str_seq(value)):
+            elif type_ == ElementType.OneDExpChannel:
                 # empty list is also considered as chunk
-                if (len(value) == 0 or not is_number(value[0])):
+                if len(obj) == 0 or not is_number(obj[0]):
                     return True
-            elif (type_ == ElementType.TwoDExpChannel and len(value) > 0
-                  and not is_number(value[0][0])):
-                return True
+            elif type_ == ElementType.TwoDExpChannel:
+                # empty list is also considered as chunk
+                if len(obj) == 0 or not is_number(obj[0][0]):
+                    return True
             return False
 
         try:
@@ -627,7 +660,7 @@ class PoolController(PoolBaseController):
         :return: a map containing the controller value information for each axis
         :rtype: dict<PoolElement, SardanaValue>"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -660,162 +693,273 @@ class PoolController(PoolBaseController):
                        all active axis in this controller
         :type axes: seq<int> or None
         :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, SardanaValue>"""
+        :rtype: dict<PoolElement, SardanaValue>
+
+        """
         return self.raw_read_axis_values(axes=axes)
 
-    def raw_stop_all(self):
+    def _read_axis_value_refs(self, element):
+
+        def is_chunk(obj):
+            if is_non_str_seq(obj):
+                return True
+            return False
+
         try:
-            return self._raw_stop_all()
-        except:
-            pass
+            axis = element.get_axis()
+            ctrl_value = self.ctrl.RefOne(axis)
+            if ctrl_value is None:
+                msg = ('%s.RefOne(%s[%d]) return error: Expected value '
+                       'ref(s), got None instead' % (self.name,
+                                                     element.name, axis))
+                raise ValueError(msg)
 
-    def raw_stop_one(self, axis):
-        try:
-            self._raw_stop_one(axis)
-        except:
-            pass
+            if is_chunk(ctrl_value):
+                value = [translate_ctrl_value(v) for v in ctrl_value]
+            else:
+                value = translate_ctrl_value(ctrl_value)
+        except Exception:
+            value = SardanaValue(exc_info=sys.exc_info())
+        return value
 
-    def _raw_stop_all(self):
-        try:
-            return self.ctrl.StopAll()
-        except:
-            self.warning("StopAll() raises exception")
-            self.debug("Details:", exc_info=1)
-            raise
+    def raw_read_axis_value_refs(self, axes=None, ctrl_values=None):
+        """**Unsafe method**. Reads the value refs for the given axes. If axes
+        is None, reads the value of all active axes.
 
-    def _raw_stop_one(self, axis):
-        try:
-            self.ctrl.StopOne(axis)
-        except:
-            self.warning("StopOne(%d) raises exception", axis)
-            self.debug("Details:", exc_info=1)
-            raise
+        .. note::
+            The raw_read_axis_value_refs method has been included in Sardana
+            on a provisional basis. Backwards incompatible changes (up to
+            and including removal of the class) may occur if deemed
+            necessary by the core developers.
 
-    @check_ctrl
-    def stop_all(self):
-        self.raw_stop_all()
+        .. todo::
+            This method should be available only on the controllers which
+            are *referable*.
 
-    stop = stop_all
-
-    @check_ctrl
-    def stop_one(self, axis):
-        return self.raw_stop_one(axis)
-
-    @check_ctrl
-    def stop_axes(self, axes=None):
-        """Stops the given axes. If axes is None, stops all active axes.
-
-        :param axes: the list of axis to stop. Default is None
-                       meaning all active axis in this controller
+        :param axes: the list of axis to get the value. Default is None
+            meaning all active axis in this controller
         :type axes: seq<int> or None
+        :return: a map containing the controller value information for each
+            axis
+        :rtype: dict<PoolElement, SardanaValue>
         """
         if axes is None:
-            return self.raw_stop_all()
+            axes = list(self._element_axis.keys())
+        if ctrl_values is None:
+            ctrl_values = {}
 
         for axis in axes:
-            self.raw_stop_one(axis)
+            element = self.get_element(axis=axis)
+            ctrl_values[element] = self._read_axis_value_refs(element)
+
+        return ctrl_values
+
+    def stop_axes(self, axes):
+        """Stops the given axes.
+
+        :param axes: the list of axes to stopped.
+        :type axes: list<axes>
+        :return: list of axes that could not be stopped
+        :rtype: list<int>
+        """
+        ctrl = self.ctrl
+
+        # PreStopAll
+        try:
+            ctrl.PreStopAll()
+        except Exception:
+            msg = "%s.PreStopAll has failed" % self.name
+            self.warning(msg, exc_info=True)
+            return axes
+
+        error_axes = []
+        for axis in axes:
+            # PreStopOne
+            msg = "%s.PreStopOne(%d) has failed" % (self.name, axis)
+            try:
+                ret = ctrl.PreStopOne(axis)
+            except Exception:
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+                continue
+            if not ret:
+                error_axes.append(axis)
+                self.warning(msg)
+                continue
+            # StopOne
+            try:
+                ctrl.StopOne(axis)
+            except Exception:
+                msg = "%s.StopOne(%d) has failed" % (self.name, axis)
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+        # StopAll
+        try:
+            ctrl.StopAll()
+        except Exception:
+            msg = "%s.StopAll(%d) has failed" % self.name
+            self.warning(msg, exc_info=True)
+            return axes
+
+        return error_axes
+
+    @check_ctrl
+    def stop_element(self, element):
+        """Stops the given element.
+
+        :param element: element to stop
+        :type element: ~sardana.pool.poolelement.PoolElement
+        :raises Exception: not able to stop element
+        """
+
+        axes = [element.axis]
+        error_axes = self.stop_axes(axes)
+        if len(error_axes):
+            raise Exception("Stop of element %s failed" % element.name)
 
     @check_ctrl
     def stop_elements(self, elements=None):
-        """Stops the given elements.
-           If elements is None, stops all active elements.
+        """Stops the given elements. If elements is None, stops all
+        active elements.
+
+        :param elements: the list of elements to stop. Default is None
+                         meaning all active elements in this controller
+        :type elements: seq<PoolElement> or None
+        :return: list of elements that could not be stopped
+        :rtype: list<PoolElements>
+        """
+
+        if elements is None:
+            axes = list(self.get_element_axis().keys())
+        else:
+            axes = [e.axis for e in elements]
+        error_axes = self.stop_axes(axes)
+        error_elements = [self.get_element(axis=axis) for axis in error_axes]
+        return error_elements
+
+    stop = stop_elements
+
+    @check_ctrl
+    def abort_axes(self, axes):
+        """Aborts the given axes.
+
+        :param axes: the list of axes to aborted.
+        :type axes: list<axes>
+        :return: list of axes that could not be aborted
+        :rtype: list<int>
+        """
+
+        ctrl = self.ctrl
+
+        # PreAbortAll
+        try:
+            ctrl.PreAbortAll()
+        except Exception:
+            msg = "%s.PreAbortAll has failed" % self.name
+            self.warning(msg, exc_info=True)
+            return axes
+
+        error_axes = []
+        for axis in axes:
+            # PreStopOne
+            msg = "%s.PreAbortOne(%d) has failed" % (self.name, axis)
+            try:
+                ret = ctrl.PreAbortOne(axis)
+            except Exception:
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+                continue
+            if not ret:
+                error_axes.append(axis)
+                self.warning(msg)
+            # AbortOne
+            try:
+                ctrl.AbortOne(axis)
+            except Exception:
+                msg = "%s.AbortOne(%d) has failed" % (self.name, axis)
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+        # AbortAll
+        try:
+            ctrl.AbortAll()
+        except Exception:
+            msg = "%s.AbortAll(%d) has failed" % self.name
+            self.warning(msg, exc_info=True)
+            return axes
+
+        return error_axes
+
+    @check_ctrl
+    def abort_element(self, element):
+        """Aborts the given elements.
+
+        :param element: element to abort
+        :type element: ~sardana.pool.poolelement.PoolElement
+        :raises Exception: not able to abort element
+        """
+
+        axes = [element.axis]
+        error_axes = self.abort_axes(axes)
+        if len(error_axes):
+            raise Exception("Abort of element %s failed" % element.name)
+
+    @check_ctrl
+    def abort_elements(self, elements=None):
+        """Abort the given elements. If elements is None, stops all
+        active elements.
+
+        :param elements: the list of elements to stop. Default is None
+                         meaning all active elements in this controller
+        :type elements: seq<PoolElement> or None
+        :return: list of elements that could not be aborted
+        :rtype: list<PoolElements>
+        """
+
+        if elements is None:
+            axes = list(self.get_element_axis().keys())
+        else:
+            axes = [e.axis for e in elements]
+        error_axes = self.abort_axes(axes)
+        error_elements = [self.get_element(axis=axis) for axis in error_axes]
+        return error_elements
+
+    abort = abort_elements
+
+    @check_ctrl
+    def emergency_break(self, elements=None):
+        """Stops the given elements. If elements is None,
+        stops all active elements.
+        If stop could not be executed, an abort is attempted.
 
         :param elements: the list of elements to stop. Default is None
                          meaning all active elements in this controller
         :type axes: seq<PoolElement> or None
+        :return: elements that could neither be stopped nor aborted
+        :rtype: list<PoolElement>
         """
         if elements is None:
-            return self.raw_stop_all()
+            elements = self.ctrl.get_elements()
 
-        for element in elements:
-            self.raw_stop_one(element.axis)
-
-    def raw_abort_all(self):
-        try:
-            return self._raw_abort_all()
-        except:
-            pass
-
-    def raw_abort_one(self, axis):
-        try:
-            self._raw_abort_one(axis)
-        except:
-            pass
-
-    def _raw_abort_all(self):
-        try:
-            return self.ctrl.AbortAll()
-        except:
-            self.warning("AbortAll() raises exception")
-            self.debug("Details:", exc_info=1)
-            raise
-
-    def _raw_abort_one(self, axis):
-        try:
-            self.ctrl.AbortOne(axis)
-        except:
-            self.warning("AbortOne(%d) raises exception", axis)
-            self.debug("Details:", exc_info=1)
-            raise
-
-    @check_ctrl
-    def abort_all(self):
-        self.raw_abort_all()
-
-    @check_ctrl
-    def abort_one(self, axis):
-        return self.raw_abort_one(axis)
-
-    @check_ctrl
-    def abort_axes(self, axes=None):
-        """Aborts the given axes. If axes is None, aborts all active axes.
-
-        :param axes: the list of axis to abort. Default is None
-                       meaning all active axis in this controller
-        :type axes: seq<int> or None
-        """
-        if axes is None:
-            return self.raw_abort_all()
-
-        for axis in axes:
-            self.raw_abort_one(axis)
-
-    @check_ctrl
-    def abort_elements(self, elements=None):
-        """Aborts the given elements. If axes is None, aborts all active axes.
-
-        :param elements: the list of elements to abort. Default is None
-                         meaning all active axis in this controller
-        :type axes: seq<PoolElement> or None
-        """
-        if elements is None:
-            return self.raw_abort_all()
-
-        for element in elements:
-            self.raw_abort_one(element.axis)
-
-    abort = abort_all
-
-    @check_ctrl
-    def emergency_break(self, elements=None):
-        """Stops the given elements. If axes is None, stops all active axes.
-        If stop raises exception, an abort is attempted.
-
-        :param elements: the list of elements to stop. Default is None
-                         meaning all active axis in this controller
-        :type axes: seq<PoolElement> or None
-        """
-        if elements is None:
-            try:
-                return self._raw_stop_all()
-            except:
-                return self.raw_abort_all()
-
-        for element in elements:
-            try:
-                self._raw_stop_one(element.axis)
-            except:
-                self.raw_abort_one(element.axis)
+        error_elements = self.stop_elements(elements)
+        if not error_elements:
+            return []
+        element_names = [elem.name for elem in error_elements]
+        msg = ("Emergency break could not stop element(s): %s. "
+               + "Trying to abort...") % element_names
+        self.warning(msg)
+        # trying to abort elements that could not be stopped
+        error_elements = self.abort_elements(error_elements)
+        if error_elements:
+            element_names = [elem.name for elem in error_elements]
+            msg = ("Emergency break could not abort element(s): %s"
+                   % element_names)
+            self.warning(msg)
+        else:
+            element_names = [elem.name for elem in elements]
+            msg = ("Emergency break stopped/aborted element(s): %s"
+                   % element_names)
+            self.warning(msg)
+        return error_elements
 
     @check_ctrl
     def send_to_controller(self, stream):
@@ -828,13 +972,13 @@ class PoolController(PoolBaseController):
     def raw_move(self, axis_pos):
         ctrl = self.ctrl
         ctrl.PreStartAll()
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ret = ctrl.PreStartOne(axis, dial_position)
             if not ret:
                 raise Exception("%s.PreStartOne(%d, %f) returns False"
                                 % (self.name, axis, dial_position))
 
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ctrl.StartOne(axis, dial_position)
 
         ctrl.StartAll()
@@ -859,6 +1003,28 @@ class PoolController(PoolBaseController):
 
     def write_one(self, axis, value):
         self.ctrl.WriteOne(axis, value)
+
+    # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
+
+    # START SPECIFIC TO TIMERABLE CONTROLLER ---------------------------------
+
+    def get_default_timer(self):
+        """Get default timer as announced by the controller (plug-in).
+
+        Only for *Timerable* controllers, e.g.
+        :class:`~sardana.pool.controller.CounterTimerController`,
+        :class:`~sardana.pool.controller.OneDController`,
+        :class:`~sardana.pool.controller.TwoDController`.
+
+        :return: axis of the default timer or :obj:`None` if not defined
+        :rtype: :obj:`int` or :obj:`None`
+        """
+        if not self.is_timerable():
+            raise TypeError("non-timerable controller")
+        try:
+            return self.ctrl.default_timer
+        except AttributeError:
+            return None
 
     # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
 

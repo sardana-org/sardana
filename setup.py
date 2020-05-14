@@ -51,21 +51,18 @@ provides = [
 ]
 
 requires = [
-    'PyTango (>=7.2.3)',
-    # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
-    # when using PyTango >= 9 the dependency is >= 0.1.6
-    'itango (>=0.0.1)',
-    'taurus (>= 3.7.4)',
-    'lxml (>=2.1)',
-    # ordereddict is necessary for Python < 2.6
-    'ordereddict'
+    'PyTango (>=9.2.5)',
+    'itango (>=0.1.6)',
+    'taurus (> 4.5.5)',
+    'lxml (>=2.3)',
 ]
 
 install_requires = [
-    'PyTango>=7.2.3',
-    'itango>=0.0.1',
-    'taurus>=3.7.4',
-    'lxml>=2.1'
+    'PyTango>=9.2.5',
+    'itango>=0.1.6',
+    'taurus>4.5.4',
+    'lxml>=2.3',
+    'click',
 ]
 
 
@@ -82,7 +79,8 @@ gui_scripts = [
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
     "sequencer = sardana.taurus.qt.qtgui.extra_macroexecutor.sequenceeditor:main",
-    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main"
+    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main",
+    "showscan = sardana.taurus.qt.qtgui.extra_sardana.showscanonline:main"
 ]
 
 entry_points = {'console_scripts': console_scripts,
@@ -102,7 +100,7 @@ classifiers = [
     'Operating System :: POSIX :: Linux',
     'Operating System :: Unix',
     'Operating System :: OS Independent',
-    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.5',
     'Topic :: Scientific/Engineering',
     'Topic :: Software Development :: Libraries',
 ]

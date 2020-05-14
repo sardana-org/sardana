@@ -37,13 +37,15 @@ import PyTango
 
 import taurus
 from taurus.core import TaurusEventType, TaurusDevice
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.button import TaurusCommandButton
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
 from taurus.qt.qtgui.util.ui import UILoadable
+
+from sardana.util.parser import ParamParser
 
 
 class DoorStateListener(Qt.QObject):
@@ -53,11 +55,13 @@ class DoorStateListener(Qt.QObject):
 
     __pyqtSignals__ = ["doorStateChanged"]
 
+    doorStateChanged = Qt.pyqtSignal(compat.PY_OBJECT)
+
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in (TaurusEventType.Change, TaurusEventType.Periodic):
             return
         door_state = evt_value.value
-        self.emit(Qt.SIGNAL('doorStateChanged'), door_state)
+        self.doorStateChanged.emit(door_state)
 
 
 @UILoadable(with_ui='ui')
@@ -72,6 +76,9 @@ class MacroButton(TaurusWidget):
 
     __pyqtSignals__ = ['statusUpdated', 'resultUpdated']
 
+    statusUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    resultUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.loadUi()
@@ -85,8 +92,7 @@ class MacroButton(TaurusWidget):
         self.ui.progress.setValue(0)
 
         self.ui.button.setCheckable(True)
-        self.connect(self.ui.button, Qt.SIGNAL('clicked()'),
-                     self._onButtonClicked)
+        self.ui.button.clicked.connect(self._onButtonClicked)
 
     # Override default implementation of handleEvent from TaurusWidget
     # in order to avoid button's text being lost on the MS restart.
@@ -113,16 +119,14 @@ class MacroButton(TaurusWidget):
         '''
         TaurusWidget.setModel(self, model)
         if self.door is not None:
-            self.disconnect(self.door, Qt.SIGNAL(
-                'macroStatusUpdated'), self._statusUpdated)
-            self.disconnect(self.door, Qt.SIGNAL(
-                'resultUpdated'), self._resultUpdated)
+            self.door.macroStatusUpdated.disconnect(self._statusUpdated)
+            self.door.resultUpdated.disconnect(self._resultUpdated)
 
             # disable management of Door Tango States
             self.door.getAttribute('State').removeListener(
                 self.door_state_listener)
-            self.disconnect(self.door_state_listener, Qt.SIGNAL(
-                'doorStateChanged'), self._doorStateChanged)
+            self.door_state_listener.doorStateChanged.disconnect(
+                self._doorStateChanged)
             self.door_state_listener = None
 
         try:
@@ -130,15 +134,13 @@ class MacroButton(TaurusWidget):
         except:
             return
 
-        self.connect(self.door, Qt.SIGNAL(
-            'macroStatusUpdated'), self._statusUpdated)
-        self.connect(self.door, Qt.SIGNAL(
-            'resultUpdated'), self._resultUpdated)
+        self.door.macroStatusUpdated.connect(self._statusUpdated)
+        self.door.resultUpdated.connect(self._resultUpdated)
 
         # Manage Door Tango States
         self.door_state_listener = DoorStateListener()
-        self.connect(self.door_state_listener, Qt.SIGNAL(
-            'doorStateChanged'), self._doorStateChanged)
+        self.door_state_listener.doorStateChanged.connect(
+            self._doorStateChanged)
         self.door.getAttribute('State').addListener(self.door_state_listener)
 
     def _doorStateChanged(self, state):
@@ -191,7 +193,7 @@ class MacroButton(TaurusWidget):
         if state in ['stop', 'abort', 'finish', 'alarm']:
             self.ui.button.setChecked(False)
 
-        self.emit(Qt.SIGNAL('statusUpdated'), status_dict)
+        self.statusUpdated.emit(status_dict)
 
     def _resultUpdated(self, *args):
         '''slot called on result changes'''
@@ -201,7 +203,7 @@ class MacroButton(TaurusWidget):
         if self.running_macro is None:
             return
         result = self.running_macro.getResult()
-        self.emit(Qt.SIGNAL('resultUpdated'), result)
+        self.resultUpdated.emit(result)
 
     def setText(self, text):
         '''set the button text
@@ -214,7 +216,7 @@ class MacroButton(TaurusWidget):
         '''same as :meth:`setText`
         '''
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
-        self.ui.button.setText("Run/Abort:\n" + text)
+        self.ui.button.setText("Run/Stop:\n" + text)
 
     def setMacroName(self, name):
         '''set the name of the macro to be executed
@@ -253,47 +255,62 @@ class MacroButton(TaurusWidget):
                      functools.partial(self.updateMacroArgument, index))
 
     def connectArgEditors(self, signals):
-        '''Associate signals to argument changes.
+        """
+        Associate signals to argument changes.
 
-        :param signals: (seq<tuple>) An ordered sequence of (`obj`, `sig`)
-                        tuples , where `obj` is a parameter editor object and
-                        `sig` is a signature for a signal emitted by `obj` which
-                        provides the value of a parameter as its argument.
-                        Each (`obj`, `sig`) tuple is associated to parameter
-                        corresponding to its position in the `signals` sequence.
-                        '''
+        :param signals: (seq<pyqtsignals>) An ordered sequence of signals
+        """
 
-        for i, (obj, sig) in enumerate(signals):
-            self.connect(obj, Qt.SIGNAL(sig),
-                         functools.partial(self.updateMacroArgument, i))
+        for i, signal in enumerate(signals):
+            if not self.__isSignal(signal):
+                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
+                sender, sig = signal
+                self.deprecated(dep='Passing (sender, signature) tuples',
+                                alt='pyqtSignal objects', rel='2.5.1')
+                signal = getattr(sender, sig.split('(')[0])
+            signal.connect(functools.partial(self.updateMacroArgument, i))
+
+    @staticmethod
+    def __isSignal(obj):
+        if not hasattr(obj, 'emit'):
+            return False
+        if not hasattr(obj, 'connect'):
+            return False
+        if not hasattr(obj, 'disconnect'):
+            return False
+        return True
 
     def _onButtonClicked(self):
         if self.ui.button.isChecked():
             self.runMacro()
         else:
-            self.abort()
+            self.stop()
 
     @ProtectTaurusMessageBox(msg='Error while executing the macro.')
     def runMacro(self):
         '''execute the macro with the current arguments'''
         if self.door is None:
             return
-
-        # TODO: make macrobutton compatible with macros with advanced usage of
-        # repeat parameters e.g. multiple repeat parameters, nested repeat
-        # parameters, etc.
-        macro_args = shlex.split(' '.join(self.macro_args))
+        param_defs = self.door.macro_server.getMacroInfoObj(
+            self.macro_name).parameters
+        parser = ParamParser(param_defs)
+        parameters = parser.parse(" ".join(self.macro_args))
         try:
-            self.door.runMacro(self.macro_name, macro_args)
+            self.door.runMacro(self.macro_name, parameters)
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
-        except Exception, e:
+        except Exception as e:
             self.ui.button.setChecked(False)
             raise e
 
+    # For backward compatibility
     def abort(self):
-        '''abort the macro.'''
+        self.warning("abort is not implemented, stop is being called instead")
+        self.stop()
+
+    def stop(self):
+        '''stop the macro.'''
         if self.door is None:
             return
         self.door.PauseMacro()
@@ -301,15 +318,15 @@ class MacroButton(TaurusWidget):
         # we provide a warning message that does not make the process too slow
         # It may also be useful and 'ABORT' at TaurusApplication level
         # (macros+motions+acquisitions)
-        title = 'Aborting macro'
+        title = 'Stopping macro'
         message = 'The following macro is still running:\n\n'
         message += '%s %s\n\n' % (self.macro_name, ' '.join(self.macro_args))
-        message += 'Are you sure you want to abort?\n'
+        message += 'Are you sure you want to stop?\n'
         buttons = Qt.QMessageBox.Ok | Qt.QMessageBox.Cancel
         ans = Qt.QMessageBox.warning(
             self, title, message, buttons, Qt.QMessageBox.Ok)
         if ans == Qt.QMessageBox.Ok:
-            self.door.abort(synch=True)
+            self.door.stop(synch=True)
         else:
             self.ui.button.setChecked(True)
             self.door.ResumeMacro()
@@ -338,7 +355,7 @@ class MacroButtonAbortDoor(Qt.QPushButton, TaurusBaseWidget):
 
         self.setText('Abort')
         self.setToolTip('Abort Macro')
-        self.connect(self, Qt.SIGNAL('clicked()'), self.abort)
+        self.clicked.connect(self.abort)
 
     def getModelClass(self):
         '''reimplemented from :class:`TaurusBaseWidget`'''
@@ -365,7 +382,8 @@ if __name__ == '__main__':
     parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
-                            app_version=taurus.Release.version)
+                            app_version=taurus.Release.version,
+                            cmd_line_parser=parser)
 
     args = app.get_command_line_args()
 
@@ -406,7 +424,7 @@ if __name__ == '__main__':
             try:
                 pars = door.macro_server.getMacroInfoObj(macro_name).parameters
             except AttributeError as e:
-                print "Macro %s does not exists!" % macro_name
+                print("Macro %s does not exists!" % macro_name)
                 return None
 
             param_names = []
@@ -451,7 +469,9 @@ if __name__ == '__main__':
                 _argEditors.append(self.argEdit)
 
             for e, v in zip(_argEditors, d_values):
-                e.setText(v)
+                if v is None:
+                    continue
+                e.setText(str(v))
 
             # Create bottom layout
             self.mb = MacroButton()
@@ -474,10 +494,10 @@ if __name__ == '__main__':
             self.w_bottom.layout().addWidget(mb_abort, 3, 1)
 
             # Toggle progressbar
-            Qt.QObject.connect(self.show_progress, Qt.SIGNAL(
-                'stateChanged(int)'), self.toggle_progress)
+            self.show_progress.stateChanged.connect(self.toggle_progress)
             # connect the argument editors
-            signals = [(e, 'textChanged(QString)') for e in _argEditors]
+            # signals = [(e, 'textChanged(QString)') for e in _argEditors]
+            signals = [getattr(e, 'textChanged') for e in _argEditors]
             self.mb.connectArgEditors(signals)
 
             self.setLayout(Qt.QVBoxLayout())
@@ -485,17 +505,12 @@ if __name__ == '__main__':
             self.layout().addWidget(self.w_bottom)
 
             # Update possible macro result
-            Qt.QObject.connect(self.mb, Qt.SIGNAL(
-                'resultUpdated'), self.update_result)
+            self.mb.resultUpdated.connect(self.update_result)
 
-            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL(
-                'textEdited(QString)'), self.update_macro_name)
-            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL(
-                'editingFinished()'), self.update_layout)
-            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL(
-                'textChanged(QString)'), self.mb.setMacroName)
-            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL(
-                'textChanged(QString)'), self.mb.setButtonText)
+            self.w_macro_name.textEdited.connect(self.update_macro_name)
+            self.w_macro_name.editingFinished.connect(self.update_layout)
+            self.w_macro_name.textChanged.connect(self.mb.setMacroName)
+            self.w_macro_name.textChanged.connect(self.mb.setButtonText)
 
             # Since everything is now connected, the parameters will be updated
             self.w_macro_name.setText(macro_name)

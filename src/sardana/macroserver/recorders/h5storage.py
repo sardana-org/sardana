@@ -33,19 +33,29 @@ __all__ = ["NXscanH5_FileRecorder"]
 __docformat__ = 'restructuredtext'
 
 import os
+import re
+import posixpath
 from datetime import datetime
 import numpy
 import h5py
 
+from sardana.sardanautils import is_pure_str
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
+VDS_available = True
+try:
+    h5py.VirtualSource
+except AttributeError:
+    VDS_available = False
+
 
 def timedelta_total_seconds(timedelta):
-    """Eqiuvalent to timedelta.total_seconds introduced with python 2.7."""
+    """Equivalent to timedelta.total_seconds introduced with python 2.7."""
     return (
-        timedelta.microseconds + 0.0 +
-        (timedelta.seconds + timedelta.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+        timedelta.microseconds + 0.0
+        + (timedelta.seconds + timedelta.days * 24 * 3600)
+        * 10 ** 6) / 10 ** 6
 
 
 class NXscanH5_FileRecorder(BaseFileRecorder):
@@ -55,11 +65,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     (This is a pure h5py implementation that does not depend on the nxs module)
     """
     formats = {'h5': '.h5'}
+    # from http://docs.h5py.org/en/latest/strings.html
+    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
+    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
                         'uint16', 'uint32',
-                        'uint64')  # note that 'char' is not supported yet!
-    # TODO: support 'char'. See http://docs.h5py.org/en/latest/strings.html
+                        'uint64', str_dt, byte_dt)
     _dataCompressionRank = -1
 
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
@@ -73,6 +85,18 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.currentlist = None
         self._nxclass_map = {}
         self.entryname = 'entry'
+
+        scheme = r'([A-Za-z][A-Za-z0-9\.\+\-]*)'
+        authority = (r'//(?P<host>([\w\-_]+\.)*[\w\-_]+)'
+                     + r'(:(?P<port>\d{1,5}))?')
+        path = (r'((?P<filepath>(/(//+)?([A-Za-z]:/)?([\w.\-_]+/)*'
+                + r'[\w.\-_]+.(h5|hdf5|\w+))))'
+                + r'(::(?P<dataset>(([\w.\-_]+/)*[\w.\-_]+)))?')
+        pattern = ('^(?P<scheme>%(scheme)s):'
+                   + '((?P<authority>%(authority)s)'
+                   + '($|(?=[/#?])))?(?P<path>%(path)s)$')
+        self.pattern = pattern % dict(scheme=scheme, authority=authority,
+                                      path=path)
 
     def getFormat(self):
         return 'HDF5::NXscan'
@@ -131,16 +155,16 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             nxentry = self.fd.create_group(self.entryname)
         except ValueError:
             # Warn and abort
-            if self.entryname in self.fd.keys():
-                msg = ('{ename:r} already exists in {fname:s}.' +
-                       'Aborting macro to prevent data corruption.\n' +
-                       'This is likely caused by a wrong ScanID\n' +
-                       'Possible workarounds:\n' +
-                       '  * first, try re-running this macro (the ScanID ' +
+            if self.entryname in list(self.fd.keys()):
+                msg = ('{ename:s} already exists in {fname:s}. '
+                       'Aborting macro to prevent data corruption.\n'
+                       'This is likely caused by a wrong ScanID\n'
+                       'Possible workarounds:\n'
+                       '  * first, try re-running this macro (the ScanID '
                        'may be automatically corrected)\n'
-                       '  * if not, try changing ScanID with senv, or...\n' +
-                       '  * change the file name ({ename:s} will be in both ' +
-                       'files containing different data)\n' +
+                       '  * if not, try changing ScanID with senv, or...\n'
+                       '  * change the file name ({ename:s} will be in both '
+                       'files containing different data)\n'
                        '\nPlease report this problem.'
                        ).format(ename=self.entryname, fname=self.filename)
                 raise RuntimeError(msg)
@@ -153,8 +177,18 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in env['datadesc']:
             dd = dd.clone()
             dd.label = self.sanitizeName(dd.label)
+            if not hasattr(dd, "value_ref_enabled"):
+                dd.value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
+                self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
+            if dd.value_ref_enabled:
+                # substitute original data (image or spectrum) type and shape
+                # since we will receive references instead
+                dd.dtype = NXscanH5_FileRecorder.str_dt
+                dd.shape = tuple()
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if dd.dtype in self.supported_dtypes:
                 self.datadesc.append(dd)
@@ -168,8 +202,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for inst in env.get('instrumentlist', []):
             self._nxclass_map[nxentry.name + inst.getFullName()] = inst.klass
         if self._nxclass_map is {}:
-            self.warning('Missing information on NEXUS structure. ' +
-                         'Nexus Tree will not be created')
+            self.warning('Missing information on NEXUS structure. '
+                         + 'Nexus Tree will not be created')
 
         self.debug('Starting new recording %d on file %s', serialno,
                    self.filename)
@@ -245,12 +279,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
         Also link to the snapshot datasets from the <entry>/measurement group
         """
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         self.preScanSnapShot = env.get('preScanSnapShot', [])
         _snap = _meas.create_group('pre_scan_snapshot')
         _snap.attrs['NX_class'] = 'NXcollection'
 
-        meas_keys = _meas.keys()
+        meas_keys = list(_meas.keys())
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
@@ -261,6 +295,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 pre_scan_value = numpy.int8(dd.pre_scan_value)
                 self.debug('Pre-scan snapshot of %s will be stored as type %s',
                            dd.name, dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
+
             if dtype in self.supported_dtypes:
                 _ds = _snap.create_dataset(
                     label,
@@ -271,23 +308,25 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 if label not in meas_keys:
                     _meas[label] = _ds
             else:
-                self.warning(('Pre-scan snapshot of %s will not be stored. ' +
-                              'Reason: type %s not supported'),
+                self.warning(('Pre-scan snapshot of %s will not be stored. '
+                              + 'Reason: type %s not supported'),
                              dd.name, dtype)
 
     def _writeRecord(self, record):
         if self.filename is None:
             return
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
 
         for dd in self.datadesc:
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
-                if not hasattr(data, 'shape'):
+                # skip NaN if value reference is enabled
+                if dd.value_ref_enabled and not is_pure_str(data):
+                    continue
+                elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
                 elif dd.dtype != data.dtype.name:
                     self.debug('%s casted to %s (was %s)',
@@ -300,6 +339,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
                 # write the slab of data
                 _ds[record.recordno, ...] = data
+
             else:
                 self.debug('missing data for label %r', dd.label)
         self.fd.flush()
@@ -314,6 +354,64 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
+
+        for dd, dd_env in zip(self.datadesc, env["datadesc"]):
+            label = dd.label
+
+            # If h5file scheme is used: Creation of a Virtual Dataset
+            if dd.value_ref_enabled:
+                measurement = nxentry['measurement']
+                first_reference = measurement[label][0]
+
+                group = re.match(self.pattern, first_reference)
+                if group is None:
+                    msg = 'Unsupported reference %s' % first_reference
+                    self.warning(msg)
+                    continue
+
+                uri_groups = group.groupdict()
+                if uri_groups['scheme'] != "h5file":
+                    continue
+                if not VDS_available:
+                    msg = ("VDS not available in this version of h5py, "
+                           "{0} will be stored as string reference")
+                    msg.format(label)
+                    self.warning(msg)
+                    continue
+
+                bk_label = "_" + label
+                measurement[bk_label] = measurement[label]
+                nb_points = measurement[label].size
+
+                (dim_1, dim_2) = dd_env.shape
+                layout = h5py.VirtualLayout(shape=(nb_points, dim_1, dim_2),
+                                            dtype=dd_env.dtype)
+
+                for i in range(nb_points):
+                    reference = measurement[label][i]
+                    group = re.match(self.pattern, reference)
+                    if group is None:
+                        msg = 'Unsupported reference %s' % first_reference
+                        self.warning(msg)
+                        continue
+                    uri_groups = group.groupdict()
+                    filename = uri_groups["filepath"]
+                    dataset = uri_groups.get("dataset", "dataset")
+                    vsource = h5py.VirtualSource(filename, dataset,
+                                                 shape=(dim_1, dim_2))
+                    layout[i] = vsource
+
+                # Substitute dataset by Virtual Dataset in output file
+                try:
+                    del measurement[label]
+                    measurement.create_virtual_dataset(
+                        label, layout, fillvalue=-numpy.inf)
+                except Exception as e:
+                    msg = 'Could not create a Virtual Dataset. Reason: %r'
+                    self.warning(msg, e)
+                else:
+                    del measurement[bk_label]
+
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
         self.debug('Finishing recording %d on file %s:',
@@ -324,7 +422,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def writeRecordList(self, recordlist):
         """Called when in BLOCK writing mode"""
         self._startRecordList(recordlist)
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         for dd in self.datadesc:
             shape = ([len(recordlist.records)] + list(dd.shape))
             _ds = _meas.create_dataset(
@@ -405,7 +503,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _meas = nxentry['measurement']
 
         # write the 1D NXdata group
-        for axes, v in plots1d.items():
+        for axes, v in list(plots1d.items()):
             _nxdata = nxentry.create_group(plots1d_names[axes])
             _nxdata.attrs['NX_class'] = 'NXdata'
 
@@ -421,7 +519,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             for axis in axes.split(':'):
                 try:
                     _nxdata[axis] = _meas[axis]
-                except:
+                except Exception:
                     self.warning('cannot create link for "%s". Skipping', axis)
 
     def _createNXpath(self, path, prefix=None):
@@ -440,11 +538,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         if prefix is None:
             # if prefix is None, use current entry if path is relative
-            path = os.path.join("/%s:NXentry" % self.entryname, path)
+            path = posixpath.join("/%s:NXentry" % self.entryname, path)
         else:
             # if prefix is given explicitly, assume that path is relative to it
             # even if path is absolute
-            path = os.path.join(prefix, path.lstrip('/'))
+            path = posixpath.join(prefix, path.lstrip('/'))
 
         grp = self.fd['/']
         for name in path[1:].split('/'):

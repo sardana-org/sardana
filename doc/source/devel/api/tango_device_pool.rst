@@ -1,9 +1,12 @@
+:orphan:
 
 ==========================================
 Device Pool Tango_ :term:`API`
 ==========================================
 
-.. todo:: Device Pool chapter is out of date. Need to update it and distribute chapters logically around the sardana documentation
+.. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
+
+.. todo:: Update this chapter and distribute its contents logically around the documentation.
 
 Introduction
 ============
@@ -2042,19 +2045,10 @@ controlling the experiments gap and offset values respectively.
 The calculations that need to be performed are: 
 
 
-
-.. math::
-   :nowrap:
-
-    \[ \left\{ \begin{array}{l} gap=sl2t+sl2b\\ offset=\frac{sl2t-sl2b}{2}\end{array}\right.\]
+\[ \left\{ \begin{array}{l} gap=sl2t+sl2b\\ offset=\frac{sl2t-sl2b}{2}\end{array}\right.\]
 
 
-
-.. math::
-   :nowrap:
-
-    \[ \left\{ \begin{array}{l} sl2t=-offset+\frac{gap}{2}\\ sl2b=offset+\frac{gap}{2}\end{array}\right.\]
-
+\[ \left\{ \begin{array}{l} sl2t=-offset+\frac{gap}{2}\\ sl2b=offset+\frac{gap}{2}\end{array}\right.\]
 
 
 The corresponding python code would be: 
@@ -3158,8 +3152,8 @@ Monitor                                    Tango::DevString  Scalar             
 Counters                                   Tango::DevString  Spectrum               R         No         Ope         
 ZeroDExpChannels                           Tango::DevString  Spectrum               R         No         Ope         
 OneDExpChannels                            Tango::DevString  Spectrum               R         No         Ope         
-TwoDExpChannels                            Tango::DevString  Spectrum               R         No         Ope         
-<channel_name :math:`_{\text{i}}` >_Value  Tango::DevDouble  Scalar/Spectrum/Image  R         No         Ope         
+TwoDExpChannels                            Tango::DevString  Spectrum               R         No         Ope
+<channel_name _{\text{i}} >_Value  Tango::DevDouble Scalar/Spectrum/Image  R         No         Ope
 =========================================  ================  =====================  ========  =========  ==========
 
 - **Integration_time** : The group timer integration time. Setting this value to >0 will set
@@ -3183,7 +3177,7 @@ TwoDExpChannels                            Tango::DevString  Spectrum           
 
 - **TwoDExpChannels** : The list of 2D Experiment channel names in the group
 
-- **<channel_name** :math:`_{\text{i}}` **>_Value** : (with :math:`0\leq i<n` ) attributes dynamically created (one for each channel) which will
+- **<channel_name** _{\text{i}} **>_Value** : (with 0\leq i<n ) attributes dynamically created (one for each channel) which will
   contain the corresponding channel Value(for Counter/Timer, 1D or
   2DExpChannels), CumulatedValue(for 0DExpChannels). For Counter/Timers
   and 0DExpChannels the data format will be Scalar. For 1DExpChannels it
@@ -3253,7 +3247,7 @@ Reading the measurement group channel values
 
 For each measurement group there is a set of key dynamic attributes
 representing the value of each channel in the group. They are named
-<channel_name :math:`_{\text{i}}` >_Value. Special care has been taken on the management of these
+<channel_name _{\text{i}} >_Value. Special care has been taken on the management of these
 attributes with distinct behavior depending on the type of channel the
 attribute represents (Counter/Timer, 0D, 1D or 2D channel). 
 
@@ -3313,7 +3307,7 @@ Performance
 Measurement group devices can often contain many channels. Client
 applications often request channel values for the set (or subset) of
 channels in a group. Read requests for these channel values through
-the <channel_name :math:`_{\text{i}}` >_Value attributes of a measurement group should be done by clients in
+the <channel_name _{\text{i}} >_Value attributes of a measurement group should be done by clients in
 groups as often as possible. This can be achieved by using the client
 Tango_ API call read_attributes on a DeviceProxy object. This will
 ensure maximum performance by minimizing hardware access since the

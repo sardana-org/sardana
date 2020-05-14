@@ -46,6 +46,7 @@ class PoolElement(PoolBaseElement):
         self._ctrl = weakref.ref(ctrl)
         self._axis = kwargs.pop('axis')
         self._ctrl_id = ctrl.get_id()
+        self._deleted = False
         try:
             instrument = kwargs.pop('instrument')
             self.set_instrument(instrument)
@@ -73,6 +74,12 @@ class PoolElement(PoolBaseElement):
 
     def get_axis(self):
         return self._axis
+
+    def is_deleted(self):
+        return self._deleted
+
+    def set_deleted(self, deleted):
+        self._deleted = deleted
 
     def set_action_cache(self, action_cache):
         self._action_cache = action_cache
@@ -115,7 +122,7 @@ class PoolElement(PoolBaseElement):
     def stop(self):
         self.info("Stop!")
         PoolBaseElement.stop(self)
-        self.controller.stop_one(self.axis)
+        self.controller.stop_element(self)
 
     # --------------------------------------------------------------------------
     # abort
@@ -124,7 +131,7 @@ class PoolElement(PoolBaseElement):
     def abort(self):
         self.info("Abort!")
         PoolBaseElement.abort(self)
-        self.controller.abort_one(self.axis)
+        self.controller.abort_element(self)
 
     def get_par(self, name):
         return self.controller.get_axis_par(self.axis, name)
@@ -143,3 +150,5 @@ class PoolElement(PoolBaseElement):
     controller_id = property(get_controller_id, doc="element controller id")
     instrument = property(get_instrument, set_instrument,
                           doc="element instrument")
+    deleted = property(is_deleted, set_deleted,
+                       doc="element is deleted from pool (experimental API)")

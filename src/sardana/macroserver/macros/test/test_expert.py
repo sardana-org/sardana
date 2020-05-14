@@ -25,7 +25,7 @@
 
 """Tests for expert macros"""
 
-from taurus.external import unittest
+import unittest
 from sardana.macroserver.macros.test import RunMacroTestCase, testRun, getCTs,\
     getControllers
 
@@ -60,7 +60,7 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
             self.macro_runs(macro_name="udefctrl",
                             macro_params=[CTRL_NAME],
                             wait_timeout=1)
-        except Exception, e:
+        except Exception as e:
             import taurus
             taurus.warning("Your system may stay dirty due to an unexpected"
                            " exception during the test.")
@@ -78,7 +78,7 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
                             macro_params=[MNTGRP_NAME, CT_NAME1, CT_NAME2])
             self.macro_runs(macro_name="udefmeas",
                             macro_params=[MNTGRP_NAME])
-        except Exception, e:
+        except Exception as e:
             import taurus
             taurus.warning("Your system may stay dirty due to an unexpected"
                            " exception during the test.")

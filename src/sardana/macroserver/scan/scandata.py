@@ -38,7 +38,6 @@ from taurus.core import TaurusElementType
 from taurus import Release as taurus_release
 
 from sardana.macroserver.scan.recorder import DataHandler
-from threading import RLock
 
 
 class ColumnDesc(object):
@@ -201,14 +200,14 @@ class Record(object):
                 raise KeyError(item)
 
         v = proxy.getNameValidator()
-        params = v.getParams(proxy.getFullName())
+        params = v.getUriGroups(proxy.getFullName())
         name = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
                                     params['port'],
-                                    params['devicename'])
+                                    params['devname'])
 
-        attr_name = params.get('attributename', None)
+        attr_name = params.get('_shortattrname', None)
         if attr_name is not None:
-            name = '{0}/{1}'.format(name, params['attributename'])
+            name = '{0}/{1}'.format(name, attr_name)
 
         return name
 
@@ -228,8 +227,6 @@ class Record(object):
 
     def __get_tango_name(self, item):
         name = self.__get_t4_name(item)
-        if name.startswith('tango://'):
-            name = name[8:]  # remove 'tango://'
         return name
 
     def __getitem__(self, item):
@@ -272,7 +269,7 @@ class RecordEnvironment(dict):
             return 1
 
         for ky in self.needed + self.__needed:
-            if ky not in self.keys():
+            if ky not in list(self.keys()):
                 return 0
         else:
             return 1
@@ -312,7 +309,6 @@ class RecordList(dict):
         else:
             self.environ = environ
         self.records = []
-        self.rlock = RLock()
         # currentIndex indicates the place in the records list
         # where the next completed record will be written
         self.currentIndex = 0
@@ -403,7 +399,7 @@ class RecordList(dict):
         if self.currentIndex > 0:
             data = record.data
             prev_data = self.records[self.currentIndex - 1].data
-            for k, v in data.items():
+            for k, v in list(data.items()):
                 if v is None:
                     continue
                 # numpy arrays (1D or 2D) are valid values and does not require
@@ -418,7 +414,7 @@ class RecordList(dict):
     def applyExtrapolation(self, record):
         """Apply extrapolation to the given record"""
         data = record.data
-        for k, v in data.items():
+        for k, v in list(data.items()):
             if v is None:
                 continue
             # numpy arrays (1D or 2D) are valid values and does not require
@@ -449,25 +445,27 @@ class RecordList(dict):
         :param data: dictionary with two mandatory elements: label - string
                      and data - list of values
         :type data:  dict"""
-        with self.rlock:
-            label = data['label']
-            rawData = data['data']
-            idxs = data['index']
+        label = data['label']
+        idxs = data['index']
+        # TODO: think if the ScanData.addData is the best API for
+        # passing value references
+        rawData = data.get('value') or data.get('value_ref')
 
-            maxIdx = max(idxs)
-            recordsLen = len(self.records)
-            # Calculate missing records
-            missingRecords = recordsLen - (maxIdx + 1)
-            # TODO: implement proper handling of timestamps and moveables
-            if missingRecords < 0:
-                missingRecords = abs(missingRecords)
-                self.initRecords(missingRecords)
-            for idx, value in zip(idxs, rawData):
-                rc = self.records[idx]
-                rc.setRecordNo(idx)
-                rc.data[label] = value
-                self.columnIndexDict[label] = idx + 1
-            self.tryToAdd(idx, label)
+
+        maxIdx = max(idxs)
+        recordsLen = len(self.records)
+        # Calculate missing records
+        missingRecords = recordsLen - (maxIdx + 1)
+        # TODO: implement proper handling of timestamps and moveables
+        if missingRecords < 0:
+            missingRecords = abs(missingRecords)
+            self.initRecords(missingRecords)
+        for idx, value in zip(idxs, rawData):
+            rc = self.records[idx]
+            rc.setRecordNo(idx)
+            rc.data[label] = value
+            self.columnIndexDict[label] = idx + 1
+        self.tryToAdd(idx, label)
 
     def tryToAdd(self, idx, label):
         start = self.currentIndex
@@ -493,7 +491,7 @@ class RecordList(dict):
         return True
 
     def addRecords(self, records):
-        map(self.addRecord, records)
+        list(map(self.addRecord, records))
 
     def end(self):
         start = self.currentIndex
