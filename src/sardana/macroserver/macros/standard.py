@@ -869,7 +869,7 @@ class settimer(Macro):
             return
 
         try:
-            mnt_grp.setTimer(timer.getName())
+            mnt_grp.getConfiguration().setTimer(timer.getName())
         except Exception as e:
             self.output(str(e))
             self.output(
