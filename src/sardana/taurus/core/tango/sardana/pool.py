@@ -2133,6 +2133,13 @@ class MGConfiguration(object):
         :param channels_names: (seq<str>) a list of strings indicating the
         channels to apply the PlotAxes
         """
+        # Validate axes values
+        for i, value in enumerate(axes):
+            if value in ['<idx>', '<mov>']:
+                continue
+            else:
+                axes[i] = self._get_channel_data(value)["full_name"]
+
         if channels_names is None:
             channels_names = self.channels.keys()
 
@@ -2150,15 +2157,7 @@ class MGConfiguration(object):
                 if len(axes) != 2:
                     raise ValueError('The Image Type only allows two axis')
 
-            # Validate axes values
-            for value in axes:
-                if value in ['<idx>', '<mov>']:
-                    continue
-                else:
-                    self._get_channel_data(value)
-            channel_name = channel_data['name']
-            self._set_channels_key('plot_axes',  axes, [channel_name],
-                                   apply_cfg)
+        self._set_channels_key('plot_axes',  axes, [channel_name], apply_cfg)
 
     def _getCtrlsTimer(self, ctrls=None, use_fullname=False):
         """get the acquisition Timer.
