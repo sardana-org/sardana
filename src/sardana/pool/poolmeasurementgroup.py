@@ -963,9 +963,9 @@ class MeasurementConfiguration(object):
                 channel_data.pop('value_ref_enabled')
                 channel_data.pop('value_ref_pattern')
             else:
-                msg = 'The channel {} is not referable. You can not set ' \
-                      'the enabled and/or the pattern parameters.'.format(
-                    name)
+                msg = ('The channel {} is not referable. You can not set '
+                       'the enabled and/or the pattern parameters.').format(
+                        name)
                 raise ValueError(msg)
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)

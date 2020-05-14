@@ -1776,7 +1776,6 @@ class MGConfiguration(object):
             raise KeyError(msg)
         return data
 
-
     def _get_ctrl_data(self, ctrl_name):
         if ctrl_name in self.controllers_names:
             return self.controllers_names[ctrl_name]
@@ -2359,13 +2358,13 @@ class MGConfiguration(object):
     def getTimer(self):
         """DEPRECATED"""
         self._mg().warning("getTimer() is deprecated since Jul20. "
-                          "Global measurement group timer does not exist")
+                           "Global measurement group timer does not exist")
         return self._getTimer()
 
     def getMonitor(self):
         """DEPRECATED"""
         self._mg().warning("getMonitor() is deprecated since Jul20. "
-                     "Global measurement group monitor does not exist")
+                           "Global measurement group monitor does not exist")
         return self._getMonitor()
 
     def __repr__(self):
