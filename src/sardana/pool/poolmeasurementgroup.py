@@ -601,16 +601,15 @@ class MeasurementConfiguration(object):
         return self._user_config
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
-        """
-        Load measurement configuration from serializable data structure.
+        """Set measurement configuration from serializable data structure.
 
-        The method will validate the configuration and raises exceptions in
-        case of fails. The configuration will be different for each type of
-        channel and controller, For that reason the configuration can have
-        different keys and values according to the element.
+        Setting of the configuration includes the validation process. Setting
+        of invalid configuration raises an exception hence it is not necessary
+        that the client application does the validation.
 
-        The client should not validate the keys/values, any validation must be
-        included in this method.
+        The configuration parameters for given channels/controllers may differ
+        depending on their types e.g. 0D channel does not support timer
+        parameter while C/T does.
         """
 
         pool = self._parent.pool

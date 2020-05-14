@@ -2832,9 +2832,11 @@ class MeasurementGroup(PoolElement):
 
     def setTimer(self, timer, *elements, apply=True):
         """Set the timer configuration for the given channels of the same
-        controller. NOTE: The current configuration does not allow to set
-        the different value per channel of the same controller, it allows to
-        set per controller.
+        controller.
+
+        .. note: Currently the controller's timer must be unique. Hence this
+        method will set it for the whole controller regardless of the
+        ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
@@ -2893,13 +2895,15 @@ class MeasurementGroup(PoolElement):
 
     def setMonitor(self, monitor, *elements, apply=True):
         """Set the monitor configuration for the given channels of the same
-        controller. NOTE: The current configuration does not allow to set
-        the different value per channel of the same controller, it allows to
-        set per controller.
+        controller.
+
+        .. note: Currently the controller's monitor must be unique.
+        Hence this method will set it for the whole controller regardless of
+        the ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
-        configuration  paramters of the measurement group at once this
+        configuration  parameters of the measurement group at once this
         behavior can be  changed with the *apply* argument and we can keep
         the configuration changes only locally. This is useful when we want
         to change more then one parameter, in this case only the setting of
@@ -2915,7 +2919,7 @@ class MeasurementGroup(PoolElement):
         :type apply: bool
         """
         config = self.getConfiguration()
-        # TODO: Implement solution to set the timer per channel when it is
+        # TODO: Implement solution to set the moniotor per channel when it is
         #  allowed.
         config._setCtrlsMonitor([monitor], apply_cfg=apply)
 
@@ -2955,9 +2959,11 @@ class MeasurementGroup(PoolElement):
 
     def setSynchronizer(self, synchronizer, *elements, apply=True):
         """Set the synchronizer configuration for the given channels or
-        controller. NOTE: The current configuration does not allow to set
-        the different value per channel of the same controller, it allows to
-        set per controller.
+        controller.
+
+        .. note: Currently the controller's synchronizer must be unique.
+        Hence this method will set it for the whole controller regardless of
+        the ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
