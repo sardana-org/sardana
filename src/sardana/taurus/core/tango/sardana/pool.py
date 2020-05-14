@@ -58,7 +58,8 @@ from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
 from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType
 
-from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator, \
+    TangoDeviceNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessDict
@@ -1754,16 +1755,6 @@ class MGConfiguration(object):
                     ret[channel_data['full_name']] = None
         return ret
 
-    def _get_proxy(self, element):
-        try:
-            proxy = DeviceProxy(element)
-        except Exception:
-            try:
-                proxy = AttributeProxy(element)
-            except Exception:
-                raise KeyError(element)
-        return proxy
-
     def _get_channel_data(self, channel_name):
         if channel_name in self.channels_names:
             return self.channels_names[channel_name]
@@ -1771,34 +1762,36 @@ class MGConfiguration(object):
             return self.channels_labels[channel_name]
         elif channel_name in self.channels:
             return self.channels[channel_name]
-        else:
-            # TODO: Improve this way
-            proxy = self._get_proxy(channel_name)
-            try:
-                alias = proxy.alias()
-            except Exception:
-                # The attribute proxy does not have alias.
-                alias = proxy.name()
-            names = list(self.channels_names.keys()) + \
-                list(self.channels_labels.keys())
-            if alias not in names:
-                raise KeyError('Channel "{0}" is not on the '
-                               'MntGrp "{1}"'.format(alias, self.label))
-            return self._get_channel_data(alias)
+        v = TangoDeviceNameValidator()
+        names = v.getNames(channel_name)
+        msg = 'element "{}" is not in {}'.format(channel_name, self.label)
+        if names is None:
+            v = TangoAttributeNameValidator()
+            names = v.getNames(channel_name)
+            if names is None:
+                raise KeyError(msg)
+        full_name = names[0]
+        data = self.channels.get(full_name)
+        if data is None:
+            raise KeyError(msg)
+        return data
+
 
     def _get_ctrl_data(self, ctrl_name):
         if ctrl_name in self.controllers_names:
             return self.controllers_names[ctrl_name]
         elif ctrl_name in self.controllers:
             return self.controllers[ctrl_name]
-        else:
-            # TODO: Improve this way
-            proxy = self._get_proxy(ctrl_name)
-            alias = proxy.alias()
-            if alias not in self.controllers_names:
-                raise KeyError('Controller "{0}" is not on the '
-                               'MntGrp "{1}"'.format(alias, self.label))
-            return self._get_ctrl_data(alias)
+        v = TangoDeviceNameValidator()
+        names = v.getNames(ctrl_name)
+        msg = 'element "{}" is not in {}'.format(ctrl_name, self.label)
+        if names is None:
+            raise KeyError(msg)
+        full_name = names[0]
+        data = self.controllers.get(full_name)
+        if data is None:
+            raise KeyError(msg)
+        return data
 
     def _set_channels_key(self, key, value, channels_names=None,
                           apply_cfg=True):
