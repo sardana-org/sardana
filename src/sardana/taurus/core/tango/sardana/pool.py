@@ -2834,8 +2834,8 @@ class MeasurementGroup(PoolElement):
         controller.
 
         .. note: Currently the controller's timer must be unique. Hence this
-        method will set it for the whole controller regardless of the
-        ``elements`` argument.
+           method will set it for the whole controller regardless of the
+           ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
@@ -2897,8 +2897,8 @@ class MeasurementGroup(PoolElement):
         controller.
 
         .. note: Currently the controller's monitor must be unique.
-        Hence this method will set it for the whole controller regardless of
-        the ``elements`` argument.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
@@ -2961,8 +2961,8 @@ class MeasurementGroup(PoolElement):
         controller.
 
         .. note: Currently the controller's synchronizer must be unique.
-        Hence this method will set it for the whole controller regardless of
-        the ``elements`` argument.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
 
         Configuration by default is directly applied on the server.
         Since setting the configuration means passing to the server all the
@@ -3092,17 +3092,19 @@ class MeasurementGroup(PoolElement):
 
     def enableChannels(self, channels):
         '''DEPRECATED: Enable acquisition of the indicated channels.
+
         :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+           channel names
         '''
         self.warning("enableChannels() in deprecated since Jul20. "
                      "Use setEnabled() instead.")
         self.setEnabled(True, *channels)
 
     def disableChannels(self, channels):
-        '''Disable acquisition of the indicated channels.
+        '''DEPRECATED: Disable acquisition of the indicated channels.
+
         :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+           channel names
         '''
         self.warning("enableChannels() in deprecated since Jul20. "
                      "Use setEnabled() instead.")
