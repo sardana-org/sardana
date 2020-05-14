@@ -89,6 +89,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
 * Global measurement group timer/monitor on all levels (#867)
+* `value_ref_enabled` and `value_ref_pattern` measurement group parameters
+  for non-referable channels (#867) 
 
 ### Changed
 
