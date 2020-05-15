@@ -2833,7 +2833,7 @@ class MeasurementGroup(PoolElement):
         """Set the timer configuration for the given channels of the same
         controller.
 
-        .. note: Currently the controller's timer must be unique. Hence this
+        .. note:: Currently the controller's timer must be unique. Hence this
            method will set it for the whole controller regardless of the
            ``elements`` argument.
 
@@ -2896,7 +2896,7 @@ class MeasurementGroup(PoolElement):
         """Set the monitor configuration for the given channels of the same
         controller.
 
-        .. note: Currently the controller's monitor must be unique.
+        .. note:: Currently the controller's monitor must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
 
@@ -2960,7 +2960,7 @@ class MeasurementGroup(PoolElement):
         """Set the synchronizer configuration for the given channels or
         controller.
 
-        .. note: Currently the controller's synchronizer must be unique.
+        .. note:: Currently the controller's synchronizer must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
 
