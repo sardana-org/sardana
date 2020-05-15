@@ -2372,7 +2372,25 @@ class MGConfiguration(object):
 
 
 class MeasurementGroup(PoolElement):
-    """ Class encapsulating MeasurementGroup functionality."""
+    """MeasurementGroup Sardana-Taurus extension.
+
+    Setting configuration parameters using e.g.,
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled` or
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setTimer`, etc.
+    by default applies changes on the server. Since setting the configuration
+    means passing to the server all the configuration parameters of
+    the measurement group at once this behavior can be changed with the
+    ``apply=False``. Then the configuration changes are kept locally.
+    This is useful when changing more then one parameter. In this case only
+    setting of the last parameter should use ``apply=True`` or use
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.applyConfiguration`
+    afterwards::
+
+        # or in a macro use: meas_grp = self.getMeasurementGroup("mntgrp01")
+        meas_grp = taurus.Device("mntgrp01")
+        meas_grp.setEnabled(False, apply=False)
+        meas_grp.setEnabled(True, "ct01", "ct02")
+    """
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
@@ -2503,14 +2521,6 @@ class MeasurementGroup(PoolElement):
         on the controller means setting it to all channels of this controller
         present in this measurement group.
 
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
-
         :param output: `True` - output enabled, `False` - output disabled
         :type output: bool
         :param elements: sequence of element names or full names, no elements
@@ -2556,14 +2566,6 @@ class MeasurementGroup(PoolElement):
         on the controller means setting it to all channels of this controller
         present in this measurement group.
 
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
-
         :param enabled: `True` - element enabled, `False` - element disabled
         :type enabled: bool
         :param elements: sequence of element names or full names, no elements
@@ -2608,14 +2610,6 @@ class MeasurementGroup(PoolElement):
         Channels and controllers are accepted as elements. Setting the plot
         type on the controller means setting it to all channels of this
         controller present in this measurement group.
-
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
 
         :param plot_type: 'No'/0 , 'Spectrum'/1, 'Image'/2
         :type plot_type: str or int
@@ -2665,14 +2659,6 @@ class MeasurementGroup(PoolElement):
         axes on the controller means setting it to all channels of this
         controller present in this measurement group.
 
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
-
         :param plot_axes: ['<mov>'] / ['<mov>', '<idx>']
         :type plot_axes: list(str)
         :param elements: sequence of element names or full names, no elements
@@ -2718,14 +2704,6 @@ class MeasurementGroup(PoolElement):
         Channels and controllers are accepted as elements. Setting the value
         reference enabled on the controller means setting it to all channels
         of this controller present in this measurement group.
-
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
 
         :param value_ref_enabled: `True` - enabled, `False` - disabled
         :type value_ref_enabled: bool
@@ -2773,14 +2751,6 @@ class MeasurementGroup(PoolElement):
         Channels and controllers are accepted as elements. Setting the value
         reference pattern on the controller means setting it to all channels
         of this controller present in this measurement group.
-
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration paramters of the measurement group at once this
-        behavior can be changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
 
         :param value_ref_pattern: `/path/file{index:03d}.txt`
         :type value_ref_pattern: :py:obj:`str`
@@ -2837,14 +2807,6 @@ class MeasurementGroup(PoolElement):
            method will set it for the whole controller regardless of the
            ``elements`` argument.
 
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration  paramters of the measurement group at once this
-        behavior can be  changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
-
         :param timer: channel use as timer
         :type timer: :py:obj:`str`
         :param elements: sequence of channels names or full names, no elements
@@ -2899,14 +2861,6 @@ class MeasurementGroup(PoolElement):
         .. note:: Currently the controller's monitor must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
-
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration  parameters of the measurement group at once this
-        behavior can be  changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
 
         :param monitor: channel use as monitor
         :type monitor: :py:obj:`str`
@@ -2963,14 +2917,6 @@ class MeasurementGroup(PoolElement):
         .. note:: Currently the controller's synchronizer must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
-
-        Configuration by default is directly applied on the server.
-        Since setting the configuration means passing to the server all the
-        configuration  paramters of the measurement group at once this
-        behavior can be  changed with the *apply* argument and we can keep
-        the configuration changes only locally. This is useful when we want
-        to change more then one parameter, in this case only the setting of
-        the last parameter should use `apply=True`.
 
         :param synchronizer: triger/gate element name or software
         :type synchronizer: :py:obj:`str`
