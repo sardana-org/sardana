@@ -131,9 +131,9 @@ experiment configuration macros
     * :class:`~sardana.macroserver.macros.expconf.get_meas`
     * :class:`~sardana.macroserver.macros.expconf.set_meas_conf`
     * :class:`~sardana.macroserver.macros.expconf.get_meas_conf`
-    * :class:`~sardana.macroserver.macros.expert.defsnap`
-    * :class:`~sardana.macroserver.macros.expert.udefsnap`
-    * :class:`~sardana.macroserver.macros.expert.lssnap`
+    * :class:`~sardana.macroserver.macros.expconf.defsnap`
+    * :class:`~sardana.macroserver.macros.expconf.udefsnap`
+    * :class:`~sardana.macroserver.macros.expconf.lssnap`
 
 general hooks macros
 --------------------
