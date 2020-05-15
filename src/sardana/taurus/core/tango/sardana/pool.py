@@ -2968,6 +2968,19 @@ class MeasurementGroup(PoolElement):
             return self._get_value_per_channel(config, ctrls_sync,
                                                use_fullname=ret_full_name)
 
+    def applyConfiguration(self):
+        """Apply configuration changes kept locally on the server.
+
+        Setting configuration parameters using e.g.,
+        `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled`
+        or
+        `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setTimer`,
+        etc.
+        with ``apply=False`` keeps the changes locally. Use this method to
+        apply them on the server afterwards.
+        """
+        self.getConfiguration().applyConfiguration()
+
     #########################################################################
     # TODO: review the following API
 
