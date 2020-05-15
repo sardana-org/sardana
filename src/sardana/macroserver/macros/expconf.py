@@ -169,10 +169,14 @@ def set_meas_conf(self, parameter, value, items, meas_grp):
 
     Examples of usage:
 
-    >>> set_meas_conf enabled True  # enable all channels in <ActiveMntGrp>
-    >>> set_meas_conf plottype spectrum ct01  # enable spectrum plotting for ct01 on <ActiveMntGrp>
-    >>> set_meas_conf plotaxes mov  # set plot x-axis to <moveable> for all channels of <ActiveMntGrp>
-    >>> set_meas_conf plottype spectrum [] mntgrp01  # enable spectrum plotting for all mntgrp01
+    >>> # enable all channels in <ActiveMntGrp>
+    >>> set_meas_conf enabled True
+    >>> # enable spectrum plotting for ct01 on <ActiveMntGrp>
+    >>> set_meas_conf plottype spectrum ct01
+    >>> # set plot x-axis to <moveable> for all channels of <ActiveMntGrp>
+    >>> set_meas_conf plotaxes mov
+    >>> # enable spectrum plotting for all mntgrp01
+    >>> set_meas_conf plottype spectrum [] mntgrp01
     """
     try:
         parameter, _, validator = parameter_map[parameter.lower()]
