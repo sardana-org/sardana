@@ -1,3 +1,5 @@
+image: Visual Studio 2017
+
 # fetch repository as zip archive
 shallow_clone: true
 
@@ -31,6 +33,31 @@ install:
     - "pip install --upgrade virtualenv"
     - "virtualenv --version"
 
+    # Install Tango
+    #- ps: $tangoinstallerurl = "https://sourceforge.net/projects/tango-cs/files/TangoSetup-9.2.2_win64.exe/download"
+    #- ps: $tangoinstaller = "$env:TMP\\TangoSetup-9.2.2_win64.exe"
+    #- ps: wget $tangoinstallerurl -OutFile $tangoinstaller
+    #- ps: echo "Installing Tango"
+    #- ps: Start-Process "$env:TMP\\TangoSetup-9.2.2_win64.exe" /S -Wait
+    
+    # Install PyTango
+    - ps: $pytangoinstallerurl = "https://github.com/NexeyaSGara/pytango/releases/download/9.2.6/pytango-9.2.3.win-amd64-py2.7.msi"
+    - ps: $pytangoinstaller = "$env:TMP\\pytango-9.2.3.win-amd64-py2.7.msi"
+    - ps: wget $pytangoinstallerurl -OutFile $pytangoinstaller
+    - ps: echo "Installing PyTango"
+    - ps: msiexec /quiet /i $pytangoinstaller | out-null
+
+    # Create Conda env
+    - ps: echo "Creating py2qt5 conda environment"
+#    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
+    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow gevent=1.2
+    - ps: echo "setting variables"
+    - ps: $env:TANGO_HOST='localhost:10000'
+    - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
+    - C:\\Miniconda-x64\\Scripts\\activate py2qt5
+    - pip install pytango-db
+    - pip install taurus
+ 
 build_script:
     # Create build virtualenv
     - "virtualenv --clear %VENV_BUILD_DIR%"
@@ -47,10 +74,47 @@ build_script:
     - "%VENV_BUILD_DIR%\\Scripts\\deactivate.bat"
     - "rmdir %VENV_BUILD_DIR% /s /q"
 
+before_test:
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2" -RedirectStandardOutput "$env:TMP\\DataBasedsOutput.txt" -RedirectStandardError "$env:TMP\\DataBasedsError.txt"
+    - ps: Start-Sleep -s 3
+    - ps: ls "$env:TMP"
+    - ps: echo "DataBaseds output:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsOutput.txt"
+    - ps: echo "DataBaseds error:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
+    - python -c "import tango; print(tango.Database())"
+    - python -c "from tango import DbDevInfo, Database;
+                 db = Database();
+                 dev_info1 = DbDevInfo();
+                 dev_info1.name = 'Pool/demo/1';
+                 dev_info1._class = 'Pool';
+                 dev_info1.server = 'Pool/demo1';
+                 db.add_server(dev_info1.server, dev_info1, with_dserver=True)"
+    - python setup.py install
+    - ps: ls "C:\Miniconda-x64\\envs\\py2qt5\\Scripts"
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\Pool.exe" -ArgumentList "demo1"
+    - ps: Start-Sleep -s 3
+    - python -c "from tango import DbDevInfo, Database;
+                 db = Database();
+                 dev_info1 = DbDevInfo();
+                 dev_info1.name = 'MacroServer/demo/1';
+                 dev_info1._class = 'MacroServer';
+                 dev_info1.server = 'MacroServer/demo1';
+                 db.add_server(dev_info1.server, dev_info1, with_dserver=True);
+                 dev_info2 = DbDevInfo();
+                 dev_info2.name = 'Door/demo/1';
+                 dev_info2._class = 'Door';
+                 dev_info2.server = 'MacroServer/demo1';
+                 db.put_device_property('MacroServer/demo/1', {'PoolNames':'Pool/demo1/1'})"
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\MacroServer.exe" -ArgumentList "demo1"
+    - ps: Start-Sleep -s 3
+    - python -c "from tango import DeviceProxy;
+                 door = DeviceProxy('Door/demo1/1');
+                 door.command_inout('RunMacro', ['sar_demo']);"
+    - ps: Start-Sleep -s 3
 
-#test_script:
-# TODO
-
+test_script:
+    - C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\sardanatestsuite.exe
 
 artifacts:
     # Archive the generated sdist, wheel and msi packages in the ci.appveyor.com build report.
