@@ -80,7 +80,8 @@ class PoolTangoObject(PoolBaseExternalObject):
         self._attribute_name = attribute_name
         self._config = None
         self._device = None
-        kwargs['name'] = attribute_name
+        # TODO evaluate to use alias instead of device_name
+        kwargs['name'] = '{0}/{1}'.format(device_name, attribute_name)
         kwargs['full_name'] = full_name
         PoolBaseExternalObject.__init__(self, **kwargs)
 

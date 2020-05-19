@@ -1016,14 +1016,8 @@ class PoolMotorTVReadWidget(TaurusWidget):
         # self.cb_expertRead.addItems(['Enc'])
         #self.layout().addWidget(self.cb_expertRead, 1, 0)
 
-        self.lbl_enc = Qt.QLabel('Encoder')
-        self.layout().addWidget(self.lbl_enc, 1, 0)
-
-        self.lbl_enc_read = TaurusLabel()
-        self.lbl_enc_read.setBgRole('none')
-        self.lbl_enc_read.setSizePolicy(Qt.QSizePolicy(
-            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
-        self.layout().addWidget(self.lbl_enc_read, 1, 1)
+        self.lbl_enc = None
+        self.lbl_enc_read = None
 
         # Align everything on top
         self.layout().addItem(Qt.QSpacerItem(
@@ -1034,8 +1028,6 @@ class PoolMotorTVReadWidget(TaurusWidget):
         # SO WE ASSUME 'expertview is FALSE' AND WE HAVE TO AVOID self.setExpertView :-(
         # WOULD BE NICE THAT THE taurusValueBuddy COULD EMIT THE PROPER
         # SIGNAL...
-        self.lbl_enc.setVisible(False)
-        self.lbl_enc_read.setVisible(False)
 
     def eventFilter(self, obj, event):
         if event.type() == Qt.QEvent.MouseButtonDblClick:
@@ -1058,8 +1050,6 @@ class PoolMotorTVReadWidget(TaurusWidget):
             motor_dev.abort()
 
     def setExpertView(self, expertView):
-        self.lbl_enc.setVisible(False)
-        self.lbl_enc_read.setVisible(False)
         if self.taurusValueBuddy().motor_dev is not None:
             if self.taurusValueBuddy().hasHwLimits():
                 self.config_limit(self.lim_neg, "negative", "Enabled")
@@ -1068,10 +1058,13 @@ class PoolMotorTVReadWidget(TaurusWidget):
                 self.config_limit(self.lim_neg, "negative", "Disabled")
                 self.config_limit(self.lim_pos, "positive", "Disabled")
 
-        if expertView and self.taurusValueBuddy().motor_dev is not None:
-            encoder = self.taurusValueBuddy().hasEncoder()
-            self.lbl_enc.setVisible(encoder)
-            self.lbl_enc_read.setVisible(encoder)
+        if self.lbl_enc_read is not None:
+            self.lbl_enc.setVisible(False)
+            self.lbl_enc_read.setVisible(False)
+            if expertView and self.taurusValueBuddy().motor_dev is not None:
+                encoder = self.taurusValueBuddy().hasEncoder()
+                self.lbl_enc.setVisible(encoder)
+                self.lbl_enc_read.setVisible(encoder)
 
     def prepare_button(self, btn):
         btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
@@ -1130,21 +1123,41 @@ class PoolMotorTVReadWidget(TaurusWidget):
         limit.setToolTip(tooltip)
         limit.setPixmap(pixmap)
 
+    def _create_encoder(self):
+        if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
+            self.lbl_enc = Qt.QLabel('Encoder')
+            self.layout().addWidget(self.lbl_enc, 1, 0)
+
+            self.lbl_enc_read = TaurusLabel()
+            self.lbl_enc_read.setBgRole('none')
+            self.lbl_enc_read.setSizePolicy(Qt.QSizePolicy(
+                Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
+            self.layout().addWidget(self.lbl_enc_read, 1, 1)
+
+            # Align everything on top
+            self.layout().addItem(Qt.QSpacerItem(
+                1, 1, Qt.QSizePolicy.Minimum,
+                Qt.QSizePolicy.Expanding), 2, 0, 1, 2)
+
+            self.lbl_enc.setVisible(False)
+            self.lbl_enc_read.setVisible(False)
+
     def setModel(self, model):
-        if hasattr(self, 'taurusValueBuddy'):
-            try:
-                self.taurusValueBuddy().expertViewChanged.disconnect(
-                    self.setExpertView)
-            except TypeError:
-                pass
+        if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
+            self._create_encoder()
+            self.taurusValueBuddy().expertViewChanged.disconnect(
+                self.setExpertView)
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.lbl_read.setModel(model)
-            self.lbl_enc_read.setModel(model)
+            if self.lbl_enc_read is not None:
+                self.lbl_enc_read.setModel(model)
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.lbl_read.setModel(model + '/Position')
-        self.lbl_enc_read.setModel(model + '/Encoder')
+        if (self.lbl_enc_read is not None
+                and self.taurusValueBuddy().motor_dev is not None):
+            self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert view
         self.setExpertView(self.taurusValueBuddy()._expertView)
         self.taurusValueBuddy().expertViewChanged.connect(
@@ -1211,7 +1224,9 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.cbAbsoluteRelativeChanged)
         self.cbAbsoluteRelative.addItems(['Abs', 'Rel'])
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
-
+        self.registerConfigProperty(
+            self.cbAbsoluteRelative.currentIndex,
+            self.cbAbsoluteRelative.setCurrentIndex, 'AbsRelIndex')
         # WITH THE COMPACCT VIEW FEATURE, BETTER TO HAVE IT IN THE READ WIDGET
         # WOULD BE BETTER AS AN 'EXTRA WIDGET' (SOME DAY...)
         #self.btn_stop = Qt.QPushButton()
@@ -1466,6 +1481,8 @@ class PoolMotorTV(TaurusValue):
         self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
         self.motor_dev = None
         self._expertView = False
+        self.registerConfigProperty(
+            self.getExpertView, self.setExpertView, 'ExpertView')
         self.limits_listener = None
         self.poweron_listener = None
         self.status_listener = None
@@ -1475,6 +1492,9 @@ class PoolMotorTV(TaurusValue):
     def setExpertView(self, expertView):
         self._expertView = expertView
         self.expertViewChanged.emit(expertView)
+
+    def getExpertView(self):
+        return self._expertView
 
     def minimumHeight(self):
         return None  # @todo: UGLY HACK to avoid subwidgets being forced to minimumheight=20

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MacroButton</class>
- <widget class="TaurusWidget" name="MacroButton" >
-  <property name="geometry" >
+ <widget class="TaurusWidget" name="MacroButton">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,76 +10,88 @@
     <height>79</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2" >
-   <property name="margin" >
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="margin">
     <number>0</number>
    </property>
-   <property name="spacing" >
+   <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="0" >
-    <widget class="QFrame" name="frame" >
-     <property name="frameShape" >
+   <item row="0" column="0">
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
-     <property name="frameShadow" >
+     <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <property name="lineWidth" >
+     <property name="lineWidth">
       <number>3</number>
      </property>
-     <property name="midLineWidth" >
+     <property name="midLineWidth">
       <number>3</number>
      </property>
-     <layout class="QGridLayout" name="gridLayout" >
-      <property name="margin" >
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="margin">
        <number>0</number>
       </property>
-      <property name="spacing" >
+      <property name="spacing">
        <number>0</number>
       </property>
-      <item row="0" column="0" >
-       <widget class="QPushButton" name="button" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="text" >
+        <property name="minimumSize">
+         <size>
+          <width>25</width>
+          <height>15</height>
+         </size>
+        </property>
+        <property name="text">
          <string>PushButton</string>
         </property>
-        <property name="checkable" >
+        <property name="checkable">
          <bool>true</bool>
         </property>
-        <property name="autoDefault" >
+        <property name="autoDefault">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" >
-       <widget class="QProgressBar" name="progress" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+      <item row="1" column="0">
+       <widget class="QProgressBar" name="progress">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="maximumSize" >
+        <property name="minimumSize">
+         <size>
+          <width>1</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
          <size>
           <width>16777215</width>
           <height>10</height>
          </size>
         </property>
-        <property name="font" >
+        <property name="font">
          <font>
           <pointsize>6</pointsize>
          </font>
         </property>
-        <property name="value" >
+        <property name="value">
          <number>24</number>
         </property>
        </widget>
@@ -93,9 +106,9 @@
    <class>TaurusWidget</class>
    <extends>QWidget</extends>
    <header>taurus.qt.qtgui.container</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
 </ui>
-
