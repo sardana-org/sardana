@@ -1050,21 +1050,14 @@ class PoolMotorTVReadWidget(TaurusWidget):
             motor_dev.abort()
 
     def setExpertView(self, expertView):
-        if self.taurusValueBuddy().motor_dev is not None:
-            if self.taurusValueBuddy().hasHwLimits():
-                self.config_limit(self.lim_neg, "negative", "Enabled")
-                self.config_limit(self.lim_pos, "positive", "Enabled")
-            else:
-                self.config_limit(self.lim_neg, "negative", "Disabled")
-                self.config_limit(self.lim_pos, "positive", "Disabled")
-
-        if self.lbl_enc_read is not None:
-            self.lbl_enc.setVisible(False)
-            self.lbl_enc_read.setVisible(False)
-            if expertView and self.taurusValueBuddy().motor_dev is not None:
-                encoder = self.taurusValueBuddy().hasEncoder()
-                self.lbl_enc.setVisible(encoder)
-                self.lbl_enc_read.setVisible(encoder)
+        if self.lbl_enc_read is None:
+            return
+        self.lbl_enc.setVisible(False)
+        self.lbl_enc_read.setVisible(False)
+        if expertView and self.taurusValueBuddy().motor_dev is not None:
+            encoder = self.taurusValueBuddy().hasEncoder()
+            self.lbl_enc.setVisible(encoder)
+            self.lbl_enc_read.setVisible(encoder)
 
     def prepare_button(self, btn):
         btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
