@@ -1068,12 +1068,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
         btn.setMaximumSize(25, 25)
         btn.setText('')
 
-    def prepare_limit(self, btn):
-        btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
-        btn_policy.setHorizontalStretch(0)
-        btn_policy.setVerticalStretch(0)
-        btn.setSizePolicy(btn_policy)
-        btn.setText('')
+    def prepare_limit(self, lbl):
+        lbl_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
+        lbl_policy.setHorizontalStretch(0)
+        lbl_policy.setVerticalStretch(0)
+        lbl.setSizePolicy(lbl_policy)
+        lbl.setText('')
 
     def config_limit(self, limit, polarity, state):
         """
