@@ -984,10 +984,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
         limits_layout.setSpacing(0)
 
         self.lim_neg = Qt.QLabel()
+        self.prepare_limit(self.lim_neg)
         limits_layout.addWidget(self.lim_neg)
         self.config_limit(self.lim_neg, "negative", "Disabled")
 
         self.lim_pos = Qt.QLabel()
+        self.prepare_limit(self.lim_pos)
         limits_layout.addWidget(self.lim_pos)
         self.config_limit(self.lim_pos, "positive", "Disabled")
 
@@ -1081,8 +1083,6 @@ class PoolMotorTVReadWidget(TaurusWidget):
         :param polarity: {negative, positive}
         :param state: {Disabled, Enabled, SwActive, HwActive}
         """
-        self.prepare_limit(limit)
-
         if polarity == "negative":
             tooltip = 'Negative Limit'
             icon = Qt.QIcon("designer:minus.png")
