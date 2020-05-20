@@ -1097,10 +1097,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
             self.lbl_enc_read.setVisible(False)
 
     def setModel(self, model):
-        if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
-            self._create_encoder()
-            self.taurusValueBuddy().expertViewChanged.disconnect(
-                self.setExpertView)
+        if hasattr(self, 'taurusValueBuddy'):
+            try:
+                self.taurusValueBuddy().expertViewChanged.disconnect(
+                    self.setExpertView)
+            except TypeError:
+                pass
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.lbl_read.setModel(model)
@@ -1109,8 +1111,9 @@ class PoolMotorTVReadWidget(TaurusWidget):
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.lbl_read.setModel(model + '/Position')
-        if (self.lbl_enc_read is not None
-                and self.taurusValueBuddy().motor_dev is not None):
+        if (self.taurusValueBuddy().hasEncoder()
+                and self.lbl_enc_read is None):
+            self._create_encoder()
             self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert view
         self.setExpertView(self.taurusValueBuddy()._expertView)
