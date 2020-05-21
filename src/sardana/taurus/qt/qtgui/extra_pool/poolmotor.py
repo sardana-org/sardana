@@ -1073,13 +1073,17 @@ class PoolMotorTVReadWidget(TaurusWidget):
 
         self.lim_neg = Qt.QLabel()
         self.prepare_limit(self.lim_neg)
+        self._config_limit(Limit.Negative,
+                           hw_lim=LimitInfo(),
+                           sw_lim=LimitInfo())
         limits_layout.addWidget(self.lim_neg)
-        self.config_limit(self.lim_neg, "negative", "Disabled")
 
         self.lim_pos = Qt.QLabel()
         self.prepare_limit(self.lim_pos)
+        self._config_limit(Limit.Positive,
+                           hw_lim=LimitInfo(),
+                           sw_lim=LimitInfo())
         limits_layout.addWidget(self.lim_pos)
-        self.config_limit(self.lim_pos, "positive", "Disabled")
 
         self.layout().addLayout(limits_layout, 0, 0)
 
@@ -1165,44 +1169,38 @@ class PoolMotorTVReadWidget(TaurusWidget):
         lbl.setSizePolicy(lbl_policy)
         lbl.setText('')
 
-    def config_limit(self, limit, polarity, state):
+    def _config_limit(self, limit, hw_lim, sw_lim):
+        """Configure sub-widgets according to limit information
+
+        :param limit: which limit (negative or positive)
+        :type limit: `Limit`
+        :param hw_lim: hardware limit information
+        :type hw_lim: `LimitInfo`
+        :param hw_lim: software limit information
+        :type hw_lim: `LimitInfo`
         """
-        :param limit: Qt.Label
-        :param polarity: {negative, positive}
-        :param state: {Disabled, Enabled, SwActive, HwActive}
-        """
-        if polarity == "negative":
-            tooltip = 'Negative Limit'
+        if limit == Limit.Negative:
+            widget = self.lim_neg
             icon = Qt.QIcon("designer:minus.png")
-        elif polarity == "positive":
-            tooltip = 'Positive Limit'
+        elif limit == Limit.Positive:
+            widget = self.lim_pos
             icon = Qt.QIcon("designer:plus.png")
         else:
-            raise ValueError("Wrong polarity {}".format(polarity))
-        limit.setStyleSheet('')
-        if state == "Disabled":
-            pixmap = Qt.QPixmap(icon.pixmap(Qt.QSize(32, 32),
-                                            Qt.QIcon.Disabled))
-        else:
+            raise ValueError("{} wrong limit".format(limit))
+        widget.setStyleSheet('')
+        if hw_lim.exist or sw_lim.exist:
             pixmap = Qt.QPixmap(icon.pixmap(Qt.QSize(32, 32),
                                             Qt.QIcon.Active))
-            if state == "SwActive":
+            if hw_lim.active or sw_lim.active:
                 colour = DEVICE_STATE_PALETTE.qtStyleSheet(
                     PyTango.DevState.ALARM)
-                limit.setStyleSheet(colour)
-                tooltip = tooltip + " - Software limit reached"
-            elif state == "HwActive":
-                colour = DEVICE_STATE_PALETTE.qtStyleSheet(
-                    PyTango.DevState.ALARM)
-                limit.setStyleSheet(colour)
-                tooltip = tooltip + " - Hardware limit reached"
-            elif state == "Enabled":
-                pass
-            else:
-                raise ValueError("Wrong state {}".format(state))
-
-        limit.setToolTip(tooltip)
-        limit.setPixmap(pixmap)
+                widget.setStyleSheet(colour)
+        else:
+            pixmap = Qt.QPixmap(icon.pixmap(Qt.QSize(32, 32),
+                                            Qt.QIcon.Disabled))
+        tool_tip = hw_lim.status + " " + sw_lim.status
+        widget.setToolTip(tool_tip)
+        widget.setPixmap(pixmap)
 
     def _create_encoder(self):
         if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
@@ -1523,6 +1521,37 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     def emitEditingFinished(self):
         self.applied.emit()
 
+    def _config_limit(self, limit, hw_lim, sw_lim):
+        """Configure sub-widgets according to limit information
+
+        :param limit: which limit (negative or positive)
+        :type limit: `Limit`
+        :param hw_lim: hardware limit information
+        :type hw_lim: `LimitInfo`
+        :param hw_lim: software limit information
+        :type hw_lim: `LimitInfo`
+        """
+        if limit == Limit.Negative:
+            step_widget = self.btn_step_down
+            to_widget = self.btn_to_neg
+            to_press_widget = self.btn_to_neg_press
+        elif limit == Limit.Positive:
+            step_widget = self.btn_step_up
+            to_widget = self.btn_to_pos
+            to_press_widget = self.btn_to_pos_press
+        else:
+            raise ValueError("{} wrong limit".format(limit))
+        active = hw_lim.active or sw_lim.active
+        style_sheet = ""
+        if active:
+            style_sheet = 'QPushButton{{{}}}'.format(
+                DEVICE_STATE_PALETTE.qtStyleSheet(PyTango.DevState.ALARM))
+        step_widget.setEnabled(not active)
+        allow_to = not active and sw_lim.exist
+        to_widget.setEnabled(allow_to)
+        to_press_widget.setEnabled(allow_to)
+        step_widget.setStyleSheet(style_sheet)
+
 
 ##################################################
 #                  UNITS WIDGET                  #
@@ -1688,92 +1717,20 @@ class PoolMotorTV(TaurusValue):
     def updateLimits(self, limits, position=None):
         if isinstance(limits, dict):
             limits = limits["limits"]
-        limits = list(limits)
-        HOME = 0
-        POS = 1
-        NEG = 2
 
-        # Check also if the software limit is 'active'
-        if self.motor_dev is not None:
-            position_attribute = self.motor_dev.getAttribute('Position')
-            if position is None:
-                position = position_attribute.read().rvalue.magnitude
-            max_value_str = position_attribute.max_value
-            min_value_str = position_attribute.min_value
-            try:
-                max_value = float(max_value_str)
-                if position >= max_value:
-                    limits[POS] = True
-                    pos_lim_status = "HwActive"
-                else:
-                    pos_lim_status = "SwActive"
-            except:
-                pos_lim_status = "SwActive"
-            try:
-                min_value = float(min_value_str)
-                if position <= min_value:
-                    limits[NEG] = True
-                    neg_lim_status = "HwActive"
-                else:
-                    neg_lim_status = "SwActive"
-            except:
-                neg_lim_status = "SwActive"
+        pos_hw_lim = eval_hw_limit(Limit.Positive, limits[Limit.Positive])
+        neg_hw_lim = eval_hw_limit(Limit.Negative, limits[Limit.Negative])
+        position_attr = self.motor_dev.getAttribute('Position')
+        pos_sw_lim = eval_sw_limit(Limit.Positive, position_attr)
+        neg_sw_lim = eval_sw_limit(Limit.Negative, position_attr)
 
-        pos_lim = limits[POS]
-        pos_btnstylesheet = ''
-        enabled = True
-        if pos_lim:
-            pos_btnstylesheet = 'QPushButton{%s}' % DEVICE_STATE_PALETTE.qtStyleSheet(
-                PyTango.DevState.ALARM)
-            enabled = False
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_pos,
-                "positive", pos_lim_status)
-        elif self.hasHwLimits():
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_pos,
-                "positive", "Enabled")
-        else:
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_pos,
-                "positive", "Disabled")
+        read_widget = self.readWidget(followCompact=True)
+        read_widget._config_limit(Limit.Positive, pos_hw_lim, pos_sw_lim)
+        read_widget._config_limit(Limit.Negative, neg_hw_lim, neg_sw_lim)
 
-        self.writeWidget(followCompact=True).btn_step_up.setEnabled(enabled)
-        self.writeWidget(followCompact=True).btn_step_up.setStyleSheet(
-            pos_btnstylesheet)
-        enabled = enabled and self.motor_dev.getAttribute(
-            'Position').max_value.lower() != 'not specified'
-        self.writeWidget(followCompact=True).btn_to_pos.setEnabled(enabled)
-        self.writeWidget(
-            followCompact=True).btn_to_pos_press.setEnabled(enabled)
-
-        neg_lim = limits[NEG]
-        neg_btnstylesheet = ''
-        enabled = True
-        if neg_lim:
-            neg_btnstylesheet = 'QPushButton{%s}' % DEVICE_STATE_PALETTE.qtStyleSheet(
-                PyTango.DevState.ALARM)
-            enabled = False
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_neg,
-                "negative", neg_lim_status)
-        elif self.hasHwLimits():
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_neg,
-                "negative", "Enabled")
-        else:
-            self.readWidget(followCompact=True).config_limit(
-                self.readWidget(followCompact=True).lim_neg,
-                "negative", "Disabled")
-
-        self.writeWidget(followCompact=True).btn_step_down.setEnabled(enabled)
-        self.writeWidget(followCompact=True).btn_step_down.setStyleSheet(
-            neg_btnstylesheet)
-        enabled = enabled and self.motor_dev.getAttribute(
-            'Position').min_value.lower() != 'not specified'
-        self.writeWidget(followCompact=True).btn_to_neg.setEnabled(enabled)
-        self.writeWidget(
-            followCompact=True).btn_to_neg_press.setEnabled(enabled)
+        write_widget = self.writeWidget(followCompact=True)
+        write_widget._config_limit(Limit.Positive, pos_hw_lim, pos_sw_lim)
+        write_widget._config_limit(Limit.Negative, neg_hw_lim, neg_sw_lim)
 
     def updatePowerOn(self, poweron='__no_argument__'):
         if poweron == '__no_argument__':
@@ -1801,7 +1758,7 @@ class PoolMotorTV(TaurusValue):
         # we just want to check if any software limit is 'active'
         # and updateLimits takes care of it
         if self.motor_dev is not None:
-            limit_switches = [False, False, False]
+            limit_switches = [None, None, None]
             if self.hasHwLimits():
                 limit_switches = self.motor_dev.getAttribute(
                     'Limit_switches').read().rvalue
