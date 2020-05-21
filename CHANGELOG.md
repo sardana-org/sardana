@@ -27,10 +27,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
 * Possibility to view debug messages in `DoorOutput` widget - enable/disable
   using context menu option (#1242)
-* Store PMTV (motor widget) configurations: *expert view* and *write mode*
-  (relative or absolute) permanently as TaurusGUI settings.
-* Do not create encoder widget in PMTV if the motod does not have encoder
-  in order to avoid errors comming from the polling (#209, #1288)
+* Improve user experience with PMTV:
+  * Store PMTV (motor widget) configurations: *expert view* and *write mode*
+    (relative or absolute) permanently as TaurusGUI settings.
+  * Do not create encoder widget in PMTV if the motod does not have encoder
+    in order to avoid errors comming from the polling (#209, #1288)
+  * Change limit switches indicators from buttons to labels (#210, #1290)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
 * Add basic information to "how to write custom recorder" to
