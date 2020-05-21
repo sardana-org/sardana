@@ -23,6 +23,9 @@
 ##
 ##############################################################################
 
+import operator
+from enum import IntEnum
+
 import PyTango
 
 from taurus.external.qt import Qt, compat
@@ -62,6 +65,91 @@ class LimitsListener(Qt.QObject):
             return
         limits = evt_value.value
         self.updateLimits.emit(limits.tolist())
+
+
+class Limit(IntEnum):
+    Home = 0
+    Positive = 1
+    Negative = 2
+
+
+class LimitInfo:
+
+    def __init__(self, exist=False, active=False, status=""):
+        # for software limit True when defined
+        # for hardware limit True when physical motor, False when pseudo
+        self.exist = exist
+        self.active = active
+        self.status = status
+
+
+def eval_hw_limit(limit, value):
+    """Evaluate hardware limit information
+
+    :param limit: which limit (negative or positive)
+    :type limit: `Limit`
+    :param value: limit value, `None` means no hardware limit (pseudo motor)
+    :type value: `bool` or `None`
+    :return: limit information
+    :rtype: `LimitInfo`
+    """
+    if limit is Limit.Positive:
+        status = "Positive "
+    elif limit is Limit.Negative:
+        status = "Negative "
+    else:
+        raise ValueError("{} wrong limit".format(limit))
+    exist = True
+    active = False
+    status += "hardware limit "
+    if value is None:
+        exist = False
+        status += "does not exist."
+    elif value:
+        active = True
+        status += "is active."
+    else:
+        status += "is not active."
+    return LimitInfo(exist, active, status)
+
+
+def eval_sw_limit(limit, position_attr):
+    """Evaluate software limit information
+
+    :param limit: which limit (negative or positive)
+    :type limit: `Limit`
+    :param position_attr: position attribute
+    :type position_attr: `taurus.core.tango.TangoAttribute`
+    :return: limit information
+    :rtype: `LimitInfo`
+    """
+    if limit == Limit.Positive:
+        getter_name = "getMaxRange"
+        comparator = operator.ge
+        not_defined = float("inf")
+        status = "Positive "
+    elif limit == Limit.Negative:
+        getter_name = "getMinRange"
+        comparator = operator.le
+        not_defined = float("-inf")
+        status = "Negative "
+    else:
+        raise ValueError("{} wrong limit".format(limit))
+    active = False
+    exist = False
+    lim_value = getattr(position_attr, getter_name)().magnitude
+    status += "software limit is "
+    if lim_value == not_defined:
+        status += "not defined."
+    else:
+        exist = True
+        position = position_attr.read().rvalue.magnitude
+        if comparator(position, lim_value):
+            status += "active."
+            active = True
+        else:
+            status += "defined."
+    return LimitInfo(exist, active, status)
 
 
 class PoolMotorClient():
