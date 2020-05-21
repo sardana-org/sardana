@@ -29,7 +29,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   using context menu option (#1242)
 * Improve user experience with PMTV:
   * Store PMTV (motor widget) configurations: *expert view* and *write mode*
-    (relative or absolute) permanently as TaurusGUI settings.
+    (relative or absolute) permanently as TaurusGUI settings (#1286)
   * Do not create encoder widget in PMTV if the motod does not have encoder
     in order to avoid errors comming from the polling (#209, #1288)
   * Change limit switches indicators from buttons to labels (#210, #1290)
