@@ -1382,8 +1382,6 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     @Qt.pyqtSlot()
     def emitEditingFinished(self):
         self.applied.emit()
-        if self.cbAbsoluteRelative.currentIndex() == 1:
-            self.resetPendingOperations()
 
 
 ##################################################
