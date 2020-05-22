@@ -52,8 +52,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
 * Macro functions which define results now really report the result (#1238)
 * Use of env and hints in `macro` function decorator (#1239)
-* PMTV widget not updating the following attributes: limit switches, state
-  and status (#1244)
+* Fix several issues with PMTV:
+  * Reset pending operations of absolute movement on switching to relative movement (#1293)
+  * PMTV widget not updating the following attributes: limit switches, state
+    and status (#1244)
 * Avoid Taurus GUI slowness on startup and changing of perspectives due to too
   large macroexecutor history by limitting it to 100 -
   configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
