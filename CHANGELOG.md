@@ -14,6 +14,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   * new showscan console script
   * support fast scans: update curves at a fix rate (5Hz)
   * better curve colors and symbols
+* Measurement group (Taurus extension) configuration API with methods to
+  set/get: enabled, output, plot type, plot axes, timer, monitor, synchronizer,
+  value ref enabled, value ref pattern parameters(#867)
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
@@ -24,8 +27,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
 * Possibility to view debug messages in `DoorOutput` widget - enable/disable
   using context menu option (#1242)
-* Store PMTV (motor widget) configurations: *expert view* and *write mode*
-  (relative or absolute) permanently as TaurusGUI settings.
+* Improve user experience with PMTV:
+  * Store PMTV (motor widget) configurations: *expert view* and *write mode*
+    (relative or absolute) permanently as TaurusGUI settings (#1286)
+  * Do not create encoder widget in PMTV if the motod does not have encoder
+    in order to avoid errors comming from the polling (#209, #1288)
+  * Change limit switches indicators from buttons to labels (#210, #1290)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
 * Add basic information to "how to write custom recorder" to
@@ -83,10 +90,17 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Deprecated
 
 * `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
+* Global measurement group timer/monitor on all levels (#867)
+* `value_ref_enabled` and `value_ref_pattern` measurement group parameters
+  for non-referable channels (#867) 
 
 ### Changed
 
-* requirements are no longer checked when importing sardana (#1185)
+* Requirements are no longer checked when importing sardana (#1185)
+* Measurement group (Taurus extension) configuration API methods, known in 
+  the old sense for setting a global measurement group timer/monitor:
+  `getTimer()`, `setTimer()`, `getMonitor()` were moved to `MGConfiguration`
+  class and are deprecated (#867)
 
 ### Removed
 
@@ -96,6 +110,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+
 
 ## [2.8.5] 2020-04-27
 
