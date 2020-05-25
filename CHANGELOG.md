@@ -37,6 +37,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Better macro exception message and hint to use `www` (#1191)
 * Add basic information to "how to write custom recorder" to
   the documentation (#1275)
+* Register a TaurusValue factory for pool widgets (#1333)
 
 ### Fixed
 
