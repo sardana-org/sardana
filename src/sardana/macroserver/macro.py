@@ -769,7 +769,12 @@ class Macro(Logger):
         """**Macro API**.
         Sends the given data to the RecordData attribute of the Door
 
-        :param data: (sequence) the data to be sent"""
+        :param data: data to be sent (must be compatible with the codec)
+        :type data: object
+        :param codec: codec to encode data (in Tango server None defaults
+            to "utf8_json")
+        :type codec: str or None
+        """
         self._sendRecordData(data, codec)
 
     def _sendRecordData(self, data, codec=None):

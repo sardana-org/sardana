@@ -311,7 +311,7 @@ class GScan(Logger):
             raise ScanSetupError("ActiveMntGrp has invalid value: '%s'"
                                  % mnt_grp_name)
 
-        self._master = mnt_grp.getTimer()
+        self._master = mnt_grp.getConfiguration().getTimer()
 
         if self._master is None:
             raise ScanSetupError('%s has no timer defined' % mnt_grp.getName())
@@ -1118,7 +1118,7 @@ class SScan(GScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, self.motion.moveable_list)
             raise
         self.debug("[ END ] motion")
 
@@ -1139,7 +1139,7 @@ class SScan(GScan):
         self.macro.checkPoint()
 
         if state != Ready:
-            self.dump_information(n, step)
+            self.dump_information(n, step, self.motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
                 "Motion ended with %s\n" % str(state)
             raise ScanException({'msg': m})
@@ -1157,10 +1157,18 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        if self._deterministic_scan:
-            state, data_line = mg.count_raw()
-        else:
-            state, data_line = mg.count(integ_time)
+        try:
+            if self._deterministic_scan:
+                state, data_line = mg.count_raw()
+            else:
+                state, data_line = mg.count(integ_time)
+        except InterruptException:
+            raise
+        except Exception:
+            names = mg.ElementList
+            elements = [self.macro.getObj(name) for name in names]
+            self.dump_information(n, step, elements)
+            raise
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
@@ -1213,11 +1221,10 @@ class SScan(GScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 
@@ -2645,7 +2652,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
 
         try:
@@ -2654,7 +2661,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
         self._sum_acq_time += integ_time
 
@@ -2664,7 +2671,7 @@ class HScan(SScan):
         m_state, m_positions = motion.readState(), motion.readPosition()
 
         if m_state != Ready:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
                 "Motion ended with %s\n" % str(m_state)
             raise ScanException({'msg': m})
@@ -2693,11 +2700,10 @@ class HScan(SScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 

@@ -271,6 +271,8 @@ class Door(SardanaDevice):
             event_value = self.calculate_tango_status(event_value)
         elif name == "recorddata":
             format, value = event_value
+            if format is None:
+                format = "utf8_json"
             codec = CodecFactory().getCodec(format)
             event_value = codec.encode(('', value))
         else:
