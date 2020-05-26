@@ -17,7 +17,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Measurement group (Taurus extension) configuration API with methods to
   set/get: enabled, output, plot type, plot axes, timer, monitor, synchronizer,
   value ref enabled, value ref pattern parameters(#867)
-* Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Experiment configuration (expconf) macros
+  * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
+  * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
+  * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
 * Instruments creation and configuration in sar_demo (#1198)
