@@ -24,6 +24,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
 * Instruments creation and configuration in sar_demo (#1198)
+* Allow _experimental channel acquisition_ with PoolChannelTaurusValue (PCTV) widget (#1203)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
 * Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
