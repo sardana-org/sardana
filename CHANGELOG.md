@@ -41,6 +41,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Add basic information to "how to write custom recorder" to
   the documentation (#1275)
 * Register a TaurusValue factory for pool widgets (#1333)
+* Direct links to Sardana-Taurus model API (#1335)
 
 ### Fixed
 
