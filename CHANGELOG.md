@@ -73,6 +73,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `macroexecutor` correctly loads macro combo box if it was started with server down and 
   server started afterwards (#599, #1278)
 * `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
+* `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
 * MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
@@ -107,6 +108,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   the old sense for setting a global measurement group timer/monitor:
   `getTimer()`, `setTimer()`, `getMonitor()` were moved to `MGConfiguration`
   class and are deprecated (#867)
+* `macroexecutor` and `sequencer` discard settings if the models passed
+  as command line arguments had changed with respect to the previous execution
+  (#1278, #1284)
 
 ### Removed
 
