@@ -353,7 +353,6 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.sequenceEditor = TaurusWidget()
         splitter.addWidget(self.sequenceEditor)
-        self.sequenceEditor.setModelInConfig(True)
         self.sequenceEditor.setLayout(Qt.QVBoxLayout())
         self.sequenceEditor.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -437,7 +436,6 @@ class TaurusSequencerWidget(TaurusWidget):
         macroLabel = Qt.QLabel("Macro:")
         macroLayout.addWidget(macroLabel)
         self.macroComboBox = MacroComboBox(self)
-        self.macroComboBox.setModelInConfig(True)
         self.macroComboBox.setModelColumn(0)
         self.macroComboBox.setSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
@@ -925,8 +923,6 @@ class TaurusSequencer(MacroExecutionWindow):
         MacroExecutionWindow.__init__(self)
 
     def initComponents(self):
-        #@todo: take care about storing model
-        self.setModelInConfig(True)
         self.taurusSequencerWidget = TaurusSequencerWidget(self)
         self.taurusSequencerWidget.setModelInConfig(True)
         self.taurusSequencerWidget.doorChanged.connect(
@@ -972,7 +968,6 @@ class TaurusSequencer(MacroExecutionWindow):
 
 def createSequencerWidget(args):
     sequencer = TaurusSequencerWidget()
-    sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
 
     if len(args) == 2:
@@ -983,7 +978,6 @@ def createSequencerWidget(args):
 
 def createSequencer(args, options):
     sequencer = TaurusSequencer()
-    sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
     load_settings = True
     if len(args) == 2:
