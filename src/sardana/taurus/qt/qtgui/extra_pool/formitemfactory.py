@@ -28,15 +28,15 @@ This module provides TaurusValue item factories to be registered as providers
 of custom TaurusForm item widgets.
 """
 
-from . import PoolMotorTV, PoolChannelTV, PoolIORegisterTV
+from . import PoolMotorTV, PoolChannelTV, PoolIORegisterTV, _PoolChannelTV
 
 T_FORM_POOL_WIDGET_MAP = {
     "SimuMotor": PoolMotorTV,
     "Motor": PoolMotorTV,
     "PseudoMotor": PoolMotorTV,
-    "PseudoCounter": PoolChannelTV,
+    "PseudoCounter": _PoolChannelTV,
     "CTExpChannel": PoolChannelTV,
-    "ZeroDExpChannel": PoolChannelTV,
+    "ZeroDExpChannel": _PoolChannelTV,
     "OneDExpChannel": PoolChannelTV,
     "TwoDExpChannel": PoolChannelTV,
     "IORegister": PoolIORegisterTV,
