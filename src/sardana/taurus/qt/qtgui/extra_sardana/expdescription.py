@@ -40,8 +40,11 @@ from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, 
 from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
 from taurus.qt.qtgui.util.ui import UILoadable
 
-# Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
-#from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
+# Using a plain model and filtering and checking
+# 'Acquirable' in item.itemData().interfaces is more elegant,
+# but things don't get properly sorted...
+
+# from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
 
 
 def _to_fqdn(name, logger=None):
@@ -440,7 +443,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
         self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
 
-
     def _setDirty(self, dirty):
         self._dirty = dirty
         self._updateButtonBox()
@@ -704,6 +706,7 @@ def main():
         parser.add_option('--auto-update', dest='auto_update',
                           action='store_true',
                           help='Set auto update of experiment configuration')
+
         app = Application(app_name="Exp. Description demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community",
                           cmd_line_parser=parser)

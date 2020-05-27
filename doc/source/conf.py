@@ -135,7 +135,7 @@ release = sardana.Release.version
 exclude_trees = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
-# default_role = None
+default_role = "obj"
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -289,13 +289,23 @@ graphviz_output_format = 'png'  # 'svg'
 # -- Options for reference to other documentation ------------------------
 
 intersphinx_mapping = {
-    'https://docs.python.org/dev': None,
-    'https://docs.scipy.org/doc/scipy/reference': None,
-    'https://docs.scipy.org/doc/numpy': None,
-    'http://ipython.org/ipython-doc/stable/': None,
-    'http://pytango.readthedocs.io/en/stable/': None,
-    'http://taurus-scada.org': None,
-    'http://pyqt.sourceforge.net/Docs/PyQt4/': None,
-    'https://matplotlib.org/': None,
-    'https://pythonhosted.org/guiqwt/': None,
+    'python': ('https://docs.python.org/3', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'ipython': ('http://ipython.org/ipython-doc/stable/', None),
+    'pytango': ('https://pytango.readthedocs.io/en/stable/', None),
+    'taurus': ('http://taurus-scada.org', None),
+    'pyqt': ('https://www.riverbankcomputing.com/static/Docs/PyQt5/', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'guiqwt': ('https://pythonhosted.org/guiqwt/', None),
 }
+
+
+def _skip_read_attr_hardware(app, what, name, obj, skip, options):
+    if what == "class" and name == "read_attr_hardware":
+        return True
+
+
+def setup(app):
+    # due to tango-controls/pytango#352 we need to exclude read_attr_hardware
+    app.connect('autodoc-skip-member', _skip_read_attr_hardware)

@@ -593,6 +593,21 @@ class PoolElementDevice(PoolDevice):
         except ValueError:
             pass
 
+    def delete_device(self):
+        element = self.element
+        if not element.deleted:
+            pool_ctrl = self.ctrl
+            ctrl = pool_ctrl.ctrl
+            if ctrl is not None:
+                axis = element.axis
+                try:
+                    ctrl.DeleteDevice(axis)
+                except Exception:
+                    name = element.name
+                    self.error("Unable to delete %s(%s)", name, axis,
+                               exc_info=1)
+        PoolDevice.delete_device(self)
+
     def read_Instrument(self, attr):
         """Read the value of the ``Instrument`` tango attribute.
         Returns the instrument full name or empty string if this element doesn't

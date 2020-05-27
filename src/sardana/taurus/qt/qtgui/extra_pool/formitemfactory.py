@@ -23,27 +23,38 @@
 ##
 ##############################################################################
 
-import unittest
-from sardana.pool.test import (FakePool, createPoolController,
-                               dummyPoolCTCtrlConf01)
-from sardana.pool.poolcontroller import PoolController
+"""
+This module provides TaurusValue item factories to be registered as providers
+of custom TaurusForm item widgets.
+"""
+
+from . import PoolMotorTV, PoolChannelTV, PoolIORegisterTV
+
+T_FORM_POOL_WIDGET_MAP = {
+    "SimuMotor": PoolMotorTV,
+    "Motor": PoolMotorTV,
+    "PseudoMotor": PoolMotorTV,
+    "PseudoCounter": PoolChannelTV,
+    "CTExpChannel": PoolChannelTV,
+    "ZeroDExpChannel": PoolChannelTV,
+    "OneDExpChannel": PoolChannelTV,
+    "TwoDExpChannel": PoolChannelTV,
+    "IORegister": PoolIORegisterTV,
+}
 
 
-class PoolControllerTestCase(unittest.TestCase):
-    """Unittest of PoolController Class"""
+def pool_item_factory(model):
+    """
+    Taurus Value Factory to be registered as a TaurusForm item factory plugin
 
-    def setUp(self):
-        """Instantiate a fake Pool and create a Controller"""
-        pool = FakePool()
-        self.pc = createPoolController(pool, dummyPoolCTCtrlConf01)
+    :param model: taurus model object
 
-    def test_init(self):
-        """Verify that the created Controller is an instance of
-        PoolController"""
-        msg = 'PoolController constructor does not create ' +\
-              'PoolController instance'
-        self.assertIsInstance(self.pc, PoolController, msg)
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.pc = None
+    :return: custom TaurusValue class
+    """
+    # TODO: use sardana element types instead of tango classes
+    try:
+        key = model.getDeviceProxy().info().dev_class
+        klass = T_FORM_POOL_WIDGET_MAP[key]
+    except Exception:
+        return None
+    return klass()

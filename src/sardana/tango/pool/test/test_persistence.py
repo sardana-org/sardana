@@ -24,7 +24,7 @@
 ##############################################################################
 
 import PyTango
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias

@@ -25,7 +25,7 @@
 
 import math
 import os
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.macroserver.scan.scandata import ScanData
 from sardana.macroserver.scan.recorder import DataHandler

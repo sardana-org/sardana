@@ -384,10 +384,12 @@ CUSTOM_EDITOR = SenvEditor
 if __name__ == "__main__":
     import sys
     import taurus
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
     from sardana.taurus.core.tango.sardana.macro import MacroNode
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
     args = app.get_command_line_args()
     editor = SenvEditor()
     macroServer = taurus.Device(args[0])

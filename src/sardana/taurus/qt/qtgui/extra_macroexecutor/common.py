@@ -357,8 +357,10 @@ def test_macrocombobox(ms_name):
 
 if __name__ == "__main__":
     import sys
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
-    app = TaurusApplication()
+    parser = get_taurus_parser()
+    app = TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
     ms_name = args[0]
     test_macrocombobox(ms_name)

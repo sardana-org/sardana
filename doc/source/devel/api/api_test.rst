@@ -24,9 +24,7 @@ Macro test API
 Decorator
 ---------
 
-.. decorator:: macroTest
-
-    .. autofunction:: macroTest
+.. autodecorator:: macroTest
 
 
 

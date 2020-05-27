@@ -29,6 +29,7 @@ Proposals list
   [SEP16][]   | ACCEPTED    | Plugins (controllers, macros, etc.) catalogue
   [SEP17][]   | DRAFT     | Ongoing acquisition formalization and implementation 
   [SEP18][]   | ACCEPTED     | Extend acquisition and synchronization concepts for SEP2 needs
+  [SEP19][]   | DRAFT        | Refactor plugin system
 
 
 
@@ -52,6 +53,7 @@ Proposals list
 [SEP16]: http://www.sardana-controls.org/sep/?SEP16.md
 [SEP17]: https://github.com/reszelaz/sardana/blob/sep17/doc/source/sep/SEP17.md
 [SEP18]: http://www.sardana-controls.org/sep/?SEP18.md
+[SEP19]: https://github.com/reszelaz/sardana/blob/sep19/doc/source/sep/SEP19.md
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP13]: http://www.taurus-scada.org/tep/?TEP13.md

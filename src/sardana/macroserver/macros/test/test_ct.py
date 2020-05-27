@@ -25,7 +25,7 @@
 
 """Tests for ct macros"""
 
-from taurus.external import unittest
+import unittest
 from sardana.macroserver.macros.test import RunStopMacroTestCase
 from sardana.macroserver.macros.test import testRun
 from sardana.macroserver.macros.test import testStop
