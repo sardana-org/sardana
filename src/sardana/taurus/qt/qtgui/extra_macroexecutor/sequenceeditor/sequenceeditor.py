@@ -962,9 +962,7 @@ class TaurusSequencer(MacroExecutionWindow):
         self.taurusSequencerWidget.onDoorChanged(doorName)
 
     def setModel(self, model):
-        """Reimplemented from :meth:`TaurusWidget.setModel`"""
-        TaurusWidget.setModel(self, model)
-        self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
+        MacroExecutionWindow.setModel(self, model)
         self.taurusSequencerWidget.setModel(model)
 
     @classmethod

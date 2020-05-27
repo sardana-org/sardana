@@ -1056,9 +1056,7 @@ class TaurusMacroExecutor(MacroExecutionWindow):
         self.taurusMacroExecutorWidget.onDoorChanged(doorName)
 
     def setModel(self, model):
-        """Reimplemented from :meth:`TaurusWidget.setModel`"""
-        TaurusWidget.setModel(self, model)
-        self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
+        MacroExecutionWindow.setModel(self, model)
         self.taurusMacroExecutorWidget.setModel(model)
 
     @classmethod
