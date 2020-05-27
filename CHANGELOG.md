@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* Support to Python >= 3.5 (#1089, #1173, #1201, #1313)
+* Support to Python >= 3.5 (#1089, #1173, #1201, #1313, #1336)
 * Showscan online based on pyqtgraph (#1285)
   * multiple plots in the same MultiPlot widget (as opposed to different panels before)
   * option to group curves by x-axis or individual plot per curve
