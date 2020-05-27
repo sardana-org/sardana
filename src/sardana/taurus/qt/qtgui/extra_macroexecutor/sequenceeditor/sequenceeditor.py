@@ -987,15 +987,19 @@ def createSequencer(args, options):
     sequencer = TaurusSequencer()
     sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
-    settings = sequencer.getQSettings()
-    taurus_config_raw = settings.value("TaurusConfig")
-    taurus_config = pickle.loads(taurus_config_raw.data())
-    oldmodel = taurus_config['__itemConfigurations__']['model']
+    load_settings = True
     if len(args) == 2:
         sequencer.setModel(args[0])
         sequencer.doorChanged.emit(args[1])
-    if args[0] == oldmodel:
-        sequencer.loadSettings()
+        settings = sequencer.getQSettings()
+        taurus_config_raw = settings.value("TaurusConfig")
+        if taurus_config_raw is not None:
+            taurus_config = pickle.loads(taurus_config_raw.data())
+            oldmodel = taurus_config['__itemConfigurations__']['model']
+            if args[0] == oldmodel:
+                load_settings = False
+    if load_settings:
+         sequencer.loadSettings()
     if options.file is not None:
         sequencer.taurusSequencerWidget.loadFile(options.file)
     return sequencer
