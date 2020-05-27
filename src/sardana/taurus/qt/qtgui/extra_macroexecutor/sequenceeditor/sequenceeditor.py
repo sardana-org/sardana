@@ -991,7 +991,7 @@ def createSequencer(args, options):
             if args[0] == oldmodel:
                 load_settings = False
     if load_settings:
-         sequencer.loadSettings()
+        sequencer.loadSettings()
     if options.file is not None:
         sequencer.taurusSequencerWidget.loadFile(options.file)
     return sequencer
