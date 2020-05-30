@@ -45,7 +45,7 @@ from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, \
 
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
-from sardana.pool.poolsynchronization import SynchronizationDescription
+from sardana.pool.poolsynchronization import SynchDescription
 from sardana.pool.poolexternal import PoolExternalObject
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
@@ -1010,7 +1010,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # by default software synchronizer initial domain is set to Position
         self._sw_synch_initial_domain = SynchDomain.Position
 
-        self._synchronization = SynchronizationDescription()
+        self._synch_description = SynchDescription()
 
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
@@ -1124,14 +1124,15 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_integration_time(self):
-        integration_time = self._synchronization.active_time
+        integration_time = self._synch_description.active_time
         if isinstance(integration_time, float):
             return integration_time
         elif len(integration_time) == 0:
-            raise Exception("The synchronization group has not been"
-                            " initialized")
+            raise Exception("The synchronization description group has not"
+                            " been initialized")
         elif len(integration_time) > 1:
-            raise Exception("There are more than one synchronization groups")
+            raise Exception("There are more than one synchronization"
+                            "description groups")
 
     def set_integration_time(self, integration_time, propagate=1):
         total_time = integration_time + self.latency_time
@@ -1139,7 +1140,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                   SynchParam.Active: {SynchDomain.Time: integration_time},
                   SynchParam.Total: {SynchDomain.Time: total_time},
                   SynchParam.Repeats: 1}]
-        self.set_synchronization(synch)
+        self.set_synch_description(synch)
         if not propagate:
             return
         self.fire_event(EventType("integration_time", priority=propagate),
@@ -1184,21 +1185,24 @@ class PoolMeasurementGroup(PoolGroupElement):
                                 doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
-    # synchronization
+    # synch_description
     # -------------------------------------------------------------------------
 
-    def get_synchronization(self):
-        return self._synchronization
+    def get_synch_description(self):
+        return self._synch_description
 
-    def set_synchronization(self, synchronization, propagate=1):
-        self._synchronization = SynchronizationDescription(synchronization)
+    def set_synch_description(self, description, propagate=1):
+        self._synch_description = \
+            SynchDescription(description)
         self._config_dirty = True  # acquisition mode goes to configuration
         if not propagate:
             return
-        self.fire_event(EventType("synchronization", priority=propagate),
-                        synchronization)
+        self.fire_event(EventType("synch_description",
+                                  priority=propagate),
+                        description)
 
-    synchronization = property(get_synchronization, set_synchronization,
+    synch_description = property(get_synch_description,
+                                           set_synch_description,
                                doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
@@ -1218,7 +1222,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                         moveable)
 
     moveable = property(get_moveable, set_moveable,
-                        doc="moveable source used in synchronization")
+                        doc="moveable source used in synchronization "
+                            "description")
 
     # -------------------------------------------------------------------------
     # latency time
@@ -1317,7 +1322,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.acquisition.prepare(self.configuration,
                                  self.acquisition_mode,
                                  value,
-                                 self._synchronization,
+                                 self._synch_description,
                                  self._moveable_obj,
                                  self.sw_synch_initial_domain,
                                  self.nb_starts,

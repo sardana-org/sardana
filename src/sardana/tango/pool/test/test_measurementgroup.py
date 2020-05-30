@@ -171,10 +171,10 @@ class MeasSarTestTestCase(SarTestTestCase):
     def prepare_meas(self, params):
         """ Set the measurement group parameters
         """
-        synchronization = params["synchronization"]
+        synch_description = params["synch_description"]
         codec = CodecFactory().getCodec('json')
-        data = codec.encode(('', synchronization))
-        self.meas.write_attribute('synchronization', data[1])
+        data = codec.encode(('', synch_description))
+        self.meas.write_attribute('SynchDescription', data[1])
 
     def _add_attribute_listener(self, config):
         self.attr_listener = TangoAttributeListener()
@@ -225,7 +225,7 @@ class MeasSarTestTestCase(SarTestTestCase):
             print("Acquiring...")
             time.sleep(0.1)
         time.sleep(1)
-        repetitions = params['synchronization'][0][SynchParam.Repeats]
+        repetitions = params['synch_description'][0][SynchParam.Repeats]
         self._acq_asserts(chn_names, repetitions)
 
     def stop_meas_cont_acquisition(self, params, config):
@@ -269,13 +269,13 @@ class MeasSarTestTestCase(SarTestTestCase):
         SarTestTestCase.tearDown(self)
 
 
-synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+synch_description1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .01},
                      SynchParam.Total: {SynchDomain.Time: .02},
                      SynchParam.Repeats: 10}]
 
 params_1 = {
-    "synchronization": synchronization1,
+    "synch_description": synch_description1,
     "integ_time": 0.01,
     "name": '_exp_01'
 }

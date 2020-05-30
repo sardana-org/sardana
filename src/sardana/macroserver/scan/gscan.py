@@ -2071,19 +2071,20 @@ class CAcquisition(object):
         return is_compatible, non_compatible_channels
 
 
-def generate_timestamps(synchronization, initial_timestamp=0):
+def generate_timestamps(synch_description, initial_timestamp=0):
     """Generate theoretical timestamps at which the acquisition should take
     place according to the synchronization description
 
-    :param synchronization: synchronization description data structure
-    :type synchronization: list<dict>
+    :param synch_description: synchronization description data
+      structure
+    :type synch_description: list<dict>
     :param initial_timestamp: initial timestamp to start from
     :type initial_timestamp: float
     """
     ret = dict()
     timestamp = initial_timestamp
     index = 0
-    for group in synchronization:
+    for group in synch_description:
         delay = group[SynchParam.Delay][SynchDomain.Time]
         total = group[SynchParam.Total][SynchDomain.Time]
         repeats = group[SynchParam.Repeats]
@@ -2389,8 +2390,8 @@ class CTScan(CScan, CAcquisition):
                  SynchParam.Total: {SynchDomain.Position: total_position,
                                     SynchDomain.Time: total_time},
                  SynchParam.Repeats: repeats}]
-            self.debug('Synchronization: %s' % synch)
-            measurement_group.setSynchronization(synch)
+            self.debug('SynchDescription: %s' % synch)
+            measurement_group.setSynchDescription(synch)
             self.macro.checkPoint()
 
             # extra post configuration
@@ -2711,9 +2712,9 @@ class TScan(GScan, CAcquisition):
     """Time scan.
 
     Macro that employs the time scan must define the synchronization
-    information in either of the following two ways:
-      - synchronization attribute that follows the synchronization format of
-      the measurement group
+    description in either of the following two ways:
+      - synch_description attribute that follows the synchronization
+      description format of the measurement group
       - integ_time, nb_points and latency_time (optional) attributes
     """
     def __init__(self, macro, generator=None,
@@ -2722,9 +2723,10 @@ class TScan(GScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self._synchronization = None
+        self._synch_description = None
 
-    def _create_synchronization(self, active_time, repeats, latency_time=0):
+    def _create_synch_description(self, active_time, repeats,
+                                            latency_time=0):
         delay_time = 0
         mg_latency_time = self.measurement_group.getLatencyTime()
         if mg_latency_time > latency_time:
@@ -2732,38 +2734,39 @@ class TScan(GScan, CAcquisition):
                             mg_latency_time)
             latency_time = mg_latency_time
         total_time = active_time + latency_time
-        synchronization = [
+        synch_description = [
             {SynchParam.Delay: {SynchDomain.Time: delay_time},
              SynchParam.Active: {SynchDomain.Time: active_time},
              SynchParam.Total: {SynchDomain.Time: total_time},
              SynchParam.Repeats: repeats}]
-        return synchronization
+        return synch_description
 
-    def get_synchronization(self):
-        if self._synchronization is not None:
-            return self._synchronization
-        if hasattr(self.macro, "synchronization"):
-            synchronization = self.macro.synchronization
+    def get_synch_description(self):
+        if self._synch_description is not None:
+            return self._synch_description
+        if hasattr(self.macro, "synch_description"):
+            synch_description = self.macro.synch_description
         else:
             try:
                 active_time = getattr(self.macro, "integ_time")
                 repeats = getattr(self.macro, "nb_points")
             except AttributeError:
-                msg = "Macro object is missing synchronization attributes"
+                msg = "Macro object is missing synchronization description " \
+                      "attributes"
                 raise ScanSetupError(msg)
             latency_time = getattr(self.macro, "latency_time", 0)
-            synchronization = self._create_synchronization(active_time,
-                                                           repeats,
-                                                           latency_time)
-        self._synchronization = synchronization
-        return synchronization
+            synch_description = \
+                self._create_synch_description(active_time, repeats,
+                                                         latency_time)
+        self._synch_description = synch_description
+        return synch_description
 
-    synchronization = property(get_synchronization)
+    synch_description = property(get_synch_description)
 
     def scan_loop(self):
         macro = self.macro
         measurement_group = self.measurement_group
-        synchronization = self.synchronization
+        synch_description = self.synch_description
 
         compatible, channels = \
             self.is_measurement_group_compatible(measurement_group)
@@ -2774,7 +2777,8 @@ class TScan(GScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
-        theoretical_timestamps = generate_timestamps(synchronization)
+        theoretical_timestamps = \
+            generate_timestamps(synch_description)
         self.data.initial_data = theoretical_timestamps
         msg = "Relative timestamp (dt) column contains theoretical values"
         self.macro.warning(msg)
@@ -2785,7 +2789,7 @@ class TScan(GScan, CAcquisition):
 
         yield 0
         measurement_group.setNbStarts(1)
-        measurement_group.count_continuous(synchronization,
+        measurement_group.count_continuous(synch_description,
                                            self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
@@ -2813,12 +2817,13 @@ class TScan(GScan, CAcquisition):
             i = self.macro.getIntervalEstimation()
             return t, i
 
-        if not hasattr(self.macro, "synchronization"):
-            raise AttributeError("synchronization is mandatory to estimate")
-        synchronization = self.macro.synchronization
+        if not hasattr(self.macro, "synch_description"):
+            raise AttributeError("synch_description is mandatory "
+                                 "to estimate")
+        synch_description = self.macro.synch_description
         time = 0
         intervals = 0
-        for group in synchronization:
+        for group in synch_description:
             delay = group[SynchParam.Delay][SynchDomain.Time]
             time += delay
             total = group[SynchParam.Total][SynchDomain.Time]

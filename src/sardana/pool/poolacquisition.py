@@ -365,7 +365,7 @@ class PoolAcquisition(PoolAction):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
-    def prepare(self, config, acq_mode, value, synchronization=None,
+    def prepare(self, config, acq_mode, value, synch_description=None,
                 moveable=None, sw_synch_initial_domain=None,
                 nb_starts=1, **kwargs):
         """Prepare measurement process.
@@ -382,8 +382,8 @@ class PoolAcquisition(PoolAction):
         ctrls_sw = []
         ctrls_sw_start = []
 
-        repetitions = synchronization.repetitions
-        latency = synchronization.passive_time
+        repetitions = synch_description.repetitions
+        latency = synch_description.passive_time
         # Prepare controllers synchronized by hardware
         acq_sync_hw = [AcqSynch.HardwareTrigger, AcqSynch.HardwareStart,
                        AcqSynch.HardwareGate]
@@ -442,7 +442,7 @@ class PoolAcquisition(PoolAction):
         # Prepare synchronizer controllers
         ctrls = config.get_synch_ctrls(enabled=True)
         ctrls_synch = get_acq_ctrls(ctrls)
-        synch_args = (ctrls_synch, synchronization)
+        synch_args = (ctrls_synch, synch_description)
         synch_kwargs = {'moveable': moveable,
                         'sw_synch_initial_domain': sw_synch_initial_domain}
         synch_kwargs.update(kwargs)

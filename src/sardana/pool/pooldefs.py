@@ -89,7 +89,7 @@ class SynchDomain(SynchEnum):
 
 
 class SynchParam(SynchEnum):
-    """Enumeration of synchronization's group parameters.
+    """Enumeration of synchronization description group parameters.
 
     - Delay - initial delay (relative to the synchronization start)
     - Total - total interval
