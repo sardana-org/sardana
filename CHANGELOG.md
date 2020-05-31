@@ -105,6 +105,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 
+* Renamed _synchronization_ to _synch description_
+  * Tango MeasurementGroup `Synchronization` attribute to `SynchDescription`
+  * Core MeasurementGroup `synchronization` property to `synch_description`
+  * Sardana-Taurus Device MeasurementGroup `getSynchronizationObj()`,
+    `getSynchronization()` and `setSynchronization()` methods to
+    `getSynchDescriptionObj()`,`getSynchDescription()`
+    and `setSynchDescription()` (#1337)
 * Requirements are no longer checked when importing sardana (#1185)
 * Measurement group (Taurus extension) configuration API methods, known in 
   the old sense for setting a global measurement group timer/monitor:
