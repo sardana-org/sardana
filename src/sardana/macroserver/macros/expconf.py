@@ -83,7 +83,7 @@ def synchronization_validator(value):
     try:
         try:
             value = int(value)
-        except:
+        except ValueError:
             value = AcqSynchType.get(value.capitalize())
         else:
             value = AcqSynchType.get(value)

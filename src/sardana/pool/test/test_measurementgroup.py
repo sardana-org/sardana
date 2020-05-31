@@ -102,7 +102,8 @@ class BaseAcquisition(object):
                 (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
 
-    def meas_double_acquisition(self, config, synch_description, moveable=None):
+    def meas_double_acquisition(self, config, synch_description,
+                                moveable=None):
         """ Run two acquisition with the same measurement group, first with
         multiple repetitions and then one repetition.
         """
@@ -224,7 +225,8 @@ class BaseAcquisition(object):
     def meas_contpos_acquisition(self, config, synch_description, moveable,
                                  second_config=None):
         # TODO: this code is ready only for one group configuration
-        initial = synch_description[0][SynchParam.Initial][SynchDomain.Position]
+        initial = \
+            synch_description[0][SynchParam.Initial][SynchDomain.Position]
         total = synch_description[0][SynchParam.Total][SynchDomain.Position]
         repeats = synch_description[0][SynchParam.Repeats]
         position = initial + total * repeats
@@ -255,30 +257,30 @@ class BaseAcquisition(object):
 
 
 synch_description1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .01},
-                     SynchParam.Total: {SynchDomain.Time: .02},
-                     SynchParam.Repeats: 10}]
+                       SynchParam.Active: {SynchDomain.Time: .01},
+                       SynchParam.Total: {SynchDomain.Time: .02},
+                       SynchParam.Repeats: 10}]
 
 synch_description2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .01},
-                     SynchParam.Total: {SynchDomain.Time: .02},
-                     SynchParam.Repeats: 100}]
+                       SynchParam.Active: {SynchDomain.Time: .01},
+                       SynchParam.Total: {SynchDomain.Time: .02},
+                       SynchParam.Repeats: 100}]
 
 synch_description3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
-                     SynchParam.Initial: {SynchDomain.Position: 0},
-                     SynchParam.Active: {SynchDomain.Position: .1,
+                       SynchParam.Initial: {SynchDomain.Position: 0},
+                       SynchParam.Active: {SynchDomain.Position: .1,
                                          SynchDomain.Time: .01, },
-                     SynchParam.Total: {SynchDomain.Position: .2,
+                       SynchParam.Total: {SynchDomain.Position: .2,
                                         SynchDomain.Time: .1},
-                     SynchParam.Repeats: 10}]
+                       SynchParam.Repeats: 10}]
 
 synch_description4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
-                     SynchParam.Initial: {SynchDomain.Position: 0},
-                     SynchParam.Active: {SynchDomain.Position: -.1,
-                                         SynchDomain.Time: .01, },
-                     SynchParam.Total: {SynchDomain.Position: -.2,
-                                        SynchDomain.Time: .1},
-                     SynchParam.Repeats: 10}]
+                       SynchParam.Initial: {SynchDomain.Position: 0},
+                       SynchParam.Active: {SynchDomain.Position: -.1,
+                                          SynchDomain.Time: .01, },
+                       SynchParam.Total: {SynchDomain.Position: -.2,
+                                          SynchDomain.Time: .1},
+                       SynchParam.Repeats: 10}]
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using the same trigger'

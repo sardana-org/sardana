@@ -2725,8 +2725,7 @@ class TScan(GScan, CAcquisition):
         CAcquisition.__init__(self)
         self._synch_description = None
 
-    def _create_synch_description(self, active_time, repeats,
-                                            latency_time=0):
+    def _create_synch_description(self, active_time, repeats, latency_time=0):
         delay_time = 0
         mg_latency_time = self.measurement_group.getLatencyTime()
         if mg_latency_time > latency_time:
@@ -2757,7 +2756,7 @@ class TScan(GScan, CAcquisition):
             latency_time = getattr(self.macro, "latency_time", 0)
             synch_description = \
                 self._create_synch_description(active_time, repeats,
-                                                         latency_time)
+                                               latency_time)
         self._synch_description = synch_description
         return synch_description
 

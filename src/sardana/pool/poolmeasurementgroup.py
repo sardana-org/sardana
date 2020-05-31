@@ -1201,9 +1201,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                                   priority=propagate),
                         description)
 
-    synch_description = property(get_synch_description,
-                                           set_synch_description,
-                               doc="the current acquisition mode")
+    synch_description = property(get_synch_description, set_synch_description,
+                                 doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
     # moveable

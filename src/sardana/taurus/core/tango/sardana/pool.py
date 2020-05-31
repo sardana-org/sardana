@@ -3014,12 +3014,12 @@ class MeasurementGroup(PoolElement):
             synchronization configurations
         :rtype: dict<`str`, `sardana.pool.AcqSynchType`>
         """
-        # TODO: Implement solution to set the synchronization per channel when it
-        #  is allowed.
+        # TODO: Implement solution to set the synchronization per channel
+        #  when it is allowed.
         ctrls = self._get_ctrl_for_elements(elements)
         config = self.getConfiguration()
-        ctrls_sync = config._getCtrlsSynchronization(ctrls,
-                                                  use_fullname=ret_full_name)
+        ctrls_sync = \
+            config._getCtrlsSynchronization(ctrls, use_fullname=ret_full_name)
         if ret_by_ctrl:
             return ctrls_sync
         else:

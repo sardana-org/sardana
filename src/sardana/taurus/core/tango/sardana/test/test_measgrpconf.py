@@ -428,7 +428,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, elements, expected)
 
             mg.setSynchronization(AcqSynchType.Start, "_test_ct_ctrl_1",
-                               "_test_2d_ctrl_1")
+                                  "_test_2d_ctrl_1")
             result = mg.getSynchronization()
             expected = [AcqSynchType.Start, AcqSynchType.Start,
                         AcqSynchType.Start, AcqSynchType.Start, None]
@@ -436,7 +436,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
             with self.assertRaises(Exception):
                 mg.setSynchronization('asdf', "_test_ct_ctrl_1",
-                                   "_test_2d_ctrl_1")
+                                      "_test_2d_ctrl_1")
 
             # Check ret_full_name
             v = TangoDeviceNameValidator()

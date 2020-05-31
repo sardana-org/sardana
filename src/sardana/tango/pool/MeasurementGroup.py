@@ -358,8 +358,8 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                       'Display level': DispLevel.EXPERT}],
         # TODO: Does it have sense to memorize SynchDescription?
         'SynchDescription': [[DevString, SCALAR, READ_WRITE],
-                                       {'Memorized': "true",
-                                       'Display level': DispLevel.EXPERT}],
+                             {'Memorized': "true",
+                              'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
         'SoftwareSynchronizerInitialDomain': [[DevString, SCALAR, READ_WRITE],
