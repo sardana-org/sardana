@@ -18,7 +18,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def _assertResult(self, result, channels, expected_value):
         expected_channels = list(channels)
-        print(result)
         for channel, value in result.items():
             msg = "unexpected key: {}".format(channel)
             self.assertIn(channel, expected_channels, msg)
@@ -29,7 +28,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def _assertMultipleResults(self, result, channels, expected_values):
         expected_channels = list(channels)
-        print(result)
         for (channel, value), expected_value in zip(result.items(),
                                                     expected_values):
             msg = "unexpected key: {}".format(channel)
@@ -170,7 +168,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(plottype, elements, expected_values)
             with self.assertRaises(ValueError):
                 mg.setPlotType("asdf", elements[2])
-            print(mg.getPlotType())
 
             # Redefine elements
             elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
@@ -246,7 +243,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
                 mg.setPlotAxes(["<mov>", "<idx>"], elements[1])
             with self.assertRaises(ValueError):
                 mg.setPlotAxes(["<mov>"], elements[0])
-            print(mg.getPlotAxes())
 
             elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
             # Set values using the controller instead of channels
@@ -322,7 +318,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
                                      '_test_2d_1_2',
                                      "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
-        print(mg_name)
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
