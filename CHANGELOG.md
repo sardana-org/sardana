@@ -112,6 +112,7 @@ This file follows the formats and conventions from [keepachangelog.com]
     `getSynchronization()` and `setSynchronization()` methods to
     `getSynchDescriptionObj()`,`getSynchDescription()`
     and `setSynchDescription()` (#1337)
+  * `SynchronizationDescription` helper class to `SynchDescription`
 * Requirements are no longer checked when importing sardana (#1185)
 * Measurement group (Taurus extension) configuration API methods, known in 
   the old sense for setting a global measurement group timer/monitor:
