@@ -60,6 +60,14 @@ environment db
     
     Default value: ``/tmp/tango/<ds_exec_name>/<ds_inst_name>/macroserver.properties``
 
+    There is also support for a Redis based environment. To to use it, you
+    need to point the environment db variable to the redis server using the
+    syntax:
+
+    ``redis://<redis host>:<redis port>/<redis db>``
+
+    Example: ``redis://bl01.lighsource.com:6379/0``
+
 .. _sardana-macroserver-api-macropath:
 
 macro path

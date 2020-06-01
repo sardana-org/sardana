@@ -65,6 +65,9 @@ install_requires = [
     'click',
 ]
 
+extras_require = {
+    'redis': ['redis']
+}
 
 console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
@@ -131,5 +134,6 @@ setup(name='sardana',
       provides=provides,
       requires=requires,
       install_requires=install_requires,
+      extras_require=extras_require,
       test_suite='sardana.test.testsuite.get_sardana_unitsuite',
       )

@@ -132,33 +132,39 @@ class EnvironmentManager(MacroServerManager):
     def setEnvironmentDb(self, f_name):
         """Sets up a new environment from a file"""
         self._initEnv()
-        f_name = os.path.abspath(f_name)
-        self._env_name = f_name
-        dir_name = os.path.dirname(f_name)
-        if not os.path.isdir(dir_name):
-            try:
-                self.info("Creating environment directory: %s" % dir_name)
-                os.makedirs(dir_name)
-            except OSError as ose:
-                self.error("Creating environment: %s" % ose.strerror)
-                self.debug("Details:", exc_info=1)
-                raise ose
-        if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
-            try:
-                self._env = shelve.open(f_name, flag='w', writeback=False)
-            except Exception:
-                self.error("Failed to access environment in %s", f_name)
-                self.debug("Details:", exc_info=1)
-                raise
+        if f_name.startswith('redis://'):
+            from sardana.util.redis.shelve import open as redis_open
+            name = self.macro_server.name
+            self._env = redis_open(f_name, key_prefix='sardana:ms:' + name)
         else:
-            backend = getattr(sardanacustomsettings, "MS_ENV_SHELVE_BACKEND",
-                              None)
-            try:
-                self._env = shelve.Shelf(_dbm_shelve(f_name, backend))
-            except Exception:
-                self.error("Failed to create environment in %s", f_name)
-                self.debug("Details:", exc_info=1)
-                raise
+            f_name = os.path.abspath(f_name)
+            self._env_name = f_name
+            dir_name = os.path.dirname(f_name)
+            if not os.path.isdir(dir_name):
+                try:
+                    self.info("Creating environment directory: %s" % dir_name)
+                    os.makedirs(dir_name)
+                except OSError as ose:
+                    self.error("Creating environment: %s" % ose.strerror)
+                    self.debug("Details:", exc_info=1)
+                    raise ose
+            if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
+                try:
+                    self._env = shelve.open(f_name, flag='w', writeback=False)
+                except Exception:
+                    self.error("Failed to access environment in %s", f_name)
+                    self.debug("Details:", exc_info=1)
+                    raise
+            else:
+                backend = getattr(sardanacustomsettings,
+                                  "MS_ENV_SHELVE_BACKEND",
+                                  None)
+                try:
+                    self._env = shelve.Shelf(_dbm_shelve(f_name, backend))
+                except Exception:
+                    self.error("Failed to create environment in %s", f_name)
+                    self.debug("Details:", exc_info=1)
+                    raise
 
         self.info("Environment is being stored in %s", f_name)
 
@@ -191,7 +197,7 @@ class EnvironmentManager(MacroServerManager):
                 env_dict[key] = v
 
     def hasEnv(self, key, macro_name=None, door_name=None):
-        #<door>.<macro>.<property name> (highest priority)
+        # <door>.<macro>.<property name> (highest priority)
         if macro_name and door_name:
             has = self._hasDoorMacroPropertyEnv((door_name, macro_name, key))
             if has:
@@ -282,7 +288,7 @@ class EnvironmentManager(MacroServerManager):
         if key is None:
             return self._getAllEnv(door_name=door_name, macro_name=macro_name)
 
-        #<door>.<macro>.<property name> (highest priority)
+        # <door>.<macro>.<property name> (highest priority)
         if macro_name and door_name:
             v = self._getDoorMacroPropertyEnv((door_name, macro_name, key))
             if not v is None:
