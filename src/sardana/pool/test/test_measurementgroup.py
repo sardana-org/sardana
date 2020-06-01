@@ -277,7 +277,7 @@ synch_description3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
 synch_description4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
                        SynchParam.Initial: {SynchDomain.Position: 0},
                        SynchParam.Active: {SynchDomain.Position: -.1,
-                                          SynchDomain.Time: .01, },
+                                           SynchDomain.Time: .01, },
                        SynchParam.Total: {SynchDomain.Position: -.2,
                                           SynchDomain.Time: .1},
                        SynchParam.Repeats: 10}]
