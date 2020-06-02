@@ -468,7 +468,7 @@ this parameter any name but usually, by convention it is called ``self``).
 your macro to do all kinds of things, among others, to obtain the sardana
 elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
 these functions and the
-:ref:`Sardana-Taurus extensions API reference <sardana-taurus-api>`
+:ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
 describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
