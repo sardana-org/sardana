@@ -250,6 +250,8 @@ includes :keyword:`for` and :keyword:`while` loops, :keyword:`if` ...
             wave_fft = numpy.fft.fft(wave)
             
 
+.. _sardana-macro-parameters:
+
 Adding parameters to your macro
 -------------------------------
 
