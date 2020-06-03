@@ -2,6 +2,7 @@ import uuid
 import unittest
 from taurus import Device
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+from sardana.pool import AcqSynchType
 from sardana.taurus.core.tango.sardana.pool import registerExtensions
 from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
@@ -17,7 +18,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def _assertResult(self, result, channels, expected_value):
         expected_channels = list(channels)
-        print(result)
         for channel, value in result.items():
             msg = "unexpected key: {}".format(channel)
             self.assertIn(channel, expected_channels, msg)
@@ -28,7 +28,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
     def _assertMultipleResults(self, result, channels, expected_values):
         expected_channels = list(channels)
-        print(result)
         for (channel, value), expected_value in zip(result.items(),
                                                     expected_values):
             msg = "unexpected key: {}".format(channel)
@@ -169,7 +168,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(plottype, elements, expected_values)
             with self.assertRaises(ValueError):
                 mg.setPlotType("asdf", elements[2])
-            print(mg.getPlotType())
 
             # Redefine elements
             elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
@@ -245,7 +243,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
                 mg.setPlotAxes(["<mov>", "<idx>"], elements[1])
             with self.assertRaises(ValueError):
                 mg.setPlotAxes(["<mov>"], elements[0])
-            print(mg.getPlotAxes())
 
             elements = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]
             # Set values using the controller instead of channels
@@ -321,7 +318,6 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
                                      '_test_2d_1_2',
                                      "_test_mt_1_3/position"]):
         mg_name = str(uuid.uuid1())
-        print(mg_name)
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
@@ -401,6 +397,58 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             result = mg.getSynchronizer(*counters, ret_full_name=True)
 
             self._assertResult(result, full_names, '_test_tg_1_2')
+
+        finally:
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def test_Synchronization(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                             "_test_ct_1_3", "_test_2d_1_1",
+                                             "_test_mt_1_3/position"]):
+        mg_name = str(uuid.uuid1())
+        argin = [mg_name] + elements
+        self.pool.CreateMeasurementGroup(argin)
+        try:
+            mg = Device(mg_name)
+            result = mg.getSynchronization()
+            expected = [AcqSynchType.Trigger, AcqSynchType.Trigger,
+                        AcqSynchType.Trigger, AcqSynchType.Trigger, None]
+            self._assertMultipleResults(result, elements, expected)
+            # TODO: maybe we should raise an exception here?
+            # with self.assertRaises(Exception):
+            #     mg.setSynchronization(AcqSynchType.Trigger,
+            #                           "_test_mt_1_3/position")
+
+            mg.setSynchronization(AcqSynchType.Gate, "_test_ct_ctrl_1",
+                                  "_test_2d_ctrl_1")
+
+            expected = [AcqSynchType.Gate, AcqSynchType.Gate,
+                        AcqSynchType.Gate, AcqSynchType.Gate, None]
+            result = mg.getSynchronization()
+            self._assertMultipleResults(result, elements, expected)
+
+            mg.setSynchronization(AcqSynchType.Start, "_test_ct_ctrl_1",
+                                  "_test_2d_ctrl_1")
+            result = mg.getSynchronization()
+            expected = [AcqSynchType.Start, AcqSynchType.Start,
+                        AcqSynchType.Start, AcqSynchType.Start, None]
+            self._assertMultipleResults(result, elements, expected)
+
+            with self.assertRaises(Exception):
+                mg.setSynchronization('asdf', "_test_ct_ctrl_1",
+                                      "_test_2d_ctrl_1")
+
+            # Check ret_full_name
+            v = TangoDeviceNameValidator()
+            counters = ["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3",
+                        '_test_2d_1_1']
+            full_names = [v.getNames(counter)[0] for counter in counters]
+            mg.setSynchronization(AcqSynchType.Trigger, "_test_ct_ctrl_1",
+                                  "_test_2d_ctrl_1")
+
+            result = mg.getSynchronization(*counters, ret_full_name=True)
+
+            self._assertResult(result, full_names, AcqSynchType.Trigger)
 
         finally:
             mg.cleanUp()

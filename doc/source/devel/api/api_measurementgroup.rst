@@ -42,7 +42,7 @@ latency time
     Latency time between two consecutive acquisitions in the same acquisition
     operation.
 
-synchronization
+synch description
     Describes the acquisition operation synchronization. It is composed from
     the group(s) of equidistant acquisitions described by the following
     parameters:

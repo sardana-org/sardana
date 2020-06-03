@@ -1879,9 +1879,7 @@ class MGConfiguration(object):
                 result[label] = None
                 continue
 
-            if key == 'synchronization':
-                value = AcqSynchType.get(value)
-            elif key in ['timer', 'monitor']:
+            if key in ['timer', 'monitor']:
                 value = self.channels[value]['label']
             elif key == 'synchronizer' and value != 'software':
                 value = DeviceProxy(value).alias()
@@ -2481,16 +2479,16 @@ class MeasurementGroup(PoolElement):
     def setAcquisitionMode(self, acqMode):
         self.getAcquisitionModeObj().write(acqMode)
 
-    def getSynchronizationObj(self):
-        return self._getAttrEG('Synchronization')
+    def getSynchDescriptionObj(self):
+        return self._getAttrEG('SynchDescription')
 
-    def getSynchronization(self):
-        return self._getAttrValue('Synchronization')
+    def getSynchDescription(self):
+        return self._getAttrValue('SynchDescription')
 
-    def setSynchronization(self, synchronization):
+    def setSynchDescription(self, synch_description):
         codec = CodecFactory().getCodec('json')
-        _, data = codec.encode(('', synchronization))
-        self.getSynchronizationObj().write(data)
+        _, data = codec.encode(('', synch_description))
+        self.getSynchDescriptionObj().write(data)
         self._last_integ_time = None
 
     def _get_channels_for_elements(self, elements):
@@ -2839,7 +2837,7 @@ class MeasurementGroup(PoolElement):
             controllers or channels (default: `False` means return channels)
         :type ret_by_ctrl: bool
         :return: ordered dictionary where keys are **channel** names (or full
-            names if `ret_full_name=True`) and values are their synchronization
+            names if `ret_full_name=True`) and values are their timer
             configurations
         :rtype: dict(str, str)
         """
@@ -2894,7 +2892,7 @@ class MeasurementGroup(PoolElement):
             controllers or channels (default: `False` means return channels)
         :type ret_by_ctrl: bool
         :return: ordered dictionary where keys are **channel** names (or full
-            names if `ret_full_name=True`) and values are their synchronization
+            names if `ret_full_name=True`) and values are their monitor
             configurations
         :rtype: dict(str, str)
         """
@@ -2952,7 +2950,7 @@ class MeasurementGroup(PoolElement):
             controllers or channels (default: `False` means return channels)
         :type ret_by_ctrl: bool
         :return: ordered dictionary where keys are **channel** names (or full
-            names if `ret_full_name=True`) and values are their synchronization
+            names if `ret_full_name=True`) and values are their synchronizer
             configurations
         :rtype: dict(str, str)
         """
@@ -2962,6 +2960,66 @@ class MeasurementGroup(PoolElement):
         config = self.getConfiguration()
         ctrls_sync = config._getCtrlsSynchronizer(ctrls,
                                                   use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_sync
+        else:
+            return self._get_value_per_channel(config, ctrls_sync,
+                                               use_fullname=ret_full_name)
+
+    def setSynchronization(self, synchronization, *elements, apply=True):
+        """Set the synchronization configuration for the given channels or
+        controller.
+
+        .. note:: Currently the controller's synchronization must be unique.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
+
+        :param synchronization: synchronization type e.g. Trigger, Gate or
+          Start
+        :type synchronization: `sardana.pool.AcqSynchType`
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the synchronization per channel when
+        #  it is allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config._setCtrlsSynchronization(synchronization, ctrls,
+                                        apply_cfg=apply)
+
+    def getSynchronization(self, *elements, ret_full_name=False,
+                           ret_by_ctrl=False):
+        """Get the synchronization configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their
+            synchronization configurations
+        :rtype: dict<`str`, `sardana.pool.AcqSynchType`>
+        """
+        # TODO: Implement solution to set the synchronization per channel
+        #  when it is allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_sync = \
+            config._getCtrlsSynchronization(ctrls, use_fullname=ret_full_name)
         if ret_by_ctrl:
             return ctrls_sync
         else:
@@ -3315,12 +3373,13 @@ class MeasurementGroup(PoolElement):
         self.prepare()
         return self.count_raw(start_time)
 
-    def count_continuous(self, synchronization, value_buffer_cb=None):
+    def count_continuous(self, synch_description, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
-        :param synchronization: synchronization description
-        :type synchronization: list of groups with equidistant synchronizations
+        :param synch_description: synchronization description
+        :type synch_description: list of groups with equidistant
+          synchronizations
         :param value_buffer_cb: callback on value buffer updates
         :type value_buffer_cb: callable
         :return: state and eventually value buffers if no callback was passed
@@ -3336,7 +3395,7 @@ class MeasurementGroup(PoolElement):
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
-        self.setSynchronization(synchronization)
+        self.setSynchDescription(synch_description)
         self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
         try:

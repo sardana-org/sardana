@@ -102,38 +102,39 @@ class BaseAcquisition(object):
                 (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
 
-    def meas_double_acquisition(self, config, synchronization, moveable=None):
+    def meas_double_acquisition(self, config, synch_description,
+                                moveable=None):
         """ Run two acquisition with the same measurement group, first with
         multiple repetitions and then one repetition.
         """
         channel_names = self.prepare_meas(config)
         # setting measurement parameters
-        self.pmg.set_synchronization(synchronization)
+        self.pmg.set_synch_description(synch_description)
         self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
-        for group in synchronization:
+        for group in synch_description:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire()
         self.acq_asserts(channel_names, repetitions)
         self.remove_attribute_listener()
-        synchronization = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                            SynchParam.Active: {SynchDomain.Time: 0.1},
-                            SynchParam.Total: {SynchDomain.Time: 0.2},
-                            SynchParam.Repeats: 1}]
-        self.pmg.synchronization = synchronization
+        synch_description = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                              SynchParam.Active: {SynchDomain.Time: 0.1},
+                              SynchParam.Total: {SynchDomain.Time: 0.2},
+                              SynchParam.Repeats: 1}]
+        self.pmg.synch_description = synch_description
         self.acquire()
         # TODO: implement asserts of Timer acquisition
 
-    def meas_double_acquisition_samemode(self, config, synchronization,
+    def meas_double_acquisition_samemode(self, config, synch_description,
                                          moveable=None):
         """ Run two acquisition with the same measurement group.
         """
         channel_names = self.prepare_meas(config)
-        self.pmg.set_synchronization(synchronization)
+        self.pmg.set_synch_description(synch_description)
         self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
-        for group in synchronization:
+        for group in synch_description:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire()
@@ -145,7 +146,7 @@ class BaseAcquisition(object):
         self.remove_attribute_listener()
         # TODO: implement asserts of Timer acquisition
 
-    def consecutive_acquisitions(self, pool, config, synchronization):
+    def consecutive_acquisitions(self, pool, config, synch_description):
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = createMGUserConfiguration(
             pool, config)
@@ -153,23 +154,23 @@ class BaseAcquisition(object):
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
         repetitions = 0
-        for group in synchronization:
+        for group in synch_description:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire()
         self.acq_asserts(channel_names, repetitions)
 
-    def meas_cont_acquisition(self, config, synchronization, moveable=None,
+    def meas_cont_acquisition(self, config, synch_description, moveable=None,
                               second_config=None):
         """Executes measurement using the measurement group.
         Checks the lengths of the acquired data.
         """
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(config)
-        self.pmg.set_synchronization(synchronization)
+        self.pmg.set_synch_description(synch_description)
         self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
-        for group in synchronization:
+        for group in synch_description:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire()
@@ -177,7 +178,7 @@ class BaseAcquisition(object):
 
         if second_config is not None:
             self.consecutive_acquisitions(
-                self.pool, second_config, synchronization)
+                self.pool, second_config, synch_description)
 
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
@@ -189,13 +190,13 @@ class BaseAcquisition(object):
         """Method used to abort a running acquisition"""
         self.pmg.stop()
 
-    def meas_cont_stop_acquisition(self, config, synchronization,
+    def meas_cont_stop_acquisition(self, config, synch_description,
                                    moveable=None):
         """Executes measurement using the measurement group and tests that the
         acquisition can be stopped.
         """
         self.prepare_meas(config)
-        self.pmg.synchronization = synchronization
+        self.pmg.synch_description = synch_description
         self.pmg.set_moveable(moveable, to_fqdn=False)
         self.prepare_attribute_listener()
 
@@ -221,22 +222,23 @@ class BaseAcquisition(object):
                 enumerate(zip(*list(self.attr_listener.data.values()))):
             print(i, record)
 
-    def meas_contpos_acquisition(self, config, synchronization, moveable,
+    def meas_contpos_acquisition(self, config, synch_description, moveable,
                                  second_config=None):
         # TODO: this code is ready only for one group configuration
-        initial = synchronization[0][SynchParam.Initial][SynchDomain.Position]
-        total = synchronization[0][SynchParam.Total][SynchDomain.Position]
-        repeats = synchronization[0][SynchParam.Repeats]
+        initial = \
+            synch_description[0][SynchParam.Initial][SynchDomain.Position]
+        total = synch_description[0][SynchParam.Total][SynchDomain.Position]
+        repeats = synch_description[0][SynchParam.Repeats]
         position = initial + total * repeats
         mot = self.mots[moveable]
         mot.set_base_rate(0)
         mot.set_acceleration(0.1)
         mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
-        self.pmg.synchronization = synchronization
+        self.pmg.synch_description = synch_description
         self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
-        for group in synchronization:
+        for group in synch_description:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.pmg.prepare()
@@ -254,31 +256,31 @@ class BaseAcquisition(object):
         self.pmg = None
 
 
-synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .01},
-                     SynchParam.Total: {SynchDomain.Time: .02},
-                     SynchParam.Repeats: 10}]
+synch_description1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                       SynchParam.Active: {SynchDomain.Time: .01},
+                       SynchParam.Total: {SynchDomain.Time: .02},
+                       SynchParam.Repeats: 10}]
 
-synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .01},
-                     SynchParam.Total: {SynchDomain.Time: .02},
-                     SynchParam.Repeats: 100}]
+synch_description2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                       SynchParam.Active: {SynchDomain.Time: .01},
+                       SynchParam.Total: {SynchDomain.Time: .02},
+                       SynchParam.Repeats: 100}]
 
-synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
-                     SynchParam.Initial: {SynchDomain.Position: 0},
-                     SynchParam.Active: {SynchDomain.Position: .1,
+synch_description3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
+                       SynchParam.Initial: {SynchDomain.Position: 0},
+                       SynchParam.Active: {SynchDomain.Position: .1,
                                          SynchDomain.Time: .01, },
-                     SynchParam.Total: {SynchDomain.Position: .2,
+                       SynchParam.Total: {SynchDomain.Position: .2,
                                         SynchDomain.Time: .1},
-                     SynchParam.Repeats: 10}]
+                       SynchParam.Repeats: 10}]
 
-synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
-                     SynchParam.Initial: {SynchDomain.Position: 0},
-                     SynchParam.Active: {SynchDomain.Position: -.1,
-                                         SynchDomain.Time: .01, },
-                     SynchParam.Total: {SynchDomain.Position: -.2,
-                                        SynchDomain.Time: .1},
-                     SynchParam.Repeats: 10}]
+synch_description4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
+                       SynchParam.Initial: {SynchDomain.Position: 0},
+                       SynchParam.Active: {SynchDomain.Position: -.1,
+                                           SynchDomain.Time: .01, },
+                       SynchParam.Total: {SynchDomain.Position: -.2,
+                                          SynchDomain.Time: .1},
+                       SynchParam.Repeats: 10}]
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using the same trigger'
@@ -355,25 +357,25 @@ config_15 = [[('_test_2d_1_1', 'software', AcqSynchType.Trigger)]]
 
 # TODO: listener is not ready to handle 2D
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_15,
-#             config=config_15, synchronization=synchronization1)
+#             config=config_15, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_14,
-            config=config_14, synchronization=synchronization1)
+            config=config_14, synch_description=synch_description1)
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
-            config=config_12, synchronization=synchronization4,
+            config=config_12, synch_description=synch_description4,
             moveable="_test_mot_1_1")
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
-            config=config_12, synchronization=synchronization3,
+            config=config_12, synch_description=synch_description3,
             moveable="_test_mot_1_1")
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
-            config=config_1, synchronization=synchronization1)
+            config=config_1, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
-            config=config_2, synchronization=synchronization1)
+            config=config_2, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
-            config=config_3, synchronization=synchronization1)
+            config=config_3, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_4,
-            config=config_4, synchronization=synchronization1)
+            config=config_4, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_5,
-            config=config_5, synchronization=synchronization1)
+            config=config_5, synch_description=synch_description1)
 # TODO: implement dedicated asserts/test for only software synchronized
 #       acquisition.
 #       Until this TODO gets implemented we comment the test since it may
@@ -383,24 +385,24 @@ config_15 = [[('_test_2d_1_1', 'software', AcqSynchType.Trigger)]]
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
 #             params=params_1, config=config_6)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
-            config=config_7, synchronization=synchronization1)
+            config=config_7, synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
-            config=config_7, synchronization=synchronization2)
+            config=config_7, synch_description=synch_description2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
             config=config_1, second_config=config_7,
-            synchronization=synchronization1)
+            synch_description=synch_description1)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
-            config=config_7, synchronization=synchronization2)
+            config=config_7, synch_description=synch_description2)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
-            config=config_4, synchronization=synchronization1)
+            config=config_4, synch_description=synch_description1)
 @insertTest(helper_name='meas_double_acquisition_samemode', test_method_doc=doc_11,
-            config=config_11, synchronization=synchronization2)
+            config=config_11, synch_description=synch_description2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
             config=config_1, second_config=config_7,
-            synchronization=synchronization1)
+            synch_description=synch_description1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_13,
             config=config_13,
-            synchronization=synchronization1)
+            synch_description=synch_description1)
 class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 

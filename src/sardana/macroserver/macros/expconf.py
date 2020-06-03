@@ -34,6 +34,7 @@ import taurus
 from taurus.console import Alignment
 from taurus.console.list import List
 
+from sardana.pool import AcqSynchType
 from sardana.macroserver.msexception import UnknownEnv
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.macro import macro, Macro, Type, Optional
@@ -51,6 +52,10 @@ def plot_axes_sanitizer(values):
     return ["n/a" if len(v) == 0 else v[0] for v in values]
 
 
+def synchrtonization_sanitizer(values):
+    return [AcqSynchType.whatis(v) for v in values]
+
+
 def plot_axes_validator(value):
     value = value.lower()
     if value in ("idx", "<idx>"):
@@ -61,15 +66,30 @@ def plot_axes_validator(value):
 
 
 def bool_validator(value):
+    in_value = value
     value = value.lower()
     if value in ['true', '1']:
         value = True
     elif value in ['false', '0']:
         value = False
     else:
-        raise ValueError('{0} is not a boolean'.format(value))
+        raise ValueError('{0} is not a boolean'.format(in_value))
     return value
 
+
+def synchronization_validator(value):
+    in_value = value
+    value = value.lower()
+    try:
+        try:
+            value = int(value)
+        except ValueError:
+            value = AcqSynchType.get(value.capitalize())
+        else:
+            value = AcqSynchType.get(value)
+    except KeyError:
+        raise ValueError("{0} is not a synchronization type".format(in_value))
+    return value
 
 # if sanitizers and validators evolve to sth too complicated refactor this
 # to use classes
@@ -81,6 +101,9 @@ parameter_map = OrderedDict([
     ("timer", ("Timer", sanitizer, None)),
     ("monitor", ("Monitor", sanitizer, None)),
     ("synchronizer", ("Synchronizer", sanitizer, None)),
+    ("synchronization",
+        ("Synchronization", synchrtonization_sanitizer,
+         synchronization_validator)),
     ("valuerefenabled", ("ValueRefEnabled", sanitizer, bool_validator)),
     ("valuerefpattern", ("ValueRefPattern", sanitizer, None))
 ])
@@ -164,6 +187,7 @@ def set_meas_conf(self, parameter, value, items, meas_grp):
     - **Timer**: <channel name> e.g. ct01
     - **Monitor**: <channel name> e.g. ct01
     - **Synchronizer**: software or <trigger/gate name> e.g. tg01
+    - **Synchronization**: 0/Trigger, 1/Gate or 2/Start
     - **ValueRefEnabled** - True/1 or False/0
     - **ValueRefPattern** - URI e.g. file:///tmp/img_{index}.tiff
 
