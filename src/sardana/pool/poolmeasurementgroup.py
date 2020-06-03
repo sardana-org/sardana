@@ -610,6 +610,10 @@ class MeasurementConfiguration(object):
         The configuration parameters for given channels/controllers may differ
         depending on their types e.g. 0D channel does not support timer
         parameter while C/T does.
+
+        .. todo::
+            Raise exceptions when setting _Synchronization_ parameter for
+            external channels, 0D and PSeudoCounters.
         """
 
         pool = self._parent.pool
