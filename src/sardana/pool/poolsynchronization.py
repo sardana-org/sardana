@@ -254,7 +254,7 @@ class PoolSynchronization(PoolAction):
 
         # Triggering loop
         # TODO: make nap configurable (see motion or acquisition loops)
-        nap = 0.2
+        nap = 0.01
         while True:
             self.read_state_info(ret=states)
             if not self.is_triggering(states):
