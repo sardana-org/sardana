@@ -38,8 +38,8 @@ from taurus.console.table import Table
 import PyTango
 from PyTango import DevState
 
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro, Hookable
+from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
+    iMacro, Hookable
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
@@ -55,8 +55,7 @@ class _wm(Macro):
     """Show motor positions"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -148,8 +147,7 @@ class _wum(Macro):
     """Show user motor positions"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -208,9 +206,8 @@ class wa(Macro):
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
-        ['filter',
-         ParamRepeat(['filter', Type.String, '.*',
-                      'a regular expression filter'], min=1),
+        ['filter', [['filter', Type.String, '.*',
+                     'a regular expression filter'], {'min': 1}],
          ['.*'], 'a regular expression filter'],
     ]
 
@@ -241,9 +238,8 @@ class pwa(Macro):
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
-        ['filter',
-         ParamRepeat(['filter', Type.String, '.*',
-                      'a regular expression filter'], min=1),
+        ['filter', [['filter', Type.String, '.*',
+                     'a regular expression filter'], {'min': 1}],
          ['.*'], 'a regular expression filter'],
     ]
 
@@ -323,9 +319,8 @@ class wm(Macro):
     """Show the position of the specified motors."""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None,
-                      'Motor to see where it is']),
+        ['motor_list', [['motor', Type.Moveable, None,
+                         'Motor to see where it is']],
          None, 'List of motor to show'],
     ]
 
@@ -415,9 +410,8 @@ class wum(Macro):
     """Show the user position of the specified motors."""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None,
-                      'Motor to see where it is']),
+        ['motor_list', [['motor', Type.Moveable, None,
+                         'Motor to see where it is']],
          None, 'List of motor to show'],
     ]
 
@@ -453,8 +447,7 @@ class pwm(Macro):
     """Show the position of the specified motors in a pretty table"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -467,8 +460,8 @@ class mv(Macro):
 
     param_def = [
         ['motor_pos_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                     ['pos',   Type.Float, None, 'Position to move to']),
+         [['motor', Type.Moveable, None, 'Motor to move'],
+          ['pos',   Type.Float, None, 'Position to move to']],
          None, 'List of motor/position pairs'],
     ]
 
@@ -551,8 +544,8 @@ class mvr(Macro):
 
     param_def = [
         ['motor_disp_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                     ['disp',  Type.Float, None, 'Relative displacement']),
+         [['motor', Type.Moveable, None, 'Motor to move'],
+          ['disp',  Type.Float, None, 'Relative displacement']],
          None, 'List of motor/displacement pairs'],
     ]
 
@@ -877,8 +870,8 @@ class settimer(Macro):
                 % timer)
 
 
-@macro([['message', ParamRepeat(['message_item', Type.String, None,
-                                 'message item to be reported']), None,
+@macro([['message', [['message_item', Type.String, None,
+                      'message item to be reported']], None,
          'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
