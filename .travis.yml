@@ -49,7 +49,7 @@ script:
   # run flake8 check on all python files in the project
   - if [ $TEST == "flake8" ]; then ci/flake8_diff.sh; fi
   # run the full testsuite
-  - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test pytest /usr/local/lib/python3.5/dist-packages/sardana; fi
   # build docs
   - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ; fi
   - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ; fi
