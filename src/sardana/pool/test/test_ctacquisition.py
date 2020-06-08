@@ -64,9 +64,6 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
               'PoolMeasurementGroup instance'
         self.assertIsInstance(self.pmg, PoolMeasurementGroup, msg)
 
-    # TODO: until the measurement group does not have a default software
-    # synchronizer mark this test as expected failure.
-    @unittest.expectedFailure
     def test_acquisition(self):
         """Test acquisition using the created measurement group without
         using a Sardana pool."""
@@ -80,7 +77,7 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         # 'acquiring..'
         while acq.is_running():
             time.sleep(0.05)
-        self.assertEqual(self._pct.value, integ_time, msg)
+        self.assertEqual(self._pct.value.value, integ_time, msg)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
