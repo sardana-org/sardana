@@ -66,7 +66,7 @@ class BasePoolTestCase(object):
                 db.put_device_property(self.pool_name,
                                        {key: values})
         # start Pool server
-        self._starter.startDs()
+        self._starter.startDs(wait_seconds=20)
         # register extensions so the test methods can use them
         self.pool = PyTango.DeviceProxy(self.pool_name)
 

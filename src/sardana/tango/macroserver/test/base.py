@@ -82,7 +82,7 @@ class BaseMacroServerTestCase(object):
                     db.put_device_property(self.ms_name,
                                            {key: values})
             # start MS server
-            self._msstarter.startDs()
+            self._msstarter.startDs(wait_seconds=20)
             self.door = PyTango.DeviceProxy(self.door_name)
         except Exception as e:
             # force tearDown in order to eliminate the MacroServer
