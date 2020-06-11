@@ -250,7 +250,8 @@ class PoolBaseElement(PoolObject):
         status information.
 
         :param status_info:
-            given status information [default: None, meaning use current state status.
+            given status information [default: None, meaning use current state
+            status.
         :type status_info: tuple<State, str>
         :return: a transformed state information
         :rtype: tuple<State, str>"""
