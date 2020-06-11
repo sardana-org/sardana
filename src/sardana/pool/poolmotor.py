@@ -245,19 +245,16 @@ class PoolMotor(PoolElement):
 
     def _from_ctrl_state_info(self, state_info):
         state_info, _ = state_info
-
-        try:
-            state_str = State.whatis(state_info)
-            return int(state_info), "{0} is in {1}".format(self.name, state_str), 0
-        except KeyError:
-            pass
-
-        if len(state_info) > 2:
+        if state_info in State:
+            state = state_info
+            status = None
+            ls = 0
+        elif len(state_info) > 2:
             state, status, ls = state_info[:3]
         else:
             state, other = state_info[:2]
             if is_number(other):
-                ls, status = other, ''
+                ls, status = other, None
             else:
                 ls, status = 0, other
         state, ls = int(state), tuple(map(bool, (ls & 1, ls & 2, ls & 4)))

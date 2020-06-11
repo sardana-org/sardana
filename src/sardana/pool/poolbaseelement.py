@@ -285,15 +285,13 @@ class PoolBaseElement(PoolObject):
         self.set_state_info(state_info, propagate=0)
 
     def _from_ctrl_state_info(self, state_info):
-        try:
-            state_str = State.whatis(state_info)
-            return int(state_info), "{0} is in {1}".format(self.name, state_str)
-        except KeyError:
-            pass
-        state_info, _ = state_info
-        state, status = state_info[:2]
-        state = int(state)
-        return state, status
+        state_info, _ = state_info  # ignoring exc_info
+        if state_info in State:
+            state = state_info
+            status = None
+        else:
+            state, status = state_info
+        return int(state), status
 
     # --------------------------------------------------------------------------
     # default attribute
