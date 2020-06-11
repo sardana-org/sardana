@@ -239,7 +239,7 @@ class PoolBaseElement(PoolObject):
     # state information
     # --------------------------------------------------------------------------
 
-    _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+    _STD_STATUS = "{name} is {state}"
 
     def calculate_state_info(self, status_info=None):
         """Transforms the given state information. This specific base
@@ -258,8 +258,9 @@ class PoolBaseElement(PoolObject):
             status_info = self._state, self._status
         state, status = status_info
         state_str = State[state]
-        new_status = self._STD_STATUS.format(name=self.name, state=state_str,
-                                             ctrl_status=status)
+        new_status = self._STD_STATUS.format(name=self.name, state=state_str)
+        if status is not None and len(status) > 0:
+            new_status += "\n{}".format(status)  # append ctrl status
         return status_info[0], new_status
 
     def set_state_info(self, state_info, propagate=1, safe=False):
