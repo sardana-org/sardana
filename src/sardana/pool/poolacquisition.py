@@ -736,9 +736,9 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         # self.add_finish_hook(self.clear_value_buffers, True)
 
     def _set_acquiring(self, acquiring):
-        # HACK for properly setting the Value Tango attribute quality
-        # To remove it either use the concept of quality for
-        # SardanaValue or use the AcquisitionState (see #1352)
+        """HACK for properly setting the Value Tango attribute quality
+        To remove it either use the concept of quality for
+        SardanaValue or use the AcquisitionState (see #1352)"""
         for channel in self._channels:
             element = channel.configuration.element
             setattr(element, "_acquiring", acquiring)

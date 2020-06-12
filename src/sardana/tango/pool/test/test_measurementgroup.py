@@ -295,9 +295,9 @@ params_1 = {
 }
 
 synch_description2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: 0.1},
-                     SynchParam.Total: {SynchDomain.Time: 0.15},
-                     SynchParam.Repeats: 10}]
+                       SynchParam.Active: {SynchDomain.Time: 0.1},
+                       SynchParam.Total: {SynchDomain.Time: 0.15},
+                       SynchParam.Repeats: 10}]
 
 params_2 = {
     "synch_description": synch_description2,
