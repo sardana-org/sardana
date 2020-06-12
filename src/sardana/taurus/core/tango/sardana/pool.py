@@ -477,7 +477,6 @@ class PoolElement(BaseElement, TangoDevice):
     def start(self, *args, **kwargs):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
-        evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, equal=False)
             self.__go_time = 0
@@ -488,8 +487,6 @@ class PoolElement(BaseElement, TangoDevice):
         except:
             evt_wait.disconnect()
             raise
-        finally:
-            evt_wait.unlock()
         ts2 = evt_wait.getRecordedEvents().get(DevState.MOVING, ts2)
         return (ts2,)
 
@@ -514,14 +511,12 @@ class PoolElement(BaseElement, TangoDevice):
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
-        evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
                                timeout=timeout, retries=retries)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
-            evt_wait.unlock()
             evt_wait.disconnect()
 
     @reservedOperation
