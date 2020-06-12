@@ -38,6 +38,7 @@ import weakref
 import datetime
 import traceback
 import functools
+import threading
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -305,6 +306,7 @@ class PoolAcquisition(PoolAction):
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
+        self._handled_first_active = False
 
     def event_received(self, *args, **kwargs):
         """Callback executed on event of software synchronizer.
@@ -322,46 +324,56 @@ class PoolAcquisition(PoolAction):
         self.debug(msg)
         if name == "start":
             if self._sw_start_acq_args is not None:
+                self._sw_start_acq._wait()
+                self._sw_start_acq._set_busy()
                 self.debug('Executing software start acquisition.')
-                get_thread_pool().add(self._sw_start_acq.run, None,
+                get_thread_pool().add(self._sw_start_acq.run,
+                                      self._sw_start_acq._set_ready,
                                       *self._sw_start_acq_args.args,
                                       **self._sw_start_acq_args.kwargs)
         elif name == "active":
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
+            if self._handled_first_active:
+                timeout = 0
+            else:
+                timeout = None
+                self._handled_first_active = True
             if self._sw_acq_args is not None:
-                if self._sw_acq._is_started() or self._sw_acq.is_running():
+                if not self._sw_acq._wait(timeout):
                     msg = ('Skipping trigger: software acquisition is still'
                            ' in progress.')
                     self.debug(msg)
                     return
                 else:
+                    self._sw_acq._set_busy()
                     self.debug('Executing software acquisition.')
                     self._sw_acq_args.kwargs.update({'index': index})
-                    self._sw_acq._started = True
-                    get_thread_pool().add(self._sw_acq.run, None,
+                    get_thread_pool().add(self._sw_acq.run,
+                                          self._sw_acq._set_ready,
                                           *self._sw_acq_args.args,
                                           **self._sw_acq_args.kwargs)
             if self._0d_acq_args is not None:
-                if self._0d_acq._is_started() or self._0d_acq.is_running():
+                if not self._0d_acq._wait(timeout):
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
                            ' progress.')
                     self.debug(msg)
                     return
                 else:
+                    self._0d_acq._set_busy()
                     self.debug('Executing ZeroD acquisition.')
                     self._0d_acq_args.kwargs.update({'index': index})
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
-                    get_thread_pool().add(self._0d_acq.run, None,
+                    get_thread_pool().add(self._0d_acq.run,
+                                          self._0d_acq._set_ready,
                                           *self._0d_acq_args.args,
                                           **self._0d_acq_args.kwargs)
         elif name == "passive":
             # TODO: _0d_acq_args comparison may not be necessary
             if (self._0d_acq_args is not None
-                    and (self._0d_acq._is_started()
-                         or self._0d_acq.is_running())):
+                    and not self._0d_acq._is_ready()):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
@@ -378,6 +390,7 @@ class PoolAcquisition(PoolAction):
         self._0d_acq_args = None
         self._hw_acq_args = None
         self._synch_args = None
+        self._handled_first_active = False
         ctrls_hw = []
         ctrls_sw = []
         ctrls_sw_start = []
@@ -663,6 +676,23 @@ class PoolAcquisitionBase(PoolAction):
         PoolAction.__init__(self, main_element, name)
         self._channels = []
         self._index = None
+        self._ready = threading.Event()
+        self._ready.set()
+
+    def _is_ready(self):
+        return self._ready.is_set()
+
+    def _wait(self, timeout=None):
+        return self._ready.wait(timeout)
+
+    def _set_ready(self, _=None):
+        self._ready.set()
+
+    def _is_busy(self):
+        return not self._ready.is_set()
+
+    def _set_busy(self):
+        self._ready.clear()
 
 
 class PoolAcquisitionTimerable(PoolAcquisitionBase):
