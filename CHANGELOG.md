@@ -133,6 +133,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+* `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
 
 
 ## [2.8.5] 2020-04-27

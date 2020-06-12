@@ -130,6 +130,5 @@ setup(name='sardana',
       entry_points=entry_points,
       provides=provides,
       requires=requires,
-      install_requires=install_requires,
-      test_suite='sardana.test.testsuite.get_sardana_unitsuite',
+      install_requires=install_requires
       )

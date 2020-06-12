@@ -68,7 +68,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
                                  self.elem_name])
         # Restart Pool
         self._starter.stopDs(hard_kill=True)
-        self._starter.startDs()
+        self._starter.startDs(wait_seconds=20)
         # Check if the element exists
         try:
             obj = PyTango.DeviceProxy(self.elem_name)
