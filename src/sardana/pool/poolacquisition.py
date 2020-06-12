@@ -724,7 +724,6 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         self._pool_ctrl_dict_ref = None
         self._pool_ctrl_dict_value = None
 
-
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
         # based on channels synchronized by hardware and software.
