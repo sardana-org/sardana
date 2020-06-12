@@ -273,6 +273,12 @@ class AcquisitionBaseContext(OperationContext):
     def exit(self):
         pool_action = self._pool_action
         pool_action._reset_ctrl_dicts()
+        # HACK for properly setting the Value Tango attribute quality
+        # To remove it either use the concept of quality for
+        # SardanaValue or use the AcquisitionState (see #1352)
+        # reset it here as well just in case there was an error or acq was
+        # stopped by the user
+        pool_action._set_acquiring(False)
         return OperationContext.exit(self)
 
 
@@ -729,6 +735,14 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
 
+    def _set_acquiring(self, acquiring):
+        # HACK for properly setting the Value Tango attribute quality
+        # To remove it either use the concept of quality for
+        # SardanaValue or use the AcquisitionState (see #1352)
+        for channel in self._channels:
+            element = channel.configuration.element
+            setattr(element, "_acquiring", acquiring)
+
     def get_read_value_ref_ctrls(self):
         return self._pool_ctrl_dict_ref
 
@@ -959,6 +973,11 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
 
                     self._channels.append(channel)
 
+            # HACK for properly setting the Value Tango attribute quality
+            # To remove it either use the concept of quality for
+            # SardanaValue or use the AcquisitionState (see #1352)
+            self._set_acquiring(True)
+
             # set the state of all elements to  and inform their listeners
             for channel in self._channels:
                 channel.set_state(State.Moving, propagate=2)
@@ -1089,15 +1108,17 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
             time.sleep(nap)
             i += 1
 
+            # HACK for properly setting the Value Tango attribute quality
+            # To remove it either use the concept of quality for
+            # SardanaValue or use the AcquisitionState (see #1352)
+            self._set_acquiring(False)
+
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):
@@ -1201,15 +1222,17 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
                              slave.getLogName())
                 self.debug("Details", exc_info=1)
 
+        # HACK for properly setting the Value Tango attribute quality
+        # To remove it either use the concept of quality for
+        # SardanaValue or use the AcquisitionState (see #1352)
+        self._set_acquiring(False)
+
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):
@@ -1309,15 +1332,17 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
             time.sleep(nap)
             i += 1
 
+        # HACK for properly setting the Value Tango attribute quality
+        # To remove it either use the concept of quality for
+        # SardanaValue or use the AcquisitionState (see #1352)
+        self._set_acquiring(False)
+
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):

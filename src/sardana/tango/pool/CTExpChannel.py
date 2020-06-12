@@ -138,8 +138,10 @@ class CTExpChannel(PoolTimerableDevice):
                 value = "None"
             elif name == "value":
                 w_value = event_source.get_value_attribute().w_value
-                state = self.ct.get_state()
-                if state == State.Moving:
+                # HACK for properly setting the Value Tango attribute quality
+                # To remove it either use the concept of quality for
+                # SardanaValue or use the AcquisitionState (see #1352)
+                if self.ct._acquiring:
                     quality = AttrQuality.ATTR_CHANGING
 
         self.set_attribute(attr, value=value, w_value=w_value,
