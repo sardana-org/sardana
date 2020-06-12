@@ -1540,10 +1540,7 @@ class Pool0DAcquisition(PoolAcquisitionBase):
             self.raw_read_state_info(ret=states)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
-            acquirable.set_state_info(state_info, propagate=0)
             set_state_info = functools.partial(acquirable.set_state_info,
                                                state_info,
                                                propagate=2,
