@@ -650,7 +650,7 @@ class PoolAcquisition(PoolAction):
 
 
 class PoolAcquisitionBase(PoolAction):
-    """Base class for acquisitions with a generic start_action method.
+    """Base class for sub-acquisition.
 
     .. note::
         The PoolAcquisitionBase class has been included in Sardana
@@ -659,17 +659,35 @@ class PoolAcquisitionBase(PoolAction):
         deemed necessary by the core developers.
     """
 
-    OperationContextClass = AcquisitionBaseContext
-
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = []
         self._index = None
+
+
+class PoolAcquisitionTimerable(PoolAcquisitionBase):
+    """Base class for acquisitions of timerable channels.
+
+     Implements a generic start_action method. action_loop method must be
+     implemented by the sub-class.
+
+    .. note::
+        The PoolAcquisitionTimerable class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
+
+    OperationContextClass = AcquisitionBaseContext
+
+    def __init__(self, main_element, name):
+        PoolAcquisitionBase.__init__(self, main_element, name)
         self._nb_states_per_value = None
         self._acq_sleep_time = None
         self._pool_ctrl_dict_loop = None
         self._pool_ctrl_dict_ref = None
         self._pool_ctrl_dict_value = None
+
 
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
@@ -980,7 +998,7 @@ class PoolAcquisitionBase(PoolAction):
             channel.clear_value_buffer()
 
 
-class PoolAcquisitionHardware(PoolAcquisitionBase):
+class PoolAcquisitionHardware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by hardware
 
     .. note::
@@ -994,12 +1012,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionHardware"):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def start_action(self, ctrls, value, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, None,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, None,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
@@ -1078,7 +1096,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolAcquisitionSoftware(PoolAcquisitionBase):
+class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software
 
     .. note::
@@ -1089,7 +1107,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionSoftware", slaves=None):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
         if slaves is None:
             slaves = ()
@@ -1116,7 +1134,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
     def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, master, 1, 0,
                                          index, acq_sleep_time,
                                          nb_states_per_value, **kwargs)
 
@@ -1188,7 +1206,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
+class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software start
 
     .. note::
@@ -1202,7 +1220,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_ctrls(self):
         # technical debt in order to work both in case of meas group and
@@ -1212,7 +1230,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     def start_action(self, ctrls, value, master, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, master,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, master,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
@@ -1300,7 +1318,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolCTAcquisition(PoolAcquisitionBase):
+class PoolCTAcquisition(PoolAcquisitionTimerable):
     """..todo:: remove it, still used by pseudo counter"""
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
@@ -1310,7 +1328,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
@@ -1389,12 +1407,10 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class Pool0DAcquisition(PoolAction):
+class Pool0DAcquisition(PoolAcquisitionBase):
 
     def __init__(self, main_element, name="0DAcquisition"):
-        self._channels = None
-        self._index = None
-        PoolAction.__init__(self, main_element, name)
+        PoolAcquisitionBase.__init__(self, main_element, name)
 
     def start_action(self, conf_ctrls, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
