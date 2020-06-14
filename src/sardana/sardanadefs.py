@@ -29,8 +29,8 @@
 import collections
 
 __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",
-           "DataType", "DataFormat", "DataAccess", "DTYPE_MAP", "R_DTYPE_MAP",
-           "DACCESS_MAP",
+           "DataType", "DataFormat", "DataAccess", "AttrQuality",
+           "DTYPE_MAP", "R_DTYPE_MAP", "DACCESS_MAP",
            "from_dtype_str", "from_access_str", "to_dtype_dformat",
            "to_daccess", "InvalidId", "InvalidAxis", "ElementType",
            "Interface", "Interfaces", "InterfacesExpanded",
@@ -43,6 +43,7 @@ __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",
 __docformat__ = 'restructuredtext'
 
 import math
+from enum import IntEnum
 
 from taurus.core.util.enumeration import Enumeration
 
@@ -119,6 +120,21 @@ DataAccess = Enumeration("DataAccess", (
     "ReadOnly",
     "ReadWrite",
     "Invalid"))
+
+
+class AttrQuality(IntEnum):
+    """Attribute quality factor"""
+
+    #: Attribute is valid
+    Valid = 0
+    #: Attribute is invalid
+    Invalid = 1
+    #: Attribute is in alarm
+    Alarm = 2
+    #: Attribute is changing e.g. element is in operation
+    Changing = 3
+    #: Attribute is in warning
+    Warning = 4
 
 #: dictionary dict<data type, :class:`sardana.DataType`>
 DTYPE_MAP = {
