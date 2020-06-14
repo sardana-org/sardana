@@ -43,7 +43,9 @@ import threading
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
 
-from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
+from sardana import AttrQuality, SardanaValue, State, ElementType, \
+    TYPE_TIMERABLE_ELEMENTS
+
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.poolaction import ActionContext, PoolAction, \
@@ -273,12 +275,6 @@ class AcquisitionBaseContext(OperationContext):
     def exit(self):
         pool_action = self._pool_action
         pool_action._reset_ctrl_dicts()
-        # HACK for properly setting the Value Tango attribute quality
-        # To remove it either use the concept of quality for
-        # SardanaValue or use the AcquisitionState (see #1352)
-        # reset it here as well just in case there was an error or acq was
-        # stopped by the user
-        pool_action._set_acquiring(False)
         return OperationContext.exit(self)
 
 
@@ -734,14 +730,6 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
 
-    def _set_acquiring(self, acquiring):
-        """HACK for properly setting the Value Tango attribute quality
-        To remove it either use the concept of quality for
-        SardanaValue or use the AcquisitionState (see #1352)"""
-        for channel in self._channels:
-            element = channel.configuration.element
-            setattr(element, "_acquiring", acquiring)
-
     def get_read_value_ref_ctrls(self):
         return self._pool_ctrl_dict_ref
 
@@ -972,11 +960,6 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
 
                     self._channels.append(channel)
 
-            # HACK for properly setting the Value Tango attribute quality
-            # To remove it either use the concept of quality for
-            # SardanaValue or use the AcquisitionState (see #1352)
-            self._set_acquiring(True)
-
             # set the state of all elements to  and inform their listeners
             for channel in self._channels:
                 channel.set_state(State.Moving, propagate=2)
@@ -1107,11 +1090,6 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
             time.sleep(nap)
             i += 1
 
-            # HACK for properly setting the Value Tango attribute quality
-            # To remove it either use the concept of quality for
-            # SardanaValue or use the AcquisitionState (see #1352)
-            self._set_acquiring(False)
-
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
@@ -1208,7 +1186,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in list(values.items()):
-                    acquirable.put_value(value)
+                    acquirable.put_value(value, quality=AttrQuality.Changing)
 
             time.sleep(nap)
             i += 1
@@ -1220,11 +1198,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
                 self.warning("Unable to stop slave acquisition %s",
                              slave.getLogName())
                 self.debug("Details", exc_info=1)
-
-        # HACK for properly setting the Value Tango attribute quality
-        # To remove it either use the concept of quality for
-        # SardanaValue or use the AcquisitionState (see #1352)
-        self._set_acquiring(False)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
@@ -1240,7 +1213,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
                     msg = "Details: " + "".join(
                         traceback.format_exception(*value.exc_info))
                     self.debug(msg)
-                acquirable.append_value_buffer(value, self._index)
+                acquirable.get_value_attribute().set_quality(
+                    AttrQuality.Valid)
+                acquirable.append_value_buffer(value, self._index,
+                                               propagate=2)
             if acquirable in value_refs:
                 value_ref = value_refs[acquirable]
                 if is_value_error(value_ref):
@@ -1330,11 +1306,6 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
                         acquirable.extend_value_ref_buffer(value_ref)
             time.sleep(nap)
             i += 1
-
-        # HACK for properly setting the Value Tango attribute quality
-        # To remove it either use the concept of quality for
-        # SardanaValue or use the AcquisitionState (see #1352)
-        self._set_acquiring(False)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
