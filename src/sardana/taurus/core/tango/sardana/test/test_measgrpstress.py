@@ -77,10 +77,10 @@ class TestStressMeasurementGroup(SarTestTestCase, TestCase):
             for i in range(repeats):
                 state, values = mg.count(.001)
                 self.assertEqual(state, DevState.ON,
-                                 "wrong state after measurement")
+                                 "wrong state after measurement {}".format(i))
                 for channel_name, value in values.items():
-                    msg = "Value (%s) for %s is not numerical" % \
-                          (value, channel_name)
+                    msg = ("Value {} for {} is not numerical in "
+                           "measurement {}").format(value, channel_name, i)
                     self.assertTrue(is_numerical(value), msg)
         finally:
             mg.cleanUp()
