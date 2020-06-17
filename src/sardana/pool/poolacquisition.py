@@ -549,8 +549,11 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
 
         if self._hw_acq_args is not None:
+            self._hw_acq._wait()
+            self._hw_acq._set_busy()
             self._hw_acq.run(*self._hw_acq_args.args,
-                             **self._hw_acq_args.kwargs)
+                             **self._hw_acq_args.kwargs,
+                             cb=self._hw_acq._set_ready)
 
         if self._sw_acq_args is not None\
                 or self._sw_start_acq_args is not None\
@@ -558,8 +561,11 @@ class PoolAcquisition(PoolAction):
             self._synch.add_listener(self)
 
         if self._synch_args is not None:
+            self._synch._wait()
+            self._synch._set_busy()
             self._synch.run(*self._synch_args.args,
-                            **self._synch_args.kwargs)
+                            **self._synch_args.kwargs,
+                            cb=self._synch._set_ready)
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
@@ -672,6 +678,8 @@ class PoolAcquisitionBase(PoolAction):
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    .. todo: Think of moving the ready/busy mechanism to PoolAction
     """
 
     def __init__(self, main_element, name):
