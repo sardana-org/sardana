@@ -329,6 +329,7 @@ class PoolAcquisition(PoolAction):
                 self._sw_start_acq._wait()
                 self._sw_start_acq._set_busy()
                 self.debug('Executing software start acquisition.')
+                self._sw_start_acq._started = True
                 get_thread_pool().add(self._sw_start_acq.run,
                                       self._sw_start_acq._set_ready,
                                       *self._sw_start_acq_args.args,
@@ -351,6 +352,7 @@ class PoolAcquisition(PoolAction):
                     self._sw_acq._set_busy()
                     self.debug('Executing software acquisition.')
                     self._sw_acq_args.kwargs.update({'index': index})
+                    self._sw_acq._started = True
                     get_thread_pool().add(self._sw_acq.run,
                                           self._sw_acq._set_ready,
                                           *self._sw_acq_args.args,

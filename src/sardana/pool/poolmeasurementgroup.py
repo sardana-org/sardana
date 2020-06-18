@@ -1035,11 +1035,11 @@ class PoolMeasurementGroup(PoolGroupElement):
         acq_sw = self.acquisition._sw_acq
         acq_sw_start = self.acquisition._sw_start_acq
         acq_0d = self.acquisition._0d_acq
-        if (state == State.Unknown
+        if (state in (State.On, State.Unknown)
             and (synch_soft.is_started()
-                 or acq_sw._is_busy()
-                 or acq_sw_start._is_busy()
-                 or acq_0d._is_busy())):
+                 or acq_sw._is_started()
+                 or acq_sw_start._is_started()
+                 or acq_0d._is_started())):
             state = State.Moving
             status += "\nSoftware synchronization is in progress"
         return state, status
