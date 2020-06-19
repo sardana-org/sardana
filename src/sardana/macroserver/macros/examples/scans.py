@@ -429,11 +429,13 @@ class reg2scan(Macro):
 
 class reg3scan(Macro):
     """reg3scan.
-    Do an absolute scan of the specified motors with different number of intervals for each region.
-    It uses the gscan framework. All the motors will be drived to the same position in each step
+    Do an absolute scan of the specified motors with different number of
+    intervals for each region. It uses the gscan framework.
+    All the motors will be drived to the same position in each step
 
-    NOTE: Due to a ParamRepeat limitation, integration time has to be
-    specified before the regions.
+    .. note::
+        integration time is specified before the regions to facilitate
+        input of parameters in Spock.
     """
 
     hints = {'scan': 'reg3scan'}

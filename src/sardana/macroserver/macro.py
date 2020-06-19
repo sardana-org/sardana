@@ -32,7 +32,7 @@ import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
-           "MacroFunc", "Type", "ParamRepeat", "Table", "List", "ViewOption",
+           "MacroFunc", "Type", "Table", "List", "ViewOption",
            "LibraryError", "Optional"]
 
 __docformat__ = 'restructuredtext'
@@ -57,8 +57,7 @@ from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
 from sardana.util.thread import _asyncexc
 
-from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat, \
-    Optional
+from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
     ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
     LibraryError

@@ -29,7 +29,7 @@ macros"""
 __all__ = ["WrongParam", "MissingParam", "SupernumeraryParam",
            "UnknownParamObj", "WrongParamType", "MissingRepeat",
            "SupernumeraryRepeat", "TypeNames", "Type", "ParamType",
-           "ParamRepeat", "ElementParamType", "ElementParamInterface",
+           "ElementParamType", "ElementParamInterface",
            "AttrParamType", "AbstractParamTypes", "ParamDecoder"]
 
 __docformat__ = 'restructuredtext'
@@ -184,26 +184,6 @@ class ParamType(MSBaseObject):
         kwargs = MSBaseObject.serialize(self, *args, **kwargs)
         kwargs['composed'] = False
         return kwargs
-
-
-class ParamRepeat(object):
-    # opts: min, max
-
-    def __init__(self, *param_def, **opts):
-        self.param_def = param_def
-        self.opts = {'min': 1, 'max': None}
-        self.opts.update(opts)
-        self._obj = list(param_def)
-        self._obj.append(self.opts)
-
-    def items(self):
-        return list(self.opts.items())
-
-    def __getattr__(self, name):
-        return self.opts[name]
-
-    def obj(self):
-        return self._obj
 
 
 class ElementParamType(ParamType):
