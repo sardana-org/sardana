@@ -1052,42 +1052,34 @@ class newfile(Hookable, Macro):
 
 
 class plotselect(Macro):
-    """
-    plotselect counter1 counter2 ... (change plot display of active measurement
-    group)
-
-    """
+    """select channels for plotting in the active measurement group"""
     param_def = [
-          ['plotChs', ParamRepeat(
-                  ['plotChs', Type.String, 'None', ""], min=0), None, ""]
+          ['channel',
+           [['channel', Type.ExpChannel, 'None', ""], {'min': 0}],
+           None,
+           "List of channels to plot"],
      ]
 
-    def run(self, plotChs):
-        mntGrp = self.getEnv('ActiveMntGrp')
-        self.mntGrp = self.getObj(mntGrp, type_class=Type.MeasurementGroup)
-        cfg = self.mntGrp.getConfiguration()
-        channels = self.mntGrp.getChannels()
-        channelNames = []
+    def run(self, channel):
+        try:
+            active_meas_grp = self.getEnv('ActiveMntGrp')
+            meas_grp = self.getMeasurementGroup(active_meas_grp)
+            self.output("Active measurement group: {}".format(meas_grp.name))
+        except:
+            self.warning('No active measurement group found')
+            return
 
-        # Enable Plot only in the channels passed.
-        for channel in channels:
-            if channel['enabled']:
-                channelNames.append(channel['name'])
-                if channel['name'] in plotChs:
-                    # Enable Plot
-                    self.info("Plot channel %s" % channel['name'])
-                    channel['plot_type'] = 1
-                    channel['plot_axes'] = ['<mov>']
-                else:
-                    # Disable Plot
-                    channel['plot_type'] = 0
-                    channel['plot_axes'] = []
-
-        # check if plotChs exists
-        for plotCh in plotChs:
-            if plotCh not in channelNames:
-                self.warning('channel %s is not enabled or does not exist in'
-                             ' the current measurement group' % plotCh)
-
-        # Force set Configuration.
-        self.mntGrp.setConfiguration(cfg.raw_data)
+        plot_channels_ok = []
+        enabled_channels = meas_grp.getEnabled()
+        # check channels first
+        for chan in channel:
+            enabled = enabled_channels.get(chan.name)
+            plot_channels_ok.append(chan.name)
+            if not enabled:
+                self.warning("{} is disabled".format(chan.name))
+            else:
+                self.output("{} selected for plotting".format(chan.name))
+        # set the plot type and plot axis in the meas_group
+        meas_grp.setPlotType("No", apply=False)
+        meas_grp.setPlotType("Spectrum", *plot_channels_ok, apply=False)
+        meas_grp.setPlotAxes(["<mov>"], *plot_channels_ok)
