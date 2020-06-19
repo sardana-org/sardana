@@ -1074,11 +1074,14 @@ class plotselect(Macro):
         # check channels first
         for chan in channel:
             enabled = enabled_channels.get(chan.name)
-            plot_channels_ok.append(chan.name)
-            if not enabled:
-                self.warning("{} is disabled".format(chan.name))
+            if enabled is None:
+                self.warning("{} not in {}".format(chan.name, meas_grp.name))
             else:
-                self.output("{} selected for plotting".format(chan.name))
+                plot_channels_ok.append(chan.name)
+                if not enabled:
+                    self.warning("{} is disabled".format(chan.name))
+                else:
+                    self.output("{} selected for plotting".format(chan.name))
         # set the plot type and plot axis in the meas_group
         meas_grp.setPlotType("No", apply=False)
         meas_grp.setPlotType("Spectrum", *plot_channels_ok, apply=False)
