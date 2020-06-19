@@ -29,23 +29,19 @@ revealing the bug.
 The first tests implemented are focused on Unit Tests, but the same framework
 should be used for integration and system tests as well.
 
-The sardana.test module includes testsuite.py. This file provides an 
-auto-discovering suite for all tests implemented in Sardana.
-
 The following are some key points to keep in mind when using this framework:
 
-- The Sardana Test Framework is based on :mod:`unittest` which should be 
-  imported from :mod:`taurus.external` in order to be compatible with all 
-  versions of python supported by Taurus. 
-
-- all test-related code is contained in submodules named `test` which appear 
+* Most of the tests in the Sardana Test Framework use :mod:`unittest`.
+  Since Sardana Jan20 we decided to move to `pytest <https://docs.pytest.org>`_
+  and we plan to gradually migrate the already existing tests.
+* All test-related code is contained in submodules named ``test`` which appear
   in any module of Sardana.
-  
-- test-related code falls in one of these three categories: 
-    * Actual test code (classes that derive from unittest.TestCase)
-    * Utility classes/functions (code to simplify development of test code)
-    * Resources (accessory files required by some test). They are located in 
-      subdirectories named `res` situated inside the folders named `test`. 
+* Test related code falls in one of these three categories:
+
+  * Actual test code (classes that derive from unittest.TestCase)
+  * Utility classes/functions (code to simplify development of test code)
+  * Resources (accessory files required by some test). They are located in
+    subdirectories named ``res`` situated inside the folders named ``test``.
 
 For a more complete description of the conventions on how to write tests with
 the Sardana Testing Framework, please refer to the 

@@ -25,7 +25,7 @@
 
 import time
 
-from taurus.external import unittest
+import unittest
 
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.test import (FakePool, createPoolController,

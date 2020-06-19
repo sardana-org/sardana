@@ -26,6 +26,7 @@ def J0_plot(self):
         r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
     self.pyplot.xlabel('$x$')
     self.pyplot.legend()
+    self.pyplot.draw()
 
 
 from numpy import random
@@ -36,6 +37,7 @@ def random_image(self):
     """Shows a random image 32x32"""
     img = random.random((32, 32))
     self.pyplot.matshow(img)
+    self.pyplot.draw()
 
 import numpy
 
@@ -61,3 +63,4 @@ def mandelbrot(self, interactions, density):
         mask = (fractal == 255) & (abs(z) > 10)
         fractal[mask] = 254 * n / interactions
     self.pyplot.imshow(fractal)
+    self.pyplot.draw()

@@ -28,6 +28,7 @@ sequenceeditor.py:
 """
 
 import sys
+import pickle
 from copy import deepcopy
 
 import PyTango
@@ -136,12 +137,16 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             self.setCommand()
 
     def setModel(self, model):
-        enable = bool(model)
-        self.disableEditMode = not enable
-        self.setEnabled(enable)
-        self._model = model
-        self._model.dataChanged.connect(self.onDataChanged)
-        self._model.modelReset.connect(self.setCommand)
+        if isinstance(model, Qt.QAbstractItemModel):
+            enable = bool(model)
+            self.disableEditMode = not enable
+            self.setEnabled(enable)
+            self._model = model
+            self._model.dataChanged.connect(self.onDataChanged)
+            self._model.modelReset.connect(self.setCommand)
+        else:
+            TaurusBaseContainer.setModel(self, model)
+
 
     def model(self):
         return self._model
@@ -649,7 +654,6 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         actionsLayout.addWidget(addToFavouritsButton)
 
         self.macroComboBox = MacroComboBox(self)
-        self.macroComboBox.setUseParentModel(True)
         self.macroComboBox.setModelColumn(0)
         actionsLayout.addWidget(self.macroComboBox)
         stopMacroButton = Qt.QToolButton()
@@ -681,13 +685,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self._favouritesBuffer = None
         self.favouritesMacrosEditor = FavouritesMacrosEditor(self)
         self.registerConfigDelegate(self.favouritesMacrosEditor)
-        self.favouritesMacrosEditor.setUseParentModel(True)
         self.favouritesMacrosEditor.setFocusPolicy(Qt.Qt.NoFocus)
 
         self._historyBuffer = None
         self.historyMacrosViewer = HistoryMacrosViewer(self)
         self.registerConfigDelegate(self.historyMacrosViewer)
-        self.historyMacrosViewer.setUseParentModel(True)
         self.historyMacrosViewer.setFocusPolicy(Qt.Qt.NoFocus)
 
         self.tabMacroListsWidget = Qt.QTabWidget(self)
@@ -712,7 +714,6 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.spockCommand = SpockCommandWidget("Spock", self)
         self.spockCommand.setSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
-        self.spockCommand.setUseParentModel(True)
         spockCommandLayout = Qt.QHBoxLayout()
         spockCommandLayout.setContentsMargins(0, 0, 0, 0)
         # spockCommandLayout.addWidget(spockCommandLabel)
@@ -1003,6 +1004,10 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         newModelObj = self.getModelObj()
         newModelObj.macrosUpdated.connect(
             self.macroComboBox.onMacrosUpdated)
+        self.macroComboBox.setModel(model)
+        self.favouritesMacrosEditor.setModel(model)
+        self.historyMacrosViewer.setModel(model)
+        self.spockCommand.setModel(model)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -1020,7 +1025,9 @@ class TaurusMacroExecutor(MacroExecutionWindow):
     def initComponents(self):
         self.taurusMacroExecutorWidget = TaurusMacroExecutorWidget(self)
         self.registerConfigDelegate(self.taurusMacroExecutorWidget)
-        self.taurusMacroExecutorWidget.setUseParentModel(True)
+        self.taurusMacroExecutorWidget.setModelInConfig(True)
+        self.taurusMacroExecutorWidget.doorChanged.connect(
+            self.taurusMacroExecutorWidget.onDoorChanged)
         self.setCentralWidget(self.taurusMacroExecutorWidget)
         self.taurusMacroExecutorWidget.shortMessageEmitted.connect(
             self.onShortMessage)
@@ -1048,6 +1055,10 @@ class TaurusMacroExecutor(MacroExecutionWindow):
             self.taurusMacroExecutorWidget.onMacroStatusUpdated)
         self.taurusMacroExecutorWidget.onDoorChanged(doorName)
 
+    def setModel(self, model):
+        MacroExecutionWindow.setModel(self, model)
+        self.taurusMacroExecutorWidget.setModel(model)
+
     @classmethod
     def getQtDesignerPluginInfo(cls):
         return None
@@ -1055,7 +1066,6 @@ class TaurusMacroExecutor(MacroExecutionWindow):
 
 def createMacroExecutorWidget(args):
     macroExecutor = TaurusMacroExecutorWidget()
-    macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
@@ -1065,20 +1075,36 @@ def createMacroExecutorWidget(args):
 
 def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
-    macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
+    load_settings = True
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.doorChanged.emit(args[1])
-    macroExecutor.loadSettings()
+        settings = macroExecutor.getQSettings()
+        taurus_config_raw = settings.value("TaurusConfig")
+        if taurus_config_raw is not None:
+            taurus_config = pickle.loads(taurus_config_raw.data())
+            oldmodel = taurus_config['__itemConfigurations__']['model']
+            if args[0] == oldmodel:
+                load_settings = False
+    if load_settings:
+        macroExecutor.loadSettings()
     return macroExecutor
 
 
 def main():
+    from taurus.core.util import argparse
     from taurus.qt.qtgui.application import TaurusApplication
-    import taurus
 
-    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
+    parser = argparse.get_taurus_parser()
+    parser.set_usage("%prog [options]")
+    parser.set_description("Sardana macro executor.\n"
+                           "It allows execution of macros, keeping history "
+                           "of previous executions and favourites.")
+    app = TaurusApplication(sys.argv,
+                            cmd_line_parser=parser,
+                            app_name="macroexecutor",
+                            app_version=sardana.Release.version)
     args = app.get_command_line_args()
 
     app.setOrganizationName("Taurus")

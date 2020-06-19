@@ -1,7 +1,7 @@
 .. _sardana-taurus:
 
 ================================
-Sardana Taurus Extension widgets
+Sardana-Taurus Extension widgets
 ================================
 
 
@@ -17,3 +17,8 @@ Sardana provides several :mod:`taurus`-based widgets for being used in GUIs
     Sardana Editor <sardanaeditor>
     Showscan <showscan>
     PoolMotorTV <poolmotortv>
+
+If you do not find a widget which meets your requirements and plan to develop
+a new one consider using
+:ref:`Sardana-Taurus Qt model classes <sardana-taurus-qt-api>`.
+

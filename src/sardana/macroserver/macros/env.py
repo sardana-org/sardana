@@ -31,7 +31,7 @@ __docformat__ = 'restructuredtext'
 
 import taurus
 from taurus.console.list import List
-from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Type
 from sardana.macroserver.msexception import UnknownEnv
 
 ##########################################################################
@@ -129,8 +129,8 @@ class lsenv(Macro):
     """Lists the environment in alphabetical order"""
 
     param_def = [
-        ['macro_list',
-         ParamRepeat(['macro', Type.MacroClass, None, 'macro name'], min=0),
+        ['macro_list', [['macro', Type.MacroClass, None, 'macro name'],
+                        {'min': 0}],
          None, 'List of macros to show environment'],
     ]
 
@@ -175,17 +175,19 @@ class lsenv(Macro):
 class senv(Macro):
     """Sets the given environment variable to the given value"""
 
-    param_def = [['name', Type.Env, None,
-                  'Environment variable name. Can be one of the following:\n'
-                  ' - <name> - global variable\n'
-                  ' - <full door name>.<name> - variable value for a specific door\n'
-                  ' - <macro name>.<name> - variable value for a specific macro\n'
-                  ' - <full door name>.<macro name>.<name> - variable value for a specific macro running on a specific door'],
-                 ['value_list',
-                  ParamRepeat(['value', Type.String, None,
-                               'environment value item'], min=1),
-                  None, 'value(s). one item will eval to a single element. More than one item will eval to a tuple of elements'],
-                 ]
+    param_def = [
+        ['name', Type.Env, None,
+         'Environment variable name. Can be one of the following:\n'
+         ' - <name> - global variable\n'
+         ' - <full door name>.<name> - variable value for a specific door\n'
+         ' - <macro name>.<name> - variable value for a specific macro\n'
+         ' - <full door name>.<macro name>.<name> - variable value for a '
+         'specific macro running on a specific door'],
+        ['value_list', [['value', Type.String, None,
+                         'environment value item'], {'min': 1}],
+         None, 'value(s). one item will eval to a single element. More than '
+               'one item will eval to a tuple of elements'],
+    ]
 
     def run(self, env, value):
         if len(value) == 1:
@@ -200,9 +202,8 @@ class senv(Macro):
 class usenv(Macro):
     """Unsets the given environment variable"""
     param_def = [
-        ['environment_list',
-         ParamRepeat(
-             ['env', Type.Env, None, 'Environment variable name'], min=1),
+        ['environment_list', [['env', Type.Env, None,
+                               'Environment variable name'], {'min': 1}],
          None, 'List of environment items to be removed'],
     ]
 
@@ -380,8 +381,8 @@ class defgh(Macro):
     param_def = [
         ['macro_name', Type.String, None, ('Macro name with parameters. '
                                            'Ex.: "mv exp_dmy01 10"')],
-        ['hookpos_list',
-         ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
+        ['hookpos_list', [['position', Type.String, None, 'macro name'],
+                          {'min': 1}],
          None, 'List of positions where the hook has to be executed'],
     ]
 
@@ -436,129 +437,3 @@ class udefgh(Macro):
                     self.info("Hook %s is undefineed" % macro_name)
 
             self.setEnv("_GeneralHooks", macros_list)
-
-
-class lssnap(Macro):
-    """List pre-scan snapshot group.
-
-    .. todo:: print in form of a table
-
-    .. note::
-        The `lssnap` macro has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including its removal) may occur if
-        deemed necessary by the core developers.
-    """
-
-    def run(self):
-        try:
-            snapshot_items = self.getEnv("PreScanSnapshot")
-        except UnknownEnv:
-            self.output("No pre-scan snapshot")
-            return
-        out = List(['Snap item', 'Snap item full name'])
-        for full_name, label in snapshot_items:
-            out.appendRow([label, full_name])
-        for line in out.genOutput():
-            self.output(line)
-
-
-class defsnap(Macro):
-    """Define snapshot group item(s). Accepts:
-    - Pool moveables: motor, pseudo motor
-    - Pool experimental channels: counter/timer, 0D, 1D, 2D, pseudo counter
-    - Taurus attributes
-
-    .. note::
-        The `addsnap` macro has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including its removal) may occur if
-        deemed necessary by the core developers.
-    """
-
-    param_def = [
-        ["snap_names", [[
-            "name", Type.String, None, "Name of an item to be added to the "
-                                       "pre-scan snapshot group"]],
-            None,
-            "Items to be added to the pre-scan snapshot group"],
-    ]
-
-    def run(self, snap_names):
-
-        def get_item_info(item):
-            if isinstance(item, taurus.core.TaurusAttribute):
-                return item.fullname, item.label
-            else:
-                return item.full_name, item.name
-        try:
-            snap_items = self.getEnv("PreScanSnapshot")
-        except UnknownEnv:
-            snap_items = []
-        snap_full_names = [item[0] for item in snap_items]
-        new_snap_items = []
-        for name in snap_names:
-            obj = self.getObj(name)
-            if obj is None:
-                try:
-                    obj = taurus.Attribute(name)
-                except taurus.TaurusException:
-                    raise ValueError("item is neither Pool element not "
-                                     "Taurus attribute")
-            elif obj.type == "MotorGroup":
-                raise ValueError("MotorGroup item type is not accepted")
-            new_full_name, new_label = get_item_info(obj)
-            if new_full_name in snap_full_names:
-                msg = "{} already in pre-scan snapshot".format(name)
-                raise ValueError(msg)
-            new_snap_items.append((new_full_name, new_label))
-        self.setEnv("PreScanSnapshot", snap_items + new_snap_items)
-
-
-class udefsnap(Macro):
-    """Undefine snapshot group item(s). Without arguments undefine all.
-
-    .. note::
-        The `udefsnap` macro has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including its removal) may occur if
-        deemed necessary by the core developers.
-    """
-
-    param_def = [
-        ["snap_names", [[
-            "name", Type.String, None, "Name of an item to be removed "
-                                       "from the pre-scan snapshot group",
-            ], {"min": 0}],
-         None,
-         "Items to be remove from the pre-scan snapshot group"],
-    ]
-
-    def run(self, snap_names):
-        if len(snap_names) == 0:
-            self.unsetEnv("PreScanSnapshot")
-            return
-        try:
-            snap_items = self.getEnv("PreScanSnapshot")
-        except UnknownEnv:
-            raise RuntimeError("no pre-scan snapshot defined")
-        snap_full_names = {}
-        for i, item in enumerate(snap_items):
-            snap_full_names[item[0]] = i
-        for name in snap_names:
-            obj = self.getObj(name)
-            if obj is None:
-                try:
-                    obj = taurus.Attribute(name)
-                except taurus.TaurusException:
-                    raise ValueError("item is neither Pool element not "
-                                     "Taurus attribute")
-            elif obj.type == "MotorGroup":
-                raise ValueError("MotorGroup item type is not accepted")
-            rm_full_name = obj.fullname
-            if rm_full_name not in snap_full_names.keys():
-                msg = "{} not in pre-scan snapshot".format(name)
-                raise ValueError(msg)
-            i = snap_full_names[rm_full_name]
-            snap_items.pop(i)
-        self.setEnv("PreScanSnapshot", snap_items)

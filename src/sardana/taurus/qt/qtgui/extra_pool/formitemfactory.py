@@ -24,15 +24,37 @@
 ##############################################################################
 
 """
-DEPRECATED
+This module provides TaurusValue item factories to be registered as providers
+of custom TaurusForm item widgets.
 """
 
-__docformat__ = 'restructuredtext'
+from . import PoolMotorTV, PoolChannelTV, PoolIORegisterTV, _PoolChannelTV
+
+T_FORM_POOL_WIDGET_MAP = {
+    "SimuMotor": PoolMotorTV,
+    "Motor": PoolMotorTV,
+    "PseudoMotor": PoolMotorTV,
+    "PseudoCounter": _PoolChannelTV,
+    "CTExpChannel": PoolChannelTV,
+    "ZeroDExpChannel": _PoolChannelTV,
+    "OneDExpChannel": PoolChannelTV,
+    "TwoDExpChannel": PoolChannelTV,
+    "IORegister": PoolIORegisterTV,
+}
 
 
-def main():
-    print("sardanatestsuite was removed in Sardana Jan20. "
-          "Use pytest to run tests.")
-    import sys
-    sys.exit(1)
+def pool_item_factory(model):
+    """
+    Taurus Value Factory to be registered as a TaurusForm item factory plugin
 
+    :param model: taurus model object
+
+    :return: custom TaurusValue class
+    """
+    # TODO: use sardana element types instead of tango classes
+    try:
+        key = model.getDeviceProxy().info().dev_class
+        klass = T_FORM_POOL_WIDGET_MAP[key]
+    except Exception:
+        return None
+    return klass()

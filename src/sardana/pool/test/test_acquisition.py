@@ -27,7 +27,7 @@ import threading
 
 import numpy
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 from taurus.test import insertTest
 
 from sardana.sardanautils import is_number, is_pure_str
@@ -229,11 +229,11 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
         self.hw_acq.run(hw_ctrls, integ_time, repetitions, 0)
-        self.synchronization.run(synch_ctrls, synchronization)
+        self.synchronization.run(synch_ctrls, synch_description)
         # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running()
                or self.sw_acq.is_running()
@@ -311,10 +311,10 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.synchronization.run([], synchronization)
+        self.synchronization.run([], synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before, strict=False)
 
@@ -370,10 +370,10 @@ class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.synchronization.run([], synchronization)
+        self.synchronization.run([], synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before, strict=False)
 
@@ -415,11 +415,11 @@ class BaseAcquisitionHardwareTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
         self.acquisition.run(ctrls, integ_time, repetitions, 0)
-        self.synchronization.run(synch_ctrls, synchronization)
+        self.synchronization.run(synch_ctrls, synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before)
 

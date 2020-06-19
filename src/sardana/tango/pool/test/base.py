@@ -25,16 +25,16 @@
 
 """Base classes for the controller tests"""
 
-__all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
-           'ControllerCreationTestCase', 'ElementCreationTestCase']
-
 import PyTango
-from taurus.external import unittest
+import unittest
 from taurus.core.tango.starter import ProcessStarter
 from sardana import sardanacustomsettings
 from sardana.tango.core.util import (get_free_server, get_free_device,
                                      get_free_alias)
 from taurus.core.util import whichexecutable
+
+__all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
+           'ControllerCreationTestCase', 'ElementCreationTestCase']
 
 
 class BasePoolTestCase(object):
@@ -66,7 +66,7 @@ class BasePoolTestCase(object):
                 db.put_device_property(self.pool_name,
                                        {key: values})
         # start Pool server
-        self._starter.startDs()
+        self._starter.startDs(wait_seconds=20)
         # register extensions so the test methods can use them
         self.pool = PyTango.DeviceProxy(self.pool_name)
 

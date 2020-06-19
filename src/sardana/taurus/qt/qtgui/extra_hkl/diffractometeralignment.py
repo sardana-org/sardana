@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 
-
 __docformat__ = 'restructuredtext'
 
 import sys
@@ -42,13 +41,11 @@ from taurus.external.qt import QtCore, QtGui
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
-
 
 from .selectsignal import SelectSignal
 
@@ -353,15 +350,14 @@ class DiffractometerAlignment(TaurusWidget):
 
 
 def main():
-
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog <model> [door_name]"
     desc = ("a taurus application for diffractometer alignment: h, k, l " +
             "movements and scans, go to maximum, ...")
     parser.set_description(desc)
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("diffractometeralignment")
     args = app.get_command_line_args()
     if len(args) < 1:

@@ -278,7 +278,7 @@ class OutputRecorder(DataRecorder):
         The custom data will be added as an info line in the form:
         Custom data: name : value
         '''
-        if numpy.rank(value) > 0:
+        if numpy.ndim(value) > 0:
             v = 'Array(%s)' % str(numpy.shape(value))
         else:
             v = str(value)

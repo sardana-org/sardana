@@ -37,6 +37,7 @@ import time
 import weakref
 import datetime
 import traceback
+import functools
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -44,7 +45,8 @@ from taurus.core.util.enumeration import Enumeration
 from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynch, AcqMode
-from sardana.pool.poolaction import ActionContext, PoolAction
+from sardana.pool.poolaction import ActionContext, PoolAction, \
+    OperationContext
 from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
@@ -265,6 +267,14 @@ class AcqController(AcqConfigurationItem):
             return list(self._channels_disabled)
 
 
+class AcquisitionBaseContext(OperationContext):
+
+    def exit(self):
+        pool_action = self._pool_action
+        pool_action._reset_ctrl_dicts()
+        return OperationContext.exit(self)
+
+
 class PoolAcquisition(PoolAction):
     """Acquisition action which is internally composed for sub-actions.
 
@@ -355,7 +365,7 @@ class PoolAcquisition(PoolAction):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
-    def prepare(self, config, acq_mode, value, synchronization=None,
+    def prepare(self, config, acq_mode, value, synch_description=None,
                 moveable=None, sw_synch_initial_domain=None,
                 nb_starts=1, **kwargs):
         """Prepare measurement process.
@@ -372,8 +382,8 @@ class PoolAcquisition(PoolAction):
         ctrls_sw = []
         ctrls_sw_start = []
 
-        repetitions = synchronization.repetitions
-        latency = synchronization.passive_time
+        repetitions = synch_description.repetitions
+        latency = synch_description.passive_time
         # Prepare controllers synchronized by hardware
         acq_sync_hw = [AcqSynch.HardwareTrigger, AcqSynch.HardwareStart,
                        AcqSynch.HardwareGate]
@@ -432,7 +442,7 @@ class PoolAcquisition(PoolAction):
         # Prepare synchronizer controllers
         ctrls = config.get_synch_ctrls(enabled=True)
         ctrls_synch = get_acq_ctrls(ctrls)
-        synch_args = (ctrls_synch, synchronization)
+        synch_args = (ctrls_synch, synch_description)
         synch_kwargs = {'moveable': moveable,
                         'sw_synch_initial_domain': sw_synch_initial_domain}
         synch_kwargs.update(kwargs)
@@ -649,6 +659,8 @@ class PoolAcquisitionBase(PoolAction):
         deemed necessary by the core developers.
     """
 
+    OperationContextClass = AcquisitionBaseContext
+
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = []
@@ -807,8 +819,6 @@ class PoolAcquisitionBase(PoolAction):
         self._set_pool_ctrl_dict_loop(ctrls)
         # split controllers to read value and value reference
         self._split_ctrl(ctrls)
-        self.add_finish_hook(self._reset_ctrl_dicts, False)
-
         # channels that are acquired (only enabled)
         self._channels = []
 
@@ -824,8 +834,9 @@ class PoolAcquisitionBase(PoolAction):
                 try:
                     res = ctrl.PreLoadOne(axis, value, repetitions)
                     msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version 2.7.0. Use PreLoadOne("
-                           "axis, value, repetitions, latency_time) instead.")
+                           "deprecated since version 2.7.0."
+                           "Use PreLoadOne(axis, value, repetitions, "
+                           "latency_time) instead.")
                     self.warning(msg)
                 except TypeError:
                     res = ctrl.PreLoadOne(axis, value)
@@ -842,9 +853,10 @@ class PoolAcquisitionBase(PoolAction):
             except TypeError:
                 try:
                     ctrl.LoadOne(axis, value, repetitions)
-                    msg = ("LoadOne(axis, value, repetitions) is deprecated "
-                           "since version Jan18. Use LoadOne(axis, value, "
-                           "repetitions, latency_time) instead.")
+                    msg = ("LoadOne(axis, value, repetitions) is"
+                           "deprecated since version Jan18."
+                           "Use LoadOne(axis, value, repetitions, "
+                           "latency_time) instead.")
                     self.warning(msg)
                 except TypeError:
                     ctrl.LoadOne(axis, value)
@@ -875,8 +887,8 @@ class PoolAcquisitionBase(PoolAction):
             for ctrl in ctrls:
                 channels = ctrl.get_channels(enabled=True)
 
-                # make sure that the master timer/monitor is started as the
-                # last one
+                # make sure that the master timer/monitor is started as
+                # the last one
                 channels.remove(ctrl.master)
                 channels.append(ctrl.master)
                 for channel in channels:
@@ -1058,10 +1070,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                         traceback.format_exception(*value_ref.exc_info))
                     self.debug(msg)
                 acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            state_info = acquirable._from_ctrl_state_info(state_info)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
 
 class PoolAcquisitionSoftware(PoolAcquisitionBase):
@@ -1166,10 +1180,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                         traceback.format_exception(*value_ref.exc_info))
                     self.debug(msg)
                 acquirable.append_value_ref_buffer(value_ref, self._index)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            state_info = acquirable._from_ctrl_state_info(state_info)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
 
 class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
@@ -1276,10 +1292,12 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                     acquirable.put_value_ref(value_ref)
                 else:
                     acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            state_info = acquirable._from_ctrl_state_info(state_info)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
 
 class PoolCTAcquisition(PoolAcquisitionBase):
@@ -1363,10 +1381,12 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             if acquirable in values:
                 value = values[acquirable]
                 acquirable.put_value(value, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            state_info = acquirable._from_ctrl_state_info(state_info)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
 
 class Pool0DAcquisition(PoolAction):
@@ -1453,9 +1473,11 @@ class Pool0DAcquisition(PoolAction):
             # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
             acquirable.set_state_info(state_info, propagate=0)
-            with acquirable:
-                acquirable.clear_operation()
-                acquirable.set_state_info(state_info, propagate=2)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
