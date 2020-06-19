@@ -186,7 +186,6 @@ class GScan(Logger):
       strict order after finishing acquisition but before recording the step.
     - 'post-step-hooks' : (optional) a sequence of callables to be called in
       strict order after finishing recording the step.
-    - 'hooks' : (deprecated, use post-acq-hooks instead)
     - 'point_id' : a hashable identifing the scan point.
     - 'check_func' : (optional) a list of callable objects.
       callable(moveables, counters)
@@ -1185,20 +1184,6 @@ class SScan(GScan):
             except Exception:
                 pass
 
-        # hooks for backwards compatibility:
-        if 'hooks' in step:
-            self.macro.info('Deprecation warning: you should use '
-                            '"post-acq-hooks" instead of "hooks" in the step '
-                            'generator')
-            for hook in step.get('hooks', ()):
-                hook()
-                try:
-                    step['extrainfo'].update(hook.getStepExtraInfo())
-                except InterruptException:
-                    raise
-                except Exception:
-                    pass
-
         # Add final moveable positions
         data_line['point_nb'] = n
         data_line['timestamp'] = dt
@@ -2150,7 +2135,6 @@ class CTScan(CScan, CAcquisition):
                            in strict order before starting to move
       - 'post-move-hooks': (optional) a sequence of callables to be called
                            in strict order after finishing the move
-      - 'hooks' : (deprecated, use post-acq-hooks instead)
       - 'waypoint_id' : a hashable identifing the waypoint
       - 'check_func' : (optional) a list of callable objects.
                        callable(moveables, counters)
