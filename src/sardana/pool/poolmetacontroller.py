@@ -272,13 +272,6 @@ class ControllerClass(SardanaClass):
         dep_msg = ("Defining the controller property description using a "
                    + "string is deprecated, use "
                    + "sardana.pool.controller.Description constant instead.")
-        for k, v in list(klass.class_prop.items()):  # old member
-            props[k] = DataInfo.toDataInfo(k, v)
-            if Description in v:
-                self.ctrl_properties_descriptions.append(v[Description])
-            elif 'Description' in v:
-                self.warning(dep_msg)
-                self.ctrl_properties_descriptions.append(v['Description'])
 
         for k, v in list(klass.ctrl_properties.items()):
             props[k] = DataInfo.toDataInfo(k, v)
