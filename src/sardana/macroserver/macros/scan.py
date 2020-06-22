@@ -1888,71 +1888,114 @@ class scanstats(Macro):
     the active measurement group for the last scan. Print it and publish it
     in the env. The macro must be hooked in the post-scan hook place.
     """
+    param_def = [
+        ["channel",
+         [["channel", Type.ExpChannel, None, ""], {"min":0}],
+         None,
+         "List of channels for statistics calculations"
+         ]
+        ]
 
-    def run(self, *args):
+    def run(self, channel):
         parent = self.getParentMacro()
         if parent:
-            mntGrp = self.getEnv('ActiveMntGrp')
-            self.mntGrp = self.getObj(mntGrp, type_class=Type.MeasurementGroup)
-            channels = self.mntGrp.getChannels()
-            select_channel = ''
+            try:
+                active_meas_grp = self.getEnv("ActiveMntGrp")
+                meas_grp = self.getMeasurementGroup(active_meas_grp)
+            except:
+                self.warning("No active measurement group found")
+                return
 
-            for channel in channels:
-                if channel['enabled'] & channel['plot_type'] == 1:
-                    select_channel = channel['label']
-                    break
+            calc_channels = []
+            enabled_channels = meas_grp.getEnabled()
+            if channel:
+                stat_channels = [chan.name for chan in channel]
+            else:
+                stat_channels = [key for key, value in enabled_channels.items()]
 
-            # in case no channel is enabled and plotted just take the first
-            if select_channel == '':
-                select_channel = channels[0]['label']
+            for chan in stat_channels:
+                enabled = enabled_channels.get(chan)
+                if enabled is None:
+                    self.warning("{} not in {}".format(chan, meas_grp.name))
+                else:
+                    if not enabled:
+                        self.warning("{} not enabled".format(chan))
+                    else:
+                        if channel:
+                            # channel was given as parameters
+                            calc_channels.append(chan)
+                        else:
+                            # no channel given
+                            # add all potted channels
+                            if meas_grp.getPlotType(chan)[chan] == 1:
+                                calc_channels.append(chan)
+            
+            if calc_channels == []:
+                # fallback is first enabled channel in meas_grp
+                calc_channels.append(next(iter(enabled_channels)))
+                
+            
+            # mntGrp = self.getEnv('ActiveMntGrp')
+            # self.mntGrp = self.getObj(mntGrp, type_class=Type.MeasurementGroup)
+            # channels = self.mntGrp.getChannels()
+            # select_channel = ''
 
-            select_motor = str(parent.motors[0])
+            # for channel in channels:
+            #     if channel['enabled'] & channel['plot_type'] == 1:
+            #         select_channel = channel['label']
+            #         break
 
-            # calculate stats for all enabled channels
-            data = parent.data
-            stats = {}
+            # # in case no channel is enabled and plotted just take the first
+            # if select_channel == '':
+            #     select_channel = channels[0]['label']
 
-            for channel in channels:
-                if channel['enabled']:
-                    channel_name = channel['label']
-                    counter_data = []
-                    motor_data = []
+            # select_motor = str(parent.motors[0])
 
-                    for idx, rc in data.items():
-                        counter_data.append(rc[channel_name])
-                        motor_data.append(rc[select_motor])
+            # # calculate stats for all enabled channels
+            # data = parent.data
+            # stats = {}
 
-                    counter_data = numpy.array(counter_data)
-                    counter_data_grad = numpy.gradient(counter_data)
-                    motor_data = numpy.array(motor_data)
+            # for channel in channels:
+            #     if channel['enabled']:
+            #         channel_name = channel['label']
+            #         counter_data = []
+            #         motor_data = []
 
-                    stats[channel_name] = {'min': numpy.min(counter_data),
-                                           'max': numpy.max(counter_data),
-                                           'minpos': motor_data[numpy.argmin(counter_data)],
-                                           'maxpos': motor_data[numpy.argmax(counter_data)],
-                                           'mean': numpy.mean(counter_data),
-                                           'int': numpy.sum(counter_data),
-                                           'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data),
-                                           'edge': numpy.sum(counter_data_grad*motor_data)/numpy.sum(counter_data_grad)}
+            #         for idx, rc in data.items():
+            #             counter_data.append(rc[channel_name])
+            #             motor_data.append(rc[select_motor])
 
-            self.info('Statistics on channel:  %s' % select_channel)
-            self.info('Statistics for movable: %s' % select_motor)
+            #         counter_data = numpy.array(counter_data)
+            #         counter_data_grad = numpy.gradient(counter_data)
+            #         motor_data = numpy.array(motor_data)
 
-            # print statistics
-            self.info('Min:      %g' % stats[select_channel]['min'])
-            self.info('Max:      %g' % stats[select_channel]['max'])
-            self.info('Min at:   %g' % stats[select_channel]['minpos'])
-            self.info('Max at:   %g' % stats[select_channel]['maxpos'])
-            self.info('Mean:     %g' % stats[select_channel]['mean'])
-            self.info('Integral: %g' % stats[select_channel]['int'])
-            self.info('CEN:      %g' % stats[select_channel]['cen'])
-            self.info('EDGE:     %g' % stats[select_channel]['edge'])
-            # set CEN and PEAK as env variables
-            # set the motor only in case it is hard to access it from another
-            # macro like pic or cen
-            self.setEnv('ScanStats', {'stats': stats,
-                                      'counter': select_channel,
-                                      'motor': select_motor})
+            #         stats[channel_name] = {'min': numpy.min(counter_data),
+            #                                'max': numpy.max(counter_data),
+            #                                'minpos': motor_data[numpy.argmin(counter_data)],
+            #                                'maxpos': motor_data[numpy.argmax(counter_data)],
+            #                                'mean': numpy.mean(counter_data),
+            #                                'int': numpy.sum(counter_data),
+            #                                'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data),
+            #                                'edge': numpy.sum(counter_data_grad*motor_data)/numpy.sum(counter_data_grad)}
+
+            # self.info('Statistics on channel:  %s' % select_channel)
+            # self.info('Statistics for movable: %s' % select_motor)
+
+            # # print statistics
+            # self.info('Min:      %g' % stats[select_channel]['min'])
+            # self.info('Max:      %g' % stats[select_channel]['max'])
+            # self.info('Min at:   %g' % stats[select_channel]['minpos'])
+            # self.info('Max at:   %g' % stats[select_channel]['maxpos'])
+            # self.info('Mean:     %g' % stats[select_channel]['mean'])
+            # self.info('Integral: %g' % stats[select_channel]['int'])
+            # self.info('CEN:      %g' % stats[select_channel]['cen'])
+            # self.info('EDGE:     %g' % stats[select_channel]['edge'])
+            # # set CEN and PEAK as env variables
+            # # set the motor only in case it is hard to access it from another
+            # # macro like pic or cen
+            # self.setEnv('ScanStats', {'stats': stats,
+            #                           'counter': select_channel,
+            #                           'motor': select_motor})
         else:
             self.warning('for now the scanstats macro can only be executed as'
                          ' a post-scan hook')
