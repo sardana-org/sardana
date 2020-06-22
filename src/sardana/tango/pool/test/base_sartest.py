@@ -24,10 +24,26 @@
 ##############################################################################
 
 import PyTango
+import taurus
+
 from sardana.tango.pool.test import BasePoolTestCase
-from sardana.tango.core.util import get_free_alias
+
 
 __all__ = ['SarTestTestCase']
+
+
+def _cleanup_device(dev_name):
+    factory = taurus.Factory()
+    device = taurus.Device(dev_name)
+    # tango_alias_devs contains any names in which we have referred
+    # to the device, could be alias, short name, etc. pop all of them
+    for k, v in list(factory.tango_alias_devs.items()):
+        if v is device:
+            factory.tango_alias_devs.pop(k)
+    full_name = device.getFullName()
+    if full_name in factory.tango_devs:
+        factory.tango_devs.pop(full_name)
+    device.cleanUp()
 
 
 class SarTestTestCase(BasePoolTestCase):
@@ -72,8 +88,15 @@ class SarTestTestCase(BasePoolTestCase):
          "IoverI0=_test_pc_1_1")
     ]
 
-    def setUp(self):
-        BasePoolTestCase.setUp(self)
+    def setUp(self, pool_properties=None):
+        BasePoolTestCase.setUp(self, pool_properties)
+
+        # due to problems with factory cleanup in Taurus 3
+        # we must skip these tests temporarily, whenever Taurus 3 support will
+        # be dropped, re-enable them
+        if taurus.core.release.version_info[0] < 4:
+            self.skipTest("Taurus 3 has problems with factory cleanup")
+
 
         self.ctrl_list = []
         self.elem_list = []
@@ -84,10 +107,15 @@ class SarTestTestCase(BasePoolTestCase):
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
-                except Exception, e:
-                    print e
+                    if cls in ("DummyCounterTimerController",
+                               "DummyTwoDController"):
+                        ctrl = PyTango.DeviceProxy(ctrl_name)
+                        # use the first trigger/gate element by default
+                        ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
+                except Exception as e:
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
-                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                    raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
                 # create elements
                 for axis in range(1, nelem + 1):
@@ -95,11 +123,11 @@ class SarTestTestCase(BasePoolTestCase):
                     try:
                         self.pool.createElement(
                             [sar_type, ctrl_name, str(axis), elem_name])
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
                         msg = 'Impossible to create element: "%s"' % (
                             elem_name)
-                        raise Exception('Aborting SartestTesCase: %s' % (msg))
+                        raise Exception('Aborting SartestTestCase: %s' % (msg))
                     self.elem_list.append(elem_name)
             # pseudo controllers and elements
             for pseudo in self.pseudo_cls_list:
@@ -111,36 +139,53 @@ class SarTestTestCase(BasePoolTestCase):
                 argin.extend(roles)
                 try:
                     self.pool.CreateController(argin)
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
-                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                    raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
                 for role in roles:
                     elem = role.split("=")[1]
                     if elem not in self.elem_list:
                         self.elem_list.append(elem)
-        except Exception, e:
+        except Exception as e:
             # force tearDown in order to eliminate the Pool
             BasePoolTestCase.tearDown(self)
-            print e
+            print(e)
 
     def tearDown(self):
         """Remove the elements and the controllers
         """
         dirty_elems = []
         dirty_ctrls = []
+        f = taurus.Factory()
         for elem_name in self.elem_list:
+            # Cleanup eventual taurus devices. This is especially important
+            # if the sardana-taurus extensions are in use since this
+            # devices are created and destroyed within the testsuite.
+            # Persisting taurus device may react on API_EventTimeouts, enabled
+            # polling, etc.
+            if elem_name in f.tango_alias_devs:
+                _cleanup_device(elem_name)
             try:
                 self.pool.DeleteElement(elem_name)
             except:
                 dirty_elems.append(elem_name)
 
         for ctrl_name in self.ctrl_list:
+            # Cleanup eventual taurus devices. This is especially important
+            # if the sardana-taurus extensions are in use since this
+            # devices are created and destroyed within the testsuite.
+            # Persisting taurus device may react on API_EventTimeouts, enabled
+            # polling, etc.
+            if ctrl_name in f.tango_alias_devs:
+                _cleanup_device(ctrl_name)
             try:
                 self.pool.DeleteElement(ctrl_name)
             except:
                 dirty_ctrls.append(ctrl_name)
+
+        _cleanup_device(self.pool_name)
 
         BasePoolTestCase.tearDown(self)
 

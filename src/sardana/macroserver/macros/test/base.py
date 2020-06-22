@@ -44,7 +44,7 @@ _NOT_PASSED = __NotPassedType()
 
 def macroTest(klass=None, helper_name=None, test_method_name=None,
               test_method_doc=None, **helper_kwargs):
-    """This decorator is an specialization of :function::`taurus.test.insertTest`
+    """This decorator is an specialization of `taurus.test.insertTest`
     for macro testing. It inserts test methods from a helper method that may
     accept arguments.
 
@@ -110,7 +110,7 @@ def macroTest(klass=None, helper_name=None, test_method_name=None,
         class FooTest(RunMacroTestCase, unittest.TestCase):
             macro_name = 'twice'
 
-    .. seealso:: :function::`taurus.test.insertTest`
+    .. seealso:: `taurus.test.insertTest`
 
     """
     # recipe to allow decorating with and without arguments
@@ -178,7 +178,7 @@ class RunMacroTestCase(BaseMacroTestCase):
     def assertFinished(self, msg):
         """Asserts that macro has finished.
         """
-        finishStates = [u'finish']
+        finishStates = ['finish']
         state = self.macro_executor.getState()
         msg = msg + ';\nState: %s' % state
         exception_str = self.macro_executor.getExceptionStr()
@@ -195,7 +195,7 @@ class RunMacroTestCase(BaseMacroTestCase):
         self.macro_executor.registerAll()
 
     def macro_runs(self, macro_name=None, macro_params=None,
-                   wait_timeout=float("inf"), data=_NOT_PASSED):
+                   wait_timeout=None, data=_NOT_PASSED):
         """A helper method to create tests that check if the macro can be
         successfully executed for the given input parameters. It may also
         optionally perform checks on the outputs from the execution.
@@ -206,7 +206,8 @@ class RunMacroTestCase(BaseMacroTestCase):
                              If passed, they must be given as a sequence of
                              their string representations.
         :param wait_timeout: (float) maximum allowed time (in s) for the macro
-                             to finish. By default infinite timeout is used.
+                             to finish. By default infinite timeout is
+                             used (None).
         :param data: (obj) Optional. If passed, the macro data after the
                      execution is tested to be equal to this.
         """
@@ -227,14 +228,14 @@ class RunMacroTestCase(BaseMacroTestCase):
         #      in a similar way to what is done for macro data
 
     def macro_fails(self, macro_name=None, macro_params=None,
-                    wait_timeout=float("inf"), exception=None):
+                    wait_timeout=None, exception=None):
         """Check that the macro fails to run for the given input parameters
 
         :param macro_name: (str) macro name (takes precedence over macro_name
                              class member)
         :param macro_params: (seq<str>) input parameters for the macro
         :param wait_timeout: maximum allowed time for the macro to fail. By
-                             default infinite timeout is used.
+                             default infinite timeout (None) is used.
         :param exception: (str or Exception) if given, an additional check of
                         the type of the exception is done.
                         (IMPORTANT: this is just a comparison of str
@@ -266,7 +267,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
     def assertStopped(self, msg):
         """Asserts that macro was stopped
         """
-        stoppedStates = [u'stop']
+        stoppedStates = ['stop']
         state = self.macro_executor.getState()
         # TODO buffer is just for debugging, attach only the last state
         state_buffer = self.macro_executor.getStateBuffer()
@@ -274,7 +275,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
         self.assertIn(state, stoppedStates, msg)
 
     def macro_stops(self, macro_name=None, macro_params=None, stop_delay=0.1,
-                    wait_timeout=float("inf")):
+                    wait_timeout=None):
         """A helper method to create tests that check if the macro can be
         successfully stoped (a.k.a. aborted) after it has been launched.
 
@@ -286,7 +287,8 @@ class RunStopMacroTestCase(RunMacroTestCase):
         :param stop_delay: (float) Time (in s) to wait between launching the
                            macro and sending the stop command. default=0.1
         :param wait_timeout: (float) maximum allowed time (in s) for the macro
-                             to finish. By default infinite timeout is used.
+                             to finish. By default infinite timeout (None) is
+                             used.
         """
         self.macro_executor.run(macro_name=macro_name or self.macro_name,
                                 macro_params=macro_params,
@@ -300,7 +302,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
 
 
 if __name__ == '__main__':
-    from taurus.external import unittest
+    import unittest
     from sardana.macroserver.macros.test import SarDemoEnv
 
     _m1 = SarDemoEnv().getMotors()[0]

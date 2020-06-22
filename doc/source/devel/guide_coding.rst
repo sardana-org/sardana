@@ -5,104 +5,25 @@ Sardana development guidelines
 ==============================
 
 Overview
----------
+--------
 
-This document describes sardana from the perspective of developers. Most 
+This document describes Sardana from the perspective of developers. Most 
 importantly, it gives information for people who want to contribute code to the 
-development of sardana. So if you want to help out, read on!
+development of Sardana. So if you want to help out, read on!
 
-How to contribute to sardana
+How to contribute to Sardana
 ----------------------------
 
 Sardana development is managed with the `Sardana github project
 <https://github.com/sardana-org/sardana>`_. 
 
-Apart from directly contributing code, you can contribute to sardana in many
+Apart from directly contributing code, you can contribute to Sardana in many
 ways, such as reporting bugs or proposing new features. In all cases you will
-probably need a github account and you are strongly encouragedto subscribe to the
+probably need a github account and you are strongly encouraged to subscribe to the
 `sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>`_.
 
-The rest of this document will focus on how to contribute code.
+We also invite you to join the regular project `follow-up meetings <https://github.com/sardana-org/sardana-followup>`_. These are announced on the previously mentioned mailing list.
 
-Documentation
--------------
+Detailed instructions on how to contribute to code or documentation can be found in
+`CONTRIBUTING.md <https://github.com/sardana-org/sardana/blob/develop/CONTRIBUTING.md>`_.
 
-All standalone documentation should be written in plain text (``.rst``) files
-using reStructuredText_ for markup and formatting. All such
-documentation should be placed in directory :file:`docs/source` of the sardana
-source tree. The documentation in this location will serve as the main source
-for sardana documentation and all existing documentation should be converted
-to this format.
-
-Coding conventions
-------------------
-
-* In general, we try to follow the standard Python style conventions as
-  described in
-  `Style Guide for Python Code  <http://www.python.org/peps/pep-0008.html>`_
-* Code **must** be python 2.6 compatible
-* Use 4 spaces for indentation
-* In the same file, different classes should be separated by 2 lines
-* use ``lowercase`` for module names. If possible prefix module names with the
-  word ``sardana`` (like :file:`sardanautil.py`) to avoid import mistakes.
-* use ``CamelCase`` for class names
-* python module first line should be::
-
-    #!/usr/bin/env python
-* python module should contain license information (see template below)
-* avoid poluting namespace by making private definitions private (``__`` prefix)
-  or/and implementing ``__all__`` (see template below)
-* whenever a python module can be executed from the command line, it should 
-  contain a ``main`` function and a call to it in a ``if __name__ == "__main__"``
-  like statement (see template below)
-* document all code using Sphinx_ extension to reStructuredText_
-
-The following code can serve as a template for writing new python modules to
-sardana::
-
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-
-    ##############################################################################
-    ##
-    ## This file is part of Sardana
-    ## 
-    ## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
-    ##
-    ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-    ## 
-    ## Sardana is free software: you can redistribute it and/or modify
-    ## it under the terms of the GNU Lesser General Public License as published by
-    ## the Free Software Foundation, either version 3 of the License, or
-    ## (at your option) any later version.
-    ## 
-    ## Sardana is distributed in the hope that it will be useful,
-    ## but WITHOUT ANY WARRANTY; without even the implied warranty of
-    ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    ## GNU Lesser General Public License for more details.
-    ## 
-    ## You should have received a copy of the GNU Lesser General Public License
-    ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
-    ##
-    ##############################################################################
-
-    """A :mod:`sardana` module written for template purposes only"""
-
-    __all__ = ["SardanaDemo"]
-    
-    __docformat__ = "restructuredtext"
-    
-    class SardanaDemo(object):
-        """This class is written for template purposes only"""
-        
-    def main():
-        print "SardanaDemo"s
-    
-    if __name__ == "__main__":
-        main()
-
-
-.. _Tango: http://www.tango-controls.org/
-.. _tango_cs: https://sourceforge.net/projects/tango-cs/
-.. _reStructuredText:  http://docutils.sourceforge.net/rst.html
-.. _Sphinx: http://sphinx.pocoo.org/

@@ -52,10 +52,11 @@ PoolElementType = Enumeration("PoolElementType",
                                "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
-                          ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-                           "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
-                           "Shape", "DataType",
-                           "Unknown", "Synchronizer"))
+                          ("Channel", "Enabled", "Output", "PlotType",
+                           "PlotAxes", "Timer", "Monitor", "Synchronization",
+                           "ValueRefPattern", "ValueRefEnabled",
+                           "Conditioning", "Normalization", "NXPath",
+                           "Shape", "DataType", "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
@@ -93,8 +94,8 @@ class BaseSardanaElement(object):
     def __getattr__(self, name):
         return getattr(self.getObj(), name)
 
-    def __cmp__(self, elem):
-        return cmp(self.name, elem.name)
+    def __lt__(self, elem):
+        return self.name < elem.name
 
     def getData(self):
         return self._data
@@ -110,7 +111,7 @@ class BaseSardanaElement(object):
 
     def getTypes(self):
         elem_types = self.type
-        if isinstance(elem_types, (str, unicode)):
+        if isinstance(elem_types, str):
             return [elem_types]
         return elem_types
 
@@ -182,7 +183,7 @@ class BaseSardanaElementContainer:
         return elems
 
     def getElementNamesOfType(self, t):
-        return [e.name for e in self.getElementsOfType(t).values()]
+        return [e.name for e in list(self.getElementsOfType(t).values())]
 
     def getElementsWithInterface(self, interface):
         elems = self._interfaces_dict.get(interface, {})
@@ -195,18 +196,19 @@ class BaseSardanaElementContainer:
         return ret
 
     def getElementNamesWithInterface(self, interface):
-        return [e.name for e in self.getElementsWithInterface(interface).values()]
+        return [e.name for e in
+                list(self.getElementsWithInterface(interface).values())]
 
     def hasElementName(self, elem_name):
         return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
         elem_name = elem_name.lower()
-        for elems in self._type_elems_dict.values():
+        for elems in list(self._type_elems_dict.values()):
             elem = elems.get(elem_name)  # full_name?
             if elem is not None:
                 return elem
-            for elem in elems.values():
+            for elem in list(elems.values()):
                 if elem.name.lower() == elem_name:
                     return elem
 
@@ -215,14 +217,14 @@ class BaseSardanaElementContainer:
         elems = self._interfaces_dict.get(interface, {})
         if elem_name in elems:
             return elems[elem_name]
-        for elem in elems.values():
+        for elem in list(elems.values()):
             if elem.name.lower() == elem_name:
                 return elem
 
     def getElements(self):
         ret = set()
-        for elems in self._type_elems_dict.values():
-            ret.update(elems.values())
+        for elems in list(self._type_elems_dict.values()):
+            ret.update(list(elems.values()))
         return ret
 
     def getInterfaces(self):
@@ -283,9 +285,8 @@ class ControllerClassInfo(object):
 
     def get_icon(self):
         # fake data ###############
-        import taurus.qt.qtgui.resource
-
-        return taurus.qt.qtgui.resource.getIcon(":/designer/extra_motor.png")
+        from taurus.external.qt import Qt
+        return Qt.QIcon("designer:extra_motor.png")
 
     def get_organization(self):
         # fake data ###############
@@ -531,24 +532,27 @@ class Sardana(object):
             pass
         elif dev_class_name == "MacroServer":
             ms_dev_name = dev_name
-            ms_prop_list = map(
-                str.lower, db.get_device_property_list(ms_dev_name, "*"))
+            ms_prop_list = list(map(
+                str.lower, db.get_device_property_list(ms_dev_name, "*")))
             ms_props = db.get_device_property(ms_dev_name, ms_prop_list)
             ms_name = dev_info.server().serverInstance()
             ms_alias = dev_info.alias()
-            ms = MacroServer(self, ms_name, ms_props.get("macropath"), ms_props.get("poolnames"),
+            ms = MacroServer(self, ms_name, ms_props.get("macropath"),
+                             ms_props.get("poolnames"),
                              ms_props.get("version"), ms_alias, ms_dev_name)
             self._macroservers.append(ms)
             for pool_dev_name in ms_props.get("poolnames", ()):
-                pool_prop_list = map(
-                    str.lower, db.get_device_property_list(pool_dev_name, "*"))
+                pool_prop_list = \
+                    list(map(str.lower,
+                             db.get_device_property_list(pool_dev_name, "*")))
                 pool_props = db.get_device_property(
                     pool_dev_name, pool_prop_list)
                 pool_dev_info = cache.devices()[pool_dev_name]
                 pool_name = pool_dev_info.server().serverInstance()
                 pool_alias = pool_dev_info.alias()
-                pool = Pool(self, pool_name, pool_props.get(
-                    "poolpath"), pool_props.get("version"), pool_alias, pool_dev_name)
+                pool = Pool(self, pool_name, pool_props.get("poolpath"),
+                            pool_props.get("version"), pool_alias,
+                            pool_dev_name)
                 self._pools.append(pool)
 
     def get_name(self):
@@ -646,16 +650,16 @@ class DatabaseSardana(object):
     def refresh(self):
         self._sardanas = sardanas = {}
         services = self._db.get_service_list("Sardana/.*")
-        for service, dev in services.items():
+        for service, dev in list(services.items()):
             service_type, service_instance = service.split("/", 1)
             try:
                 sardanas[service_instance] = Sardana(
                     self, service_instance, dev)
-            except:
+            except Exception:
                 pass
 
     def create_sardana(self, name, device_name):
-        if self._sardanas.has_key(name):
+        if name in self._sardanas:
             raise Exception("Sardana '%s' already exists" % name)
         self._db.register_service("Sardana", name, device_name)
         sardana = Sardana(self, name)

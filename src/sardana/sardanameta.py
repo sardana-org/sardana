@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana libray. It defines the base
 classes for MetaLibrary and MetaClass"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaLibrary", "SardanaClass", "SardanaFunction"]
 
@@ -34,7 +34,6 @@ __docformat__ = 'restructuredtext'
 
 import os
 import inspect
-import string
 import weakref
 import linecache
 import traceback
@@ -81,7 +80,7 @@ def getsource(object):
     or code object.  The source code is returned as a single string.  An
     IOError is raised if the source code cannot be retrieved."""
     lines, lnum = getsourcelines(object)
-    return string.join(lines, '')
+    return str.join('', lines)
 
 # End patch around inspect issue http://bugs.python.org/issue993580
 # ----------------------------------------------------------------------------
@@ -120,8 +119,9 @@ class SardanaLibrary(SardanaBaseObject):
             name, _ = os.path.splitext(self.file_name)
         self.meta_classes = {}
         self.meta_functions = {}
-        if module is not None and module.__doc__:
-            self.description = module.__doc__
+        if module is not None:
+            if module.__doc__ is not None:
+                self.description = module.__doc__
             self._code = getsourcelines(module)[0]
         else:
             self.description = name + " in error!"
@@ -130,8 +130,8 @@ class SardanaLibrary(SardanaBaseObject):
         kwargs['full_name'] = file_path or name
         SardanaBaseObject.__init__(self, **kwargs)
 
-    def __cmp__(self, o):
-        return cmp(self.full_name, o.full_name)
+    def __lt__(self, o):
+        return self.full_name < o.full_name
 
     def __str__(self):
         return self.name
@@ -179,7 +179,7 @@ class SardanaLibrary(SardanaBaseObject):
 
         :return: a sequence of meta classes that belong to this library
         :rtype: seq<:class:~`sardana.sardanameta.SardanaClass`>"""
-        return self.meta_classes.values()
+        return list(self.meta_classes.values())
 
     def has_meta_class(self, meta_class_name):
         """Returns True if the given meta class name belongs to this library
@@ -217,7 +217,7 @@ class SardanaLibrary(SardanaBaseObject):
 
         :return: a sequence of meta functions that belong to this library
         :rtype: seq<:class:~`sardana.sardanameta.SardanaFunction`>"""
-        return self.meta_functions.values()
+        return list(self.meta_functions.values())
 
     def has_meta_function(self, meta_function_name):
         """Returns True if the given meta function name belongs to this library
@@ -379,8 +379,8 @@ class SardanaLibrary(SardanaBaseObject):
         kwargs['file_name'] = self.file_name
         kwargs['path'] = self.path
         kwargs['description'] = self.description
-        kwargs['elements'] = self.meta_classes.keys() + \
-            self.meta_functions.keys()
+        kwargs['elements'] = list(self.meta_classes.keys()) + \
+            list(self.meta_functions.keys())
         if self.exc_info is None:
             kwargs['exc_summary'] = None
             kwargs['exc_info'] = None
@@ -523,7 +523,7 @@ class SardanaFunction(SardanaCode):
     def __init__(self, **kwargs):
         function = kwargs.pop('function')
         kwargs['code'] = function
-        kwargs['name'] = kwargs.pop('name', function.func_name)
+        kwargs['name'] = kwargs.pop('name', function.__name__)
         SardanaCode.__init__(self, **kwargs)
 
     @property

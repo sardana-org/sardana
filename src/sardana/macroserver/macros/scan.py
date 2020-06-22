@@ -47,8 +47,7 @@ import numpy
 from taurus.core.util import SafeEvaluator
 
 from sardana.macroserver.msexception import UnknownEnv
-from sardana.macroserver.macro import Hookable, Macro, Type, ParamRepeat, \
-    Table, List
+from sardana.macroserver.macro import Hookable, Macro, Type, Table, List
 from sardana.macroserver.scan.gscan import SScan, CTScan, HScan, \
     MoveableDesc, CSScan, TScan
 from sardana.util.motion import MotionPath
@@ -156,7 +155,7 @@ class aNscan(Hookable):
 
         if mode == StepMode:
             self.nr_interv = scan_length
-            self.nr_points = self.nr_interv + 1
+            self.nb_points = self.nr_interv + 1
             self.interv_sizes = (self.finals - self.starts) / self.nr_interv
             self.name = opts.get('name', 'a%iscan' % self.N)
             self._gScan = SScan(self, self._stepGenerator,
@@ -182,7 +181,7 @@ class aNscan(Hookable):
                                      constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_interv = scan_length
-                self.nr_points = self.nr_interv + 1
+                self.nb_points = self.nr_interv + 1
                 mg_name = self.getEnv('ActiveMntGrp')
                 mg = self.getMeasurementGroup(mg_name)
                 mg_latency_time = mg.getLatencyTime()
@@ -199,7 +198,7 @@ class aNscan(Hookable):
                                      extrainfodesc)
         elif mode == HybridMode:
             self.nr_interv = scan_length
-            self.nr_points = self.nr_interv + 1
+            self.nb_points = self.nr_interv + 1
             self.interv_sizes = (self.finals - self.starts) / self.nr_interv
             self.name = opts.get('name', 'a%iscanh' % self.N)
             self._gScan = HScan(self, self._stepGenerator,
@@ -225,7 +224,7 @@ class aNscan(Hookable):
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step
@@ -236,7 +235,7 @@ class aNscan(Hookable):
         step["post-move-hooks"] = self.getHooks('post-move')
         step["check_func"] = []
         step["slow_down"] = self.slow_down
-        for point_no in xrange(self.nr_waypoints):
+        for point_no in range(self.nr_waypoints):
             step["positions"] = self.starts + point_no * self.way_lengths
             step["waypoint_id"] = point_no
             yield step
@@ -256,8 +255,8 @@ class aNscan(Hookable):
         step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
             '_NOHINTS_')
         step["check_func"] = []
-        step["active_time"] = self.nr_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -303,7 +302,7 @@ class aNscan(Hookable):
             # calculate motion time
             max_step0_time, max_step_time = 0.0, 0.0
             # first motion takes longer, all others should be "equal"
-            step0 = it.next()
+            step0 = next(it)
             for v_motor, start, stop, length in zip(v_motors, curr_pos,
                                                     step0['positions'],
                                                     self.interv_sizes):
@@ -313,7 +312,7 @@ class aNscan(Hookable):
                 max_step_time = max(max_step_time, path.duration)
             motion_time = max_step0_time + self.nr_interv * max_step_time
             # calculate acquisition time
-            acq_time = self.nr_points * self.integ_time
+            acq_time = self.nb_points * self.integ_time
             total_time = motion_time + acq_time
 
         elif mode == ContinuousMode:
@@ -330,12 +329,19 @@ class aNscan(Hookable):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_points
+        nb_of_points = self.nb_points
         scan = self._gScan
         nb_of_records = len(scan.data.records)
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
 
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 class dNscan(aNscan):
     """
@@ -492,9 +498,9 @@ class amultiscan(aNscan, Macro):
 
     param_def = [
         ['motor_start_end_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start', Type.Float, None, 'Starting position'],
-                     ['end', Type.Float, None, 'Final position']),
+         [['motor', Type.Moveable, None, 'Moveable to move'],
+          ['start', Type.Float, None, 'Starting position'],
+          ['end', Type.Float, None, 'Final position']],
          None, 'List of motor, start and end positions'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time']
@@ -525,9 +531,9 @@ class dmultiscan(dNscan, Macro):
 
     param_def = [
         ['motor_start_end_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start', Type.Float, None, 'Starting position'],
-                     ['end', Type.Float, None, 'Final position']),
+         [['motor', Type.Moveable, None, 'Moveable to move'],
+          ['start', Type.Float, None, 'Starting position'],
+          ['end', Type.Float, None, 'Final position']],
          None, 'List of motor, start and end positions'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time']
@@ -862,8 +868,8 @@ motor2 sqrt(y*x+3)
         ['indepvars', Type.String, None, 'Independent Variables'],
         ['integ_time', Type.String, None, 'Integration time'],
         ['motor_funcs',
-         ParamRepeat(['motor', Type.Moveable, None, 'motor'],
-                     ['func', Type.String, None, 'curve defining path']),
+         [['motor', Type.Moveable, None, 'motor'],
+          ['func', Type.String, None, 'curve defining path']],
          None, 'List of motor and path curves']
     ]
 
@@ -877,12 +883,12 @@ motor2 sqrt(y*x+3)
         self.motors = [item[0] for item in args[2]]
         self.funcstrings = [item[1] for item in args[2]]
 
-        globals_lst = [dict(zip(indepvars, values))
-                       for values in zip(*indepvars.values())]
+        globals_lst = [dict(list(zip(indepvars, values)))
+                       for values in zip(*list(indepvars.values()))]
         self.paths = [[SafeEvaluator(globals).eval(
             func) for globals in globals_lst] for func in self.funcstrings]
 
-        self.integ_time = numpy.array(eval(args[1]), dtype='d')
+        self._integ_time = numpy.array(eval(args[1]), dtype='d')
 
         self.opts = opts
         if len(self.motors) == len(self.paths) > 0:
@@ -907,14 +913,14 @@ motor2 sqrt(y*x+3)
                                      (self.funcstrings[0], fs, npoints,
                                       len(p)))
             raise  # the problem wasn't a shape mismatch
-        self.nr_points = npoints
+        self._nb_points = npoints
 
-        if self.integ_time.size == 1:
-            self.integ_time = self.integ_time * \
-                numpy.ones(self.nr_points)  # extend integ_time
-        elif self.integ_time.size != self.nr_points:
+        if self._integ_time.size == 1:
+            self._integ_time = self._integ_time * \
+                numpy.ones(self._nb_points)  # extend integ_time
+        elif self._integ_time.size != self._nb_points:
             raise ValueError('time_integ must either be a scalar or '
-                             'length=npoints (%i)' % self.nr_points)
+                             'length=npoints (%i)' % self._nb_points)
 
         self.name = opts.get('name', 'fscan')
 
@@ -947,15 +953,24 @@ motor2 sqrt(y*x+3)
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for i in xrange(self.nr_points):
+        for i in range(self._nb_points):
             step["positions"] = self.paths[:, i]
-            step["integ_time"] = self.integ_time[i]
+            step["integ_time"] = self._integ_time[i]
             step["point_id"] = i
             yield step
 
     def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
+
 
 
 class ascanh(aNscan, Macro):
@@ -994,7 +1009,7 @@ class scanhist(Macro):
         try:
             hist = self.getEnv("ScanHistory")
         except UnknownEnv:
-            print "No scan recorded in history"
+            print("No scan recorded in history")
             return
         if scan_number < 0:
             self.show_all(hist)
@@ -1416,20 +1431,25 @@ class dmeshc(meshc):
         self._motion.move(self.originalPositions)
 
 
-class ascanct(aNscan, Macro):
+class aNscanct(aNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "aNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
+class ascanct(aNscanct, Macro):
     """Do an absolute continuous scan of the specified motor.
     ascanct scans one motor, as specified by motor. The motor starts before the
     position given by start_pos in order to reach the constant velocity at the
     start_pos and finishes at the position after the final_pos in order to
     maintain the constant velocity until the final_pos."""
-
-    hints = {'scan': 'ascanct', 'allowsHooks': ('pre-configuration',
-                                                'post-configuration',
-                                                'pre-start',
-                                                'pre-acq',
-                                                'post-acq',
-                                                'pre-cleanup',
-                                                'post-cleanup')}
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
@@ -1445,21 +1465,13 @@ class ascanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a2scanct(aNscan, Macro):
+class a2scanct(aNscanct, Macro):
     """Two-motor continuous scan.
     a2scanct scans two motors, as specified by motor1 and motor2. Each motor
     starts before the position given by its start_pos in order to reach the
     constant velocity at its start_pos and finishes at the position after
     its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1479,21 +1491,13 @@ class a2scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a3scanct(aNscan, Macro):
+class a3scanct(aNscanct, Macro):
     """Three-motor continuous scan.
     a2scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1524,14 +1528,6 @@ class a4scanct(aNscan, Macro):
     position after its final_pos in order to maintain the constant velocity
     until its final_pos."""
 
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
-
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -1556,7 +1552,20 @@ class a4scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class dscanct(dNscan, Macro):
+class dNscanct(dNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "dNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
+class dscanct(dNscanct, Macro):
     """Do an a relative continuous motor scan,
     dscanct scans a motor, as specified by motor1.
     The Motor starts before the position given by its start_pos in order to
@@ -1578,7 +1587,7 @@ class dscanct(dNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class d2scanct(dNscan, Macro):
+class d2scanct(dNscanct, Macro):
     """continuous two-motor scan relative to the starting positions,
     d2scanct scans three motors, as specified by motor1 and motor2.
     Each motor starts before the position given by its start_pos in order to
@@ -1602,7 +1611,7 @@ class d2scanct(dNscan, Macro):
                       mode=ContinuousHwTimeMode, **opts)
 
 
-class d3scanct(dNscan, Macro):
+class d3scanct(dNscanct, Macro):
     """continuous three-motor scan relative to the starting positions,
     d3scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
@@ -1630,7 +1639,7 @@ class d3scanct(dNscan, Macro):
                       integ_time, mode=ContinuousHwTimeMode, **opts)
 
 
-class d4scanct(dNscan, Macro):
+class d4scanct(dNscanct, Macro):
     """continuous four-motor scan relative to the starting positions,
     d4scanct scans three motors, as specified by motor1, motor2, motor3 and
     motor4.
@@ -1673,10 +1682,12 @@ class meshct(Macro, Hookable):
     first motor scan is nested within the second motor scan.
     """
 
-    hints = {'scan': 'meshct', 'allowsHooks': ('pre-scan', 'pre-move',
-                                               'post-move', 'pre-acq',
-                                               'post-acq', 'post-step',
-                                               'post-scan')}
+    hints = {"scan": "meshct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
     env = ('ActiveMntGrp',)
 
     param_def = [
@@ -1710,9 +1721,23 @@ class meshct(Macro, Hookable):
         # Number of intervals of the first motor which is doing the
         # continuous scan.
         self.nr_interv = m1_nr_interv
-        self.nr_points = self.nr_interv + 1
+        self.nb_points = self.nr_interv + 1
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
+
+        # Prepare the waypoints
+        m1start, m2start = self.starts
+        m1end, m2end = self.finals
+        points1, points2 = self.nr_intervs + 1
+
+        m2_space = numpy.linspace(m2start, m2end, points2)
+        self.waypoints = []
+        self.starts_points = []
+        for i, m2pos in enumerate(m2_space):
+            self.starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
+            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
+            if self.bidirectional_mode:
+                m1start, m1end = m1end, m1start
 
         self.name = opts.get('name', 'meshct')
 
@@ -1759,26 +1784,14 @@ class meshct(Macro, Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nr_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
 
-        m1start, m2start = self.starts
-        m1end, m2end = self.finals
-        points1, points2 = self.nr_intervs + 1
-
-        m2_space = numpy.linspace(m2start, m2end, points2)
-        self.waypoints = []
-        starts_points = []
-        for i, m2pos in enumerate(m2_space):
-            starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
-            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
-            if self.bidirectional_mode:
-                m1start, m1end = m1end, m1start
-
+        points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
             self.point_id = points1 * i
             step["waypoint_id"] = i
-            self.starts = starts_points[i]
+            self.starts = self.starts_points[i]
             self.finals = waypoint
             step["positions"] = []
             step["start_positions"] = []
@@ -1801,16 +1814,24 @@ class meshct(Macro, Hookable):
         return 0.0
 
     def getIntervalEstimation(self):
-        return self.nr_intervs
+        return len(self.waypoints)
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_points
+        nb_of_points = self.nb_points
         scan = self._gScan
         nb_of_total_records = len(scan.data.records)
         nb_of_records = nb_of_total_records - self.point_id
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class timescan(Macro, Hookable):
@@ -1820,6 +1841,9 @@ class timescan(Macro, Hookable):
     of latency_time and measurement group latency time.
     """
 
+    hints = {'scan': 'timescan', 'allowsHooks': ('pre-scan', 'pre-acq',
+                                                 'post-acq', 'post-scan')}
+
     param_def = [
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time'],
@@ -1827,7 +1851,7 @@ class timescan(Macro, Hookable):
 
     def prepare(self, nr_interv, integ_time, latency_time):
         self.nr_interv = nr_interv
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.integ_time = integ_time
         self.latency_time = latency_time
         self._gScan = TScan(self)
@@ -1845,10 +1869,18 @@ class timescan(Macro, Hookable):
     def getTimeEstimation(self):
         mg_latency_time = self._gScan.measurement_group.getLatencyTime()
         latency_time = max(self.latency_time, mg_latency_time)
-        return self.nr_points * (self.integ_time + latency_time)
+        return self.nb_points * (self.integ_time + latency_time)
 
     def getIntervalEstimation(self):
         return self.nr_interv
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class scanstats(Macro):

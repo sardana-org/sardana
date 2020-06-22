@@ -200,14 +200,14 @@ class Record(object):
                 raise KeyError(item)
 
         v = proxy.getNameValidator()
-        params = v.getParams(proxy.getFullName())
+        params = v.getUriGroups(proxy.getFullName())
         name = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
                                     params['port'],
-                                    params['devicename'])
+                                    params['devname'])
 
-        attr_name = params.get('attributename', None)
+        attr_name = params.get('_shortattrname', None)
         if attr_name is not None:
-            name = '{0}/{1}'.format(name, params['attributename'])
+            name = '{0}/{1}'.format(name, attr_name)
 
         return name
 
@@ -269,7 +269,7 @@ class RecordEnvironment(dict):
             return 1
 
         for ky in self.needed + self.__needed:
-            if ky not in self.keys():
+            if ky not in list(self.keys()):
                 return 0
         else:
             return 1
@@ -399,7 +399,7 @@ class RecordList(dict):
         if self.currentIndex > 0:
             data = record.data
             prev_data = self.records[self.currentIndex - 1].data
-            for k, v in data.items():
+            for k, v in list(data.items()):
                 if v is None:
                     continue
                 # numpy arrays (1D or 2D) are valid values and does not require
@@ -414,7 +414,7 @@ class RecordList(dict):
     def applyExtrapolation(self, record):
         """Apply extrapolation to the given record"""
         data = record.data
-        for k, v in data.items():
+        for k, v in list(data.items()):
             if v is None:
                 continue
             # numpy arrays (1D or 2D) are valid values and does not require
@@ -446,8 +446,11 @@ class RecordList(dict):
                      and data - list of values
         :type data:  dict"""
         label = data['label']
-        rawData = data['data']
         idxs = data['index']
+        # TODO: think if the ScanData.addData is the best API for
+        # passing value references
+        rawData = data.get('value') or data.get('value_ref')
+
 
         maxIdx = max(idxs)
         recordsLen = len(self.records)
@@ -488,7 +491,7 @@ class RecordList(dict):
         return True
 
     def addRecords(self, records):
-        map(self.addRecord, records)
+        list(map(self.addRecord, records))
 
     def end(self):
         start = self.currentIndex

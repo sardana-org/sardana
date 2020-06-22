@@ -46,7 +46,7 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
         kwargs = PoolBaseElement.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
-        for elem_list in self.get_physical_elements().values():
+        for elem_list in list(self.get_physical_elements().values()):
             for elem in elem_list:
                 physical_elements.append(elem.name)
         kwargs['elements'] = elements
@@ -66,7 +66,7 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
     def read_state_info(self):
         state_info = {}
         ctrl_state_info = self.get_action_cache().read_state_info(serial=True)
-        for elem, ctrl_elem_state_info in ctrl_state_info.items():
+        for elem, ctrl_elem_state_info in list(ctrl_state_info.items()):
             elem_state_info = elem._from_ctrl_state_info(ctrl_elem_state_info)
             elem.put_state_info(elem_state_info)
             state = elem.get_state(cache=True, propagate=0)

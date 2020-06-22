@@ -35,11 +35,7 @@ import sys
 import copy
 import inspect
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from sardana import sardanacustomsettings
 from sardana.sardanaexception import format_exception_only_str
@@ -105,7 +101,7 @@ class RecorderManager(MacroServerManager):
         """
         _recorder_path = []
         for paths in recorder_path:
-            splited_paths = paths.split(":")
+            splited_paths = paths.split(os.pathsep)
             for path in splited_paths:
                 # filter empty and commented paths
                 if not path.startswith("#"):
@@ -120,7 +116,7 @@ class RecorderManager(MacroServerManager):
         recorder_file_names = self._findRecorderLibNames(
             _recorder_path)
 
-        for mod_name, file_name in recorder_file_names.iteritems():
+        for mod_name, file_name in recorder_file_names.items():
             dir_name = os.path.dirname(file_name)
             path = [dir_name]
             try:
@@ -164,7 +160,7 @@ class RecorderManager(MacroServerManager):
         if filter is None:
             filter = DataRecorder
         ret = {}
-        for name, klass in self._recorder_dict.items():
+        for name, klass in list(self._recorder_dict.items()):
             if not issubclass(klass.recorder_class, filter):
                 continue
             if extension is not None:
@@ -176,7 +172,7 @@ class RecorderManager(MacroServerManager):
                 # second look into the standard map
                 else:
                     _map = self._scan_recorder_map
-                    if extension not in _map.keys():
+                    if extension not in list(_map.keys()):
                         continue
                     elif klass not in _map[extension]:
                         continue
@@ -198,7 +194,7 @@ class RecorderManager(MacroServerManager):
         meta_klasses = self.getRecorderMetaClasses(filter=filter,
                                                    extension=extension)
         return dict((key, value.klass)
-                    for (key, value) in meta_klasses.items())
+                    for (key, value) in list(meta_klasses.items()))
 
     def getRecorderClass(self, klass_name):
         """ Return the Recorder class for the given class name.
@@ -262,7 +258,7 @@ class RecorderManager(MacroServerManager):
             for recorder in old_recorder_lib.get_recorders():
                 self._recorder_dict.pop(recorder.name)
                 # remove recorders from the map
-                for _, recorders in self._scan_recorder_map.iteritems():
+                for _, recorders in self._scan_recorder_map.items():
                     try:
                         recorders.remove(recorder)
                     except:
@@ -271,8 +267,7 @@ class RecorderManager(MacroServerManager):
         mod_manager = ModuleManager()
         m, exc_info = None, None
         try:
-            m = mod_manager.reloadModule(
-                module_name, path, reload=reload)
+            m = mod_manager.reloadModule(module_name, path)
         except:
             exc_info = sys.exc_info()
 
@@ -342,7 +337,7 @@ class RecorderManager(MacroServerManager):
 
     def _addRecorderToMap(self, recorder_class):
         klass = recorder_class.klass
-        for ext in klass.formats.values():
+        for ext in list(klass.formats.values()):
             recorders = self._scan_recorder_map.get(ext, [])
             if len(recorders) == 0:
                 recorders.append(recorder_class)

@@ -38,6 +38,7 @@
     poolonedexpchannel <pool/poolonedexpchannel>
     poolpseudocounter <pool/poolpseudocounter>
     poolpseudomotor <pool/poolpseudomotor>
+    poolsynchronization <pool/poolsynchronization>
     pooltwodexpchannel <pool/pooltwodexpchannel>
     poolutil <pool/poolutil>
     poolzerodexpchannel <pool/poolzerodexpchannel>

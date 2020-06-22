@@ -26,7 +26,8 @@
 """This module is part of the Python Sardana library. It defines the base
 classes for Sardana object"""
 
-from __future__ import absolute_import
+
+import sys
 
 __all__ = ["SardanaBaseObject", "SardanaObjectID"]
 
@@ -53,12 +54,13 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         EventGenerator.__init__(self)
         EventReceiver.__init__(self)
         self._type = kwargs.pop('elem_type')
-        self._name = intern(kwargs.pop('name'))
-        self._full_name = intern(kwargs.pop('full_name'))
+        self._name = sys.intern(kwargs.pop('name'))
+        self._full_name = sys.intern(kwargs.pop('full_name'))
         self._frontend = None
         Logger.__init__(self, self._name)
         self._manager = weakref.ref(kwargs.pop('manager'))
         self._parent = weakref.ref(kwargs.pop('parent', self.manager))
+        self.isoverwritten = kwargs.pop('isoverwritten', False)
 
     def get_manager(self):
         """Return the :class:`sardana.Manager` which *owns* this sardana
@@ -161,7 +163,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
             The sequence of interfaces this object implements.
         :rtype:
             sequence<:obj:`str`>"""
-        return map(Interface.get, self.get_interfaces())
+        return list(map(Interface.get, self.get_interfaces()))
 
     def serialize(self, *args, **kwargs):
         kwargs['name'] = self.name

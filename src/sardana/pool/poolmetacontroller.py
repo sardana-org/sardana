@@ -119,7 +119,7 @@ class TypeData(object):
 #: dictionary
 #: dict<:data:`~sardana.ElementType`, :class:`~sardana.pool.poolmetacontroller.TypeData`>
 TYPE_MAP_OBJ = {}
-for t, d in TYPE_MAP.items():
+for t, d in list(TYPE_MAP.items()):
     o = TypeData(type=t, name=d[0], family=d[1], klass=d[2],
                  auto_full_name=d[3], ctrl_klass=d[4])
     TYPE_MAP_OBJ[t] = o
@@ -206,7 +206,7 @@ class DataInfo(object):
         fget = info.get(FGet)
         fset = info.get(FSet)
         if default_value is not None and dtype != DataType.String:
-            if type(default_value) in types.StringTypes:
+            if isinstance(default_value, str):
                 default_value = eval(default_value)
         return DataInfo(name, dtype, dformat=dformat, access=daccess,
                         description=description, default_value=default_value,
@@ -272,19 +272,19 @@ class ControllerClass(SardanaClass):
         dep_msg = ("Defining the controller property description using a "
                    + "string is deprecated, use "
                    + "sardana.pool.controller.Description constant instead.")
-        for k, v in klass.class_prop.items():  # old member
+        for k, v in list(klass.class_prop.items()):  # old member
             props[k] = DataInfo.toDataInfo(k, v)
-            try:
+            if Description in v:
                 self.ctrl_properties_descriptions.append(v[Description])
-            except KeyError:
+            elif 'Description' in v:
                 self.warning(dep_msg)
                 self.ctrl_properties_descriptions.append(v['Description'])
 
-        for k, v in klass.ctrl_properties.items():
+        for k, v in list(klass.ctrl_properties.items()):
             props[k] = DataInfo.toDataInfo(k, v)
-            try:
+            if Description in v:
                 self.ctrl_properties_descriptions.append(v[Description])
-            except KeyError:
+            elif 'Description' in v:
                 self.warning(dep_msg)
                 self.ctrl_properties_descriptions.append(v['Description'])
 
@@ -292,17 +292,17 @@ class ControllerClass(SardanaClass):
         self.dict_extra['properties_desc'] = self.ctrl_properties_descriptions
 
         self.ctrl_attributes = ctrl_attrs = CaselessDict()
-        for k, v in klass.ctrl_attributes.items():
+        for k, v in list(klass.ctrl_attributes.items()):
             ctrl_attrs[k] = DataInfo.toDataInfo(k, v)
 
         self.axis_attributes = axis_attrs = CaselessDict()
-        for k, v in klass.ctrl_extra_attributes.items():  # old member
+        for k, v in list(klass.ctrl_extra_attributes.items()):  # old member
             axis_attrs[k] = DataInfo.toDataInfo(k, v)
-        for k, v in klass.axis_attributes.items():
+        for k, v in list(klass.axis_attributes.items()):
             axis_attrs[k] = DataInfo.toDataInfo(k, v)
 
         self.types = types = self.__build_types()
-        self.type_names = map(ElementType.whatis, types)
+        self.type_names = list(map(ElementType.whatis, types))
 
         if ElementType.PseudoMotor in types:
             self.motor_roles = tuple(klass.motor_roles)
@@ -327,10 +327,19 @@ class ControllerClass(SardanaClass):
         if init_args.varargs is None or init_args.keywords is None:
             self.api_version = 0
 
+    def __lt__(self, o):
+        main_type = self.types[0]
+        o_main_type = o.types[0]
+        if main_type != o_main_type:
+            return main_type < o_main_type
+        if self.gender != o.gender:
+            return self.gender < o.gender
+        return self.name < o.name
+
     def __build_types(self):
         types = []
         klass = self.klass
-        for _type, type_data in TYPE_MAP_OBJ.items():
+        for _type, type_data in list(TYPE_MAP_OBJ.items()):
             if _type not in TYPE_ELEMENTS:
                 continue
             if issubclass(klass, type_data.ctrl_klass):

@@ -46,8 +46,9 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, root):
+        self.beginResetModel()
         self._root = root
-        self.reset()
+        self.endResetModel()
 
     def clearSequence(self):
         self.setRoot(macro.SequenceNode())
@@ -169,49 +170,45 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         if role == Qt.Qt.DisplayRole:
             node = self.nodeFromIndex(index)
             if index.column() == 0:
-                return Qt.QVariant(node.name())
+                return node.name()
             elif index.column() == 1:
-                return Qt.QVariant(str(node.value()))
+                return str(node.value())
             elif index.column() == 2:
                 if isinstance(node, macro.MacroNode):
-                    return Qt.QVariant(node.progress())
+                    return node.progress()
         elif role == Qt.Qt.DecorationRole:
             node = self.nodeFromIndex(index)
             if index.column() == 3:
                 if isinstance(node, macro.MacroNode):
                     if node.isPause():
-                        return Qt.QVariant(Qt.QIcon(":/actions/media-playback-pause.svg"))
-        return Qt.QVariant()
+                        return Qt.QIcon(":/actions/media-playback-pause.svg")
+        return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
         if index.column() == 1:
             if isinstance(node, macro.SingleParamNode):
-                node.setValue(Qt.from_qvariant(value, str))
-                self.emit(
-                    Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+                node.setValue(value)
+                self.dataChanged.emit(index, index)
                 while True:
                     index = index.parent()
                     node = self.nodeFromIndex(index)
                     if isinstance(node, macro.MacroNode):
-                        self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index.sibling(
+                        self.dataChanged.emit(index, index.sibling(
                             index.row(), self.columnCount(index) - 1))
                         break
         elif index.column() == 2:
-            progress = Qt.from_qvariant(value, float)
-            node.setProgress(progress)
-            self.emit(
-                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            node.setProgress(value)
+            self.dataChanged.emit(index, index)
         elif index.column() == 3:
-            node.setPause(Qt.from_qvariant(value, bool))
-            self.emit(
-                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            node.setPause(value)
+            self.dataChanged.emit(index, index)
         return True
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def index(self, row, column, parent):
         assert self.root() is not None
@@ -242,22 +239,25 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
     def toXmlString(self, pretty=False, withId=True):
         xmlSequence = self.root().toXml(withId=withId)
         xmlTree = etree.ElementTree(xmlSequence)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):
+        self.beginResetModel()
         xmlElement = etree.fromstring(xmlString)
         newRoot = macro.SequenceNode(None)
         newRoot.fromXml(xmlElement)
         self.setRoot(newRoot)
-        self.reset()
+        self.endResetModel()
         return newRoot
 
-    def fromPlainText(self, text):
+    def fromPlainText(self, text, macroInfos):
+        self.beginResetModel()
         newRoot = macro.SequenceNode(None)
-        newRoot.fromPlainText(text)
+        newRoot.fromPlainText(text, macroInfos)
         self.setRoot(newRoot)
-        self.reset()
+        self.endResetModel()
         return newRoot
 
     def assignIds(self):
@@ -369,7 +369,7 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
 
     def createIdIndexDictionary(self):
         d = self.sourceModel().createIdIndexDictionary()
-        for id, sourceIndex in d.iteritems():
+        for id, sourceIndex in d.items():
             proxyIndex = self.mapFromSource(sourceIndex)
             d[id] = Qt.QPersistentModelIndex(proxyIndex)
         return d
@@ -393,8 +393,8 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def nodeFromIndex(self, index):
         sourceIndex = self.mapToSource(index)

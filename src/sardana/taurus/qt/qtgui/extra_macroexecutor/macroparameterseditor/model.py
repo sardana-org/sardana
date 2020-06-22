@@ -34,6 +34,7 @@ from taurus.external.qt import Qt
 
 from sardana.taurus.core.tango.sardana import macro
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
+from sardana.macroserver.msparameter import Optional
 
 
 class ParamEditorModel(Qt.QAbstractItemModel):
@@ -48,10 +49,11 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, node=None):
+        self.beginResetModel()
         if node is None:
             node = macro.MacroNode()
         self._root = node
-        self.reset()
+        self.endResetModel()
 
     def flags(self, index):
         if index.column() == 0:
@@ -123,7 +125,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         paramRepeatNode = self.nodeFromIndex(index)
         paramRepeatNode.addRepeat()
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def delRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -131,7 +134,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.removeChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def upRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -139,7 +143,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.upChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def downRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -147,7 +152,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.downChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def DuplicateRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -155,7 +161,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.downChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def rowCount(self, index):
         node = self.nodeFromIndex(index)
@@ -168,31 +175,35 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 
     def data(self, index, role):
         if not index.isValid() or not (0 <= index.row() < self.rowCount(index.parent())):
-            return Qt.QVariant()
+            return None
 
         if role == Qt.Qt.DisplayRole:
             node = self.nodeFromIndex(index)
             if index.column() == 0:
-                return Qt.QVariant(node.name())
+                return node.name()
             elif index.column() == 1:
-                return Qt.QVariant(str(node.value()))
-
-        return Qt.QVariant()
+                value = node.value()
+                if value is None:
+                    value = node.defValue()
+                    if value == Optional:
+                        # TODO: treat optional parameters
+                        value = None
+                return str(value)
+        return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
 #        if index.isValid() and 0 <= index.row() < len(node.parent()):
         if index.column() == 1:
-            node.setValue(Qt.from_qvariant(value, str))
-            self.emit(
-                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            node.setValue(value)
+            self.dataChanged.emit(index, index)
             return True
         return False
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def index(self, row, column, parent):
         if not parent.isValid():
@@ -241,4 +252,4 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         """
 
         xmlElement = self.root().toXml()
-        return etree.tostring(xmlElement)
+        return etree.tostring(xmlElement, encoding='unicode')

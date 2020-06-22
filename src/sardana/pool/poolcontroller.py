@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import weakref
-import StringIO
+import io
 import traceback
 import functools
 
@@ -47,6 +47,8 @@ from sardana.sardanautils import is_non_str_seq, is_number
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
+from sardana.pool.controller import Referable, Access, DataAccess,\
+    Description, Type
 
 
 class PoolBaseController(PoolBaseElement):
@@ -69,7 +71,7 @@ class PoolBaseController(PoolBaseElement):
         raise NotImplementedError
 
     def get_ctrl_type_names(self):
-        return map(ElementType.whatis, self.get_ctrl_types())
+        return list(map(ElementType.whatis, self.get_ctrl_types()))
 
     def is_online(self):
         return True
@@ -82,7 +84,7 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
-        sio = StringIO.StringIO()
+        sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
         s = sio.getvalue()
         sio.close()
@@ -116,9 +118,9 @@ class PoolBaseController(PoolBaseElement):
 
     def remove_element(self, elem, propagate=1):
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
-        f = self._element_ids.has_key(eid)
+        f = eid in self._element_ids
         if not f:
-            f = self._pending_element_ids.has_key(eid)
+            f = eid in self._pending_element_ids
             if not f:
                 raise Exception("element '%s' is not in controller")
             del self._pending_element_ids[eid]
@@ -160,9 +162,9 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_axis(self, axis, propagate=1):
-        f = self._element_axis.has_key(axis)
+        f = axis in self._element_axis
         if not f:
-            f = self._pending_element_axis.has_key(axis)
+            f = axis in self._pending_element_axis
             if not f:
                 raise Exception("element '%s' is not in controller")
             elem = self._pending_element_axis[axis]
@@ -378,7 +380,7 @@ class PoolController(PoolBaseController):
             self._ctrl_info = self._lib_info.get_controller(class_name)
         self._init()
 
-        for elem in elem_axis.values():
+        for elem in list(elem_axis.values()):
             self.add_element(elem, propagate=0)
 
         state, status = State.Fault, ""
@@ -399,6 +401,9 @@ class PoolController(PoolBaseController):
             if t in TYPE_TIMERABLE_ELEMENTS:
                 return True
         return False
+
+    def is_referable(self):
+        return isinstance(self.ctrl, Referable)
 
     def is_pseudo(self):
         for t in self._ctrl_info.types:
@@ -457,7 +462,26 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def get_axis_attributes(self, axis):
-        return self.ctrl.GetAxisAttributes(axis)
+        axis_attrs = self.ctrl.GetAxisAttributes(axis)
+        if self.is_referable():
+            referable_axis_attrs = {
+                "ValueRef": {Type: str,
+                             Access: DataAccess.ReadOnly,
+                             Description: "Value reference", },
+                # TODO: in case of Tango ValueBuffer type is overridden
+                # by DevEncoded
+                "ValueRefBuffer": {Type: str,
+                                   Access: DataAccess.ReadOnly,
+                                   Description: "Value reference buffer", },
+                "ValueRefPattern": {Type: str,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: "Value reference template"},
+                "ValueRefEnabled": {Type: bool,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: "Value reference enabled"}
+                }
+            axis_attrs.update(referable_axis_attrs)
+        return axis_attrs
 
     @check_ctrl
     def get_ctrl_attr(self, name):
@@ -543,7 +567,7 @@ class PoolController(PoolBaseController):
             information for each axis and a boolean telling if an error occured
         :rtype: dict<PoolElement, state info>, bool"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_states is None:
             ctrl_states = {}
 
@@ -594,17 +618,19 @@ class PoolController(PoolBaseController):
 
     def _read_axis_value(self, element):
 
-        def is_chunk(type_, value):
-            if type_ == ElementType.CTExpChannel and is_non_str_seq(value):
+        def is_chunk(type_, obj):
+            if not is_non_str_seq(obj):
+                return False
+            if type_ == ElementType.CTExpChannel:
                 return True
-            elif (type_ == ElementType.OneDExpChannel and
-                  is_non_str_seq(value)):
+            elif type_ == ElementType.OneDExpChannel:
                 # empty list is also considered as chunk
-                if (len(value) == 0 or not is_number(value[0])):
+                if len(obj) == 0 or not is_number(obj[0]):
                     return True
-            elif (type_ == ElementType.TwoDExpChannel and len(value) > 0
-                  and not is_number(value[0][0])):
-                return True
+            elif type_ == ElementType.TwoDExpChannel:
+                # empty list is also considered as chunk
+                if len(obj) == 0 or not is_number(obj[0][0]):
+                    return True
             return False
 
         try:
@@ -634,7 +660,7 @@ class PoolController(PoolBaseController):
         :return: a map containing the controller value information for each axis
         :rtype: dict<PoolElement, SardanaValue>"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -667,8 +693,66 @@ class PoolController(PoolBaseController):
                        all active axis in this controller
         :type axes: seq<int> or None
         :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, SardanaValue>"""
+        :rtype: dict<PoolElement, SardanaValue>
+
+        """
         return self.raw_read_axis_values(axes=axes)
+
+    def _read_axis_value_refs(self, element):
+
+        def is_chunk(obj):
+            if is_non_str_seq(obj):
+                return True
+            return False
+
+        try:
+            axis = element.get_axis()
+            ctrl_value = self.ctrl.RefOne(axis)
+            if ctrl_value is None:
+                msg = ('%s.RefOne(%s[%d]) return error: Expected value '
+                       'ref(s), got None instead' % (self.name,
+                                                     element.name, axis))
+                raise ValueError(msg)
+
+            if is_chunk(ctrl_value):
+                value = [translate_ctrl_value(v) for v in ctrl_value]
+            else:
+                value = translate_ctrl_value(ctrl_value)
+        except Exception:
+            value = SardanaValue(exc_info=sys.exc_info())
+        return value
+
+    def raw_read_axis_value_refs(self, axes=None, ctrl_values=None):
+        """**Unsafe method**. Reads the value refs for the given axes. If axes
+        is None, reads the value of all active axes.
+
+        .. note::
+            The raw_read_axis_value_refs method has been included in Sardana
+            on a provisional basis. Backwards incompatible changes (up to
+            and including removal of the class) may occur if deemed
+            necessary by the core developers.
+
+        .. todo::
+            This method should be available only on the controllers which
+            are *referable*.
+
+        :param axes: the list of axis to get the value. Default is None
+            meaning all active axis in this controller
+        :type axes: seq<int> or None
+        :return: a map containing the controller value information for each
+            axis
+        :rtype: dict<PoolElement, SardanaValue>
+        """
+        if axes is None:
+            axes = list(self._element_axis.keys())
+        if ctrl_values is None:
+            ctrl_values = {}
+
+        for axis in axes:
+            element = self.get_element(axis=axis)
+            ctrl_values[element] = self._read_axis_value_refs(element)
+
+        return ctrl_values
 
     def stop_axes(self, axes):
         """Stops the given axes.
@@ -723,8 +807,8 @@ class PoolController(PoolBaseController):
     def stop_element(self, element):
         """Stops the given element.
 
-        :param element: the list of elements to stop
-        :type element: PoolElement
+        :param element: element to stop
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to stop element
         """
 
@@ -746,7 +830,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.stop_axes(axes)
@@ -809,8 +893,8 @@ class PoolController(PoolBaseController):
     def abort_element(self, element):
         """Aborts the given elements.
 
-        :param element: the list of elements to abort
-        :type element: PoolElement
+        :param element: element to abort
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to abort element
         """
 
@@ -832,7 +916,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.abort_axes(axes)
@@ -888,13 +972,13 @@ class PoolController(PoolBaseController):
     def raw_move(self, axis_pos):
         ctrl = self.ctrl
         ctrl.PreStartAll()
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ret = ctrl.PreStartOne(axis, dial_position)
             if not ret:
                 raise Exception("%s.PreStartOne(%d, %f) returns False"
                                 % (self.name, axis, dial_position))
 
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ctrl.StartOne(axis, dial_position)
 
         ctrl.StartAll()
@@ -919,6 +1003,28 @@ class PoolController(PoolBaseController):
 
     def write_one(self, axis, value):
         self.ctrl.WriteOne(axis, value)
+
+    # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
+
+    # START SPECIFIC TO TIMERABLE CONTROLLER ---------------------------------
+
+    def get_default_timer(self):
+        """Get default timer as announced by the controller (plug-in).
+
+        Only for *Timerable* controllers, e.g.
+        :class:`~sardana.pool.controller.CounterTimerController`,
+        :class:`~sardana.pool.controller.OneDController`,
+        :class:`~sardana.pool.controller.TwoDController`.
+
+        :return: axis of the default timer or :obj:`None` if not defined
+        :rtype: :obj:`int` or :obj:`None`
+        """
+        if not self.is_timerable():
+            raise TypeError("non-timerable controller")
+        try:
+            return self.ctrl.default_timer
+        except AttributeError:
+            return None
 
     # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
 

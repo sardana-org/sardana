@@ -26,15 +26,16 @@
 """This module is part of the Python Sardana library. It defines some
 utility methods"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["is_pure_str", "is_non_str_seq", "is_integer", "is_number",
            "is_bool", "check_type", "assert_type", "str_to_value",
            "is_callable", "translate_version_str2int",
-           "translate_version_str2list"]
+           "translate_version_str2list", "py2_round", "recur_map"]
 
 __docformat__ = 'restructuredtext'
 
+import math
 import numpy
 import numbers
 import collections
@@ -46,24 +47,6 @@ __int_klasses = [int, numpy.integer]
 __number_klasses = [numbers.Number, numpy.number]
 
 __DTYPE_MAP = dict(DTYPE_MAP)
-
-__use_unicode = False
-try:
-    unicode
-    __use_unicode = True
-    __str_klasses.append(unicode)
-    __DTYPE_MAP[unicode] = DataType.String
-except:
-    pass
-
-__use_long = False
-try:
-    long
-    __use_long = True
-    __int_klasses.append(long)
-    __DTYPE_MAP[long] = DataType.Integer
-except:
-    pass
 
 __bool_klasses = [bool] + __int_klasses
 
@@ -205,3 +188,27 @@ def translate_version_str2list(version_str, depth=2):
                 i = 0
             ver.append(i)
     return ver
+
+
+def py2_round(x, d=0):
+    p = 10 ** d
+    if x > 0:
+        return float(math.floor((x * p) + 0.5)) / p
+    else:
+        return float(math.ceil((x * p) - 0.5)) / p
+
+
+def recur_map(fun, data, keep_none=False):
+    """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
+    """
+    if hasattr(data, "__iter__") and not isinstance(data, str):
+        return [recur_map(fun, elem, keep_none) for elem in data]
+    else:
+        if keep_none is True and data is None:
+            return data
+        else:
+            return fun(data)

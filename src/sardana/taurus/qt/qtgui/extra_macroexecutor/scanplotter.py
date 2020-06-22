@@ -45,7 +45,6 @@ class ScanPlotter(TaurusTrend):
     def __init__(self, parent=None, designMode=False):
 
         TaurusTrend.__init__(self, parent, designMode)
-        self.setUseParentModel(False)
         self._plotables = CaselessDict()
         self._movingMotors = []
         self._macroNames = []

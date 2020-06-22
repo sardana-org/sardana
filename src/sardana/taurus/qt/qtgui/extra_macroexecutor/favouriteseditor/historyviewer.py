@@ -28,11 +28,11 @@ historyviewer.py:
 """
 import copy
 
-from taurus.external.qt import Qt
-from taurus.qt.qtgui.resource import getIcon
+from sardana import sardanacustomsettings
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
-from model import MacrosListModel
+from .model import MacrosListModel
 
 
 class HistoryMacrosViewer(TaurusWidget):
@@ -50,6 +50,10 @@ class HistoryMacrosViewer(TaurusWidget):
 
         self.list = HistoryMacrosList(self)
         self._model = MacrosListModel()
+        max_history = getattr(sardanacustomsettings,
+                              "MACROEXECUTOR_MAX_HISTORY",
+                              None)
+        self._model.setMaxLen(max_history)
         self.list.setModel(self._model)
 
 # self.registerConfigDelegate(self.list)
@@ -114,28 +118,29 @@ class HistoryMacrosViewer(TaurusWidget):
 
 class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
 
-    def __init__(self, parent):
+    historySelected = Qt.pyqtSignal(compat.PY_OBJECT)
+
+    def __init__(self, parent=None):
         Qt.QListView.__init__(self, parent)
         self.setSelectionMode(Qt.QListView.SingleSelection)
 
-        self.removeAllAction = Qt.QAction(getIcon(":/places/user-trash.svg"),
+        self.removeAllAction = Qt.QAction(Qt.QIcon("places:user-trash.svg"),
                                           "Remove all from history", self)
-        self.connect(self.removeAllAction, Qt.SIGNAL(
-            "triggered()"), self.removeAllMacros)
+        self.removeAllAction.triggered.connect(self.removeAllMacros)
         self.removeAllAction.setToolTip(
             "Clicking this button will remove all macros from history.")
         self.removeAllAction.setEnabled(False)
 
     def currentChanged(self, current, previous):
         macro = copy.deepcopy(self.currentIndex().internalPointer())
-        self.emit(Qt.SIGNAL("historySelected"), macro)
+        self.historySelected.emit(macro)
         Qt.QListView.currentChanged(self, current, previous)
 
     def mousePressEvent(self, e):
         clickedIndex = self.indexAt(e.pos())
         if clickedIndex.isValid():
             macro = copy.deepcopy(self.currentIndex().internalPointer())
-            self.emit(Qt.SIGNAL("historySelected"), macro)
+            self.historySelected.emit(macro)
             self.removeAllAction.setEnabled(True)
         Qt.QListView.mousePressEvent(self, e)
 
@@ -169,9 +174,11 @@ def test():
     import sys
     import taurus
     import time
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
 
     historyViewer = HistoryMacrosViewer()
 

@@ -26,8 +26,8 @@
 """This module is part of the Python Sardana library. It defines the base
 classes for module manager"""
 
-from __future__ import with_statement
-from __future__ import absolute_import
+
+
 
 __all__ = ["ModuleManager"]
 
@@ -102,7 +102,7 @@ class PathManager(SardanaIDManager):
         with self._path_lock:
             path_id = self.get_new_id()
 
-            for _, p_info in pif.items():
+            for _, p_info in list(pif.items()):
                 p_info[0] += path_len
 
             pif[path_id] = [0, path]
@@ -285,15 +285,15 @@ class ModuleManager(Singleton, Logger):
 
     def unloadModule(self, module_name):
         """Unloads the given module name"""
-        if self._modules.has_key(module_name):
+        if module_name in self._modules:
             self.debug("unloading module %s" % module_name)
-            assert(sys.modules.has_key(module_name))
+            assert(module_name in sys.modules)
             self._modules.pop(module_name)
             del sys.modules[module_name]
 
     def unloadModules(self, module_list=None):
         """Unloads the given module name"""
-        modules = module_list or self._modules.keys()
+        modules = module_list or list(self._modules.keys())
         for module in modules:
             self.unloadModule(module)
 
