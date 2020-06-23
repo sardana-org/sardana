@@ -25,7 +25,8 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro", "newfile", "pic", "cen", "where"]
+           "tw", "logmacro", "newfile", "_movetostatspos", "pic", "cen",
+           "where"]
 
 
 __docformat__ = 'restructuredtext'
@@ -1052,72 +1053,94 @@ class newfile(Hookable, Macro):
             postNewfileHook()
 
 
+class _movetostatspos(Macro):
+    """This macro does the logic for pic and cen"""
+
+    param_def = [
+        ['channel', Type.ExpChannel, Optional, 'name of channel'],
+        ['caller', Type.String, None, 'caller (pic or cen)']
+    ]
+
+    def run(self, channel, caller):
+        try:
+            stats = self.getEnv('ScanStats')
+        except UnknownEnv:
+            self.warning("No ScanStats available in env")
+            return
+
+        if channel is None:
+            # use first channel in stats
+            channel = next(iter(stats['Stats']))
+        else:
+            if channel.name in stats['Stats']:
+                channel = channel.name
+            else:
+                self.warning("Channel {} not present in ScanStats".format(
+                    channel.name))
+                return
+
+        if caller == 'pic':
+            stats_value = 'maxpos'
+            stats_str = 'PIC'
+        elif caller == 'cen':
+            stats_value = 'cen'
+            stats_str = 'CEN'
+        else:
+            self.warning("Caller {} is unkown".format(caller))
+            return
+
+        motor_name = stats['Motor']
+        motor = self.getMotion([motor_name])
+        current_pos = motor.readPosition()[0]
+        pos = stats['Stats'][channel][stats_value]
+
+        self.info("move motor {:s} from current position\nat {:.4f}\n"
+                  "to {:s} of counter {:s}\nat {:.4f}".format(motor_name,
+                                                              current_pos,
+                                                              stats_str,
+                                                              channel,
+                                                              pos))
+        motor.move(pos)
+
+
 class pic(Macro):
-    """This macro moves the motor of the last scan to the peak position for a
-    given counter. If no counter is given, it selects the first plotted counter
-    from the expconf.
+    """This macro moves the motor of the last scan to the PEAK position for a
+    given channel. If no channel is given, it selects the first channel from
+    the ScanStats env variable.
     """
 
     param_def = [
-        ['counter', Type.ExpChannel, None, 'name of counter']
+        ['channel', Type.ExpChannel, Optional, 'name of channel']
     ]
 
-    def prepare(self, counter):
-        self.stats = self.getEnv('ScanStats')
-        if counter is None:
-            self.counter = self.stats['counter']
-        else:
-            self.counter = counter.getName()
-
-        self.motor_name = self.stats['motor']
-        self.motor = self.getMotion([self.motor_name])
-
-    def run(self, counter):
-        current_pos = self.motor.readPosition()[0]
-        peak = self.stats['stats'][self.counter]['maxpos']
-        self.info('move motor %s from current position\nat %f\nto peak of'
-                  ' counter %s\nat %f' % (self.motor_name, current_pos,
-                                          self.counter, peak))
-        self.motor.move(peak)
+    def run(self, channel):
+        self.execMacro('_movetostatspos', channel, 'pic')
 
 
 class cen(Macro):
-    """This macro moves the motor of the last scan to the cen position for a
-    given counter. If no counter is given, it selects the first plotted counter
-    from the expconf.
+    """This macro moves the motor of the last scan to the CEN position for a
+    given channel. If no channel is given, it selects the first channel from
+    the ScanStats env variable.
     """
 
     param_def = [
-        ['counter', Type.ExpChannel, None, 'name of counter']
+        ['channel', Type.ExpChannel, Optional, 'name of channel']
     ]
 
-    def prepare(self, counter):
-        self.stats = self.getEnv('ScanStats')
-        if counter is None:
-            self.counter = self.stats['counter']
-        else:
-            self.counter = counter.getName()
-
-        self.motor_name = self.stats['motor']
-        self.motor = self.getMotion([self.motor_name])
-
-    def run(self, counter):
-        current_pos = self.motor.readPosition()[0]
-        cen = self.stats['stats'][self.counter]['cen']
-        self.info('move motor %s from current position\nat %f\nto cen of'
-                  ' counter %s\nat %f' % (self.motor_name, current_pos,
-                                          self.counter, cen))
-        self.motor.move(cen)
+    def run(self, channel):
+        self.execMacro('_movetostatspos', channel, 'cen')
 
 
 class where(Macro):
     """This macro shows the current position of the last scanned motor."""
 
-    def prepare(self):
-        self.stats = self.getEnv('ScanStats')
-        self.motor_name = self.stats['motor']
-        self.motor = self.getMotion([self.motor_name])
-
     def run(self):
-        current_pos = self.motor.readPosition()[0]
-        self.info('motor %s is\nat %f' % (self.motor_name, current_pos))
+        try:
+            motor_name = self.getEnv('ScanStats')['Motor']
+        except UnknownEnv:
+            self.warning("No motor from last scan available")
+            return
+
+        motor = self.getMotion([motor_name])
+        self.info("motor {:s} is\nat {:.4f}".format(motor_name,
+                                                    motor.readPosition()[0]))
