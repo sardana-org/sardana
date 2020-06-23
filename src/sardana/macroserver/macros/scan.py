@@ -1901,11 +1901,11 @@ class scanstats(Macro):
         if parent:
             try:
                 active_meas_grp = self.getEnv("ActiveMntGrp")
-                meas_grp = self.getMeasurementGroup(active_meas_grp)
-            except:
+            except UnknownEnv:
                 self.warning("No active measurement group found")
                 return
 
+            meas_grp = self.getMeasurementGroup(active_meas_grp)
             calc_channels = []
             enabled_channels = meas_grp.getEnabled()
             if channel:
