@@ -54,14 +54,13 @@ How to call procedures?
 The central idea of the Sardana SCADA_ system is to execute procedures centrally.
 The execution can be started from either:
 
-    * *spock* offers a command line interface with commands very similar to SPEC_.
-      It is documented :ref:`here <sardana-spock>`.
-    * Procedures can also be executed with from a :term:`GUI`. Taurus provides
-      `generic widgets for macro execution <http://www.tango-
-      controls.org/static/taurus/latest/doc/html/users/ui/macros/>`__.
+    * :ref:`sardana-spock` offers a command line interface with commands very similar to SPEC_.
+    * Procedures can also be executed with a :term:`GUI`. Taurus provides
+      :ref:`generic widgets for macro execution <sardana-taurus>`.
     * Procedures can also be executed in specific :term:`GUI` s and specific Taurus_
       widgets. The :term:`API` to execute macros from python code is documented
-      here **<LINK>**.
+      in :mod:`sardana.taurus.core.tango.sardana` and from PyQt code is documented
+      in :mod:`sardana.taurus.qt.qtcore.tango.sardana`.
 
 How to write procedures?
 ------------------------
@@ -160,6 +159,40 @@ It is easily possible to add your own file format but the standard file formats 
 What is the file format of the configuration files?
 ---------------------------------------------------
 The configuration files for the Taurus_ GUI are defined here **<LINK>**.
+
+How to access EPICS from Sardana?
+---------------------------------
+
+Hardware integrated in EPICS_ can be directly accessed from Sardana via a
+controller. The controller can talk to the EPICS_ server using the
+python EPICS_ interface or the Taurus_ interface to EPICS_.
+The TaurusTimerCounterController class is distributed with sardana and
+allows the connection to any EPICS_ attribute giving the EPICS_ address
+as TaurusAttribute.
+
+Which type of controller should I choose for integrating hardware that do not fit with any specific controller type?
+--------------------------------------------------------------------------------------------------------------------
+
+Sardana controllers can be used for implementing some features that in
+principle do not fit with any kind of controller. In order to choose
+a controller class for the implementation, it is important to take into
+account some differences in the behaviour of the different type of
+controllers during an scan.
+
+The main differences between CT, ZeroD and OneD/TwoD are:
+
+1. The ZeroDController class is neither Startable nor Loadable, so the
+exposure time can not be given to the controller and no action can
+be performed at the start of the scan.
+CounterTimerController/OneDController/TwoDController classes are
+Startable and Loadable.
+
+2. The output value of ZeroD and CT is continuously read during the scan
+(functions PreReadAll/PreReadOne/ReadAll/ReadOne of the controllers classes
+of these types are continuously called). OneD/TwoD read the value only at the
+end of the acquisition time. Slow actions (like readout of images or spectra
+for further calculations) in the readout functions of ZeroD and CT can affect
+considerably the scan performance.
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/

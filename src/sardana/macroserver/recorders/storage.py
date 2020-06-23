@@ -34,6 +34,7 @@ import time
 import itertools
 import re
 import io
+import weakref
 
 import numpy
 
@@ -55,8 +56,7 @@ class FIO_FileRecorder(BaseFileRecorder):
     def __init__(self, filename=None, macro=None, **pars):
         BaseFileRecorder.__init__(self)
         self.base_filename = filename
-        if macro:
-            self.macro = macro
+        self.macro = weakref.ref(macro) if macro else None
         self.db = PyTango.Database()
         if filename:
             self.setFileName(self.base_filename)
@@ -89,7 +89,7 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.filename = "%s_%s.%s" % (tpl[0], "[ScanId]", tpl[2])
 
     def getFormat(self):
-        return self.formats.keys()[0]
+        return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
 
@@ -118,6 +118,8 @@ class FIO_FileRecorder(BaseFileRecorder):
         #
         self.mcaAliases = []
         for mca in self.mcaNames:
+            if mca.startswith("tango://"):
+                mca = mca[8:]
             lst = mca.split("/")
             self.mcaAliases.append(self.db.get_alias("/".join(lst[1:])))
 
@@ -134,9 +136,11 @@ class FIO_FileRecorder(BaseFileRecorder):
         #
         self.fd.write("!\n! Parameter\n!\n%p\n")
         self.fd.flush()
-        env = self.macro.getAllEnv()
-        if env.has_key('FlagFioWriteMotorPositions') and env['FlagFioWriteMotorPositions']:
-            all_motors = sorted(self.macro.findObjs('.*', type_class=Type.Motor))
+        env = self.macro().getAllEnv()
+        if ('FlagFioWriteMotorPositions' in env
+                and env['FlagFioWriteMotorPositions']):
+            all_motors = sorted(
+                self.macro().findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:
                 pos = mot.getPosition(force=True)
                 if pos is None:
@@ -301,7 +305,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def getFormat(self):
-        return self.formats.keys()[0]
+        return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
         '''Prepares and writes the scan header.'''
@@ -388,7 +392,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         header += '#L %(labels)s\n'
 
         self.fd = io.open(self.filename, 'a', newline='\n')
-        self.fd.write(unicode(header % data))
+        self.fd.write(str(header % data))
         self.fd.flush()
         os.fsync(self.fd.fileno())
 
@@ -467,7 +471,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 str_data += '%s' % data
             outstr = '@A %s' % str_data
             outstr += '\n'
-            fd.write(unicode(outstr))
+            fd.write(str(outstr))
 
         for c in names:
             data = record.data.get(c)
@@ -477,7 +481,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         outstr = ' '.join(d)
         outstr += '\n'
 
-        fd.write(unicode(outstr))
+        fd.write(str(outstr))
 
         fd.flush()
         os.fsync(self.fd.fileno())
@@ -488,7 +492,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
         env = recordlist.getEnviron()
         end_time = env['endtime'].ctime()
-        self.fd.write(unicode("#C Acquisition ended at %s\n" % end_time))
+        self.fd.write(str("#C Acquisition ended at %s\n" % end_time))
         self.fd.flush()
         self.fd.close()
 
@@ -504,7 +508,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
             self.info(
                 'Custom data "%s" will not be stored in SPEC file. Reason: uninitialized file', name)
             return
-        if numpy.rank(value) > 0:  # ignore non-scalars
+        if numpy.ndim(value) > 0:  # ignore non-scalars
             self.info(
                 'Custom data "%s" will not be stored in SPEC file. Reason: value is non-scalar', name)
             return
@@ -522,7 +526,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 self.info(
                     'Custom data "%s" will not be stored in SPEC file. Reason: cannot open file', name)
                 return
-        self.fd.write(unicode('#C %s : %s\n' % (name, v)))
+        self.fd.write(str('#C %s : %s\n' % (name, v)))
         self.fd.flush()
         if fileWasClosed:
             self.fd.close()  # leave the file descriptor as found
@@ -557,7 +561,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         try:
             self.fd.makegroup(self.entryname, "NXentry")
         except self.nxs.NeXusError:
-            entrynames = self.fd.getentries().keys()
+            entrynames = list(self.fd.getentries().keys())
 
             #==================================================================
             ##Warn and abort
@@ -684,7 +688,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.fd.closegroup()  # we are back at the measurement group
 
         measurement_entries = self.fd.getentries()
-        for label, nid in links.items():
+        for label, nid in list(links.items()):
             if label not in measurement_entries:
                 self.fd.makelink(nid)
 
@@ -697,7 +701,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         rec_data, rec_nb = record.data, record.recordno
 
         for dd in self.datadesc:
-            if record.data.has_key(dd.name):
+            if dd.name in record.data:
                 data = rec_data[dd.name]
                 fd.opendata(dd.label)
 
@@ -765,7 +769,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 # if not all the records contain this field, we cannot write it
                 # as a block.. so do it record by record (but only this field!)
                 for record in recordlist.records:
-                    if record.data.has_key(dd.label):
+                    if dd.label in record.data:
                         self.fd.putslab(record.data[dd.label], [
                                         record.recordno] + [0] * len(dd.shape), [1] + list(dd.shape))
                     else:
@@ -785,7 +789,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
-                except Exception, e:
+                except Exception as e:
                     self.warning(
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
@@ -799,7 +803,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
-                except Exception, e:
+                except Exception as e:
                     self.warning(
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
@@ -829,7 +833,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 continue  # @todo: implement support for images and other
 
         # write the 1D NXdata group
-        for axes, v in plots1d.items():
+        for axes, v in list(plots1d.items()):
             self.fd.openpath("/%s:NXentry" % (self.entryname))
             groupname = plots1d_names[axes]
             self.fd.makegroup(groupname, 'NXdata')
@@ -895,7 +899,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self._createBranch(nxpath)
         try:
             self._writeData(name, value, dtype)
-        except ValueError, e:
+        except ValueError as e:
             msg = "Error writing %s. Reason: %s" % (name, str(e))
             self.warning(msg)
             self.macro.warning(msg)

@@ -23,14 +23,14 @@
 
 """Expert macros"""
 
-from __future__ import print_function
 
-__docformat__ = 'restructuredtext'
 
 __all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
            "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
            "relctrlcls", "relctrllib", "rellib", "relmac", "relmaclib",
            "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
+
+__docformat__ = 'restructuredtext'
 
 import sys
 import traceback
@@ -38,7 +38,7 @@ import array
 
 from sardana.macroserver.msexception import UnknownMacroLibrary
 from sardana.macroserver.msparameter import WrongParam
-from sardana.macroserver.macro import Macro, Type, ParamRepeat, Table, LibraryError
+from sardana.macroserver.macro import Macro, Type, Table, LibraryError
 
 ##########################################################################
 #
@@ -70,9 +70,8 @@ class defmeas(Macro):
 
     param_def = [
         ['name',  Type.String, None, 'Measurement group name'],
-        ['channel_list',
-            ParamRepeat(['channel', Type.String, None,
-                         'Measurement Channel'],),
+        ['channel_list', [['channel', Type.String, None,
+                           'Measurement Channel']],
             None, 'List of measurement channels'],
     ]
 
@@ -95,10 +94,9 @@ class udefmeas(Macro):
     """Deletes existing measurement groups"""
 
     param_def = [
-        ['mntgrps',
-         ParamRepeat(['mntgrp', Type.MeasurementGroup, None,
+        ['mntgrps', [['mntgrp', Type.MeasurementGroup, None,
                       'Measurement group name'],
-                     min=1),
+                     {'min': 1}],
          None, 'List of measurement group names'], ]
 
     def run(self, mntgrps):
@@ -143,8 +141,8 @@ class udefelem(Macro):
     """Deletes existing elements"""
 
     param_def = [
-        ['elements',
-         ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
+        ['elements', [['element', Type.Element, None, 'element name'],
+                      {'min': 1}],
          None, 'List of element(s) name'],
     ]
 
@@ -174,9 +172,8 @@ class defctrl(Macro):
 
     param_def = [['class',  Type.ControllerClass, None, 'controller class'],
                  ['name',  Type.String, None, 'new controller name'],
-                 ['roles_props',
-                  ParamRepeat(['role_prop', Type.String, None,
-                               'a role or property item'], min=0),
+                 ['roles_props', [['role_prop', Type.String, None,
+                                   'a role or property item'], {'min': 0}],
                   None, 'roles and/or properties']]
 
     def run(self, ctrl_class, name, props):
@@ -189,9 +186,8 @@ class udefctrl(Macro):
     """Deletes existing controllers"""
 
     param_def = [
-        ['controllers',
-         ParamRepeat(['controller', Type.Controller, None, 'controller name'],
-                     min=1),
+        ['controllers', [['controller', Type.Controller, None,
+                          'controller name'], {'min': 1}],
          None, 'List of controller(s) name(s)'], ]
 
     def run(self, controllers):
@@ -218,9 +214,8 @@ class send2ctrl(Macro):
     """Sends the given data directly to the controller"""
 
     param_def = [['controller', Type.Controller, None, 'Controller name'],
-                 ['data',
-                  ParamRepeat(['string item', Type.String,
-                               None, 'a string item'],),
+                 ['data', [['string item', Type.String, None,
+                            'a string item']],
                   None, 'data to be sent']]
 
     def run(self, controller, data):
@@ -228,7 +223,8 @@ class send2ctrl(Macro):
         pool = controller.getPoolObj()
         str_data = " ".join(data)
         res = pool.SendToController([name, str_data])
-        self.output(res)
+        if res:
+            self.output(res)
 
 ##########################################################################
 #
@@ -339,6 +335,12 @@ class relctrllib(Macro):
 
 class addctrllib(Macro):
     """Adds the given controller library code to the pool server filesystem.
+
+    .. note:: Currently this macro does not report eventual errors,
+              for example Python syntax errors, in the controller plugin
+              module. So if it silently exits but the controller library is
+              not correctly loaded please check the server logs for more
+              information.
     """
 
     param_def = [["ctrl_library_name", Type.String, None,
@@ -510,7 +512,7 @@ class sar_info(Macro):
     def dump_properties(self, obj):
         data = obj.serialize()
 
-        table = Table([data.values()], row_head_str=data.keys(),
+        table = Table([list(data.values())], row_head_str=list(data.keys()),
                       row_head_fmt='%*s', col_sep='  =  ')
         self.output("Properties:")
         self.output("-----------")

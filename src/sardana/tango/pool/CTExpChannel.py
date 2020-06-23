@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevDouble, DevState, AttrQuality, \
-    DevString, Except, READ, SCALAR
+    DevString, Except, READ, SCALAR, READ_WRITE
 
 from taurus.core.util.log import DebugIt
 
@@ -41,18 +41,18 @@ from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import to_tango_type_format, exception_str
 
-from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
-    PoolExpChannelDeviceClass
+from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
+    PoolTimerableDeviceClass
 
 
-class CTExpChannel(PoolExpChannelDevice):
+class CTExpChannel(PoolTimerableDevice):
 
     def __init__(self, dclass, name):
-        PoolExpChannelDevice.__init__(self, dclass, name)
+        PoolTimerableDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
     def init(self, name):
-        PoolExpChannelDevice.init(self, name)
+        PoolTimerableDevice.init(self, name)
 
     def get_ct(self):
         return self.element
@@ -64,14 +64,14 @@ class CTExpChannel(PoolExpChannelDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolExpChannelDevice.delete_device(self)
+        PoolTimerableDevice.delete_device(self)
         ct = self.ct
         if ct is not None:
             ct.remove_listener(self.on_ct_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolExpChannelDevice.init_device(self)
+        PoolTimerableDevice.init_device(self)
 
         ct = self.ct
         if ct is None:
@@ -107,12 +107,8 @@ class CTExpChannel(PoolExpChannelDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        name = name.replace('_', '')  # for integration_time events
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
-
         try:
             attr = self.get_attribute_by_name(attr_name)
         except DevFailed:
@@ -138,7 +134,9 @@ class CTExpChannel(PoolExpChannelDevice):
                 timestamp = event_value.timestamp
             else:
                 value = event_value
-            if name == "value":
+            if name == "timer" and value is None:
+                value = "None"
+            elif name == "value":
                 w_value = event_source.get_value_attribute().w_value
                 state = self.ct.get_state()
                 if state == State.Moving:
@@ -159,7 +157,7 @@ class CTExpChannel(PoolExpChannelDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolExpChannelDevice.get_dynamic_attributes(self)
+            PoolTimerableDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -172,10 +170,10 @@ class CTExpChannel(PoolExpChannelDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+        attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -219,33 +217,34 @@ class CTExpChannel(PoolExpChannelDevice):
         self.ct.start_acquisition()
 
 
-class CTExpChannelClass(PoolExpChannelDeviceClass):
+class CTExpChannelClass(PoolTimerableDeviceClass):
 
     #    Class Properties
     class_property_list = {}
 
     #    Device Properties
     device_property_list = {}
-    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
+    device_property_list.update(PoolTimerableDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
+    cmd_list.update(PoolTimerableDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {}
-    attr_list.update(PoolExpChannelDeviceClass.attr_list)
+    attr_list.update(PoolTimerableDeviceClass.attr_list)
 
     standard_attr_list = {
         'Value': [[DevDouble, SCALAR, READ],
                   {'abs_change': '1.0', }]
     }
-    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
+
+    standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolExpChannelDeviceClass._get_class_properties(self)
+        ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "Counter/Timer device class"
-        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
+        ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')
         return ret

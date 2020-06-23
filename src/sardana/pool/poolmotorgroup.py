@@ -112,7 +112,8 @@ class Position(SardanaAttribute):
         if not cache:
             dial_position_values = self.obj.motion.read_dial_position(
                 serial=True)
-            for motion_obj, position_value in dial_position_values.items():
+            for motion_obj, position_value in \
+                    list(dial_position_values.items()):
                 motion_obj.put_dial_position(
                     position_value, propagate=propagate)
 
@@ -254,28 +255,21 @@ class PoolMotorGroup(PoolGroupElement):
         for new_position, element in zip(new_positions, user_elements):
             calculated[element] = new_position
 
-            # TODO: get the configuration for an specific sardana class and
-            # get rid of AttributeProxy.
-            config = AttributeProxy(element.name + '/position').get_config()
+            # TODO: use Sardana attribute configuration and
+            #  get rid of accessing tango - see sardana-org/sardana#663
+            from sardana.tango.core.util import _check_attr_range
             try:
-                high = float(config.max_value)
-            except ValueError:
-                high = None
-            try:
-                low = float(config.min_value)
-            except ValueError:
-                low = None
-            if high is not None:
-                if float(new_position) > high:
-                    msg = "requested movement of %s is above its upper limit"\
-                        % element.name
-                    raise RuntimeError(msg)
-            if low is not None:
-                if float(new_position) < low:
-                    msg = "requested movement of %s is below its lower limit"\
-                        % element.name
-                    raise RuntimeError(msg)
+                _check_attr_range(element.name, "position", new_position)
+            except ValueError as e:
+                # TODO: don't concatenate exception message whenever
+                #  tango-controls/pytango#340 is fixed
+                msg = "requested move of {} is outside of limits ({})".format(
+                    element.name, str(e)
+                )
+                raise ValueError(msg) from e
 
+            element.calculate_motion(new_position, items=items,
+                                     calculated=calculated)
         for new_position, element in zip(new_positions, user_elements):
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
@@ -292,7 +286,7 @@ class PoolMotorGroup(PoolGroupElement):
         self._aborted = False
         items = self.calculate_motion(new_positions)
         timestamp = time.time()
-        for item, position_info in items.items():
+        for item, position_info in list(items.items()):
             item.set_write_position(position_info[0], timestamp=timestamp,
                                     propagate=0)
         if not self._simulation_mode:

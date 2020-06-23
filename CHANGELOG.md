@@ -6,18 +6,427 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- `repeat` macro for executing n-times the hooks attached in its body (#310,
-  #745)
+
+* Support to Python >= 3.5 (#1089, #1173, #1201, #1313, #1336)
+* Showscan online based on pyqtgraph (#1285)
+  * multiple plots in the same MultiPlot widget (as opposed to different panels before)
+  * option to group curves by x-axis or individual plot per curve
+  * new showscan console script
+  * support fast scans: update curves at a fix rate (5Hz)
+  * better curve colors and symbols
+* Measurement group (Taurus extension) configuration API with methods to
+  set/get: enabled, output, plot type, plot axes, timer, monitor, synchronizer,
+  value ref enabled, value ref pattern parameters(#867)
+* Experiment configuration (expconf) macros
+  * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
+  * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
+  * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
+* Add timestamp to element's dumped information (#1308)
+* Instruments creation and configuration in sar_demo (#1198)
+* Allow _experimental channel acquisition_ with PoolChannelTaurusValue (PCTV) widget (#1203)
+* Documentation to Taurus Extensions of Sardana Devices: MacroServer part
+  and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
+* Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
+* Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
+* Possibility to view debug messages in `DoorOutput` widget - enable/disable
+  using context menu option (#1242)
+* Improve user experience with PMTV:
+  * Store PMTV (motor widget) configurations: *expert view* and *write mode*
+    (relative or absolute) permanently as TaurusGUI settings (#1286)
+  * Do not create encoder widget in PMTV if the motod does not have encoder
+    in order to avoid errors comming from the polling (#209, #1288)
+  * Change limit switches indicators from buttons to labels (#210, #1290)
+* Improve documentation (#1241)
+* Better macro exception message and hint to use `www` (#1191)
+* Add basic information to "how to write custom recorder" to
+  the documentation (#1275)
+* Register a TaurusValue factory for pool widgets (#1333)
+* Direct links to Sardana-Taurus model API (#1335)
+
+### Fixed
+
+* Use `tango.EnsureOmnitThread` to protect Sardana threads
+  (Tango is not thread safe) (#1298)
+* Avoid using Tango `AttributeProxy` in limits protection to not be affected
+  by bug tango-controls/pytango#315 (#1302)
+* Avoid deadlock in Sardana-Taurus models e.g. `MeasurementGroup.count()` or
+  `Motor.move()` (#1348)
+  * Remove redundant protection in PoolElement.start() and waitFinish()
+* Default macro parameter values in macroexecutor (#1153)
+* Executing RunMacro Door's command with string parameters containing spaces (#1240)
+* Setting of environment variables in Python 3.7 (#1195)
+* Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
+  to avoid problems when using `builtins` from `future` (#1082)
+* Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
+* Macro functions which define results now really report the result (#1238)
+* Use of env and hints in `macro` function decorator (#1239)
+* Fix several issues with PMTV:
+  * Reset pending operations of absolute movement on switching to relative movement (#1293)
+  * PMTV widget not updating the following attributes: limit switches, state
+    and status (#1244)
+* Avoid Taurus GUI slowness on startup and changing of perspectives due to too
+  large macroexecutor history by limitting it to 100 -
+  configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
+* OutputBlock view option when macros produce outputs at high rate (#1245)
+* `showscan online` shows only the online trend and not erroneously online and offline
+  (#1260)
+* Fix fast operations (motion & acq) by propertly clearing operation context and
+  resetting of acq ctrls dicts (#1300)
+* Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
+* Measurement groups renaming with `renameelem` macro(#951)
+* `macroexecutor` correctly loads macro combo box if it was started with server down and 
+  server started afterwards (#599, #1278)
+* `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
+* `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
+* MacroButton with repeat parameters (#1172, #1314)
+* Macro plotting in new versions of ipython and matplotlib require extra call to
+  `pyplot.draw()` to make sure that the plot is refreshed (#1280)
+* Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
+* Remove TangoAttribute controllers from Sardana (#181, #1279)
+* Remove deprecation warning revealed when running test suite (#1267)
+* Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
+* Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
+* Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
+* Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
+  (#1188, #1309)
+* Fix dummy motor velocity so it respects steps_per_unit (#1310)
+* Make handling of `Macro.sendRecordData()` with arbitrary data more robust in Spock
+  (#1320, #1319)
+* Use `utf8_json` as default codec (in Tango) if `Macro.sendRecordData()` does not specify one
+  (#1320, #1319
+* Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
+  position(s) (#1326)
+* Build docs with Sphinx 3 (#1330) 
+
+### Deprecated
+
+* `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
+* Global measurement group timer/monitor on all levels (#867)
+* `value_ref_enabled` and `value_ref_pattern` measurement group parameters
+  for non-referable channels (#867) 
+
+### Changed
+
+* Renamed _synchronization_ to _synch description_
+  * Tango MeasurementGroup `Synchronization` attribute to `SynchDescription`
+  * Core MeasurementGroup `synchronization` property to `synch_description`
+  * Sardana-Taurus Device MeasurementGroup `getSynchronizationObj()`,
+    `getSynchronization()` and `setSynchronization()` methods to
+    `getSynchDescriptionObj()`,`getSynchDescription()`
+    and `setSynchDescription()` (#1337)
+  * `SynchronizationDescription` helper class to `SynchDescription`
+* Requirements are no longer checked when importing sardana (#1185)
+* Measurement group (Taurus extension) configuration API methods, known in 
+  the old sense for setting a global measurement group timer/monitor:
+  `getTimer()`, `setTimer()`, `getMonitor()` were moved to `MGConfiguration`
+  class and are deprecated (#867)
+* `macroexecutor` and `sequencer` discard settings if the models passed
+  as command line arguments had changed with respect to the previous execution
+  (#1278, #1284)
+
+### Removed
+
+* Support to Python < 3.5 (#1089, #1173, #1201, #1263)
+* "Show/hide plots" button in `expconf` (#960, #1255, #1257)
+* `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
+* `showscan online_raw` magic command in spock (#1260)
+* `online` kwarg in `SpockBaseDoor` constructor (#1260)
+* `sardana.requirements` (#1185)
+* `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
+
+
+## [2.8.5] 2020-04-27
+
+### Fixed
+
+* Reintroduce backwards compatibility for measurement groups' configurations
+  (URIs) created with Taurus 3 (#1266, #1271)
+
+## [2.8.4] 2019-11-13
+
+### Fixed
+
+* fix compatibility with python 2.6 when overwritting macros 
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
+
+## [2.8.3] 2019-09-16
+
+### Fixed
+
+* Removing latencytime from detect_evt (as propossed in #1190)
+
+## [2.8.2] 2019-09-13
+
+### Fixed
+
+* Hangs of MacroServer when PyTango `AttributeProxy` and `DeviceProxy` objects
+  were garbage collected (#1080, #1190, #1193)
+
+## [2.8.1] 2019-07-22
+
+### Fixed
+
+* Remove uncompleted optimization when applying measurement group
+  configuration (#1171, #1174)
+
+## [2.8.0] 2019-07-01
+
+### Added
+
+* SEP2 - Improve integration of 1D and 2D experimental channels (#775):
+  * Possibility to report acquisition results in form of value references (in 
+  the URI format) of 1D and 2D experimental channels:
+    * `Referable` base class to inherit from when developing a controller 
+    plugin
+    * `ValueRef` and `ValueRefBuffer` Tango attributes and `value_ref` and 
+    `value_ref_buffer` core attributes to propagate value references 
+    proceeding from the controllers.
+  * Possibility to configure value referencing from the measurement group level
+    (_Ref Enabled_ and _Ref Pattern_ columns in expconf and 
+    `value_ref_pattern` and `value_ref_enabled` configuration parameters) or
+    a single channel level (`ValueRefPattern` and `ValueRefEnabled` Tango 
+    attributes) which both reach the controller plugin as axis parameters 
+    `value_ref_pattern` and `value_ref_enabled`.
+  * Creation of Virtual Data Sets (VDS) for value references of _h5file_ scheme
+    in HDF5 file recorder.
+  * Possibility to still use pseudo counters based on 1D and 2D experimental
+    channels when value referencing is in use.
+  * Possibility to include 2D experimental channels in continuous acquisition
+    using value reporting (`ValueBuffer` Tango attribute to 2DExpChannel and
+    `value_buffer` core attribute)
+  * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
+* Reintroduce `showscan online` to spock (#1042)
+* Full support to *spock syntax* in loading sequences from files (#645, #672)
+* Info in `lsmac` output about macros being overridden (#930, #947)
+* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
+  `move`, `count`, etc. (#992)
+* Emulated hardware triggering between dummy counter/timer and trigger/gate elements
+  (#1100)
+* Macro example demonstrating how to add an extra scan column with motor
+  positions shifted to the middle of the scan interval: `ascanct_midtrigger`
+  (#1105)
+* Support to 7 axes geometry in `pa` macro (#1116)
+* Protection to `showscan` when a non HDF5 file is getting opened (#1073)
+* Auto-deploy to PyPI with Travis (#1113)
+* Print output of `send2ctrl` macro only if it contains something (#1120)
+* Add `DescriptionLength` view option for adjusting the `lsdef` macro description
+  (#1107, #1108)
+* Add `ShowScanOnline` component to Taurus Qt extensions (#1042)
+
+### Changed
+
+* `Data` Tango attribute of experimental channels (CTExpChannel,
+  ZeroDExpChannel, OneDExpChannel, PseudoCounter) to `ValueBuffer` (SEP2, #775)
+* Value buffer data structure format from `{"index": seq<int>, "data": seq<str>}`
+  to `{"index": seq<int>, "value": seq<str>}` (SEP2, #775)
+* Default encoding of `ValueBuffer` and `ValueRefBuffer` attributes (SEP2, #775)
+  from JSON to pickle
+* Mapping of Integer data type to Tango DevLong64 (#1083)
+
+### Fixed
+
+* Hanging scans by avoiding deepcopy of `DeviceProxy` (#1102)
+* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
+  macros (#1085)
+* Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
+  when software synchronization is in use (#1110)
+* Interactive macros on Windows (#347)
+* expconf when empty (unspecified) DataType (#1076)
+* Output block of scan records which do not fit the console width (#924)
+* Fix bug on exception popups in macroexecutor (#1079, #1088)
+* Cyclic references between scan macros and GSF internals (#816, #1115)
+* Enable expconf buttons (Reload and Apply) when local configuration was kept after
+  receiving external changes (#959, #1093)
+* Avoid external changes pop-up when synchronizer is changed in the expconf by
+  removing global measurement group synchronizer (#1103)
+* Show external changes pop-up in expconf when last measurement group is deleted
+  remotelly (#1099)
+* Pop-up message when expconf configuration changed externally (#1094)
+* Remove circlular references between the macro object and the FIO recorder (#1121)
+
+### Deprecated
+
+* Datasource Tango attribute, data_source core attributes and data_source
+1D and 2D controller axis parameter (SEP2, #775).
+
+### Removed
+
+* `ValueBuffer` Tango attribute of 0D exp. channels deprecated in version
+2.3.0. `AccumulationBuffer` attribute serves for the same need (SEP2, #775).
+Exceptionally no major version bump is done cause it seems like this attribute
+was not used programmatically in third party plugins/GUIs. 
+
+## [2.7.2] 2019-05-28
+
+### Fixed
+
+* Several issues with measurement group configuration and `epxconf` (#1090)
+
+### Deprecated
+
+* Measurement group configuration `timer` and `monitor` - there are no 
+equivalents, these roles are assigned based on the channel's order per each 
+of the synchronization types: trigger, gate and start (#1090)
+
+## [2.7.1] 2019-03-29
+
+### Fixed
+
+* Do not read 1D and 2D experimental channels during software acquisition loop
+  reintroduced after fixing it in 2.6.0 (#1086).
+
+## [2.7.0] 2019-03-11
+
+### Added
+
+* Possibility to directly acquire an experimental channel (without the need to define
+  a measurement group) (#185, #997, #1048, #1061)
+  * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
+    channels
+  * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
+  * `default_timer` class attribute to all timerable controllers (plugins) to let them
+    announce the default timer axis
+* Possibility to pass an experimental channel (now compatible only with timerable channels) 
+  as a parameter of `ct` and `uct` macros in order to acquire directly on the channel (#1049)
+* `Countable` element type that includes measurement group and experimental channels (#1049)
+* `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+* Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
+* Acquisition macro examples (#1047)
+
+### Fixed
+
+* `expconf` warns only about the following environment variables changes: `ScanFile`,
+  `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
+* MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
+  in the core (#1001)
+* Compatibility of measurement group plotting configurations created with
+  sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
+* General Hook tests (#1062)
+ 
+## [2.6.1] 2019-02-04
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
+### Fixed
+- String parameter editor in macroexecutor and sequencer (#1030, #1031)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
+## [2.6.0] 2019-01-31
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
+### Added
+- New acquisition and synchronization concepts (SEP18, #773):
+  - Preparation of measurement group for a group of acquisitions is mandatory
+    (`Prepare` Tango command and `prepare` core method; `NbStarts` Tango
+    attribute and `nb_starts` core attribute; `count`, `count_raw` and
+    `count_continuous` methods in Taurus extension)
+  - Preparation of timerable controllers is optional (`PrepareOne` method)
+  - `SoftwareStart` and `HardwareStart` options in `AcqSynch` enumeration and
+    `Start` in `AcqSynchType` enumeration (the second one is available in
+    the `expconf` as synchronization option)
+  - `start` and `end` events in software synchronizer
+  - `PoolAcquisitionSoftwareStart` acquisition action
+  - `SoftwareStart` and `HardwareStart` synchronization in
+    `DummyCounterTimerController`
+- Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
+  #1009)
+- Possibility to define macros with optional parameters. These must be the last
+  ones in the definition (#285, #876, #943, #941, #955)
+- Possibility to pass values of repeat parameters with just one member without
+  the need to encapsulate them in square brackets (spock syntax) or list
+  (macro API) (#781, #983)
+- Possibility to change data format (shape) of of pseudo counter values (#986)
+- Check scan range agains motor limits wheneve possible (#46, #963)
+- Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
+  in case this error occured (#764).
+- Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
+- Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
+  of new controller classes and necessary adaptation to macros (#923, #921)
+- Top LICENSE file that applies to the whole project (#938)
+- Document remote connection to MacroServer Python process (RConsolePort Tango
+  property) (#984)
+- sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
+### Fixed
+- Do not read 1D and 2D experimental channels during software acquisition loop
+  (#967)
+- Make `expconf` react on events of environment, measurement groups and their
+  configurations. An event offers an option to reload the whole experiment
+  configuration or keep the local changes. `expconf` started with
+  `--auto-update` option will automatically reload the whole experiment
+  configuration (#806, #882, #988, #1028, #1033)
+- Reload macro library overriding another library (#927, #946)
+- Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Moveables limits check in continuous scans when moveables position attribute
+  has unit configured and Taurus 4 is used (quantities) (#989, #990)
+- Hook places advertised by continuous scans so the `allowHooks` hint and the
+  code are coherent (#936)
+- Macro/controller module description when module does not have a docstring
+  (#945)
+- Make `wu` macro respect view options (#1000, #1002)
+- Make cleanup (remove configuration) if spock profile creation was interrupted
+  or failed (#791, #793)
+- Spock considers passing supernumerary parameters as errors (#438, #781)
+- MacroServer starts without the Qt library installed (#781, #907, #908)
+- Make `Description` an optional part of controller's properties definition (#976)
+- Correcting bug in hkl macros introduced when extending macros for new
+  diffractometer types: angle order was switched
+
+### Changed
+- MacroButton stops macros instead of aborting them (#931, #943)
+- Spock syntax and advanced spock syntax are considered as one in documentaion
+  (#781)
+- Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
+  #933)
+- Logstash handler from python-logstash to python-logstash-async (#895)
+- Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+- SpockCommandWidget.returnPressed method renamed to onReturnPressed
+- SpockCommandWidget.textChanged method renamed to onTextChanged
+
+### Deprecated
+- Measurement group start without prior preparation (SEP18, #773)
+- Loadable controller's API: `LoadOne(axis, value, repeats)`
+  in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
+- Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
+
+### Removed
+- Support to Qt < 4.7.4 (#1006, #1009)
+
+## [2.5.0] 2018-08-10
+
+### Added
+- `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
+  discrete pseudo motors (#801)
+- `Configuration` attribute to discrete pseudo motor (#801)
+- Avoid desynchronization of motion and acquisition in time synchronized
+  continuous scans by checking whether the motor controller accepts the scan
+  velocity and in case it rounds it up, reduce the scan velocity (#757)
+- `repeat` macro for executing n-times a set of macros passed as parameters
+  or attached as hooks (#310, #745, #892)
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
 - `pre-acq` and `post-acq` hooks to the continuous scans: `ascanct` family
   macros (#780)
-- `pre-acq` and `post-acq` hooks to `timescan` macro (#885)  
+- `pre-acq` and `post-acq` hooks to `timescan` macro (#885)
+- `SoftwareSynhronizerInitialDomain` Tango attribute to
+  the Measurement Group Tango device and `sw_synch_initial_domain` attribute
+  to the `PoolMeasurementGroup` (#759) - experimental
 - Default macro logging filter which improves the output of logging messages.
   Filter can be configured with sardanacustomsettings (#730)
 - Possibiltiy to configure ORB end point for Tango servers with Tango DB
   free property (#874)
 - Enhance software synchronization by allowing function generation when
   group has 1 repeat only (#786)
+- Tab completion in spock for Boolean macro parameters (#871)
 - Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
@@ -26,12 +435,23 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - `getPoolObj` random `AttributeErrors: _pool_obj` errors in macros (#865, #57)
-- Spock returning prompt too early not allowing to stop macros (#717, #725).
-  Requires Taurus 4.4 (taurus-org/taurus#738).
+- Pre-scan snapshot (#753)
+- Avoid loading configuration to disabled controllers in measurement group
+  acquisition (#758)
+- Spock returning prompt too early not allowing to stop macros on Windows
+  (#717, #725, #905)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
+- Boolean macro parameter validation - now works only True, true, 1
+  or False, false, 0 (#871)
+- Remove numpy and pylab symbols from spock namespace in order to
+  not collide with macros e.g. repeat, where, etc. (#893)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
+- Avoid problems with MacroServer attributes (Environment and Elements) in
+  taurus extesnions by using newly introduced (in taurus 4.4.0) TangoSerial
+  serialization mode (#897)
+- Pseudo counters in continuous acquisition (#899)
 - Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
@@ -39,17 +459,27 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `getElementByAxis` and `getElementByName` of Controller Taurus extension
   class (#872)
 - `GScan` intervals estimation (#772)
+- `meshct` intervals estimation (#768)
 - Documentation on how to install and use Sardana from Git clone (#751)
 - Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
 - Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
+- Door and MacroServer references in spock configuration file (profile) to
+  use FQDN URI references (#894, #668)
 
 ### Deprecated
+- `Label` and `Calibration` attributes of discrete pseudo motor in favor
+  of `Configuration` attribute (#801)
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
+
+### Removed
+- Signal `modelChanged()` from ParamBase class to use the call to 
+  method onModelChanged directly instead
+
 
 ## [2.4.0] 2018-03-14
 
@@ -443,7 +873,19 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.2...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
+[2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
+[2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
+[2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
+[2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
+[2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
+[2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
+[2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
+[2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
+[2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
+[2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1

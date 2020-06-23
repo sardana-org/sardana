@@ -36,7 +36,7 @@ class DummyEventSource(threading.Thread):
         i = 0
         for v, t in zip(self.values, self.intervals):
             try:
-                idx = range(i, i + len(v))
+                idx = list(range(i, i + len(v)))
                 i += len(v)
                 skip = float('NaN') in v
             except TypeError:  # if v is not a list
@@ -119,7 +119,7 @@ def main():
     f = nxs.load(file_name)
     m = f['entry1']['measurement']
     ch1 = m['ch1']
-    print ch1.nxdata
+    print(ch1.nxdata)
 
 if __name__ == "__main__":
     main()
