@@ -1945,7 +1945,6 @@ class scanstats(Macro):
                     motor_data.append(rc[select_motor])
 
                 counter_data = numpy.array(counter_data)
-                counter_data_grad = numpy.gradient(counter_data)
                 motor_data = numpy.array(motor_data)
 
                 stats[channel_name] = {
@@ -1957,7 +1956,8 @@ class scanstats(Macro):
                     'int': numpy.sum(counter_data),
                     'cen': numpy.sum(counter_data*motor_data)
                     / numpy.sum(counter_data)}
-
+                # Logic for CEN must be adopted to find center-of-mass and
+                # edges of erf-like data
                 col_header.append([channel_name])
                 cols.append([
                     stats[channel_name]['min'],
