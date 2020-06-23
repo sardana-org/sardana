@@ -32,21 +32,21 @@ __docformat__ = 'restructuredtext'
 import numpy
 import datetime
 import operator
-import string
+import weakref
 
-from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessList
 
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
 from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
+import collections
+import numbers
 
 
 class JsonRecorder(DataRecorder):
 
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
-        self._codec = CodecFactory().getCodec('json')
+        self._stream = weakref.ref(stream)
 
     def _startRecordList(self, recordlist):
         macro_id = recordlist.getEnvironValue('macro_id')
@@ -101,9 +101,7 @@ class JsonRecorder(DataRecorder):
     def _sendPacket(self, **kwargs):
         '''creates a JSON packet using the keyword arguments passed
         and then sends it'''
-        #data = self._codec.encode(('', kwargs))
-        # self._stream.sendRecordData(*data)
-        self._stream._sendRecordData(kwargs, codec='json')
+        self._stream()._sendRecordData(kwargs, codec='utf8_json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -116,7 +114,7 @@ class JsonRecorder(DataRecorder):
             value = value.tolist()
         except:
             pass
-        macro_id = self._stream.getID()
+        macro_id = self._stream().getID()
         data = dict(kwargs)  # shallow copy
         data['name'] = name
         data['value'] = value
@@ -128,16 +126,16 @@ class OutputRecorder(DataRecorder):
     def __init__(self, stream, cols=None, number_fmt='%8.4f', col_width=8,
                  col_sep='  ', output_block=False, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
+        self._stream = weakref.ref(stream)
         if not number_fmt.startswith('%'):
             number_fmt = '%%s' % number_fmt
         self._number_fmt = number_fmt
         self._col_sep = col_sep
         self._col_width = col_width
-        if operator.isSequenceType(cols) and \
-                not isinstance(cols, (str, unicode)):
+        if isinstance(cols, collections.Sequence) and \
+                not isinstance(cols, str):
             cols = CaselessList(cols)
-        elif operator.isNumberType(cols):
+        elif isinstance(cols, numbers.Number):
             cols = cols
         else:
             cols = None
@@ -157,19 +155,19 @@ class OutputRecorder(DataRecorder):
 
         for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
             if not hasattr(self._stream, "getAllEnv") or \
-               "ScanRecorder" in self._stream.getAllEnv().keys():
+               "ScanRecorder" in list(self._stream.getAllEnv().keys()):
                 message = "%s from %s" % (
                     fr.getFormat(), fr.__class__.__name__)
             else:
                 message = "%s" % (fr.getFormat())
-            self._stream.info('Operation will be saved in %s (%s)',
+            self._stream().info('Operation will be saved in %s (%s)',
                               fr.getFileName(), message)
 
         msg = "Scan #%d started at %s." % (serialno, starttime)
         if not estimatedtime is None:
             estimatedtime = datetime.timedelta(0, abs(estimatedtime))
             msg += " It will take at least %s" % estimatedtime
-        self._stream.info(msg)
+        self._stream().info(msg)
 
         labels, col_names, col_sizes = [], [], []
         header_rows, header_len = 1, 0
@@ -177,9 +175,9 @@ class OutputRecorder(DataRecorder):
             if not getattr(column, 'output', True):
                 continue
             name = column.name
-            if operator.isSequenceType(cols) and name not in cols:
+            if isinstance(cols, collections.Sequence) and name not in cols:
                 continue
-            if operator.isNumberType(cols) and col >= cols:
+            if isinstance(cols, numbers.Number) and col >= cols:
                 break
             col_names.append(name)
             label = column.label.strip()
@@ -189,7 +187,7 @@ class OutputRecorder(DataRecorder):
                 label = [label]
             header_rows = max(header_rows, len(label))
             labels.append(label)
-            col_size = max(col_width, max(map(len, label)))
+            col_size = max(col_width, max(list(map(len, label))))
             header_len += col_size
             col_sizes.append(col_size)
 
@@ -205,7 +203,7 @@ class OutputRecorder(DataRecorder):
             for row in range(empty_row_nb):
                 header[row].append(col_size * " ")
             for i, l in enumerate(label):
-                header[i + empty_row_nb].append(string.center(l, col_size))
+                header[i + empty_row_nb].append(l.center(col_size))
         head = []
         for header_row in header:
             head.append(col_sep.join(header_row))
@@ -218,11 +216,11 @@ class OutputRecorder(DataRecorder):
         self._scan_line_t += [(name, cell_t_number % name)
                               for name in col_names[1:]]
 
-        self._stream._output(header)
-        self._stream._flushOutput()
+        self._stream()._output(header)
+        self._stream()._flushOutput()
 
     def _endRecordList(self, recordlist):
-        self._stream._flushOutput()
+        self._stream()._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
@@ -234,17 +232,17 @@ class OutputRecorder(DataRecorder):
         dh = recordlist.getDataHandler()
 
         for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
-            self._stream.info('Operation saved in %s (%s)', fr.getFileName(),
+            self._stream().info('Operation saved in %s (%s)', fr.getFileName(),
                               fr.getFormat())
 
         endts = recordlist.getEnvironValue('endts')
         startts = recordlist.getEnvironValue('startts')
         totaltimets = endts - startts
-        deadtime_perc = deadtime * 100.0 / totaltimets
-        motiontime_perc = motiontime * 100.0 / totaltimets
+        deadtime_perc = deadtime * 100 / totaltimets
+        motiontime_perc = motiontime * 100 / totaltimets
         info_string = 'Scan #%s ended at %s, taking %s. ' + \
                       'Dead time %.1f%% (motion dead time %.1f%%)'
-        self._stream.info(info_string % (serialno, endtime, totaltime,
+        self._stream().info(info_string % (serialno, endtime, totaltime,
                                          deadtime_perc, motiontime_perc))
 
     def _writeRecord(self, record):
@@ -255,29 +253,34 @@ class OutputRecorder(DataRecorder):
                 cell = str(cell_data.shape)
             elif cell_data is None:
                 cell = "<nodata>"
-            elif isinstance(cell_data, (str, unicode)):
-                cell = "<string>"
+            elif isinstance(cell_data, str):
+                # TODO: for SEP2 needs strings are enabled for visualizing
+                # value refs, previously "<string>" was printed. This may
+                # have side effects e.g. alignment of columns etc.. Check
+                # and fix it.
+                cell = cell_data
             else:
                 cell %= record.data
-            cell = string.center(cell.strip(), self._col_sizes[i])
+            cell = cell.strip()
+            cell = cell.center(self._col_sizes[i])
             cells.append(cell)
         scan_line = self._col_sep.join(cells)
 
         if self._output_block:
-            self._stream._outputBlock(scan_line)
+            self._stream()._outputBlock(scan_line)
         else:
-            self._stream._output(scan_line)
+            self._stream()._output(scan_line)
 
-        self._stream._flushOutput()
+        self._stream()._flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):
         '''
         The custom data will be added as an info line in the form:
         Custom data: name : value
         '''
-        if numpy.rank(value) > 0:
+        if numpy.ndim(value) > 0:
             v = 'Array(%s)' % str(numpy.shape(value))
         else:
             v = str(value)
-        self._stream._output('Custom data: %s : %s' % (name, v))
-        self._stream._flushOutput()
+        self._stream()._output('Custom data: %s : %s' % (name, v))
+        self._stream()._flushOutput()

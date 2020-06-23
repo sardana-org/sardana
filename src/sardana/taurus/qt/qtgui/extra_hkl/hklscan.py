@@ -23,8 +23,6 @@
 ##
 ##############################################################################
 
-__docformat__ = 'restructuredtext'
-
 import sys
 
 import sardana
@@ -39,7 +37,7 @@ import taurus.core
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-from displayscanangles import DisplayScanAngles
+from .displayscanangles import DisplayScanAngles
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
@@ -49,6 +47,8 @@ from PyTango import *
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
     TaurusMacroConfigurationDialog, \
     TaurusMacroDescriptionViewer, DoorOutput, DoorDebug, DoorResult
+
+__docformat__ = 'restructuredtext'
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -75,14 +75,11 @@ class HKLScan(TaurusWidget):
 
         self.loadUi(filename="hklscan.ui")
 
-        self.connect(self._ui.hklStartScanButton,
-                     Qt.SIGNAL("clicked()"), self.start_hklscan)
-        self.connect(self._ui.hklStopScanButton,
-                     Qt.SIGNAL("clicked()"), self.stop_hklscan)
-        self.connect(self._ui.hklDisplayAnglesButton,
-                     Qt.SIGNAL("clicked()"), self.display_angles)
-        self.connect(self._ui.MacroServerConnectionButton, Qt.SIGNAL(
-            "clicked()"), self.open_macroserver_connection_panel)
+        self._ui.hklStartScanButton.clicked.connect(self.start_hklscan)
+        self._ui.hklStopScanButton.clicked.connect(self.stop_hklscan)
+        self._ui.hklDisplayAnglesButton.clicked.connect(self.display_angles)
+        self._ui.MacroServerConnectionButton.clicked.connect(
+            self.open_macroserver_connection_panel)
 
         # Create a global SharedDataManager
         Qt.qApp.SDM = SharedDataManager(self)
@@ -124,7 +121,7 @@ class HKLScan(TaurusWidget):
         angles_names = []
         angles_taurus_label = []
 
-        gap_x = 800 / self.nb_motors
+        gap_x = 800 // self.nb_motors
 
         try:
             angles_names = self.device.motorroles
@@ -149,7 +146,7 @@ class HKLScan(TaurusWidget):
             alname = "angleslabel" + str(i)
             angles_labels[i].setObjectName(alname)
             angles_labels[i].setText(QtGui.QApplication.translate(
-                "HKLScan", angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "HKLScan", angles_names[i], None))
             angles_taurus_label.append(TaurusLabel(self))
             angles_taurus_label[i].setGeometry(
                 QtCore.QRect(50 + gap_x * i, 320, 81, 19))
@@ -182,9 +179,10 @@ class HKLScan(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.connect(self.enginemodescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
+            self.onModeChanged)
 
+    @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")
@@ -259,7 +257,7 @@ class HKLScan(TaurusWidget):
             label_name = "dsa_label_" + str(i)
             dsa_label[i].setObjectName(label_name)
             dsa_label[i].setText(QtGui.QApplication.translate(
-                "Form", angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "Form", angles_names[i], None))
 
         start_hkl = []
         stop_hkl = []
@@ -363,8 +361,8 @@ def main():
     parser.usage = "%prog  <model> [door_name]"
     parser.set_description("a taurus application for performing hkl scans")
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:
@@ -380,7 +378,8 @@ def main():
     if len(args) > 1:
         w.onDoorChanged(args[1])
     else:
-        print "WARNING: Not door name supplied. Connection to MacroServer/Door not automatically done"
+        print("WARNING: Not door name supplied. Connection to "
+              "MacroServer/Door not automatically done")
     w.show()
 
     sys.exit(app.exec_())

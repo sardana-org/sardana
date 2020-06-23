@@ -23,29 +23,4 @@
 ##
 ##############################################################################
 
-from taurus.external import unittest
-from taurus.test import insertTest
-from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.pool.test.test_acquisition import AcquisitionTestCase
-import logging
-
-
-@insertTest(helper_name='hw_step_acquisition', repetitions=1,
-            integ_time=0.4)
-class DummyCounterTimerControllerTestCase(AcquisitionTestCase, unittest.TestCase):
-    """Integration test.
-    """
-    chn_ctrl_name = '_test_ct_ctrl_1'
-    chn_elem_name1 = '_test_ct_1_1'
-
-    def setUp(self):
-        """#Create a Controller, TriggerGate and PoolSynchronization objects from
-        #Ni660XTriggerGateController and Ni660XPositionCTCtrl configurations.
-        """
-        unittest.TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
-        self.channel_names.append(self.chn_elem_name1)
-
-    def tearDown(self):
-        AcquisitionTestCase.tearDown(self)
-        unittest.TestCase.tearDown(self)
+"""This is the recorders test module"""

@@ -9,6 +9,8 @@ Sardana API
 
     Macro API <api_macro>
     Controller API <api_controller>
+    Sardana-Taurus model API <sardana/taurus/core/tango/sardana>
+    Sardana-Taurus Qt model API <sardana/taurus/qt/qtcore/tango/sardana>
     Motor API <api_motor>
     I/O register <api_IOR>
     Counter/timer API <api_countertimer>

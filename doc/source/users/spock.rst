@@ -57,7 +57,9 @@ Afterward, spock :term:`CLI` will start normally:
 
     Spock's sardana extension 1.0 loaded with profile: spockdoor (linked to door 'LAB-01-D01')
 
-    LAB-01-D01 [1]: 
+    LAB-01-D01 [1]:
+.. note::
+    If you want to connect to another gate you need to create a new spock profile.
 
 Starting spock with a custom profile
 ------------------------------------
@@ -383,14 +385,16 @@ of files:
     LAB-01-D01 [2]: senv ScanFile "['scans.h5', 'scans.dat']"
     ScanFile = ['scans.h5', 'scans.dat']
 
+.. _sardana-spock-showscan:
+
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
 You can show plots for the current scan (i.e. plotting the scan *online*) by
-using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
+launching the :func:`showscan online <sardana.spock.magic.showscan>` command.
 
 Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
-file: :ref:`showscan_ui`. It can be launched using :class:`~sardana.spock.magic.showscan`
+file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`
 spock command. It accepts scan number as an argument, and will show the last scan
 when invoked without arguments.
 
@@ -465,6 +469,8 @@ Available *View Options*:
 - **OutputBlock**: Set if the line information during scans is appended to the
   output or updated. |br| Default value ``False`` (lines are appended to the
   displayed output during the scan).
+- **DescriptionLength**: Length (number of characters) of the macro
+  description printed by ``lsdef`` macro. |br| Default value ``60``.
 
   
 Editing macros
@@ -492,24 +498,129 @@ case a macro fails when being executed.
       Valid values are ``output``, ``critical``, ``error``, ``warning``,
       ``info``, ``debug`` and ``result``.
 
-*Spock syntax* and *Advanced spock syntax*
-------------------------------------------
+.. _sardana-spock-syntax:
 
-*Spock syntax* is based on space separated list of parameter values. Not all macros
-are allowed to be used with the spock syntax. Restrictions appear for those macros
-using :ref:`repeat parameters <sardana-macro-repeat-parameters>` as argument. The
-*Spock syntax* would not allow:
+Spock syntax
+------------
 
-1. macros defining more than one repeat parameter
-2. macros defining repeat parameter which is not at the end of the parameters definition
-3. macros defining nested repeat parameters
+*Spock syntax* is used to execute macros. It is based on space
+separated list of parameter values. If the string parameter values contain
+spaces itself these **must** be enclosed in quotes, either single quotes
+``''`` or double quotes ``""``.
 
-To overcome these restrictions an *Advanced spock syntax* was developed, this syntax introduces the
-use of square brackets to group the repeat parameters and its repetitions.
-The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion of the repeat
-parameter is needed, this extension assumes that the parameter values passed by the user are a single
-repetition of the repeat parameter.
-A set of macro examples using both syntaxes can be found in :ref:`sardana-devel-macro-parameter-examples`.
+The spock syntax was extended with the use of square brackets ``[]`` for
+macros which define
+:ref:`repeat parameters <sardana-macro-repeat-parameters>` as arguments.
+Repeat parameter values must be enclosed in square brackets. If the repeat
+parameter is composed from more than one internal parameter its every
+repetition must be enclosed in another square brackets as well.
+
+For example, the ``move_with_timeout`` macro::
+
+    class move_with_timeout(Macro):
+        """Execute move with a timeout"""
+
+        param_def = [
+            ['m_p_pair',
+             [['motor', Type.Motor, None, 'Motor to move'],
+              ['pos',  Type.Float, None, 'Position to move to']],
+             None, 'List of motor/position pairs'],
+            ['timeout', Type.Float, None, 'Timeout value']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+Must use the square brackets for the ``m_p_pair`` parameter and its
+repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move_with_timeout [[th 8.4] [tth 16.8]] 50
+
+However for the commodity reasons the square brackets may be skipped. The
+following examples explain in which cases.
+
+Repeat parameter is the last one
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter is the last one in the parameters definition
+both square brackets (for the repeat parameter and for the repetition) may
+be skipped.
+
+For example, the ``move`` macro::
+
+    class move(Macro):
+        """Execute move"""
+
+        param_def = [
+            ['m_p_pair',
+             [['motor', Type.Motor, None, 'Motor to move'],
+              ['pos',  Type.Float, None, 'Position to move to']],
+             None, 'List of motor/position pairs']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+May skip the square brackets for the ``m_p_pair`` parameter and its
+repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move th 8.4 tth 16.8
+
+This is equivalent to:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move [[th 8.4] [tth 16.8]]
+
+Repeat parameter has only one internal parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter contains only one internal parameter the square
+brackets for the repetition **must** be skipped.
+
+For example, the ``power_motor`` macro::
+
+    class power_motor(Macro):
+        """Power on/off motor(s)"""
+
+        param_def = [
+            ['motor_list', [['motor', Type.Motor, None, 'motor name']],
+                None, 'List of motors'],
+            ['power_on', Type.Boolean, None, 'motor power state']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+Must use the square brackets for the ``motor_list`` parameter but not for
+its repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: power_motor [th tth] True
+
+Repeat parameter has only one internal parameter and only one repetition value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter contains only one internal parameter and you
+would like to pass only one repetition value then the square brackets for
+the repeat parameter may be skipped as well resulting in no square brackets
+being used.
+
+This assumes the ``power_motor`` macro from the previous example.
+The following two macro executions are equivalent:
+
+.. sourcecode:: spock
+
+    Door_1 [1]: power_motor th True
+    Door_1 [2]: power_motor [th] True
+
+A set of macro examples defining complex repeat parameters can be found in
+:ref:`sardana-devel-macro-parameter-examples`.
 You can see the invocation example for each of these macros in its docstring.
 
 
@@ -534,17 +645,17 @@ spock console:
 Using spock as a Tango_ console
 -------------------------------
 
-As metioned in the beggining of this chapter, the sardana spock automatically
-activates the PyTango_ 's ipython console extension. Therefore all Tango_
+As mentioned in the beginning of this chapter, the sardana spock automatically
+activates the PyTango_ 's ipython console extension [#]_. Therefore all Tango_
 features are automatically available on the sardana spock console. For example,
-creating a :class:`~PyTango.DeviceProxy` will work inside the sardana spock
+creating a :class:`tango.DeviceProxy` will work inside the sardana spock
 console:
 
 .. sourcecode:: spock
 
-    LAB-01-D01 [1]: tgtest = PyTango.DeviceProxy("sys/tg_test/1")
+    LAB-01-D01 [1]: tgtest = Device("sys/tg_test/1")
     
-    LAB-01-D01 [2]: print( tgtest.state() )
+    LAB-01-D01 [2]: print(tgtest.state())
     RUNNING
 
 .. rubric:: Footnotes

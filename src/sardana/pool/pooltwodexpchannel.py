@@ -33,21 +33,25 @@ __docformat__ = 'restructuredtext'
 from sardana import ElementType
 from sardana.sardanaevent import EventType
 
-from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
-class Pool2DExpChannel(PoolBaseChannel):
+class Pool2DExpChannel(PoolTimerableChannel):
 
     def __init__(self, **kwargs):
         self._data_source = None
+        self._timer = None
         kwargs['elem_type'] = ElementType.TwoDExpChannel
-        PoolBaseChannel.__init__(self, **kwargs)
+        PoolTimerableChannel.__init__(self, **kwargs)
 
     # --------------------------------------------------------------------------
     # data source
     # --------------------------------------------------------------------------
 
     def get_data_source(self, cache=True, propagate=1):
+        msg = ("data_source is deprecated since "
+               "version 2.8.0. Use value_ref instead.")
+        self.warning(msg)
         if not cache or self._data_source is None:
             data_source = self.read_data_source()
             self._set_data_source(data_source, propagate=propagate)

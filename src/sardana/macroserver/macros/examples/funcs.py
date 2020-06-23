@@ -23,7 +23,7 @@
 
 """Examples of macro functions"""
 
-from __future__ import print_function
+
 
 __all__ = ["mfunc1", "mfunc2", "mfunc3", "mfunc4", "mfunc5"]
 

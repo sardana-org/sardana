@@ -42,7 +42,7 @@ This code is almost entirely based on knee.py, which is a Python
 re-implementation of hierarchical module import.
 """
 
-import __builtin__
+import builtins
 from contextlib import contextmanager
 import imp
 import sys
@@ -50,26 +50,26 @@ import sys
 from types import ModuleType
 from warnings import warn
 
-original_import = __builtin__.__import__
+original_import = builtins.__import__
 
 
 class DeepReload(object):
 
     def __enter__(self):
-        __builtin__.reload = reload
+        builtins.reload = reload
 
     def __exit__(self, etype, evalue, etraceback):
-        __builtin__.reload = original_reload
+        builtins.reload = original_reload
 
 
 @contextmanager
 def replace_import_hook(new_import):
-    saved_import = __builtin__.__import__
-    __builtin__.__import__ = new_import
+    saved_import = builtins.__import__
+    builtins.__import__ = new_import
     try:
         yield
     finally:
-        __builtin__.__import__ = saved_import
+        builtins.__import__ = saved_import
 
 
 def get_parent(globals, level):
@@ -120,7 +120,7 @@ def get_parent(globals, level):
             globals['__package__'] = name = modname[:lastdot]
 
     dot = len(name)
-    for x in xrange(level, 1, -1):
+    for x in range(level, 1, -1):
         try:
             dot = name.rindex('.', 0, dot)
         except ValueError:
@@ -198,7 +198,7 @@ def import_submodule(mod, subname, fullname):
     if fullname in found_now and fullname in sys.modules:
         m = sys.modules[fullname]
     else:
-        print 'Reloading', fullname
+        print('Reloading', fullname)
         found_now[fullname] = 1
         oldm = sys.modules.get(fullname, None)
 
@@ -351,7 +351,7 @@ def deep_reload_hook(m):
 
 # Save the original hooks
 try:
-    original_reload = __builtin__.reload
+    original_reload = builtins.reload
 except AttributeError:
     original_reload = imp.reload    # Python 3
 

@@ -10,8 +10,19 @@ A controller in sardana is a piece of software capable of *translating*
 between the sardana :term:`API` and a specific hardware :term:`API`. Sardana
 expects a controller to obey a specific :term:`API` in order to be able to
 properly configure and operate with it. The hardware :term:`API` used by the
-controller could be anything, from a pure serial line to shared memory or a
-remote server written in Tango_, Taco_ or even EPICS_.
+controller could connect directly to the hardware via specific libraries or
+connect to any standalone server written for example in Tango_, Taco_ or even EPICS_. Since Sardana is written in python talking directly to the hardware is
+not possible if the hardware libraries do not have a python interface. For
+the rest of the cases both solutions are usually valid and is up to the
+developers to evaluate and decide which of botho solutions is the most
+convenient one.
+Having a standalone server could be more convenient for debugging or
+testing purporses or for having access to the hardware without the need
+of running sardana, but it requires more work in the implementation, since
+both standalone server and controller have to be developed. This does not
+apply in case the hardware is already integrated or controlled by another
+system.
+
 
 Controllers can only be written in Python_ (in future also C++ will be
 possible). A controller **must** be a :term:`class` inheriting from one of the
@@ -403,6 +414,33 @@ spock), sardana assignes the default value
 ``springfieldlib.SpringfieldMotorHW.DefaultPort``. On the other hand, since host
 has no default value, if it is not specified by the user, sardana will complain
 and fail to create and instance of SpringfieldMotorController.
+
+.. _sardana-controller-howto-change-default-interface:
+
+Changing default interface
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Elements instantiated from your controller will have a default interface
+corresponding to the controller's type. For example a moveable will have a
+*position* attribute or an experimental channel will have a *value*
+attribute. However this default interface can be changed if necessary.
+
+For example, the default type of a moveable's *position* attribute ``float``
+can be changed to ``long`` if the given axis only allows discrete positions.
+To do that simple override the
+:class:`~sardana.pool.controller.Controller.GetAxisAttributes` where you can
+apply the necessary changes.
+
+Here is an example of how to change motor's *position* attribute to ``long``:
+
+.. code-block:: python
+
+    def GetAxisAttributes(self, axis):
+        axis_attrs = MotorController.GetAxisAttributes(self, axis)
+        axis_attrs = dict(axis_attrs)
+        axis_attrs['Position']['type'] = float
+        return axis_attrs
+
 
 .. _sardana-controller-howto-error-handling:
 

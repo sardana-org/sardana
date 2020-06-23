@@ -14,6 +14,7 @@
     communication <macros/communication>
     demo <macros/demo>
     env <macros/env>
+    expconf <macros/expconf>
     expert <macros/expert>
     hkl <macros/hkl>
     ioregister <macros/ioregister>

@@ -37,7 +37,7 @@ from taurus.qt.qtgui.input import TaurusValueComboBox
 from taurus.qt.qtgui.panel import TaurusValue
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.util.ui import UILoadable
-from poolmotor import LabelWidgetDragsDeviceAndAttribute
+from .poolmotor import LabelWidgetDragsDeviceAndAttribute
 
 import taurus
 
@@ -247,8 +247,8 @@ class PoolIORegisterButtons(TaurusWidget):
 
         # Empty previous buttons
         # self.ui.lo_buttons_write.
-        for button in self.button_value_dict.keys():
-            self.disconnect(button, Qt.SIGNAL('clicked'), self.writeValue)
+        for button in list(self.button_value_dict.keys()):
+            self.button.clicked.disconnect(self.writeValue)
             button.deleteLater()
         self.button_value_dict = {}
 
@@ -260,7 +260,7 @@ class PoolIORegisterButtons(TaurusWidget):
             button = Qt.QPushButton(label)
             self.button_value_dict[button] = value
             self.ui.lo_buttons_write.addWidget(button)
-            self.connect(button, Qt.SIGNAL('clicked()'), self.writeValue)
+            self.button.clicked.connect(self.writeValue)
 
     def writeValue(self):
         if self.ioreg_dev is None:

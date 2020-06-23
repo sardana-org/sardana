@@ -4,6 +4,14 @@
 Taurus Extensions
 =================
 
+.. rubric:: Functions
+
+.. hlist::
+    :columns: 3
+
+    * :func:`registerExtensions`
+    * :func:`unregisterExtensions`
+
 .. rubric:: Classes
 
 .. hlist::
@@ -27,6 +35,9 @@ Taurus Extensions
     * :class:`TriggerGate`
     * :class:`TwoDExpChannel`
     * :class:`ZeroDExpChannel`
+
+.. autofunction:: registerExtensions
+.. autofunction:: unregisterExtensions
 
 BaseElement
 -----------

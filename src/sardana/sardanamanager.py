@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana libray. It defines the base class
 for Sardana manager"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaElementManager", "SardanaIDManager"]
 

@@ -40,7 +40,7 @@ class SardanaEnvironmentTreeWidget(TaurusBaseTreeWidget):
 
     KnownPerspectives = {"Type": {
         "label": "By key",
-        "icon": ":/python-file.png",
+        "icon": ":python-file.png",
         "tooltip": "View elements by key",
         "model": [SardanaEnvironmentModel],
     },
@@ -55,7 +55,7 @@ class SardanaEnvironmentTreeWidget(TaurusBaseTreeWidget):
         ret = TaurusBaseTreeWidget.getQtDesignerPluginInfo()
         ret['module'] = 'taurus.qt.qtgui.extra_sardana'
         ret['group'] = 'Taurus Sardana'
-        ret['icon'] = ":/designer/listview.png"
+        ret['icon'] = "designer:listview.png"
         return ret
 
 
