@@ -1956,9 +1956,7 @@ class scanstats(Macro):
                     'mean': numpy.mean(counter_data),
                     'int': numpy.sum(counter_data),
                     'cen': numpy.sum(counter_data*motor_data)
-                    / numpy.sum(counter_data),
-                    'edge': numpy.sum(counter_data_grad*motor_data)
-                    / numpy.sum(counter_data_grad)}
+                    / numpy.sum(counter_data)}
 
                 col_header.append([channel_name])
                 cols.append([
@@ -1969,13 +1967,12 @@ class scanstats(Macro):
                     stats[channel_name]['mean'],
                     stats[channel_name]['int'],
                     stats[channel_name]['cen'],
-                    stats[channel_name]['edge']
                             ])
             self.info('Statistics for movable: %s' % select_motor)
 
             table = Table(elem_list=cols, elem_fmt=["%*g"],
                           row_head_str=['MIN', 'MAX', 'MIN@', 'MAX@',
-                                        'MEAN', 'INT', 'CEN', 'EDGE'],
+                                        'MEAN', 'INT', 'CEN'],
                           col_head_str=col_header, col_head_sep='-')
             out = table.genOutput()
 
