@@ -1063,11 +1063,12 @@ class plotselect(Macro):
     def run(self, channel):
         try:
             active_meas_grp = self.getEnv('ActiveMntGrp')
-            meas_grp = self.getMeasurementGroup(active_meas_grp)
-            self.output("Active measurement group: {}".format(meas_grp.name))
-        except:
+        except UnknownEnv:
             self.warning('No active measurement group found')
             return
+
+        meas_grp = self.getMeasurementGroup(active_meas_grp)
+        self.output("Active measurement group: {}".format(meas_grp.name))
 
         plot_channels_ok = []
         enabled_channels = meas_grp.getEnabled()
