@@ -1063,7 +1063,7 @@ class _movetostatspos(Macro):
 
     def run(self, channel, caller):
         try:
-            stats = self.getEnv('ScanStats')
+            stats = self.getEnv('ScanStats', door_name=self.getDoorName())
         except UnknownEnv:
             self.warning("No ScanStats available in env")
             return
