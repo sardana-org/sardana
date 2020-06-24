@@ -289,8 +289,6 @@ class ControllerClass(SardanaClass):
             ctrl_attrs[k] = DataInfo.toDataInfo(k, v)
 
         self.axis_attributes = axis_attrs = CaselessDict()
-        for k, v in list(klass.ctrl_extra_attributes.items()):  # old member
-            axis_attrs[k] = DataInfo.toDataInfo(k, v)
         for k, v in list(klass.axis_attributes.items()):
             axis_attrs[k] = DataInfo.toDataInfo(k, v)
 
