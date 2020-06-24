@@ -954,14 +954,6 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         self._latency_time = 0
         self._synchronization = AcqSynch.SoftwareTrigger
 
-    def get_trigger_type(self):
-        msg = "trigger_type is deprecated since SEP6. " +\
-              "Use synchronization instead"
-        self._log.warning(msg)
-        return self._synchronization
-
-    _trigger_type = property(get_trigger_type)
-
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.
         Called to prepare an acquisition of all selected axis.
