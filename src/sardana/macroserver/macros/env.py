@@ -202,28 +202,43 @@ class senv(Macro):
 class genv(Macro):
     """Gets the given environment variable"""
 
-    param_def = [['name', Type.Env, None,
-                  'Environment variable name. Can be one of the following:\n'
-                  ' - <name> - global variable\n'
-                  ' - <full door name>.<name> - variable value for a specific '
-                  'door\n'
-                  ' - <macro name>.<name> - variable value for a specific'
-                  ' macro\n'
-                  ' - <full door name>.<macro name>.<name> - variable value'
-                  ' for a specific macro running on a specific door'],
+    param_def = [
+        ["name", Type.Env, None,
+         "Environment variable name. Can be one of the following:\n"
+         " - <name> - global variable\n"
+         " - <full door name>.<name> - variable value for a specific "
+         "door\n"
+         " - <macro name>.<name> - variable value for a specific"
+         " macro\n"
+         " - <full door name>.<macro name>.<name> - variable value"
+         " for a specific macro running on a specific door"],
                  ]
 
     def run(self, var):
         pars = var.split(".")
+        door_name = None
+        macro_name = None
         if len(pars) == 1:
-            env = self.getAllDoorEnv()
-            line = '%s = %s' % (str(var), env[var])
-        else:
-            env = self.getEnv(key=None, macro_name=pars[0])
-            names_list = list(env.keys())
-            names_list.sort(key=str.lower)
-            line = '%s = %s' % (str(var), str(env[pars[1]]))
-        self.output(line)
+            key = pars[0]
+        elif len(pars) > 1:
+            if pars[0].find("/") != -1:
+                # first string is a Door name
+                door_name = pars[0]
+                if len(pars) == 3:
+                    macro_name = pars[1]
+                    key = pars[2]
+                else:
+                    key = pars[1]
+            else:
+                # first string is a Macro name
+                macro_name = pars[0]
+                key = pars[1]
+
+        env = self.getEnv(key=key,
+                          macro_name=macro_name,
+                          door_name=door_name)
+
+        self.output("{:s} = {:s}".format(str(key), str(env)))
 
 
 class usenv(Macro):
