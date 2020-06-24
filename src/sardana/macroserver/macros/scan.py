@@ -1930,7 +1930,7 @@ class scanstats(Macro):
                 # fallback is first enabled channel in meas_grp
                 calc_channels.append(next(iter(enabled_channels)))
 
-            select_motor = str(parent.motors[0])
+            selected_motor = str(parent.motors[0])
             data = parent.data
             stats = {}
             col_header = []
@@ -1942,45 +1942,46 @@ class scanstats(Macro):
 
                 for idx, rc in data.items():
                     counter_data.append(rc[channel_name])
-                    motor_data.append(rc[select_motor])
+                    motor_data.append(rc[selected_motor])
 
                 counter_data = numpy.array(counter_data)
                 motor_data = numpy.array(motor_data)
 
                 stats[channel_name] = {
-                    'min': numpy.min(counter_data),
-                    'max': numpy.max(counter_data),
-                    'minpos': motor_data[numpy.argmin(counter_data)],
-                    'maxpos': motor_data[numpy.argmax(counter_data)],
-                    'mean': numpy.mean(counter_data),
-                    'int': numpy.sum(counter_data),
-                    'cen': numpy.sum(counter_data*motor_data)
+                    "min": numpy.min(counter_data),
+                    "max": numpy.max(counter_data),
+                    "minpos": motor_data[numpy.argmin(counter_data)],
+                    "maxpos": motor_data[numpy.argmax(counter_data)],
+                    "mean": numpy.mean(counter_data),
+                    "int": numpy.sum(counter_data),
+                    "cen": numpy.sum(counter_data*motor_data)
                     / numpy.sum(counter_data)}
                 # Logic for CEN must be adopted to find center-of-mass and
                 # edges of erf-like data
                 col_header.append([channel_name])
                 cols.append([
-                    stats[channel_name]['min'],
-                    stats[channel_name]['max'],
-                    stats[channel_name]['minpos'],
-                    stats[channel_name]['maxpos'],
-                    stats[channel_name]['mean'],
-                    stats[channel_name]['int'],
-                    stats[channel_name]['cen'],
+                    stats[channel_name]["min"],
+                    stats[channel_name]["max"],
+                    stats[channel_name]["minpos"],
+                    stats[channel_name]["maxpos"],
+                    stats[channel_name]["mean"],
+                    stats[channel_name]["int"],
+                    stats[channel_name]["cen"],
                             ])
-            self.info('Statistics for movable: %s' % select_motor)
+            self.info("Statistics for movable: {:s}".format(selected_motor))
 
             table = Table(elem_list=cols, elem_fmt=["%*g"],
-                          row_head_str=['MIN', 'MAX', 'MIN@', 'MAX@',
-                                        'MEAN', 'INT', 'CEN'],
-                          col_head_str=col_header, col_head_sep='-')
+                          row_head_str=["MIN", "MAX", "MIN@", "MAX@",
+                                        "MEAN", "INT", "CEN"],
+                          col_head_str=col_header, col_head_sep="-")
             out = table.genOutput()
 
             for line in out:
                 self.info(line)
-            self.setEnv('ScanStats', {'Stats': stats,
-                                      'Motor': select_motor,
-                                      'ScanID': self.getEnv('ScanID')})
+            self.setEnv("{:s}.ScanStats".format(self.getDoorName()),
+                        {"Stats": stats,
+                         "Motor": selected_motor,
+                         "ScanID": self.getEnv("ScanID")})
         else:
-            self.warning('for now the scanstats macro can only be executed as'
-                         ' a post-scan hook')
+            self.warning("for now the scanstats macro can only be executed as"
+                         " a post-scan hook")
