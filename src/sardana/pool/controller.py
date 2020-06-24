@@ -331,14 +331,6 @@ class Controller(object):
         :param int axis: axis number"""
         pass
 
-    @property
-    def inst_name(self):
-        """**Controller API**. The controller instance name.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.GetName` instead"""
-        return self._inst_name
-
     def GetName(self):
         """**Controller API**. The controller instance name.
 
