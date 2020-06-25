@@ -1485,21 +1485,6 @@ class PseudoCounterController(Controller):
            :rtype: float
 
            .. versionadded:: 1.0"""
-        return self.calc(axis, values)
-
-    def calc(self, axis, values):
-        """**Pseudo Counter Controller API**. Override is **MANDATORY**.
-           Calculate pseudo counter value given the counter values.
-
-           :param int axis: the pseudo counter role axis
-           :param sequence<float> values: a sequence containing current values
-                                          of underlying elements
-           :return: a pseudo counter value corresponding to the given axis
-                    pseudo counter role
-           :rtype: float
-
-           .. deprecated:: 1.0
-               implement :meth:`~PseudoCounterController.Calc` instead"""
         raise NotImplementedError("Calc must be defined in the controller")
 
     def CalcAll(self, values):
