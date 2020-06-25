@@ -320,9 +320,6 @@ class ControllerClass(SardanaClass):
             self.dict_extra['counter_roles'] = self.counter_roles
             self.dict_extra['pseudo_counter_roles'] = self.pseudo_counter_roles
 
-        if ElementType.IORegister in types:
-            self.dict_extra['predefined_values'] = klass.predefined_values
-
         init_args = inspect.getargspec(klass.__init__)
         if init_args.varargs is None or init_args.keywords is None:
             self.api_version = 0
