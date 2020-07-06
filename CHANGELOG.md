@@ -113,6 +113,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 
+* Avoid extra state readout at the end of acquisition (#1354)
 * Renamed _synchronization_ to _synch description_
   * Tango MeasurementGroup `Synchronization` attribute to `SynchDescription`
   * Core MeasurementGroup `synchronization` property to `synch_description`
