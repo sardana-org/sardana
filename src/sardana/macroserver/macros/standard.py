@@ -718,7 +718,8 @@ class ct(Macro, Hookable, _ct):
                 names = self.countable_elem.ElementList
                 elements = [self.getObj(name) for name in names]
                 self.dump_information(elements)
-                raise ValueError("Acquisition ended with {}".format(state))
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
 
         for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
@@ -816,7 +817,8 @@ class uct(Macro, _ct):
                 names = self.countable_elem.ElementList
                 elements = [self.getObj(name) for name in names]
                 self.dump_information(elements)
-                raise ValueError("Acquisition ended with {}".format(state))
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
         self.setData(Record(data))
         self.printAllValues()
 

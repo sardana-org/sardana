@@ -356,7 +356,8 @@ class PoolAction(Logger):
                 raise
             finally:
                 self._started = False
-            get_thread_pool().add(self._asynch_action_loop, None, context)
+            cb = kwargs.pop("cb", None)
+            get_thread_pool().add(self._asynch_action_loop, cb, context)
 
     def start_action(self, *args, **kwargs):
         """Start procedure for this action. Default implementation raises
