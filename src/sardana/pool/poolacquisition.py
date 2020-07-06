@@ -1101,7 +1101,6 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
             i += 1
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
@@ -1210,7 +1209,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
                 self.debug("Details", exc_info=1)
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
@@ -1318,7 +1316,6 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
             i += 1
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
