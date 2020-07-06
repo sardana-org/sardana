@@ -23,6 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
+* Quality to `SardanaAttribute` (#1353)
 * Instruments creation and configuration in sar_demo (#1198)
 * Allow _experimental channel acquisition_ with PoolChannelTaurusValue (PCTV) widget (#1203)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
@@ -39,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Change limit switches indicators from buttons to labels (#210, #1290)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
+* Stress tests (on the Taurus level) for measurements (#1353)
 * Add basic information to "how to write custom recorder" to
   the documentation (#1275)
 * Register a TaurusValue factory for pool widgets (#1333)
@@ -53,6 +55,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid deadlock in Sardana-Taurus models e.g. `MeasurementGroup.count()` or
   `Motor.move()` (#1348)
   * Remove redundant protection in PoolElement.start() and waitFinish()
+* Fast repetitions of single acqusition measurements (counts) on MeasurementGroup (#1353)
+* Pre-mature returning to ON state of MeasurementGroup at the end of measurement (#1353) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
@@ -97,6 +101,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1320, #1319
 * Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
   position(s) (#1326)
+* `test_stop_meas_cont_acquisition_3` spurious failures (#1188, #1353) 
 * Build docs with Sphinx 3 (#1330) 
 
 ### Deprecated
