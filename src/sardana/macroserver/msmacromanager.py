@@ -115,7 +115,7 @@ def is_macro(macro, abs_file=None, logger=None):
         if not hasattr(macro, 'macro_data'):
             return False
 
-        args, varargs, keywords, _ = inspect.getargspec(macro)
+        args, varargs, keywords, *_ = inspect.getfullargspec(macro)
         if len(args) == 0:
             if logger:
                 logger.debug("Could not add macro %s: Needs at least one "
