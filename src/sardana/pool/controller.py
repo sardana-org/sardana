@@ -925,7 +925,7 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
 
         - timer
         - monitor
-        - trigger_type"""
+    """
 
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
@@ -953,14 +953,6 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         self._master = None
         self._latency_time = 0
         self._synchronization = AcqSynch.SoftwareTrigger
-
-    def get_trigger_type(self):
-        msg = "trigger_type is deprecated since SEP6. " +\
-              "Use synchronization instead"
-        self._log.warning(msg)
-        return self._synchronization
-
-    _trigger_type = property(get_trigger_type)
 
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.

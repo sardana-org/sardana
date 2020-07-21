@@ -713,21 +713,10 @@ class MeasurementConfiguration(object):
                         conf_synch_ctrl.add_channel(conf_synch)
 
                     ctrl_conf['synchronizer'] = conf_synch
-
                 try:
                     synchronization = ctrl_data['synchronization']
                 except KeyError:
-                    # backwards compatibility for configurations before SEP6
-                    try:
-                        synchronization = ctrl_data['trigger_type']
-                        msg = ("trigger_type configuration parameter "
-                               "is deprecated"
-                               " in favor of synchronization. Re-apply "
-                               "configuration in order to upgrade.")
-                        self._parent.warning(msg)
-                    except KeyError:
-                        synchronization = AcqSynchType.Trigger
-
+                    synchronization = AcqSynchType.Trigger
                 ctrl_conf['synchronization'] = synchronization
                 user_config_ctrl['synchronization'] = synchronization
 
