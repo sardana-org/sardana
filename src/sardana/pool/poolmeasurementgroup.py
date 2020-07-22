@@ -1342,16 +1342,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         ..todo:: remove value and multiple arguments.
         """
         if self._pending_starts == 0:
-            msg = "starting acquisition without prior preparing is " \
-                  "deprecated since version Jan18."
-            self.warning(msg)
-            self.debug("Preparing with number_of_starts equal to 1")
-            nb_starts = self.nb_starts
-            self.set_nb_starts(1, propagate=0)
-            try:
-                self.prepare(multiple)
-            finally:
-                self.set_nb_starts(nb_starts, propagate=0)
+            msg = "prepare is mandatory before starting acquisition"
+            raise RuntimeError(msg)
         self._aborted = False
         self._pending_starts -= 1
         if not self._simulation_mode:
