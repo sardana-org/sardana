@@ -220,6 +220,8 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.prepare_meas(params)
         chn_names = self._add_attribute_listener(config)
         # Do acquisition
+        self.meas.write_attribute("NbStarts", 1)
+        self.meas.Prepare()
         self.meas.Start()
         while self.meas.State() == PyTango.DevState.MOVING:
             print("Acquiring...")
@@ -250,6 +252,8 @@ class MeasSarTestTestCase(SarTestTestCase):
                                         self.push_event)
         try:
             # starting timer (0.2 s) which will stop the measurement group
+            self.meas.write_attribute("NbStarts", 1)
+            self.meas.Prepare()
             self.meas.Start()
             threading.Timer(0.2, self.stopMeas).start()
             self.assertTrue(self.meas_finished.wait(5), "mg has not stopped")
