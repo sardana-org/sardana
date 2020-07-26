@@ -670,12 +670,6 @@ class Controller(PoolElement):
             axes.append(elem.getAxis())
         return sorted(axes)
 
-    def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
-               "Use getUsedAxes instead.")
-        self.warning(msg)
-        self.getUsedAxes()
-
     def getLastUsedAxis(self):
         """Return the last used axis (the highest axis) in this controller
 
