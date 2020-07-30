@@ -550,7 +550,11 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
 
         if items is None:
             items = {}
-        for new_position, element in zip(physical_positions.value, user_elements):
+
+         positions = physical_positions.value
+         if not hasattr(positions , "__iter__"):
+             positions = [positions]
+         for new_position, element in zip(positions, user_elements):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
