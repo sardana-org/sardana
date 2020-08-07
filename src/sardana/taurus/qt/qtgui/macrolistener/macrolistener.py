@@ -56,7 +56,10 @@ from taurus.core.util.containers import ArrayBuffer, LoopList
 from sardana.taurus.core.tango.sardana import PlotType
 
 
-__all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
+__all__ = [
+    'MultiPlotWidget',  'MacroBroker', 'PlotManager', 'DynamicPlotManager',
+    'assertPlotAvailability'
+]
 
 __docformat__ = 'restructuredtext'
 
@@ -91,6 +94,7 @@ class MultiPlotWidget(Qt.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = Qt.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.win = pyqtgraph.GraphicsLayoutWidget()
         layout.addWidget(self.win)
         self._plots = {}

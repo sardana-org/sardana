@@ -23,16 +23,43 @@
 ##
 ##############################################################################
 
-"""This module contains a taurus ShowScanOnline widget."""
+"""
+This module contains a taurus ShowScanWidget, ShowScanWindow and ShowScanOnline
+widgets.
+"""
 
-__all__ = ["ShowScanOnline"]
+__all__ = ["ScanPlotWidget", "ScanPlotWindow", "ShowScanOnline"]
 
 import click
 
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.taurusgui import TaurusGui
-from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
-                                                   assertPlotAvailability)
+from sardana.taurus.qt.qtgui.macrolistener import (
+    MultiPlotWidget, PlotManager, DynamicPlotManager, assertPlotAvailability
+)
+
+
+class ScanPlotWidget(MultiPlotWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.manager = PlotManager(self)
+        self.setModel = self.manager.setModel
+        self.setGroupMode = self.manager.setGroupMode
+
+
+class ScanPlotWindow(Qt.QMainWindow):
+
+    def __init__(self, parent=None):
+        super().__init__()
+        plot_widget = ScanPlotWidget(parent=self)
+        self.setCentralWidget(plot_widget)
+        self.plotWidget = self.centralWidget
+        self.setModel = plot_widget.setModel
+        self.setGroupMode = plot_widget.setGroupMode
+        sbar = self.statusBar()
+        sbar.showMessage("Ready!")
+        plot_widget.manager.newShortMessage.connect(sbar.showMessage)
 
 
 class ShowScanOnline(DynamicPlotManager):
@@ -108,12 +135,10 @@ def main(group, taurus_log_level, door):
 
     assertPlotAvailability()
 
-    gui = TaurusGuiLite()
-
-    widget = ShowScanOnline(gui)
-    widget.setModel(door)
+    widget = ScanPlotWindow()
     widget.setGroupMode(group)
-    gui.show()
+    widget.setModel(door)
+    widget.show()
     return app.exec_()
 
 
