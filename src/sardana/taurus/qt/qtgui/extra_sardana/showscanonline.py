@@ -29,6 +29,7 @@ __all__ = ["ShowScanOnline"]
 
 import click
 
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.taurusgui import TaurusGui
 from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
                                                    assertPlotAvailability)
@@ -37,7 +38,8 @@ from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
 class ShowScanOnline(DynamicPlotManager):
 
     def __init__(self, parent):
-        DynamicPlotManager.__init__(self, parent)
+        DynamicPlotManager.__init__(self, parent=parent)
+        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def onExpConfChanged(self, expconf):
         DynamicPlotManager.onExpConfChanged(self, expconf)
