@@ -4,149 +4,174 @@
 Device Pool Tango_ :term:`API`
 ==========================================
 
-.. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
-
-.. todo:: Update this chapter and distribute its contents logically around the documentation.
-
-Introduction
-============
-
-This paper describes what could be the implementation of the Sardana
-device pool. This work is based on Jorg's paper called "Reordered
-SPEC_". It is **not at all** a final version of this device pool. It is rather
-a first approach to define this pool more precisely and to help defining its
-features and the way it could be implemented. 
+.. code-block:: rst
+  :caption: Not relevant, to be removed
 
 
-Overall pool design
-===================
+  .. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
 
-The pool could be seen as a kind of intelligent Tango_ device container
-to control the experiment hardware. In a first approach, it requires
-that the hardware to be controlled is connected to the control
-computer or to external crate(s) connected to the control computer
-using bus coupler. It has two basic features which are: 
+  .. todo:: Update this chapter and distribute its contents logically around the documentation.
 
-1. Hardware access using dynamically created/deleted Tango_ devices
-   according to the experiment needs
+  Introduction
+  ============
 
-2. Management of some very common and well defined action regularly done
-   on a beam line (scanning, motor position archiving....)
+  This paper describes what could be the implementation of the Sardana
+  device pool. This work is based on Jorg's paper called "Reordered
+  SPEC_". It is **not at all** a final version of this device pool. It is rather
+  a first approach to define this pool more precisely and to help defining its
+  features and the way it could be implemented. 
 
-To achieve these two goals and to provide the user with a way to
-control its behavior, it is implemented as a Tango_ class with commands
-and attributes like any other Tango_ class. 
+.. --- end of code block ---
 
+.. code-block:: rst
+  :caption: All this is already included in Pool overview.
 
-Hardware access
----------------
+  Overall pool design
+  ===================
 
+  The pool could be seen as a kind of intelligent Tango_ device container
+  to control the experiment hardware. In a first approach, it requires
+  that the hardware to be controlled is connected to the control
+  computer or to external crate(s) connected to the control computer
+  using bus coupler. It has two basic features which are: 
 
-Core hardware access
-^^^^^^^^^^^^^^^^^^^^
+  1. Hardware access using dynamically created/deleted Tango_ devices
+     according to the experiment needs
 
-Most of the times, it is possible to define a list of very common
-devices found in most of the experiments, a list of communication link
-used between the experiment hardware and the control computer(s) and
-some of the most commonly used protocol used on these communication
-links. Devices commonly used to drive an experiment are: 
+  2. Management of some very common and well defined action regularly done
+     on a beam line (scanning, motor position archiving....)
 
-- Motor
-
-- Group of motor
-
-- Pseudo motor
-
-- Counter/Timer
-
-- Multi Channel Analyzer
-
-- CCD cameras
-
-- And some other that I don't know
-
-Communication link used to drive experiment devices are: 
-
-- Serial line
-
-- GPIB
-
-- Socket
-
-- And some other that I don't know (USB????)
-
-Protocol used on the communication links are: 
-
-- Modbus
-
-- Ans some other that I don't know
-
-Each of the controlled hardware (one motor, one pseudo-motor, one
-serial line device,...) will be driven by independent Tango_ classes.
-The pool device server will embed all these Tango_ classes together
-(statically linked). The pool Tango_ device is the "container
-interface" and allows the user to create/delete classical Tango_
-devices which are instances of these embedded classes. This is
-summarized in the following drawing.
-
-.. image:: /_static/hard.png
-
-Therefore, the three main actions to control a new equipment using the
-pool will be (assuming the equipment is connected to the control
-computer via a serial line): 
-
-1. Create the serial line Tango_ device with one of the Pool device
-   command assigning it a name like "MyNewEquipment".
-
-2. Connect to this newly created Tango_ device using its assigned name
-
-3. Send order or write/read data to/from the new equipment using for
-   instance the WriteRead command of the serial line Tango_ device
-
-When the experiment does not need this new equipment any more, the
-user can delete the serial line Tango_ device with another pool device
-command. Note that most of the time, creating Tango_ device means
-defining some device configuration parameters (Property in Tango_
-language). The Tango_ wizard will be used to retrieve which properties
-have to be defined and will allow the user to set them on the fly.
-This means that all the Tango_ classes embedded within the Pool must
-have their wizard initialized. 
+  To achieve these two goals and to provide the user with a way to
+  control its behavior, it is implemented as a Tango_ class with commands
+  and attributes like any other Tango_ class. 
 
 
-Extending pool features
-^^^^^^^^^^^^^^^^^^^^^^^
+  Hardware access
+  ---------------
 
-From time to time, it could be useful to extend the list of Tango_
-classes known by the device pool in case a new kind of equipment (not
-using the core hardware access) is added to the experiment. Starting
-with Tango_ 5.5 (and the associated Pogo), each Tango_ class has a
-method which allow the class to be dynamically loaded into a running
-process. This feature will be used to extend the pool feature. It has
-to be checked that it is possible for Tango_ Python class.
 
-.. image:: /_static/dyn.png
+  Core hardware access
+  ^^^^^^^^^^^^^^^^^^^^
 
-To achieve this feature, the pool Tango_ device will have commands to 
+  .. note::
+    Some serial line and static linking references could be removed, but otherwise
+    this looks fine to me.
 
-- Load a Tango_ class. This command will dynamically add two other
-  commands and one attribute to the pool device Tango_ interface. These
-  commands and the attribute are:
+  Most of the times, it is possible to define a list of very common
+  devices found in most of the experiments, a list of communication link
+  used between the experiment hardware and the control computer(s) and
+  some of the most commonly used protocol used on these communication
+  links. Devices commonly used to drive an experiment are: 
 
-    - Command: Create a device of the newly loaded class
-    
-    - Command: Delete a device of the newly loaded class
-    
-    - Attribute: Get the list of Tango_ devices instances of the newly
-      created class
-    
-    
-- Unload a Tango_ class
+  - Motor
 
-- Reload a Tango_ class
+  - Group of motor
+
+  - Pseudo motor
+
+  - Counter/Timer
+
+  - Multi Channel Analyzer
+
+  - CCD cameras
+
+  - And some other that I don't know
+
+  Communication link used to drive experiment devices are: 
+
+  - Serial line
+
+  - GPIB
+
+  - Socket
+
+  - And some other that I don't know (USB????)
+
+  Protocol used on the communication links are: 
+
+  - Modbus
+
+  - Ans some other that I don't know
+
+  Each of the controlled hardware (one motor, one pseudo-motor, one
+  serial line device,...) will be driven by independent Tango_ classes.
+  The pool device server will embed all these Tango_ classes together
+  (statically linked). The pool Tango_ device is the "container
+  interface" and allows the user to create/delete classical Tango_
+  devices which are instances of these embedded classes. This is
+  summarized in the following drawing.
+
+.. --- end of code block ---
+
+.. code-block:: rst
+  :caption: Somewhat moved to Pool overview, not sure if more of this is relevant
+
+  .. image:: /_static/hard.png
+
+  Therefore, the three main actions to control a new equipment using the
+  pool will be (assuming the equipment is connected to the control
+  computer via a serial line): 
+
+  1. Create the serial line Tango_ device with one of the Pool device
+     command assigning it a name like "MyNewEquipment".
+
+  2. Connect to this newly created Tango_ device using its assigned name
+
+  3. Send order or write/read data to/from the new equipment using for
+     instance the WriteRead command of the serial line Tango_ device
+
+  When the experiment does not need this new equipment any more, the
+  user can delete the serial line Tango_ device with another pool device
+  command. Note that most of the time, creating Tango_ device means
+  defining some device configuration parameters (Property in Tango_
+  language). The Tango_ wizard will be used to retrieve which properties
+  have to be defined and will allow the user to set them on the fly.
+  This means that all the Tango_ classes embedded within the Pool must
+  have their wizard initialized. 
+
+
+  Extending pool features
+  ^^^^^^^^^^^^^^^^^^^^^^^
+
+  .. note::
+    This is more than likely outdated. Probably should be removed.
+
+  From time to time, it could be useful to extend the list of Tango_
+  classes known by the device pool in case a new kind of equipment (not
+  using the core hardware access) is added to the experiment. Starting
+  with Tango_ 5.5 (and the associated Pogo), each Tango_ class has a
+  method which allow the class to be dynamically loaded into a running
+  process. This feature will be used to extend the pool feature. It has
+  to be checked that it is possible for Tango_ Python class.
+
+  .. image:: /_static/dyn.png
+
+  To achieve this feature, the pool Tango_ device will have commands to 
+
+  - Load a Tango_ class. This command will dynamically add two other
+    commands and one attribute to the pool device Tango_ interface. These
+    commands and the attribute are:
+
+      - Command: Create a device of the newly loaded class
+      
+      - Command: Delete a device of the newly loaded class
+      
+      - Attribute: Get the list of Tango_ devices instances of the newly
+        created class
+      
+      
+  - Unload a Tango_ class
+
+  - Reload a Tango_ class
+
+.. --- end of code block ---
 
 
 Global actions
 --------------
+
+.. note::
+  Most of these are now done by MacroServer?
 
 The following common actions regularly done on a beam line experiment
 will be done by the pool device server: 
@@ -169,39 +194,50 @@ Sardana core hardware access
 The Sardana Motor management
 ----------------------------
 
+.. code-block:: rst
+  :caption: not relevant and image that is currently in the docs is better
 
-The user motor interface
-^^^^^^^^^^^^^^^^^^^^^^^^
+  The user motor interface
+  ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The motor interface is a first approach of what could be a complete
-motor interface. It is statically linked with the Pool device server
-and supports several attributes and commands. It is implemented in C++
-and used a set of the so-called "controller" methods. The motor
-interface is always the same whatever the hardware is. This is the
-rule of the "controller" to access the hardware using the
-communication link supported by the motor controller hardware (network
-link, serial line...).
+  .. note::
+    Here the API looks similar to the current implementation. This needs to be
+    checked, and C++ code needs to be removed.
 
-.. image:: /_static/motor.png
+  The motor interface is a first approach of what could be a complete
+  motor interface. It is statically linked with the Pool device server
+  and supports several attributes and commands. It is implemented in C++
+  and used a set of the so-called "controller" methods. The motor
+  interface is always the same whatever the hardware is. This is the
+  rule of the "controller" to access the hardware using the
+  communication link supported by the motor controller hardware (network
+  link, serial line...).
 
-The controller code has a well-defined interface and can be written
-using Python or C++. In both cases, it will be dynamically loaded into
-the pool device server process. 
+  .. image:: /_static/motor.png
 
+  The controller code has a well-defined interface and can be written
+  using Python or C++. In both cases, it will be dynamically loaded into
+  the pool device server process. 
 
-The states
-""""""""""
+.. --- end of code block ---
 
-The motor interface knows five states which are ON, MOVING, ALARM,
-FAULT and UNKNOWN. A motor device is in MOVING state when it is
-moving! It is in ALARM state when it has reached one of the limit
-switches and is in FAULT if its controller software is not available
-(impossible to load it) or if a fault is reported from the hardware
-controller. The motor is in the UNKNOWN state if an exception occurs
-during the communication between the pool and the hardware controller.
-When the motor is in ALARM state, its status will indicate which limit
-switches is active. 
+.. code-block:: rst
+  :caption: incorporated into Motor overview
 
+  The states
+  """"""""""
+
+  The motor interface knows five states which are ON, MOVING, ALARM,
+  FAULT and UNKNOWN. A motor device is in MOVING state when it is
+  moving! It is in ALARM state when it has reached one of the limit
+  switches and is in FAULT if its controller software is not available
+  (impossible to load it) or if a fault is reported from the hardware
+  controller. The motor is in the UNKNOWN state if an exception occurs
+  during the communication between the pool and the hardware controller.
+  When the motor is in ALARM state, its status will indicate which limit
+  switches is active. 
+
+.. --- end of code block ---
 
 The commands
 """"""""""""
@@ -377,6 +413,9 @@ characteristics of these extra attributes are :
 The motor properties
 """"""""""""""""""""
 
+.. note::
+  Outdated?
+
 Each motor device has a set of properties. Five of these properties
 are automatically managed by the pool software and must not be changed
 by the user. These properties are named Motor_id, _Acceleration,
@@ -412,6 +451,9 @@ have subscribed to change event on the Limit_Switches attribute.
 Reading the motor position attribute
 """"""""""""""""""""""""""""""""""""
 
+.. note::
+  Outdated?
+
 For each motor, the key attribute is its position. Special care has
 been taken on this attribute management. When the motor is not moving,
 reading the Position attribute will generate calls to the controller
@@ -435,6 +477,9 @@ with this value is sent to clients using events.
 
 The Motor Controller
 ^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+  The C++ part needs to be removed.
 
 XXX: Unknown inset LatexCommand \label{sub:The-Motor-Controller}:
 
@@ -487,6 +532,9 @@ properties. This is detailed in a dedicated sub-chapter.
 Specifying the motor controller features
 """"""""""""""""""""""""""""""""""""""""
 
+.. note::
+  Never seen that in the wild. Probably outdated.
+
 A controller feature is something that motor hardware controller is
 able to do or require on top of what has been qualified as the basic
 rules. Even if these features are common, not all the controllers
@@ -532,6 +580,9 @@ code.
 
 Specifying the motor controller extra attributes
 """"""""""""""""""""""""""""""""""""""""""""""""
+
+.. note::
+  C++ part needs to be removed. Otherwise looks good.
 
 XXX: Unknown inset LatexCommand \label{par:Specifying-the-motor}:
 
@@ -865,6 +916,10 @@ default one is not valid for his usage. This is the rule of the
 graphical panel to store the new value into the Tango_ database. The
 supported data type for controller property are:
 
+.. note::
+  The table and text below needs some further attention. For sure the C++ part
+  is out of date, but I think some names could have also changed.
+
 ==================  ====================================
 Property data type  String to use in property definition
 ==================  ====================================
@@ -934,6 +989,9 @@ elements as the property has.
 The MaxDevice property
 """"""""""""""""""""""
 
+.. note::
+  Guess what, C++ part and example :)
+
 Each controller has to have a property defining the maximum number of
 device it supports. This is a mandatory requirement. Therefore, in
 Python this property is simply defined by setting the value of a
@@ -956,6 +1014,9 @@ MaxDevice property in C++ for a controller class called
 
 C++ controller
 """"""""""""""
+
+.. note::
+  Outdated. I think this entire section can be removed.
 
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **MotorController** which inherits from Controller. Finally, the user has to write its
@@ -1233,6 +1294,9 @@ controller C++ code defining all these elements.
 Python controller
 """""""""""""""""
 
+.. note::
+  This looks more or less OK.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -1274,6 +1338,9 @@ that this class is a motor controller.
 
 Python controller examples
 """"""""""""""""""""""""""
+
+.. note::
+  The examples should be updated, but are mostly OK.
 
 
 XXX: Unknown layout Subparagraph: A minimum controller code
@@ -1572,6 +1639,9 @@ Line 153-157: The SendToCtrl method
 Defining available controller features
 """"""""""""""""""""""""""""""""""""""
 
+.. note::
+  Not relevant anymore?
+
 Four data types and two read_write modes are available for the
 attribute associated with controller features. The possible data type
 are: 
@@ -1604,6 +1674,9 @@ features are defined as an array of these structures in a file called **MotorFea
 
 Controller access when creating a motor
 """""""""""""""""""""""""""""""""""""""
+
+.. note::
+  Is there still something like SaveConfig?
 
 When you create a motor (a new one or at Pool startup time), the calls
 executed on the controller depend if a command "SaveConfig" has
@@ -1645,6 +1718,10 @@ and the following controller methods will be called:
 
 The pool motor group interface
 ------------------------------
+
+.. note::
+  Outdated. I think that apart of C++, this interface doesn't work like this
+  anymore. Probably the whole motor group part could be removed.
 
 The motor group interface allows the user to move several motor(s) at
 the same time. It supports several attributes and commands. It is
@@ -1795,6 +1872,10 @@ is called the ghost group.
 
 The pool pseudo motor interface
 -------------------------------
+
+.. note::
+  Some information is outdated, but the core principle is probably still the
+  same.
 
 The pseudo motor interface acts like an abstraction layer for a motor
 or a set of motors allowing the user to control the experiment by
@@ -2102,6 +2183,9 @@ a new position is written to the gap pseudo motor:
 
 The Counter/Timer interface
 ---------------------------
+
+.. note::
+  C++ and stuff, but otherwise looks pretty good.
 
 
 The Counter/Timer user interface
@@ -2449,6 +2533,9 @@ XXX: Unknown inset LatexCommand \ref{par:Controller-properties}:
 C++ controller
 """"""""""""""
 
+.. note::
+  Not relevant anymore, can be removed.
+
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **CoTiController** which inherits from Controller. Finally, the user has to write its
 controller class which inherits from CoTiController. The Controller
@@ -2529,6 +2616,9 @@ XXX: Unknown inset LatexCommand \ref{par:The-user-controller}:
 Python controller
 """""""""""""""""
 
+.. note::
+  Compare with other docs for C/T controller.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -2571,6 +2661,9 @@ software to realize that this class is a Counter Timer Channel controller.
 The Unix Timer
 --------------
 
+.. note::
+  Doesn't exist anymore?
+
 A timer using the Unix getitimer() and setitimer() system calls is
 provided. It is a Counter/Timer C++ controller following the
 definition of the previous chapter. Therefore, the device created
@@ -2584,6 +2677,9 @@ have only one device (MaxDevice = 1)
 
 The ZeroDExpChannel interface
 -----------------------------
+
+.. note::
+  Update to remove C++ references, the interface looks more or less OK.
 
 The ZeroDExpChannel is used to access any kind of device which returns
 a scalar value and which are not counter or timer. Very often (but not
@@ -2656,6 +2752,9 @@ Stop          void             void
 
 The attributes
 """"""""""""""
+
+.. note::
+  C++ etc., Cumulation is now called Accumulation probably.
 
 The ZeroDExpChannel interface supports several attributes which are
 summarized in the following table:
@@ -2732,6 +2831,9 @@ SimulationMode         Tango::DevBoolean  Scalar       R         No         Ope
 
 The properties
 """"""""""""""
+
+.. note::
+  Outdated?
 
 Each ZeroDExpChannel device has a set of properties. One of these
 properties is automatically managed by the pool software and must not
@@ -2945,6 +3047,9 @@ XXX: Unknown inset LatexCommand \ref{par:Controller-properties}:
 C++ controller
 """"""""""""""
 
+.. note::
+  Can be removed.
+
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **ZeroDController** which inherits from Controller. Finally, the user has to write its
 controller class which inherits from ZeroDController. The Controller
@@ -2998,6 +3103,9 @@ XXX: Unknown inset LatexCommand \ref{par:The-user-controller}:
 Python controller
 """""""""""""""""
 
+.. note::
+  Compare with the ZeroD docs.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -3047,6 +3155,9 @@ To be filled in
 The Measurement Group interface
 -------------------------------
 
+.. note::
+  Remove C++ and compare with MeasurementGroup docs.
+
 The measurement group interface allows the user to access several data
 acquisition channels at the same time. It is implemented as a C++
 Tango_ device that is statically linked with the Pool device server. It
@@ -3074,6 +3185,9 @@ channels.
 
 The States
 ^^^^^^^^^^
+
+.. note::
+  STANDBY is not used anymore?
 
 The measurement group interface knows five states which are ON,
 MOVING, ALARM, FAULT. A group is in MOVING state when it is acquiring
@@ -3137,6 +3251,9 @@ RemoveExpChannel  String           void
 
 XXX: Unknown inset LatexCommand \label{Measurement Group: The attributes}:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+  This probably doesn't work like this anymore.
 
 The attributes
 
@@ -3245,6 +3362,9 @@ start acquiring data and when they stop.
 Reading the measurement group channel values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Outdated?
+
 For each measurement group there is a set of key dynamic attributes
 representing the value of each channel in the group. They are named
 <channel_name _{\text{i}} >_Value. Special care has been taken on the management of these
@@ -3350,6 +3470,9 @@ configuration at startup to the minimum.
 The ghost measurement group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Not relevant anymore?
+
 In order to allow pool client software to be entirely event based,
 some kind of polling has to be done on each channel to inform them on
 state change which are not related to data acquisition. To achieve
@@ -3444,6 +3567,9 @@ be available only for the Position attribute of the Motor class.
 User constraint implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Never seen that. Is this still a thing?
+
 When the user creates a constraint, he has to provide to the pool the
 following information: 
 
@@ -3534,6 +3660,9 @@ Line 21-30: The Evaluate method
 Archiving motor position
 ------------------------
 
+.. note::
+  Outdated?
+
 XXX: Unknown inset LatexCommand \label{sub:Archiving-motor-position}:
 
 It is not possible to archive motor position using the Tango_ memorized
@@ -3584,6 +3713,10 @@ To be filled in
 
 The pool device Tango_ interface
 =================================
+
+.. note::
+  It's not C++ anymore, and the list of commands, attributes, etc. should be
+  reviewed and updated. These changed at some point for sure.
 
 The pool is implemented as a C++ Tango_ device server and therefore
 supports a set of commands/attributes. It has several attributes to
@@ -4273,6 +4406,11 @@ ZeroDNbReadPerEvent           Long                5
 Creating device
 ===============
 
+.. note::
+  All of this is now handled by def<...> macros in MacroServer. Should we remove
+  this part or document the creation of elements using Pool's Tango commands
+  instead?
+
 This chapter gives details on what has to be done to create device
 using the device pool in order to check the work to be done by a
 Sardana configuration tool. 
@@ -4399,6 +4537,10 @@ create a new user constraint:
 
 Some words on internal implementation
 =====================================
+
+.. note::
+  I have a feeling, that the algorithm descriptions here are only partially
+  true. This needs to be checked.
 
 This chapter gives some details on some part of the pool
 implementation in order to clarify reader ideas 

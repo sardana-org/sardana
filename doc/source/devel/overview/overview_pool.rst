@@ -51,6 +51,11 @@ together. The pool Tango_ device is the "container interface" and allows the
 user to create/delete classical Tango_ devices which are instances of these
 embedded classes.
 
+The hardware access itself is realized using dynamically loaded plugins. The
+plugin contains the code for the Sardana
+:ref:`controller <sardana-controller-howto>` that talks with the hardware, and
+exposes standard Sardana controller interface for the Pool.
+
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
