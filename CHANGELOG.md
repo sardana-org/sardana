@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
-* Introduces backwards compatibility for macrobutton with repeat parameters (#1272)
+* MacroButton with repeat parameters (#1172, #1314)
 
 ## [2.8.5] 2020-04-27
 
