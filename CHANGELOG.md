@@ -83,7 +83,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   server started afterwards (#599, #1278)
 * `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
 * `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
-* MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
@@ -141,6 +140,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `sardana.requirements` (#1185)
 * `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
 
+## [2.8.6] 2020-08-10
+
+### Fixed
+
+* MacroButton with repeat parameters (#1172, #1314)
 
 ## [2.8.5] 2020-04-27
 
@@ -879,7 +883,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.6...HEAD
+[2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
