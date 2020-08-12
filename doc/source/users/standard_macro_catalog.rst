@@ -88,6 +88,7 @@ environment related macros
     :columns: 5
     
     * :class:`~sardana.macroserver.macros.env.lsenv`
+    * :class:`~sardana.macroserver.macros.env.genv`
     * :class:`~sardana.macroserver.macros.env.senv`
     * :class:`~sardana.macroserver.macros.env.usenv`
     * :class:`~sardana.macroserver.macros.env.dumpenv`
