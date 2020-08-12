@@ -62,8 +62,7 @@ class _PoolUtil(object):
             dev = ctrl_devs.get(device_name)
             if dev is None:
                 import PyTango
-                ctrl_devs[device_name] = dev = \
-                    PyTango.DeviceProxy(device_name)
+                ctrl_devs[device_name] = dev = PyTango.DeviceProxy(device_name)
         return dev
 
     get_motor = get_phy_motor = get_pseudo_motor = get_motor_group = \
