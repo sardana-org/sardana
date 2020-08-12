@@ -935,7 +935,7 @@ measurement group, etc.
 
 There exists different :term:`API` to access to Tango_ devices.
 
-First, to access to Sardana elements it is recommended to use the Sardana
+First, to access Sardana elements it is recommended to use the Sardana
 :term:`API`: e.g.: `~sardana.macroserver.macro.Macro.getMoveable` to obtain
 any moveable (motor or pseudo motor),
 `~sardana.macroserver.macro.Macro.getMeasurementGroup` to obtain a measurement
