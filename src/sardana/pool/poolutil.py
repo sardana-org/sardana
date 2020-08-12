@@ -43,7 +43,7 @@ class _PoolUtil(object):
         return self
 
     def get_device(self, *args, **kwargs):
-        """Factory method to create a single instance the `tango.DeviceProxy`
+        """Factory method to create a single tango.DeviceProxy` instance
         per controller instance.
 
         :param ctrl_name: Controller name to which assign the proxy object
