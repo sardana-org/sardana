@@ -29,7 +29,7 @@ __all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv", "genv",
 
 __docformat__ = 'restructuredtext'
 
-import taurus
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 from taurus.console.list import List
 from sardana.macroserver.macro import Macro, Type
 from sardana.macroserver.msexception import UnknownEnv
@@ -221,17 +221,13 @@ class genv(Macro):
         if len(pars) == 1:
             key = pars[0]
         elif len(pars) > 1:
-            if pars[0].find("/") != -1:
-                # first string is a Door name
-                door_name = pars[0]
-                if len(pars) == 3:
-                    macro_name = pars[1]
-                    key = pars[2]
-                else:
-                    key = pars[1]
-            else:
-                # first string is a Macro name
+            _, door_name, _ = TangoDeviceNameValidator().getNames(pars[0])
+            if door_name is None:  # first string is a Macro name
                 macro_name = pars[0]
+            if len(pars) == 3:
+                macro_name = pars[1]
+                key = pars[2]
+            else:
                 key = pars[1]
 
         env = self.getEnv(key=key,
