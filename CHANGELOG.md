@@ -21,6 +21,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Add `genv` macro for printing environment variable values (#888)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
 * Quality to `SardanaAttribute` (#1353)
