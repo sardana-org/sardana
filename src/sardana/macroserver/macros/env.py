@@ -23,13 +23,13 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv", "genv",
            "lsvo", "setvo", "usetvo",
            "lsgh", "defgh", "udefgh"]
 
 __docformat__ = 'restructuredtext'
 
-import taurus
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 from taurus.console.list import List
 from sardana.macroserver.macro import Macro, Type
 from sardana.macroserver.msexception import UnknownEnv
@@ -197,6 +197,44 @@ class senv(Macro):
         k, v = self.setEnv(env, value)
         line = '%s = %s' % (k, str(v))
         self.output(line)
+
+
+class genv(Macro):
+    """Gets the given environment variable"""
+
+    param_def = [
+        ["name", Type.Env, None,
+         "Environment variable name. Can be one of the following:\n"
+         " - <name> - global variable\n"
+         " - <full door name>.<name> - variable value for a specific "
+         "door\n"
+         " - <macro name>.<name> - variable value for a specific"
+         " macro\n"
+         " - <full door name>.<macro name>.<name> - variable value"
+         " for a specific macro running on a specific door"],
+                 ]
+
+    def run(self, var):
+        pars = var.split(".")
+        door_name = None
+        macro_name = None
+        if len(pars) == 1:
+            key = pars[0]
+        elif len(pars) > 1:
+            _, door_name, _ = TangoDeviceNameValidator().getNames(pars[0])
+            if door_name is None:  # first string is a Macro name
+                macro_name = pars[0]
+            if len(pars) == 3:
+                macro_name = pars[1]
+                key = pars[2]
+            else:
+                key = pars[1]
+
+        env = self.getEnv(key=key,
+                          macro_name=macro_name,
+                          door_name=door_name)
+
+        self.output("{:s} = {:s}".format(str(key), str(env)))
 
 
 class usenv(Macro):
