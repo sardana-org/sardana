@@ -1053,6 +1053,8 @@ class newfile(Hookable, Macro):
 
 class plotselect(Macro):
     """select channels for plotting in the active measurement group"""
+
+    env = ("ActiveMntGrp", )
     param_def = [
           ['channel',
            [['channel', Type.ExpChannel, 'None', ""], {'min': 0}],
@@ -1061,12 +1063,7 @@ class plotselect(Macro):
      ]
 
     def run(self, channel):
-        try:
-            active_meas_grp = self.getEnv('ActiveMntGrp')
-        except UnknownEnv:
-            self.warning('No active measurement group found')
-            return
-
+        active_meas_grp = self.getEnv('ActiveMntGrp')
         meas_grp = self.getMeasurementGroup(active_meas_grp)
         self.output("Active measurement group: {}".format(meas_grp.name))
 
