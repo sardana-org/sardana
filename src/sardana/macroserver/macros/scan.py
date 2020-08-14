@@ -1884,10 +1884,11 @@ class timescan(Macro, Hookable):
 
 
 class scanstats(Macro):
-    """Calculate basic statistics of the first enabled and plotted counter in
+    """Calculate basic statistics of the enabled and plotted channels in
     the active measurement group for the last scan. Print it and publish it
     in the env. The macro must be hooked in the post-scan hook place.
     """
+
     param_def = [
         ["channel",
          [["channel", Type.ExpChannel, None, ""], {"min": 0}],
