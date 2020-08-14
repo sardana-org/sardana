@@ -21,6 +21,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Automatic scan statistics calculation with the `scanstats` macro as the `post-scan`
+  hook stored in the `ScanStats` environment variable
 * `plotselect` macro for configuring channels for online scan plotting (#824)
 * `genv` macro for printing environment variable values (#888)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
