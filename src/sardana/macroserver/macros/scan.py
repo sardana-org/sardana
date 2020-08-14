@@ -1929,24 +1929,26 @@ class scanstats(Macro):
                 calc_channels.append(next(iter(enabled_channels)))
 
             selected_motor = str(parent.motors[0])
-            data = parent.data
             stats = {}
             col_header = []
             cols = []
 
+            motor_data = []
+            channels_data = {}
             for channel_name in calc_channels:
-                counter_data = []
-                motor_data = []
+                channels_data[channel_name] = []
 
-                for idx, rc in data.items():
-                    counter_data.append(rc[channel_name])
-                    motor_data.append(rc[selected_motor])
+            for idx, rc in parent.data.items():
+                motor_data.append(rc[selected_motor])
+                for channel_name in calc_channels:
+                    channels_data[channel_name].append(rc[channel_name])
 
-                counter_data = numpy.array(counter_data)
-                motor_data = numpy.array(motor_data)
+            motor_data = numpy.array(motor_data)
+            for channel_name, data in channels_data.items():
+                channel_data = numpy.array(data)
 
                 (_min, _max, min_at, max_at, half_max, com, mean, _int,
-                 fwhm, cen) = self._calcStats(motor_data, counter_data)
+                 fwhm, cen) = self._calcStats(motor_data, channel_data)
                 stats[channel_name] = {
                     "min": _min,
                     "max": _max,
