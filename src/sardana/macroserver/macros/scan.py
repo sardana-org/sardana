@@ -1901,94 +1901,95 @@ class scanstats(Macro):
 
     def run(self, channel):
         parent = self.getParentMacro()
-        if parent:
-            active_meas_grp = self.getEnv("ActiveMntGrp")
-            meas_grp = self.getMeasurementGroup(active_meas_grp)
-            calc_channels = []
-            enabled_channels = meas_grp.getEnabled()
-            if channel:
-                stat_channels = [chan.name for chan in channel]
-            else:
-                stat_channels = [key for key in enabled_channels.keys()]
-
-            for chan in stat_channels:
-                enabled = enabled_channels.get(chan)
-                if enabled is None:
-                    self.warning("{} not in {}".format(chan, meas_grp.name))
-                else:
-                    if not enabled and channel:
-                        self.warning("{} not enabled".format(chan))
-                    elif enabled and channel:
-                        # channel was given as parameters
-                        calc_channels.append(chan)
-                    elif enabled and meas_grp.getPlotType(chan)[chan] == 1:
-                        calc_channels.append(chan)
-
-            if calc_channels == []:
-                # fallback is first enabled channel in meas_grp
-                calc_channels.append(next(iter(enabled_channels)))
-
-            selected_motor = str(parent.motors[0])
-            stats = {}
-            col_header = []
-            cols = []
-
-            motor_data = []
-            channels_data = {}
-            for channel_name in calc_channels:
-                channels_data[channel_name] = []
-
-            for idx, rc in parent.data.items():
-                motor_data.append(rc[selected_motor])
-                for channel_name in calc_channels:
-                    channels_data[channel_name].append(rc[channel_name])
-
-            motor_data = numpy.array(motor_data)
-            for channel_name, data in channels_data.items():
-                channel_data = numpy.array(data)
-
-                (_min, _max, min_at, max_at, half_max, com, mean, _int,
-                 fwhm, cen) = self._calcStats(motor_data, channel_data)
-                stats[channel_name] = {
-                    "min": _min,
-                    "max": _max,
-                    "minpos": min_at,
-                    "maxpos": max_at,
-                    "mean": mean,
-                    "int": _int,
-                    "com": com,
-                    "fwhm": fwhm,
-                    "cen": cen}
-
-                col_header.append([channel_name])
-                cols.append([
-                    stats[channel_name]["min"],
-                    stats[channel_name]["max"],
-                    stats[channel_name]["minpos"],
-                    stats[channel_name]["maxpos"],
-                    stats[channel_name]["mean"],
-                    stats[channel_name]["int"],
-                    stats[channel_name]["com"],
-                    stats[channel_name]["fwhm"],
-                    stats[channel_name]["cen"],
-                            ])
-            self.info("Statistics for movable: {:s}".format(selected_motor))
-
-            table = Table(elem_list=cols, elem_fmt=["%*g"],
-                          row_head_str=["MIN", "MAX", "MIN@", "MAX@",
-                                        "MEAN", "INT", "COM", "FWHM", "CEN"],
-                          col_head_str=col_header, col_head_sep="-")
-            out = table.genOutput()
-
-            for line in out:
-                self.info(line)
-            self.setEnv("{:s}.ScanStats".format(self.getDoorName()),
-                        {"Stats": stats,
-                         "Motor": selected_motor,
-                         "ScanID": self.getEnv("ScanID")})
-        else:
+        if not parent:
             self.warning("for now the scanstats macro can only be executed as"
                          " a post-scan hook")
+            return
+
+        active_meas_grp = self.getEnv("ActiveMntGrp")
+        meas_grp = self.getMeasurementGroup(active_meas_grp)
+        calc_channels = []
+        enabled_channels = meas_grp.getEnabled()
+        if channel:
+            stat_channels = [chan.name for chan in channel]
+        else:
+            stat_channels = [key for key in enabled_channels.keys()]
+
+        for chan in stat_channels:
+            enabled = enabled_channels.get(chan)
+            if enabled is None:
+                self.warning("{} not in {}".format(chan, meas_grp.name))
+            else:
+                if not enabled and channel:
+                    self.warning("{} not enabled".format(chan))
+                elif enabled and channel:
+                    # channel was given as parameters
+                    calc_channels.append(chan)
+                elif enabled and meas_grp.getPlotType(chan)[chan] == 1:
+                    calc_channels.append(chan)
+
+        if calc_channels == []:
+            # fallback is first enabled channel in meas_grp
+            calc_channels.append(next(iter(enabled_channels)))
+
+        selected_motor = str(parent.motors[0])
+        stats = {}
+        col_header = []
+        cols = []
+
+        motor_data = []
+        channels_data = {}
+        for channel_name in calc_channels:
+            channels_data[channel_name] = []
+
+        for idx, rc in parent.data.items():
+            motor_data.append(rc[selected_motor])
+            for channel_name in calc_channels:
+                channels_data[channel_name].append(rc[channel_name])
+
+        motor_data = numpy.array(motor_data)
+        for channel_name, data in channels_data.items():
+            channel_data = numpy.array(data)
+
+            (_min, _max, min_at, max_at, half_max, com, mean, _int,
+             fwhm, cen) = self._calcStats(motor_data, channel_data)
+            stats[channel_name] = {
+                "min": _min,
+                "max": _max,
+                "minpos": min_at,
+                "maxpos": max_at,
+                "mean": mean,
+                "int": _int,
+                "com": com,
+                "fwhm": fwhm,
+                "cen": cen}
+
+            col_header.append([channel_name])
+            cols.append([
+                stats[channel_name]["min"],
+                stats[channel_name]["max"],
+                stats[channel_name]["minpos"],
+                stats[channel_name]["maxpos"],
+                stats[channel_name]["mean"],
+                stats[channel_name]["int"],
+                stats[channel_name]["com"],
+                stats[channel_name]["fwhm"],
+                stats[channel_name]["cen"],
+                        ])
+        self.info("Statistics for movable: {:s}".format(selected_motor))
+
+        table = Table(elem_list=cols, elem_fmt=["%*g"],
+                      row_head_str=["MIN", "MAX", "MIN@", "MAX@",
+                                    "MEAN", "INT", "COM", "FWHM", "CEN"],
+                      col_head_str=col_header, col_head_sep="-")
+        out = table.genOutput()
+
+        for line in out:
+            self.info(line)
+        self.setEnv("{:s}.ScanStats".format(self.getDoorName()),
+                    {"Stats": stats,
+                     "Motor": selected_motor,
+                     "ScanID": self.getEnv("ScanID")})
 
     @staticmethod
     def _calcStats(x, y):
