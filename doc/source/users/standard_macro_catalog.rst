@@ -135,6 +135,7 @@ experiment configuration macros
     * :class:`~sardana.macroserver.macros.expconf.defsnap`
     * :class:`~sardana.macroserver.macros.expconf.udefsnap`
     * :class:`~sardana.macroserver.macros.expconf.lssnap`
+    * :class:`~sardana.macroserver.macros.standard.plotselect`
 
 general hooks macros
 --------------------
