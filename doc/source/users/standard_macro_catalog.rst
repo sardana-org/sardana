@@ -220,3 +220,4 @@ scan related macros
     :columns: 5
 
     * :class:`~sardana.macroserver.macros.standard.newfile`
+    * :class:`~sardana.macroserver.macros.scan.scanstats`
