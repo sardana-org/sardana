@@ -1889,6 +1889,8 @@ class scanstats(Macro):
     in the env. The macro must be hooked in the post-scan hook place.
     """
 
+    env = ("ActiveMntGrp", )
+
     param_def = [
         ["channel",
          [["channel", Type.ExpChannel, None, ""], {"min": 0}],
@@ -1900,12 +1902,7 @@ class scanstats(Macro):
     def run(self, channel):
         parent = self.getParentMacro()
         if parent:
-            try:
-                active_meas_grp = self.getEnv("ActiveMntGrp")
-            except UnknownEnv:
-                self.warning("No active measurement group found")
-                return
-
+            active_meas_grp = self.getEnv("ActiveMntGrp")
             meas_grp = self.getMeasurementGroup(active_meas_grp)
             calc_channels = []
             enabled_channels = meas_grp.getEnabled()
