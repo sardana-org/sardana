@@ -212,15 +212,19 @@ Scan statistics
 Sardana may automatically calculate some basic statistics over the scan
 results e.g., max, mean, FWHM, etc.
 
-In order to enable the statistic calculation you just need to attach
+In order to enable the statistics calculation you just need to attach
 the :class:`~sardana.macroserver.macros.scan.scanstats` macro to the
 ``post-scan`` hook place (see :ref:`hook documentation <sardana-macros-hooks>`
 for more info).
 
-Apart from printing statistics by the scanstats macro these are stored in
+Apart from printing the statistics by the scanstats macro these are stored in
 the door's :ref:`scanstats` environment variable. This way some other macro
-can use them e.g. move the scanned motor to the position where a given channel
-reached the maximum value (*go to peak*).
+can use them e.g.,
+
+* move the scanned motor to the position where a given channel
+  reached the maximum value (:class:`~sardana.macroserver.macros.standard.pic`)
+* move the scanned motor to center position of FWHM
+  (:class:`~sardana.macroserver.macros.standard.cen`)
 
 
 
