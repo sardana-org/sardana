@@ -1093,17 +1093,15 @@ class plotselect(Macro):
 class _movetostatspos(Macro):
     """This macro does the logic for pic and cen"""
 
+    env = ("ScanStats", )
+
     param_def = [
         ['channel', Type.ExpChannel, Optional, 'name of channel'],
         ['caller', Type.String, None, 'caller (pic or cen)']
     ]
 
     def run(self, channel, caller):
-        try:
-            stats = self.getEnv('ScanStats', door_name=self.getDoorName())
-        except UnknownEnv:
-            self.warning("No ScanStats available in env")
-            return
+        stats = self.getEnv('ScanStats', door_name=self.getDoorName())
 
         if channel is None:
             # use first channel in stats
