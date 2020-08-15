@@ -1110,9 +1110,8 @@ class _movetostatspos(Macro):
             if channel.name in stats['Stats']:
                 channel = channel.name
             else:
-                self.warning("Channel {} not present in ScanStats".format(
-                    channel.name))
-                return
+                raise Exception("channel {} not present in ScanStats".format(
+                                channel.name))
 
         if caller == 'pic':
             stats_value = 'maxpos'
@@ -1121,8 +1120,7 @@ class _movetostatspos(Macro):
             stats_value = 'cen'
             stats_str = 'CEN'
         else:
-            self.warning("Caller {} is unkown".format(caller))
-            return
+            raise Exception("caller {} is unknown".format(caller))
 
         motor_name = stats['Motor']
         motor = self.getMotion([motor_name])
