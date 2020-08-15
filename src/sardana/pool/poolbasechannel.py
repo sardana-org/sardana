@@ -30,6 +30,7 @@ __all__ = ["Value", "PoolBaseChannel"]
 
 __docformat__ = 'restructuredtext'
 
+from sardana.sardanadefs import AttrQuality
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
@@ -241,19 +242,24 @@ class PoolBaseChannel(PoolElement):
             :class:`~sardana.sardanavalue.SardanaValue`"""
         return self.acquisition.read_value()[self]
 
-    def put_value(self, value, propagate=1):
+    def put_value(self, value, quality=AttrQuality.Valid, propagate=1):
         """Sets a value.
 
         :param value:
             the new value
         :type value:
             :class:`~sardana.sardanavalue.SardanaValue`
+        :param quality:
+            the new quality
+        :type quality:
+            :class:`~sardana.AttrQuality`
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate:
             int
         """
         val_attr = self._value
+        val_attr.set_quality(quality)
         val_attr.set_value(value, propagate=propagate)
         return val_attr
 

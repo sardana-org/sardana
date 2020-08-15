@@ -38,11 +38,14 @@ import weakref
 import datetime
 import traceback
 import functools
+import threading
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
 
-from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
+from sardana import AttrQuality, SardanaValue, State, ElementType, \
+    TYPE_TIMERABLE_ELEMENTS
+
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.poolaction import ActionContext, PoolAction, \
@@ -305,6 +308,7 @@ class PoolAcquisition(PoolAction):
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
+        self._handled_first_active = False
 
     def event_received(self, *args, **kwargs):
         """Callback executed on event of software synchronizer.
@@ -322,46 +326,58 @@ class PoolAcquisition(PoolAction):
         self.debug(msg)
         if name == "start":
             if self._sw_start_acq_args is not None:
+                self._sw_start_acq._wait()
+                self._sw_start_acq._set_busy()
                 self.debug('Executing software start acquisition.')
-                get_thread_pool().add(self._sw_start_acq.run, None,
+                self._sw_start_acq._started = True
+                get_thread_pool().add(self._sw_start_acq.run,
+                                      self._sw_start_acq._set_ready,
                                       *self._sw_start_acq_args.args,
                                       **self._sw_start_acq_args.kwargs)
         elif name == "active":
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
+            if self._handled_first_active:
+                timeout = 0
+            else:
+                timeout = None
+                self._handled_first_active = True
             if self._sw_acq_args is not None:
-                if self._sw_acq._is_started() or self._sw_acq.is_running():
+                if not self._sw_acq._wait(timeout):
                     msg = ('Skipping trigger: software acquisition is still'
                            ' in progress.')
                     self.debug(msg)
                     return
                 else:
+                    self._sw_acq._set_busy()
                     self.debug('Executing software acquisition.')
                     self._sw_acq_args.kwargs.update({'index': index})
                     self._sw_acq._started = True
-                    get_thread_pool().add(self._sw_acq.run, None,
+                    get_thread_pool().add(self._sw_acq.run,
+                                          self._sw_acq._set_ready,
                                           *self._sw_acq_args.args,
                                           **self._sw_acq_args.kwargs)
             if self._0d_acq_args is not None:
-                if self._0d_acq._is_started() or self._0d_acq.is_running():
+                if not self._0d_acq._wait(timeout):
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
                            ' progress.')
                     self.debug(msg)
                     return
                 else:
+                    self._0d_acq._set_busy()
                     self.debug('Executing ZeroD acquisition.')
                     self._0d_acq_args.kwargs.update({'index': index})
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
-                    get_thread_pool().add(self._0d_acq.run, None,
+                    get_thread_pool().add(self._0d_acq.run,
+                                          self._0d_acq._set_ready,
                                           *self._0d_acq_args.args,
                                           **self._0d_acq_args.kwargs)
         elif name == "passive":
             # TODO: _0d_acq_args comparison may not be necessary
             if (self._0d_acq_args is not None
-                    and (self._0d_acq._is_started()
-                         or self._0d_acq.is_running())):
+                    and not self._0d_acq._is_ready()):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
@@ -378,6 +394,7 @@ class PoolAcquisition(PoolAction):
         self._0d_acq_args = None
         self._hw_acq_args = None
         self._synch_args = None
+        self._handled_first_active = False
         ctrls_hw = []
         ctrls_sw = []
         ctrls_sw_start = []
@@ -534,8 +551,11 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
 
         if self._hw_acq_args is not None:
+            self._hw_acq._wait()
+            self._hw_acq._set_busy()
             self._hw_acq.run(*self._hw_acq_args.args,
-                             **self._hw_acq_args.kwargs)
+                             **self._hw_acq_args.kwargs,
+                             cb=self._hw_acq._set_ready)
 
         if self._sw_acq_args is not None\
                 or self._sw_start_acq_args is not None\
@@ -543,8 +563,11 @@ class PoolAcquisition(PoolAction):
             self._synch.add_listener(self)
 
         if self._synch_args is not None:
+            self._synch._wait()
+            self._synch._set_busy()
             self._synch.run(*self._synch_args.args,
-                            **self._synch_args.kwargs)
+                            **self._synch_args.kwargs,
+                            cb=self._synch._set_ready)
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
@@ -650,10 +673,48 @@ class PoolAcquisition(PoolAction):
 
 
 class PoolAcquisitionBase(PoolAction):
-    """Base class for acquisitions with a generic start_action method.
+    """Base class for sub-acquisition.
 
     .. note::
         The PoolAcquisitionBase class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+
+    .. todo: Think of moving the ready/busy mechanism to PoolAction
+    """
+
+    def __init__(self, main_element, name):
+        PoolAction.__init__(self, main_element, name)
+        self._channels = []
+        self._index = None
+        self._ready = threading.Event()
+        self._ready.set()
+
+    def _is_ready(self):
+        return self._ready.is_set()
+
+    def _wait(self, timeout=None):
+        return self._ready.wait(timeout)
+
+    def _set_ready(self, _=None):
+        self._ready.set()
+
+    def _is_busy(self):
+        return not self._ready.is_set()
+
+    def _set_busy(self):
+        self._ready.clear()
+
+
+class PoolAcquisitionTimerable(PoolAcquisitionBase):
+    """Base class for acquisitions of timerable channels.
+
+     Implements a generic start_action method. action_loop method must be
+     implemented by the sub-class.
+
+    .. note::
+        The PoolAcquisitionTimerable class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
@@ -662,9 +723,7 @@ class PoolAcquisitionBase(PoolAction):
     OperationContextClass = AcquisitionBaseContext
 
     def __init__(self, main_element, name):
-        PoolAction.__init__(self, main_element, name)
-        self._channels = []
-        self._index = None
+        PoolAcquisitionBase.__init__(self, main_element, name)
         self._nb_states_per_value = None
         self._acq_sleep_time = None
         self._pool_ctrl_dict_loop = None
@@ -980,7 +1039,7 @@ class PoolAcquisitionBase(PoolAction):
             channel.clear_value_buffer()
 
 
-class PoolAcquisitionHardware(PoolAcquisitionBase):
+class PoolAcquisitionHardware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by hardware
 
     .. note::
@@ -994,12 +1053,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionHardware"):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def start_action(self, ctrls, value, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, None,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, None,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
@@ -1042,14 +1101,10 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             i += 1
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):
@@ -1078,7 +1133,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolAcquisitionSoftware(PoolAcquisitionBase):
+class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software
 
     .. note::
@@ -1089,7 +1144,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionSoftware", slaves=None):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
         if slaves is None:
             slaves = ()
@@ -1116,7 +1171,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
     def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, master, 1, 0,
                                          index, acq_sleep_time,
                                          nb_states_per_value, **kwargs)
 
@@ -1140,7 +1195,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in list(values.items()):
-                    acquirable.put_value(value)
+                    acquirable.put_value(value, quality=AttrQuality.Changing)
 
             time.sleep(nap)
             i += 1
@@ -1154,14 +1209,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 self.debug("Details", exc_info=1)
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):
@@ -1170,7 +1221,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                     msg = "Details: " + "".join(
                         traceback.format_exception(*value.exc_info))
                     self.debug(msg)
-                acquirable.append_value_buffer(value, self._index)
+                acquirable.get_value_attribute().set_quality(
+                    AttrQuality.Valid)
+                acquirable.append_value_buffer(value, self._index,
+                                               propagate=2)
             if acquirable in value_refs:
                 value_ref = value_refs[acquirable]
                 if is_value_error(value_ref):
@@ -1188,7 +1242,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
+class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software start
 
     .. note::
@@ -1202,7 +1256,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     """
 
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_ctrls(self):
         # technical debt in order to work both in case of meas group and
@@ -1212,7 +1266,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     def start_action(self, ctrls, value, master, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
-        PoolAcquisitionBase.start_action(self, ctrls, value, master,
+        PoolAcquisitionTimerable.start_action(self, ctrls, value, master,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
@@ -1262,14 +1316,10 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
             i += 1
 
         with ActionContext(self):
-            self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
                 if is_value_error(value):
@@ -1300,7 +1350,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class PoolCTAcquisition(PoolAcquisitionBase):
+class PoolCTAcquisition(PoolAcquisitionTimerable):
     """..todo:: remove it, still used by pseudo counter"""
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
@@ -1310,7 +1360,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
-        PoolAcquisitionBase.__init__(self, main_element, name)
+        PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
@@ -1389,12 +1439,10 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
 
-class Pool0DAcquisition(PoolAction):
+class Pool0DAcquisition(PoolAcquisitionBase):
 
     def __init__(self, main_element, name="0DAcquisition"):
-        self._channels = None
-        self._index = None
-        PoolAction.__init__(self, main_element, name)
+        PoolAcquisitionBase.__init__(self, main_element, name)
 
     def start_action(self, conf_ctrls, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
@@ -1469,10 +1517,7 @@ class Pool0DAcquisition(PoolAction):
             self.raw_read_state_info(ret=states)
 
         for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
-            acquirable.set_state_info(state_info, propagate=0)
             set_state_info = functools.partial(acquirable.set_state_info,
                                                state_info,
                                                propagate=2,

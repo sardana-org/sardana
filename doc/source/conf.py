@@ -291,13 +291,13 @@ graphviz_output_format = 'png'  # 'svg'
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
     'ipython': ('http://ipython.org/ipython-doc/stable/', None),
     'pytango': ('https://pytango.readthedocs.io/en/stable/', None),
     'taurus': ('http://taurus-scada.org', None),
     'pyqt': ('https://www.riverbankcomputing.com/static/Docs/PyQt5/', None),
     'matplotlib': ('https://matplotlib.org/', None),
-    'guiqwt': ('https://pythonhosted.org/guiqwt/', None),
+    'guiqwt': ('https://guiqwt.readthedocs.io/en/latest/', None),
 }
 
 

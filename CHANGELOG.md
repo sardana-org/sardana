@@ -21,8 +21,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Automatic scan statistics calculation with the `scanstats` macro as the `post-scan`
+  hook stored in the `ScanStats` environment variable
+* `plotselect` macro for configuring channels for online scan plotting (#824)
+* `genv` macro for printing environment variable values (#888)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
+* Quality to `SardanaAttribute` (#1353)
 * Instruments creation and configuration in sar_demo (#1198)
 * Allow _experimental channel acquisition_ with PoolChannelTaurusValue (PCTV) widget (#1203)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
@@ -39,6 +44,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Change limit switches indicators from buttons to labels (#210, #1290)
 * Improve documentation (#1241)
 * Better macro exception message and hint to use `www` (#1191)
+* Stress tests (on the Taurus level) for measurements (#1353)
 * Add basic information to "how to write custom recorder" to
   the documentation (#1275)
 * Register a TaurusValue factory for pool widgets (#1333)
@@ -53,6 +59,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid deadlock in Sardana-Taurus models e.g. `MeasurementGroup.count()` or
   `Motor.move()` (#1348)
   * Remove redundant protection in PoolElement.start() and waitFinish()
+* Fast repetitions of single acqusition measurements (counts) on MeasurementGroup (#1353)
+* Pre-mature returning to ON state of MeasurementGroup at the end of measurement (#1353) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
@@ -79,7 +87,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   server started afterwards (#599, #1278)
 * `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
 * `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
-* MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
@@ -97,6 +104,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1320, #1319
 * Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
   position(s) (#1326)
+* `test_stop_meas_cont_acquisition_3` spurious failures (#1188, #1353) 
 * Build docs with Sphinx 3 (#1330) 
 
 ### Deprecated
@@ -108,6 +116,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 
+* Avoid extra state readout at the end of acquisition (#1354)
 * Renamed _synchronization_ to _synch description_
   * Tango MeasurementGroup `Synchronization` attribute to `SynchDescription`
   * Core MeasurementGroup `synchronization` property to `synch_description`
@@ -135,6 +144,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `sardana.requirements` (#1185)
 * `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
 
+## [2.8.6] 2020-08-10
+
+### Fixed
+
+* MacroButton with repeat parameters (#1172, #1314)
 
 ## [2.8.5] 2020-04-27
 
@@ -873,7 +887,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.6...HEAD
+[2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2

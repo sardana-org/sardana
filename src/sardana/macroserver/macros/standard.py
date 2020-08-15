@@ -25,7 +25,7 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro", "newfile", "_movetostatspos", "pic", "cen",
+           "tw", "logmacro", "newfile", "plotselect", "pic", "cen",
            "where"]
 
 
@@ -720,7 +720,8 @@ class ct(Macro, Hookable, _ct):
                 names = self.countable_elem.ElementList
                 elements = [self.getObj(name) for name in names]
                 self.dump_information(elements)
-                raise ValueError("Acquisition ended with {}".format(state))
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
 
         for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
@@ -818,7 +819,8 @@ class uct(Macro, _ct):
                 names = self.countable_elem.ElementList
                 elements = [self.getObj(name) for name in names]
                 self.dump_information(elements)
-                raise ValueError("Acquisition ended with {}".format(state))
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
         self.setData(Record(data))
         self.printAllValues()
 
@@ -1051,6 +1053,41 @@ class newfile(Hookable, Macro):
 
         for postNewfileHook in self.getHooks('post-newfile'):
             postNewfileHook()
+
+
+class plotselect(Macro):
+    """select channels for plotting in the active measurement group"""
+
+    env = ("ActiveMntGrp", )
+    param_def = [
+          ['channel',
+           [['channel', Type.ExpChannel, 'None', ""], {'min': 0}],
+           None,
+           "List of channels to plot"],
+     ]
+
+    def run(self, channel):
+        active_meas_grp = self.getEnv('ActiveMntGrp')
+        meas_grp = self.getMeasurementGroup(active_meas_grp)
+        self.output("Active measurement group: {}".format(meas_grp.name))
+
+        plot_channels_ok = []
+        enabled_channels = meas_grp.getEnabled()
+        # check channels first
+        for chan in channel:
+            enabled = enabled_channels.get(chan.name)
+            if enabled is None:
+                self.warning("{} not in {}".format(chan.name, meas_grp.name))
+            else:
+                plot_channels_ok.append(chan.name)
+                if not enabled:
+                    self.warning("{} is disabled".format(chan.name))
+                else:
+                    self.output("{} selected for plotting".format(chan.name))
+        # set the plot type and plot axis in the meas_group
+        meas_grp.setPlotType("No", apply=False)
+        meas_grp.setPlotType("Spectrum", *plot_channels_ok, apply=False)
+        meas_grp.setPlotAxes(["<mov>"], *plot_channels_ok)
 
 
 class _movetostatspos(Macro):

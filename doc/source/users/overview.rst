@@ -43,8 +43,8 @@ application should serve as a reminder of this final goal.
   :align: center 
   :width: 500
 
-Inside this application we have many features  common to other beamline control
-applications or w some accelerator applications. The following screen shot
+Inside this application we have many features common to other beamline control
+applications or to some accelerator applications. The following screen shot
 shows such a standard application which has been done without programming -
 just by configuring the application. This illustrates one of the design
 guidelines in Sardana: Always provide a generic interface which can be
