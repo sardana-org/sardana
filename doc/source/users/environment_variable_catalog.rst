@@ -348,15 +348,15 @@ the following key - value:
 * Stats - dictionary with channel(s) name as key and value being a dictionary
   with the channel's scan statistics:
 
-  * cen
-  * com
-  * fwhm
-  * int
-  * max
-  * maxpos
-  * mean
-  * min
-  * minpos
+  * cen - center of FWHM
+  * com - center of mass of channel data
+  * fwhm - full-width at half-max of channel data
+  * int - sum/integral of channel data
+  * max - maximum of channel data
+  * maxpos - motor position where the channel reached the maximum
+  * mean - average of channel data
+  * min - minimum of channel data
+  * minpos - motor position where the channel reached the minimum
 
 For example::
 
