@@ -221,3 +221,6 @@ scan related macros
 
     * :class:`~sardana.macroserver.macros.standard.newfile`
     * :class:`~sardana.macroserver.macros.scan.scanstats`
+    * :class:`~sardana.macroserver.macros.standard.where`
+    * :class:`~sardana.macroserver.macros.standard.pic`
+    * :class:`~sardana.macroserver.macros.standard.cen`
