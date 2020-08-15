@@ -1178,6 +1178,6 @@ class where(Macro):
             self.warning("No motor from last scan available")
             return
 
-        motor = self.getMotion([motor_name])
+        motor = self.getMoveable(motor_name)
         self.info("motor {:s} is\nat {:.4f}".format(motor_name,
-                                                    motor.readPosition()[0]))
+                                                    motor.getPosition()))
