@@ -1167,13 +1167,10 @@ class cen(Macro):
 class where(Macro):
     """This macro shows the current position of the last scanned motor."""
 
-    def run(self):
-        try:
-            motor_name = self.getEnv('ScanStats')['Motor']
-        except UnknownEnv:
-            self.warning("No motor from last scan available")
-            return
+    env = ("ScanStats", )
 
+    def run(self):
+        motor_name = self.getEnv('ScanStats')['Motor']
         motor = self.getMoveable(motor_name)
         self.info("motor {:s} is\nat {:.4f}".format(motor_name,
                                                     motor.getPosition()))
