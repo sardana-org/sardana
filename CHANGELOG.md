@@ -153,6 +153,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `PreStartAllCT()`, `PreStartOneCT()`, `StartAllCT()` and `StartOneCT()`
 * `PseudoMotorController` controller API (#1315, #1363)
   * `calc_all_pseudo()`, `calc_all_physical()`, `calc_pseudo()` and `calc_physical()`
+* `PseudoCounterController` controller API (#1315, #1364)
+  * `calc()`
+* `IORegisterController` controller API (#1315, #1365):
+  * `predefined_values`
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `showscan online_raw` magic command in spock (#1260)
