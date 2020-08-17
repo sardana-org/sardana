@@ -141,6 +141,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Support to Python < 3.5 (#1089, #1173, #1201, #1263)
 * `sardana.macroserver.macro.ParamRepeat` class (#1315, #1358)
+* Backwards compatibility for measurement group start without preparation
+  (#1315, #1373)
 * Controller API (#1315, #1361):
   * `class_prop`
   * `ctrl_extra_attributes`
@@ -162,7 +164,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Backwards compatibility in measurement group configuration (#1315, #1372)
   * not complete names (without the scheme and PQDN)
   * `trigger_type`
-* 
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `showscan online_raw` magic command in spock (#1260)
