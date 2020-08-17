@@ -1283,10 +1283,6 @@ class IORegisterController(Controller, Readable):
     """Base class for a IORegister controller. Inherit from this class to
     implement your own IORegister controller for the device pool.
     """
-    #:
-    #: .. deprecated:: 1.0
-    #:     use :attr:`~Controller.axis_attributes` instead
-    predefined_values = ()
 
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
