@@ -35,7 +35,7 @@ import operator
 
 from sardana import InvalidId, ElementType
 from sardana.sardanameta import SardanaLibrary, SardanaClass, SardanaFunction
-from sardana.macroserver.msparameter import Type, ParamRepeat
+from sardana.macroserver.msparameter import Type
 import collections
 
 MACRO_TEMPLATE = """class @macro_name@(Macro):
@@ -150,18 +150,13 @@ class Parameterizable(object):
         '''Builds a list of parameters, each of them represented by a dictionary
         containing information: name, type, default_value, description, min and
         max values. In case of simple parameters, type is the parameter type.
-        In case of ParamRepeat, type is a list containing definition of the
-        param repeat.
+        In case of repeat parameter, type is a list containing its definition.
         '''
         ret = []
         param_def = param_def or ()
         for p in param_def:
             t = p[1]
             ret_p = {'min': None, 'max': None}
-            # take care of old ParamRepeat
-            if isinstance(t, ParamRepeat):
-                ret_p = {'min': 1, 'max': None}
-                t = t.obj()
 
             if isinstance(t, collections.Sequence) and not isinstance(t, str):
                 ret_p = {'min': 1, 'max': None}
@@ -183,7 +178,7 @@ class Parameterizable(object):
 
         info = [str(len(param_def))]
         for name, type_class, def_val, desc in param_def:
-            repeat = isinstance(type_class, ParamRepeat)
+            repeat = isinstance(type_class, list)
             info.append(name)
             type_name = (repeat and 'ParamRepeat') or type_class
             info.append(type_name)
@@ -205,7 +200,7 @@ class Parameterizable(object):
 
         info = [str(len(result_def))]
         for name, type_class, def_val, desc in result_def:
-            repeat = isinstance(type_class, ParamRepeat)
+            repeat = isinstance(type_class, list)
             info.append(name)
             type_name = (repeat and 'ParamRepeat') or type_class
             info.append(type_name)

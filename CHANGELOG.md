@@ -21,6 +21,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Automatic scan statistics calculation with the `scanstats` macro as the `post-scan`
+  hook stored in the `ScanStats` environment variable (#880)
+* `pic`, `cen` to move the scanned motor to the peak and center of FWHM values
+  respectively (#890)
+* `where` macro to print the scanned motor position (#890)
+* `plotselect` macro for configuring channels for online scan plotting (#824)
+* `genv` macro for printing environment variable values (#888)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
 * Quality to `SardanaAttribute` (#1353)
@@ -83,7 +90,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   server started afterwards (#599, #1278)
 * `TaurusMacroExecutorWidget` does not use _parent model_ feature (#599, #1278)
 * `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
-* MacroButton with repeat parameters (#1172, #1314)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
@@ -134,13 +140,41 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 
 * Support to Python < 3.5 (#1089, #1173, #1201, #1263)
+* `sardana.macroserver.macro.ParamRepeat` class (#1315, #1358)
+* Controller API (#1315, #1361):
+  * `class_prop`
+  * `ctrl_extra_attributes`
+  * `inst_name`
+  * `SetPar()` and `GerPar()`
+  * `SetExtraAttributePar()` and `GetExtraAttributePar()`
+  * `ctrl_properties` with "Description" as `str`
+* `CounterTimerController` controller API (#1315, #1362):
+  * `_trigger_type`
+  * `PreStartAllCT()`, `PreStartOneCT()`, `StartAllCT()` and `StartOneCT()`
+* `PseudoMotorController` controller API (#1315, #1363)
+  * `calc_all_pseudo()`, `calc_all_physical()`, `calc_pseudo()` and `calc_physical()`
+* `PseudoCounterController` controller API (#1315, #1364)
+  * `calc()`
+* `IORegisterController` controller API (#1315, #1365):
+  * `predefined_values`
+* `Loadable` backawards compatibility (without `repetitions` and `latency` arguments)
+  (#1315, #1370)
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
 * `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
+* Hook places: `hooks` and `pre-start` (#1315, #1359)
+* `FileRecorder` macro hint (#1315, #1360)
+* `sardana.release` attributes: `version_info` and `revision` (#1315, #1357)
+* `sardana.spock.release` module (#1315, #1357)
 
+## [2.8.6] 2020-08-10
+
+### Fixed
+
+* MacroButton with repeat parameters (#1172, #1314)
 
 ## [2.8.5] 2020-04-27
 
@@ -879,7 +913,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.5...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.6...HEAD
+[2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2

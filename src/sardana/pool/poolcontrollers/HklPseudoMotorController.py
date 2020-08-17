@@ -117,8 +117,10 @@ class DiffracBasis(PseudoMotorController):
 
     """ The PseudoMotor controller for the diffractometer"""
 
-    class_prop = {'DiffractometerType': {Type: str,
-                                         Description: 'Type of the diffractometer, e.g. E6C'},  # noqa
+    ctrl_properties = {
+        'DiffractometerType': {
+            Type: str,
+            Description: 'Type of the diffractometer, e.g. E6C'},
     }
 
     ctrl_attributes = {'Crystal': {Type: str,

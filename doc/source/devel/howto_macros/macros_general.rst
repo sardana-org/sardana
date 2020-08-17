@@ -250,6 +250,8 @@ includes :keyword:`for` and :keyword:`while` loops, :keyword:`if` ...
             wave_fft = numpy.fft.fft(wave)
             
 
+.. _sardana-macro-parameters:
+
 Adding parameters to your macro
 -------------------------------
 
@@ -466,7 +468,7 @@ this parameter any name but usually, by convention it is called ``self``).
 your macro to do all kinds of things, among others, to obtain the sardana
 elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
 these functions and the
-:ref:`Sardana-Taurus extensions API reference <sardana-taurus-api>`
+:ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
 describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
@@ -919,6 +921,49 @@ using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
     :ref:`general hooks<sardana-macros-hooks-general>` eventually attached to
     the macro. Using the method appends just one hook but does not affect
     the general hooks eventually attached to the macro.
+
+.. _sardana-macro-accessing-tango:
+
+Accessing Tango from your macros
+--------------------------------
+
+Your macros almost certainly will need to access Tango_ devices, either
+external, for example, coming from the vacuum system or any other
+arbitrary system integrated with Tango Device Server or internal to Sardana
+(Sardana elements are currently exported as Tango devices) e.g.: motors,
+measurement group, etc.
+
+There exists different :term:`API` to access to Tango_ devices.
+
+First, to access Sardana elements it is recommended to use the Sardana
+:term:`API`: e.g.: `~sardana.macroserver.macro.Macro.getMoveable` to obtain
+any moveable (motor or pseudo motor),
+`~sardana.macroserver.macro.Macro.getMeasurementGroup` to obtain a measurement
+group.
+
+.. note::
+    By :ref:`adding parameters to your macro <sardana-macro-parameters>`
+    you get the same objects as if you were using the above methods.
+    Their classes are documented in:
+    :ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
+
+Any external Tango device could be accessed with Taurus_ (using
+`taurus.Device`) or simply with PyTango_ (using `tango.DeviceProxy`).
+Taurus gives you some benefits over PyTango:
+
+- seamless attribute configuration management e.g.: unit aware attribute
+  read and write, simplified way to read/write attribute configuration, etc.
+- unique way to access different data sources e.g. Tango_, EPICS_,
+  `hdf5 <https://github.com/taurus-org/h5file-scheme>`_, etc.
+- simplified way to use Tango_ events
+
+However the above benefits are not for free and more precisely are for some
+extra time overhead (in milliseconds range).
+
+As a rule of thumb, if you you don't mind the extra overhead and value the
+simplified usage you should use Taurus. If you strive for very optimal access
+to Tango and don't need these benefits then most probably PyTango will work
+better for you.
 
 .. _sardana-macro-using-external-libraries:
 
