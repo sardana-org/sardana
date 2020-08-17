@@ -886,43 +886,12 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
             pool_ctrl = channel.controller
             ctrl = pool_ctrl.ctrl
             ctrl.PreLoadAll()
-            try:
-                res = ctrl.PreLoadOne(axis, value, repetitions,
-                                      latency)
-            except TypeError:
-                try:
-                    res = ctrl.PreLoadOne(axis, value, repetitions)
-                    msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version 2.7.0."
-                           "Use PreLoadOne(axis, value, repetitions, "
-                           "latency_time) instead.")
-                    self.warning(msg)
-                except TypeError:
-                    res = ctrl.PreLoadOne(axis, value)
-                    msg = ("PreLoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use PreLoadOne(axis, value, "
-                           "repetitions, latency_time) instead.")
-                    self.warning(msg)
+            res = ctrl.PreLoadOne(axis, value, repetitions, latency)
             if not res:
                 msg = ("%s.PreLoadOne(%d) returned False" %
                        (pool_ctrl.name, axis))
                 raise Exception(msg)
-            try:
-                ctrl.LoadOne(axis, value, repetitions, latency)
-            except TypeError:
-                try:
-                    ctrl.LoadOne(axis, value, repetitions)
-                    msg = ("LoadOne(axis, value, repetitions) is"
-                           "deprecated since version Jan18."
-                           "Use LoadOne(axis, value, repetitions, "
-                           "latency_time) instead.")
-                    self.warning(msg)
-                except TypeError:
-                    ctrl.LoadOne(axis, value)
-                    msg = ("LoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use LoadOne(axis, value, "
-                           "repetitions) instead.")
-                    self.warning(msg)
+            ctrl.LoadOne(axis, value, repetitions, latency)
             ctrl.LoadAll()
 
         with ActionContext(self):
