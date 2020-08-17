@@ -210,39 +210,6 @@ class DoorResult(Qt.QPlainTextEdit):
         menu.exec_(event.globalPos())
 
 
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-# Door attributes listeners
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-
-class DoorAttrListener(Qt.QObject):
-    """Deprecated. Do not use"""
-
-    def __init__(self, attrName):
-        Qt.QObject.__init__(self)
-        from taurus.core.util.log import deprecated
-        deprecated(dep="DoorAttrListener", rel="2.5.1")
-        self.attrName = attrName
-        self.attrObj = None
-
-    def setDoorName(self, doorName):
-        if not self.attrObj is None:
-            self.attrObj.removeListener(self)
-        self.attrObj = taurus.Attribute(doorName, self.attrName)
-        self.attrObj.addListener(self)
-
-    def eventReceived(self, src, type, value):
-        if (type == taurus.core.taurusbasetypes.TaurusEventType.Error or
-                type == taurus.core.taurusbasetypes.TaurusEventType.Config):
-            return
-
-        # The old code (using old-style signals) emitted a signal called
-        # door<DOOR_NAME>Changed . Emulating this with new-style signasl
-        # is problematic, and in this case it is not worth it since this class
-        # is unused, deprecated and will disappear soon
-        # self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
-
-
-
 if __name__ == "__main__":
     import sys
     import taurus
