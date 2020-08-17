@@ -863,7 +863,7 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
 
         - timer
         - monitor
-        - trigger_type"""
+    """
 
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device

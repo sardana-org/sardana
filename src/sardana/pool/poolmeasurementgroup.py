@@ -435,10 +435,7 @@ class MeasurementConfiguration(object):
         self._parent = None
         if parent is not None:
             self._parent = weakref.proxy(parent)
-
         self._config = None
-        self._use_fqdn = True
-
         # Structure to store the controllers and their channels
         self._timerable_ctrls = {}
         self._zerod_ctrls = []
@@ -600,7 +597,7 @@ class MeasurementConfiguration(object):
         """Return measurement configuration serializable data structure."""
         return self._user_config
 
-    def set_configuration_from_user(self, cfg, to_fqdn=True):
+    def set_configuration_from_user(self, cfg):
         """Set measurement configuration from serializable data structure.
 
         Setting of the configuration includes the validation process. Setting
@@ -666,8 +663,6 @@ class MeasurementConfiguration(object):
             if external:
                 ctrl = ctrl_name
             else:
-                if to_fqdn:
-                    ctrl_name = _to_fqdn(ctrl_name, logger=self._parent)
                 ctrl = pool.get_element_by_full_name(ctrl_name)
                 assert ctrl.get_type() == ElementType.Controller
 
@@ -693,10 +688,6 @@ class MeasurementConfiguration(object):
                     ctrl_conf['synchronizer'] = 'software'
                     user_config_ctrl['synchronizer'] = 'software'
                 else:
-                    if to_fqdn:
-                        synchronizer = _to_fqdn(synchronizer,
-                                                logger=self._parent)
-
                     user_config_ctrl['synchronizer'] = synchronizer
                     pool_synch = pool.get_element_by_full_name(synchronizer)
                     pool_synch_ctrl = pool_synch.controller
@@ -722,21 +713,10 @@ class MeasurementConfiguration(object):
                         conf_synch_ctrl.add_channel(conf_synch)
 
                     ctrl_conf['synchronizer'] = conf_synch
-
                 try:
                     synchronization = ctrl_data['synchronization']
                 except KeyError:
-                    # backwards compatibility for configurations before SEP6
-                    try:
-                        synchronization = ctrl_data['trigger_type']
-                        msg = ("trigger_type configuration parameter "
-                               "is deprecated"
-                               " in favor of synchronization. Re-apply "
-                               "configuration in order to upgrade.")
-                        self._parent.warning(msg)
-                    except KeyError:
-                        synchronization = AcqSynchType.Trigger
-
+                    synchronization = AcqSynchType.Trigger
                 ctrl_conf['synchronization'] = synchronization
                 user_config_ctrl['synchronization'] = synchronization
 
@@ -749,12 +729,8 @@ class MeasurementConfiguration(object):
                                                      synchronization)
                 ctrl_acq_synch[ctrl] = acq_synch
                 timer = ctrl_data.get("timer")
-                if timer is not None and to_fqdn:
-                    timer = _to_fqdn(timer, self._parent)
                 ctrl_conf["timer"] = timer
                 monitor = ctrl_data.get("monitor")
-                if monitor is not None and to_fqdn:
-                    monitor = _to_fqdn(monitor, self._parent)
                 ctrl_conf["monitor"] = monitor
                 ctrl_item = TimerableControllerConfiguration(ctrl, ctrl_conf)
             else:
@@ -771,9 +747,6 @@ class MeasurementConfiguration(object):
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
-                    if to_fqdn:
-                        ch_name = _to_fqdn(ch_name, logger=self._parent)
-                        ch_data['full_name'] = ch_name
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
@@ -800,17 +773,11 @@ class MeasurementConfiguration(object):
                 msg_error = ''
                 if ctrl_item.timer is None:
                     timer_name = ctrl_data['timer']
-                    if to_fqdn:
-                        timer_name = _to_fqdn(timer_name,
-                                              logger=self._parent)
                     ch_timer = pool.get_element_by_full_name(timer_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'timer. '.format(ch_timer.name)
                 if ctrl_item.monitor is None:
                     monitor_name = ctrl_data['monitor']
-                    if to_fqdn:
-                        monitor_name = _to_fqdn(monitor_name,
-                                                logger=self._parent)
                     ch_monitor = pool.get_element_by_full_name(monitor_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'monitor.'.format(ch_monitor.name)
@@ -882,8 +849,6 @@ class MeasurementConfiguration(object):
         else:  # Measurement Group with all channel synchronized by hardware
             mnt_grp_timer = cfg.get('timer')
             if mnt_grp_timer:
-                if to_fqdn:
-                    mnt_grp_timer = _to_fqdn(mnt_grp_timer, self._parent)
                 user_config['timer'] = mnt_grp_timer
             else:
                 # for backwards compatibility use a random monitor
@@ -896,8 +861,6 @@ class MeasurementConfiguration(object):
         else:  # Measurement Group with all channel synchronized by hardware
             mnt_grp_monitor = cfg.get('monitor')
             if mnt_grp_monitor:
-                if to_fqdn:
-                    mnt_grp_monitor = _to_fqdn(mnt_grp_monitor, self._parent)
                 user_config['monitor'] = mnt_grp_monitor
             else:
                 # for backwards compatibility use a random monitor
@@ -1100,16 +1063,16 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self._config
 
     # TODO: Check if it needed
-    def set_configuration(self, config=None, propagate=1, to_fqdn=True):
-        self._config._use_fqdn = to_fqdn
+    def set_configuration(self, config=None, propagate=1):
         self._config.configuration = config
         self._config_dirty = True
         if not propagate:
             return
-        self.fire_event(EventType("configuration", priority=propagate), config)
+        self.fire_event(EventType("configuration", priority=propagate),
+                        config)
 
-    def set_configuration_from_user(self, cfg, propagate=1, to_fqdn=True):
-        self._config.set_configuration_from_user(cfg, to_fqdn)
+    def set_configuration_from_user(self, cfg, propagate=1):
+        self._config.set_configuration_from_user(cfg)
         self._config_dirty = True
         if not propagate:
             return
