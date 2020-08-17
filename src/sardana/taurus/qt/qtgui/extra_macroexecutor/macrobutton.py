@@ -100,11 +100,6 @@ class MacroButton(TaurusWidget):
     def handleEvent(self, evt_src, evt_type, evt_value):
         pass
 
-    def toggleProgress(self, visible):
-        '''deprecated'''
-        self.warning('toggleProgress is deprecated. Use showProgress')
-        self.showProgress(visible)
-
     def showProgress(self, visible):
         '''Set whether the progress bar is shown
 
@@ -246,29 +241,6 @@ class MacroButton(TaurusWidget):
         self.macro_args[index] = value
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
-
-    def updateMacroArgumentFromSignal(self, index, obj, signal):
-        '''deprecated'''
-        msg = 'updateMacroArgumentFromSignal is deprecated. connectArgEditors'
-        self.warning(msg)
-        self.connect(obj, signal,
-                     functools.partial(self.updateMacroArgument, index))
-
-    def connectArgEditors(self, signals):
-        """
-        Associate signals to argument changes.
-
-        :param signals: (seq<pyqtsignals>) An ordered sequence of signals
-        """
-
-        for i, signal in enumerate(signals):
-            if not self.__isSignal(signal):
-                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
-                sender, sig = signal
-                self.deprecated(dep='Passing (sender, signature) tuples',
-                                alt='pyqtSignal objects', rel='2.5.1')
-                signal = getattr(sender, sig.split('(')[0])
-            signal.connect(functools.partial(self.updateMacroArgument, i))
 
     @staticmethod
     def __isSignal(obj):
