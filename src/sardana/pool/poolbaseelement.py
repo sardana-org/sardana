@@ -287,11 +287,7 @@ class PoolBaseElement(PoolObject):
 
     def _from_ctrl_state_info(self, state_info):
         state_info, _ = state_info  # ignoring exc_info
-        if state_info in State:
-            state = state_info
-            status = None
-        else:
-            state, status = state_info
+        state, status = state_info
         return int(state), status
 
     # --------------------------------------------------------------------------

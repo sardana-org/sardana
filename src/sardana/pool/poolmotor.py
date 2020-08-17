@@ -245,11 +245,7 @@ class PoolMotor(PoolElement):
 
     def _from_ctrl_state_info(self, state_info):
         state_info, _ = state_info
-        if state_info in State:
-            state = state_info
-            status = None
-            ls = 0
-        elif len(state_info) > 2:
+        if len(state_info) > 2:
             state, status, ls = state_info[:3]
         else:
             state, other = state_info[:2]
