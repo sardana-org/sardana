@@ -176,6 +176,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `FileRecorder` macro hint (#1315, #1360)
 * `sardana.release` attributes: `version_info` and `revision` (#1315, #1357)
 * `sardana.spock.release` module (#1315, #1357)
+* Support to IPython < 1 (#1315, #1375)
 
 ## [2.8.6] 2020-08-10
 
