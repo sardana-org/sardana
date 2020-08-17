@@ -2455,7 +2455,8 @@ class CTScan(CScan, CAcquisition):
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-
+            self.measurement_group.setNbStarts(1)
+            self.measurement_group.prepare()
             mg_id = self.measurement_group.start()
             if i == 0:
                 first_timestamp = time.time()
