@@ -167,6 +167,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `trigger_type`
 * `Label` and `Calibration` attributes of `DiscretePseudMotor` controller
   (#1315, #1374)
+* MacroButton's methods (#1315, #1379)
+  * `toggleProgress()`
+  * `updateMacroArgumentFromSignal()`
+  * `connectArgEditors()`
 * `Controller`'s (Taurus extension) `getUsedAxis` method (#1315, #1377)
 * `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener` class
   (#1315, #1378)
