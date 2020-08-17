@@ -146,6 +146,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
 * `sardanatestsuite` and `sardana.test.testsuite.*` utility functions (#1347)
+* `sardana.release` attributes: `version_info` and `revision` (#1315, #1357)
+* `sardana.spock.release` module (#1315, #1357)
 
 ## [2.8.6] 2020-08-10
 
