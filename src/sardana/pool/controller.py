@@ -109,17 +109,8 @@ class Controller(object):
     :keyword kwargs:
     """
 
-    #:
-    #: .. deprecated:: 1.0
-    #:     use :attr:`~Controller.ctrl_properties` instead
-    class_prop = {}
-
     #: A sequence of :obj:`str` representing the controller features
     ctrl_features = []
-    #:
-    #: .. deprecated:: 1.0
-    #:     use :attr:`~Controller.axis_attributes` instead
-    ctrl_extra_attributes = {}
 
     #: A :class:`dict` containing controller properties where:
     #:
@@ -340,14 +331,6 @@ class Controller(object):
         :param int axis: axis number"""
         pass
 
-    @property
-    def inst_name(self):
-        """**Controller API**. The controller instance name.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.GetName` instead"""
-        return self._inst_name
-
     def GetName(self):
         """**Controller API**. The controller instance name.
 
@@ -414,73 +397,36 @@ class Controller(object):
     def SetAxisPar(self, axis, parameter, value):
         """**Controller API**. Override is MANDATORY.
         Called to set a parameter with a value on the given axis. Default
-        implementation calls deprecated :meth:`~Controller.SetPar` which, by
-        default, raises :exc:`NotImplementedError`.
+        implementation raises :exc:`NotImplementedError`.
 
         .. versionadded:: 1.0"""
-        return self.SetPar(axis, parameter, value)
+        raise NotImplementedError("SetAxisPar must be defined in the "
+                                  "controller")
 
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis. Default
-        implementation calls deprecated :meth:`~Controller.GetPar` which, by
-        default, raises :exc:`NotImplementedError`.
+        implementation raises :exc:`NotImplementedError`.
 
         .. versionadded:: 1.0"""
-        return self.GetPar(axis, parameter)
+        raise NotImplementedError("GetAxisPar must be defined in the "
+                                  "controller")
 
     def SetAxisExtraPar(self, axis, parameter, value):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value on the given axis. Default
-        implementation calls deprecated :meth:`~Controller.SetExtraAttributePar`
-        which, by default, raises :exc:`NotImplementedError`.
+        implementation raises :exc:`NotImplementedError`.
 
         .. versionadded:: 1.0"""
-        return self.SetExtraAttributePar(axis, parameter, value)
+        raise NotImplementedError("SetAxisExtraPar must be defined in the "
+                                  "controller")
 
     def GetAxisExtraPar(self, axis, parameter):
         """**Controller API**. Override if necessary.
         Called to get a parameter value on the given axis. Default
-        implementation calls deprecated :meth:`~Controller.GetExtraAttributePar`
-        which, by default, raises :exc:`NotImplementedError`.
+        implementation raises :exc:`NotImplementedError`.
 
         .. versionadded:: 1.0"""
-        return self.GetExtraAttributePar(axis, parameter)
-
-    def SetPar(self, axis, parameter, value):
-        """**Controller API**. Called to set a parameter with a value on
-        the given axis. Default implementation raises
-        :exc:`NotImplementedError`.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.SetAxisPar` instead"""
-        raise NotImplementedError("SetAxisPar must be defined in the "
-                                  "controller")
-
-    def GetPar(self, axis, parameter):
-        """**Controller API**. Called to get a parameter value on the given
-        axis. Default implementation raises :exc:`NotImplementedError`.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.GetAxisPar` instead"""
-        raise NotImplementedError("GetAxisPar must be defined in the "
-                                  "controller")
-
-    def SetExtraAttributePar(self, axis, parameter, value):
-        """**Controller API**. Called to set a parameter with a value on the
-        given axis. Default implementation raises :exc:`NotImplementedError`.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.SetAxisExtraPar` instead"""
-        raise NotImplementedError("SetAxisExtraPar must be defined in the "
-                                  "controller")
-
-    def GetExtraAttributePar(self, axis, parameter):
-        """**Controller API**. Called to get a parameter value on the given
-        axis. Default implementation raises :exc:`NotImplementedError`.
-
-        .. deprecated:: 1.0
-            use :meth:`~Controller.GetAxisExtraPar` instead"""
         raise NotImplementedError("GetAxisExtraPar must be defined in the "
                                   "controller")
 
@@ -497,9 +443,7 @@ class Controller(object):
         .. versionadded:: 1.0"""
         ret = copy.deepcopy(self.standard_axis_attributes)
         axis_attrs = copy.deepcopy(self.axis_attributes)
-        old_axis_attrs = copy.deepcopy(self.ctrl_extra_attributes)
         ret.update(axis_attrs)
-        ret.update(old_axis_attrs)
         return ret
 
     def SendToCtrl(self, stream):
@@ -797,13 +741,7 @@ class MotorController(Controller, Startable, Stopable, Readable):
         - step_per_unit
 
     These parameters are configured through the
-    :meth:`~Controller.GetAxisPar`/:meth:`~Controller.SetAxisPar`
-    API (in version <1.0 the methods were called
-    :meth:`~Controller.GetPar`/:meth:`~Controller.SetPar`. Default
-    :meth:`~Controller.GetAxisPar` and
-    :meth:`~Controller.SetAxisPar` still call
-    :meth:`~Controller.GetPar` and :meth:`~Controller.SetPar`
-    respectively in order to maintain backward compatibility).
+    :meth:`~Controller.GetAxisPar`/:meth:`~Controller.SetAxisPar` API.
     """
 
     #: A constant representing no active switch.
