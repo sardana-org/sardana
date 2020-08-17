@@ -193,7 +193,8 @@ class pt7(Macro):
 
 
 class pt7d1(Macro):
-    """Macro with a list of pair Motor,Float. Default value for last ParamRepeat element.
+    """Macro with a list of pair Motor,Float. Default value for last
+    repeat parameter element.
     Usages from Spock, ex.:
     pt7d1 [[mot1 1] [mot2 3]]
     pt7d1 mot1 1 mot2 3
@@ -214,7 +215,8 @@ class pt7d1(Macro):
 
 
 class pt7d2(Macro):
-    """Macro with a list of pair Motor,Float. Default value for both ParamRepeat elements.
+    """Macro with a list of pair Motor,Float. Default value for both
+    repeat parameters elements.
     Usages from Spock, ex.:
     pt7d2 [[mot1 1] [mot2 3]]
     pt7d2 mot1 1 mot2 3
@@ -252,9 +254,8 @@ class pt8(Macro):
 
 
 class pt9(Macro):
-    """Same as macro pt7 but with old style ParamRepeat. If you are writing
-    a macro with variable number of parameters for the first time don't even
-    bother to look at this example since it is DEPRECATED.
+    """Same as macro pt7 but with min and max number of repetitions of the
+    repeat parameter.
     Usages from Spock, ex.:
     pt9 [[mot1 1][mot2 3]]
     pt9 mot1 1 mot2 3
