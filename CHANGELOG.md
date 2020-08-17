@@ -167,6 +167,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `trigger_type`
 * `Label` and `Calibration` attributes of `DiscretePseudMotor` controller
   (#1315, #1374)
+* `Controller`'s (Taurus extension) `getUsedAxis` method (#1315, #1377)
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `showscan online_raw` magic command in spock (#1260)
