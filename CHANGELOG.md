@@ -161,6 +161,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `predefined_values`
 * `Loadable` backawards compatibility (without `repetitions` and `latency` arguments)
   (#1315, #1370)
+* Door's Tango device `Abort` command (#1315, #1376)
 * Backwards compatibility in measurement group configuration (#1315, #1372)
   * not complete names (without the scheme and PQDN)
   * `trigger_type`
