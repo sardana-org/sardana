@@ -159,6 +159,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `predefined_values`
 * `Loadable` backawards compatibility (without `repetitions` and `latency` arguments)
   (#1315, #1370)
+* Backwards compatibility in measurement group configuration (#1315, #1372)
+  * not complete names (without the scheme and PQDN)
+  * `trigger_type`
+* 
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `showscan online_raw` magic command in spock (#1260)
