@@ -1147,7 +1147,8 @@ class PseudoMotorController(PseudoController):
            :rtype: float
 
            .. versionadded:: 1.0"""
-        return self.calc_pseudo(axis, physical_pos)
+        raise NotImplementedError("CalcPseudo must be defined in the "
+                                  "controller")
 
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
         """**Pseudo Motor Controller API**. Override is **MANDATORY**.
@@ -1164,77 +1165,6 @@ class PseudoMotorController(PseudoController):
            :rtype: float
 
            .. versionadded:: 1.0"""
-        return self.calc_physical(axis, pseudo_pos)
-
-    def calc_all_pseudo(self, physical_pos):
-        """**Pseudo Motor Controller API**. Override if necessary.
-           Calculates the positions of all pseudo motors that belong to the
-           pseudo motor system from the positions of the physical motors.
-           Default implementation does a loop calling
-           :meth:`PseudoMotorController.calc_pseudo` for each pseudo motor role.
-
-           :param sequence<float> physical_pos: a sequence of physical motor
-                                                positions
-           :return: a sequece of pseudo motor positions (one for each pseudo
-                    motor role)
-           :rtype: sequence<float>
-
-           .. deprecated:: 1.0
-               implement :meth:`~PseudoMotorController.CalcAllPseudo` instead"""
-        ret = []
-        for i in range(len(self.pseudo_motor_roles)):
-            ret.append(self.calc_pseudo(i + 1, physical_pos))
-        return ret
-
-    def calc_all_physical(self, pseudo_pos):
-        """**Pseudo Motor Controller API**. Override if necessary.
-           Calculates the positions of all motors that belong to the pseudo
-           motor system from the positions of the pseudo motors.
-           Default implementation does a loop calling
-           :meth:`PseudoMotorController.calc_physical` for each motor role.
-
-           :param pseudo_pos: a sequence of pseudo motor positions
-           :type pseudo_pos: sequence<float>
-           :return: a sequece of motor positions (one for each motor role)
-           :rtype: sequence<float>
-
-           .. deprecated:: 1.0
-               implement :meth:`~PseudoMotorController.CalcAllPhysical`
-               instead"""
-        ret = []
-        for i in range(len(self.motor_roles)):
-            pos = self.calc_physical(i + 1, pseudo_pos)
-            ret.append(pos)
-        return ret
-
-    def calc_pseudo(self, axis, physical_pos):
-        """**Pseudo Motor Controller API**. Override is **MANDATORY**.
-           Calculate pseudo motor position given the physical motor positions
-
-           :param int axis: the pseudo motor role axis
-           :param sequence<float> physical_pos: a sequence of motor positions
-           :return: a pseudo motor position corresponding to the given axis
-                    pseudo motor role
-           :rtype: float
-
-           .. deprecated:: 1.0
-               implement :meth:`~PseudoMotorController.CalcPseudo` instead"""
-        raise NotImplementedError(
-            "CalcPseudo must be defined in the controller")
-
-    def calc_physical(self, axis, pseudo_pos):
-        """**Pseudo Motor Controller API**. Override is **MANDATORY**.
-           Calculate physical motor position given the pseudo motor positions.
-
-           :param axis: the motor role axis
-           :type axis: int
-           :param pseudo_pos: a sequence of pseudo motor positions
-           :type pseudo_pos: sequence<float>
-           :return: a motor position corresponding to the given axis motor role
-           :rtype: float
-
-           .. deprecated:: 1.0
-               implement :meth:`~PseudoMotorController.CalcPhysical` instead"""
         raise NotImplementedError("CalcPhysical must be defined in the "
                                   "controller")
 
