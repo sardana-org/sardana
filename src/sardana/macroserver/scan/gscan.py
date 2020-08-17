@@ -212,7 +212,7 @@ class GScan(Logger):
     - DataHandler with the following recorders:
     - OutputRecorder (depends on ``OutputCols`` environment variable)
     - SharedMemoryRecorder (depends on ``SharedMemory`` environment variable)
-    - FileRecorder (depends on ``ScanDir`` and ``ScanData``
+    - FileRecorder (depends on ``ScanDir``, ``ScanData`` and ``ScanRecorder``
       environment variables)
     - ScanDataEnvironment with the following contents:
 
