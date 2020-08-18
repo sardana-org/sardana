@@ -1250,12 +1250,10 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # -------------------------------------------------------------------------
 
-    def prepare(self, multiple=1):
+    def prepare(self):
         """Prepare for measurement.
 
         Delegate measurement preparation to the acquisition action.
-
-        ..todo:: remove multiple argument
         """
         if len(self.get_user_elements()) == 0:
             # All channels were disabled
@@ -1284,8 +1282,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
-        kwargs = {'head': self,
-                  'multiple': multiple}
+        kwargs = {'head': self}
 
         self.acquisition.prepare(self.configuration,
                                  self.acquisition_mode,
@@ -1296,13 +1293,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                                  self.nb_starts,
                                  **kwargs)
 
-    def start_acquisition(self, value=None, multiple=1):
+    def start_acquisition(self, value=None):
         """Start measurement.
 
         Delegate start measurement to the acquisition action.
         Provide backwards compatibility for starts without previous prepare.
-
-        ..todo:: remove value and multiple arguments.
         """
         if self._pending_starts == 0:
             msg = "prepare is mandatory before starting acquisition"
