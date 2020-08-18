@@ -1,3 +1,5 @@
+.. _macrobutton:
+
 MacroButton User’s Interface
 -----------------------------
 
