@@ -792,10 +792,14 @@ class MacroManager(MacroServerManager):
         macro_name = macro_class.__name__
 
         environment = init_opts.get('environment')
+        executor = init_opts.get('executor')
+        door_name = executor.door.name
 
         r = []
         for env in macro_env:
-            if not environment.has_env(env):
+            if not environment.has_env(env,
+                                       macro_name=macro_name,
+                                       door_name=door_name):
                 r.append(env)
         if r:
             raise MissingEnv("The macro %s requires the following missing "
@@ -820,13 +824,16 @@ class MacroManager(MacroServerManager):
         macro_env = code.env or ()
 
         environment = init_opts.get('environment')
-
+        executor = init_opts.get('executor')
+        door_name = executor.door.name
+        macro_name = meta.name
         r = []
         for env in macro_env:
-            if not environment.has_env(env):
+            if not environment.has_env(env,
+                                       macro_name=macro_name,
+                                       door_name=door_name):
                 r.append(env)
         if r:
-            macro_name = meta.name
             raise MissingEnv("The macro %s requires the following missing "
                              "environment to be defined: %s"
                              % (macro_name, str(r)))
