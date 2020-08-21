@@ -84,7 +84,7 @@ def islambda(f):
         f.__name__ == (lambda: True).__name__
 
 
-def is_macro(macro, abs_file=None, logger=None):
+def _is_macro(macro, abs_file=None, logger=None):
     """Helper function to determine if a certain python object is a valid
     macro"""
     if inspect.isclass(macro):
@@ -92,30 +92,27 @@ def is_macro(macro, abs_file=None, logger=None):
             return False
         # if it is a class defined in some other module forget it to
         # avoid replicating the same macro in different macro files
-        try:
-            # use normcase to treat case insensitivity of paths on
-            # certain platforms e.g. Windows
-            if os.path.normcase(inspect.getabsfile(macro)) !=\
-               os.path.normcase(abs_file):
-                return False
-        except TypeError:
+
+        # use normcase to treat case insensitivity of paths on
+        # certain platforms e.g. Windows
+        if os.path.normcase(inspect.getabsfile(macro)) !=\
+           os.path.normcase(abs_file):
             return False
+
     elif callable(macro) and not islambda(macro):
         # if it is a function defined in some other module forget it to
         # avoid replicating the same macro in different macro files
-        try:
-            # use normcase to treat case insensitivity of paths on
-            # certain platforms e.g. Windows
-            if os.path.normcase(inspect.getabsfile(macro)) !=\
-               os.path.normcase(abs_file):
-                return False
-        except TypeError:
+
+        # use normcase to treat case insensitivity of paths on
+        # certain platforms e.g. Windows
+        if os.path.normcase(inspect.getabsfile(macro)) !=\
+           os.path.normcase(abs_file):
             return False
 
         if not hasattr(macro, 'macro_data'):
             return False
 
-        args, varargs, keywords, _ = inspect.getargspec(macro)
+        args, varargs, keywords, *_ = inspect.getfullargspec(macro)
         if len(args) == 0:
             if logger:
                 logger.debug("Could not add macro %s: Needs at least one "
@@ -136,6 +133,13 @@ def is_macro(macro, abs_file=None, logger=None):
     else:
         return False
     return True
+
+
+def is_macro(macro, abs_file=None, logger=None):
+    try:
+        return _is_macro(macro, abs_file=abs_file, logger=logger)
+    except Exception:
+        return False
 
 
 def is_flat_list(obj):
