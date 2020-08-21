@@ -97,6 +97,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Remove deprecation warning revealed when running test suite (#1267)
 * Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
 * Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
+* Macro modules with annotated functions are properly interpreted by the MacroServer
+  (#1366, #1367)
 * Adapt to new taurus behavior of `cmd_line_parser` kwarg of `TaurusApplication` (#1306)
 * Fix dummy C/T and 2D controller classes in the case the start sequence was interrupted
   (#1188, #1309)
@@ -104,7 +106,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make handling of `Macro.sendRecordData()` with arbitrary data more robust in Spock
   (#1320, #1319)
 * Use `utf8_json` as default codec (in Tango) if `Macro.sendRecordData()` does not specify one
-  (#1320, #1319
+  (#1320, #1319)
 * Avoid repeating of positions when `regscan`, `reg2scan` and `reg3scan` pass through start
   position(s) (#1326)
 * `test_stop_meas_cont_acquisition_3` spurious failures (#1188, #1353) 
