@@ -336,7 +336,7 @@ class aNscan(Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.2. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -964,7 +964,7 @@ motor2 sqrt(y*x+3)
             yield step
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.2. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -1826,7 +1826,7 @@ class meshct(Macro, Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.2. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -1875,7 +1875,7 @@ class timescan(Macro, Hookable):
         return self.nr_interv
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.2. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points

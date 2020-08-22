@@ -2333,7 +2333,7 @@ class MGConfiguration(object):
 
         :param timer: <str> timer name
         """
-        self._mg().warning("setTimer() is deprecated since Jul20. "
+        self._mg().warning("setTimer() is deprecated since 3.0.2. "
                            "Global measurement group timer does not exist")
         result = self._get_ctrl_for_channel([timer], unique=True)
 
@@ -2344,13 +2344,13 @@ class MGConfiguration(object):
 
     def getTimer(self):
         """DEPRECATED"""
-        self._mg().warning("getTimer() is deprecated since Jul20. "
+        self._mg().warning("getTimer() is deprecated since 3.0.2. "
                            "Global measurement group timer does not exist")
         return self._getTimer()
 
     def getMonitor(self):
         """DEPRECATED"""
-        self._mg().warning("getMonitor() is deprecated since Jul20. "
+        self._mg().warning("getMonitor() is deprecated since 3.0.2. "
                            "Global measurement group monitor does not exist")
         return self._getMonitor()
 
@@ -3080,19 +3080,19 @@ class MeasurementGroup(PoolElement):
 
     def getMonitorName(self):
         """DEPRECATED"""
-        self.warning("getMonitorName() is deprecated since Jul20. "
+        self.warning("getMonitorName() is deprecated since 3.0.2. "
                      "Global measurement group monitor does not exist.")
         return self.getConfiguration()._getMonitorName()
 
     def getTimerName(self):
         """DEPRECATED"""
-        self.warning("getTimerName() is deprecated since Jul20. "
+        self.warning("getTimerName() is deprecated since 3.0.2. "
                      "Global measurement group timer does not exist.")
         return self.getConfiguration()._getTimerName()
 
     def getTimerValue(self):
         """DEPRECATED"""
-        self.warning("getTimerValue() is deprecated since Jul20. "
+        self.warning("getTimerValue() is deprecated since 3.0.2. "
                      "Global measurement group timer does not exist.")
         return self.getConfiguration()._getTimerValue()
 
@@ -3102,7 +3102,7 @@ class MeasurementGroup(PoolElement):
         :param channels: (seq<str>) a sequence of strings indicating
            channel names
         '''
-        self.warning("enableChannels() in deprecated since Jul20. "
+        self.warning("enableChannels() in deprecated since 3.0.2. "
                      "Use setEnabled() instead.")
         self.setEnabled(True, *channels)
 
@@ -3112,7 +3112,7 @@ class MeasurementGroup(PoolElement):
         :param channels: (seq<str>) a sequence of strings indicating
            channel names
         '''
-        self.warning("enableChannels() in deprecated since Jul20. "
+        self.warning("enableChannels() in deprecated since 3.0.2. "
                      "Use setEnabled() instead.")
         self.setEnabled(False, *channels)
 
