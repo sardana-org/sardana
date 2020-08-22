@@ -5,7 +5,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-## [3.0.2]
+## [3.0.2] 2020-08-22
 
 ### Added
 
