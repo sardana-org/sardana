@@ -227,7 +227,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasDoorMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <door name>.<macro name>.<property name>"""
-        return not self._getDoorMacroPropertyEnv() is None
+        return not self._getDoorMacroPropertyEnv(prop) is None
 
     def _getMacroPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
@@ -244,7 +244,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <macro name>.<property name>"""
-        return not self._getMacroPropertyEnv() is None
+        return not self._getMacroPropertyEnv(prop) is None
 
     def _getDoorPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
@@ -261,7 +261,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasDoorPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <door name>.<property name>"""
-        return not self._getDoorPropertyEnv() is None
+        return not self._getDoorPropertyEnv(prop) is None
 
     def _getEnv(self, prop):
         """Returns the property value for a property which must have the
