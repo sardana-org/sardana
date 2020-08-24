@@ -7,28 +7,28 @@ environment:
         VENV_TEST_DIR: "venv_test"
 
     matrix:
-        # Python 2.7 (64)
-        - PYTHON_DIR: "C:\\Python27-x64"
-          PYTHON_VERSION: "2.7"
+        # Python 3.5 (64)
+        - PYTHON_DIR: "C:\\Python35-x64"
+          PYTHON_VERSION: "3.5"
           PYTHON_ARCH: "64"
-          CONDA_PY: "27"
+          CONDA_PY: "35"
 
-        # Python 2.7
-        - PYTHON_DIR: "C:\\Python27"
-          PYTHON_VERSION: "2.7"
+        # Python 3.5
+        - PYTHON_DIR: "C:\\Python35"
+          PYTHON_VERSION: "3.5"
           PYTHON_ARCH: "32"
-          CONDA_PY: "27"
+          CONDA_PY: "35"
 
 install:
     # Add Python to PATH
     - "SET PATH=%PYTHON_DIR%;%PYTHON_DIR%\\Scripts;%PATH%"
 
     # Upgrade/install distribution modules
-    - "pip install --upgrade setuptools"
-    - "python -m pip install --upgrade pip"
+    - "pip3 install --upgrade setuptools"
+    - "python3 -m pip install --upgrade pip"
 
     # Install virtualenv
-    - "pip install --upgrade virtualenv"
+    - "pip3 install --upgrade virtualenv"
     - "virtualenv --version"
 
 build_script:
@@ -37,10 +37,10 @@ build_script:
     - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
 
     # Install wheel
-    - "pip install --upgrade wheel"
+    - "pip3 install --upgrade wheel"
 
     # Build sardana sdist, msi and wheel
-    - "python setup.py sdist bdist_wheel bdist_msi"
+    - "python3 setup.py sdist bdist_wheel bdist_msi"
     - ps: "ls dist"
 
     # Leave build virtualenv
