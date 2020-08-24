@@ -94,6 +94,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
+* Controller's `StateOne()` that returns only state (#621, #1342)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
