@@ -86,6 +86,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1260)
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
+* Environment variables validation before macro execution when these are defined
+  on door's or macro's level (#1390)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
 * Measurement groups renaming with `renameelem` macro(#951)
 * `macroexecutor` correctly loads macro combo box if it was started with server down and 
@@ -94,6 +96,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `TaurusSequencerWidget` does not use _parent model_ feature (#1284)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
+* Controller's `StateOne()` that returns only state (#621, #1342)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
