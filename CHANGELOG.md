@@ -87,6 +87,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
 * Premature end of acquisition on Windows (#1397)
+* Use proper python3 executable regardeless of installation (#1398)
 * Environment variables validation before macro execution when these are defined
   on door's or macro's level (#1390)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
