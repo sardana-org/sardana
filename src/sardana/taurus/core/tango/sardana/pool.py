@@ -479,6 +479,11 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait.connect(self.getAttribute("state"))
         try:
             evt_wait.waitEvent(DevState.MOVING, equal=False)
+            # Clear event set to not confuse the value coming from the
+            # connection with the event of of end of the operation
+            # in the next wait event. This was observed on Windows where
+            # the time stamp resolution is very poor.
+            evt_wait.clearEventSet()
             self.__go_time = 0
             self.__go_start_time = ts1 = time.time()
             self._start(*args, **kwargs)
