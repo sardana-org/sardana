@@ -1905,6 +1905,10 @@ class scanstats(Macro):
             self.warning("for now the scanstats macro can only be executed as"
                          " a post-scan hook")
             return
+        if not hasattr(parent, "motors"):
+            self.warning("scan must involve at least one moveable "
+                         "to calculate statistics")
+            return
 
         active_meas_grp = self.getEnv("ActiveMntGrp")
         meas_grp = self.getMeasurementGroup(active_meas_grp)
