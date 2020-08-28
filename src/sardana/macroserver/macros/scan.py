@@ -1885,8 +1885,10 @@ class timescan(Macro, Hookable):
 
 class scanstats(Macro):
     """Calculate basic statistics of the enabled and plotted channels in
-    the active measurement group for the last scan. Print it and publish it
-    in the env. The macro must be hooked in the post-scan hook place.
+    the active measurement group for the last scan. If no channel is selected
+    for plotting it fallbacks to the first enabled channel. Print stats and
+    publish them in the env.
+    The macro must be hooked in the post-scan hook place.
     """
 
     env = ("ActiveMntGrp", )
@@ -1932,9 +1934,21 @@ class scanstats(Macro):
                 elif enabled and meas_grp.getPlotType(chan)[chan] == 1:
                     calc_channels.append(chan)
 
-        if calc_channels == []:
+        if len(calc_channels) == 0:
             # fallback is first enabled channel in meas_grp
             calc_channels.append(next(iter(enabled_channels)))
+
+        scalar_channels = []
+        for _, chan in self.getExpChannels().items():
+            if chan.type in ("OneDExpChannel", "TwoDExpChannel"):
+                continue
+            scalar_channels.append(chan.name)
+        calc_channels = [ch for ch in calc_channels if ch in scalar_channels]
+
+        if len(calc_channels) == 0:
+            self.warning("measurement group must contain at least one "
+                         "enabled scalar channel to calculate statistics")
+            return
 
         selected_motor = str(parent.motors[0])
         stats = {}
