@@ -159,7 +159,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `SetPar()` and `GerPar()`
   * `SetExtraAttributePar()` and `GetExtraAttributePar()`
   * `ctrl_properties` with "Description" as `str`
-* `CounterTimerController` controller API (#1315, #1362):
+* `CounterTimerController` controller API (#1315, #1362, #1403):
   * `_trigger_type`
   * `PreStartAllCT()`, `PreStartOneCT()`, `StartAllCT()` and `StartOneCT()`
 * `PseudoMotorController` controller API (#1315, #1363)
