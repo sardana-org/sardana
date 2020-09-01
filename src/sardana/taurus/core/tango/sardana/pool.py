@@ -3367,7 +3367,8 @@ class MeasurementGroup(PoolElement):
         self.prepare()
         return self.count_raw(start_time)
 
-    def count_continuous(self, synch_description, value_buffer_cb=None):
+    def count_continuous(self, synch_description, value_buffer_cb=None,
+                         value_ref_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -3376,6 +3377,9 @@ class MeasurementGroup(PoolElement):
           synchronizations
         :param value_buffer_cb: callback on value buffer updates
         :type value_buffer_cb: callable
+        :param value_ref_buffer_cb: callback on value reference
+          buffer updates
+        :type value_ref_buffer_cb: callable
         :return: state and eventually value buffers if no callback was passed
         :rtype: tuple<list<DevState>,<list>>
 
@@ -3392,10 +3396,12 @@ class MeasurementGroup(PoolElement):
         self.setSynchDescription(synch_description)
         self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
+        self.subscribeValueRefBuffer(value_ref_buffer_cb)
         try:
             self.count_raw(start_time)
         finally:
             self.unsubscribeValueBuffer(value_buffer_cb)
+            self.unsubscribeValueRefBuffer(value_ref_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
