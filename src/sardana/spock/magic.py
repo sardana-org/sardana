@@ -83,7 +83,7 @@ def showscan(self, parameter_s=''):
     """
     params = parameter_s.split()
     door = get_door()
-    online, scan_nb = False, None
+    scan_nb = None
     if len(params) > 0:
         if params[0].lower() == 'online':
             try:
@@ -117,7 +117,7 @@ def showscan(self, parameter_s=''):
             return
         else:
             scan_nb = int(params[0])
-            door.show_scan(scan_nb)
+    door.show_scan(scan_nb)
 
 
 def spsplot(self, parameter_s=''):
