@@ -388,7 +388,7 @@ if __name__ == '__main__':
 
         def toggle_progress(self, toggle):
             visible = self.show_progress.isChecked()
-            self.mb.toggleProgress(visible or toggle)
+            self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
 
