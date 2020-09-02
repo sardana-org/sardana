@@ -178,7 +178,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `trigger_type`
 * `Label` and `Calibration` attributes of `DiscretePseudMotor` controller
   (#1315, #1374)
-* MacroButton's methods (#1315, #1379)
+* MacroButton's methods (#1315, #1379, #1405)
   * `toggleProgress()`
   * `updateMacroArgumentFromSignal()`
   * `connectArgEditors()`
