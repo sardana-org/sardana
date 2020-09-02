@@ -388,7 +388,7 @@ if __name__ == '__main__':
 
         def toggle_progress(self, toggle):
             visible = self.show_progress.isChecked()
-            self.mb.toggleProgress(visible or toggle)
+            self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
 
@@ -468,9 +468,9 @@ if __name__ == '__main__':
             # Toggle progressbar
             self.show_progress.stateChanged.connect(self.toggle_progress)
             # connect the argument editors
-            # signals = [(e, 'textChanged(QString)') for e in _argEditors]
-            signals = [getattr(e, 'textChanged') for e in _argEditors]
-            self.mb.connectArgEditors(signals)
+            for i, editor in enumerate(_argEditors):
+                slot = functools.partial(self.mb.updateMacroArgument, i)
+                editor.textChanged.connect(slot)
 
             self.setLayout(Qt.QVBoxLayout())
             self.layout().addWidget(self.w_arg)
