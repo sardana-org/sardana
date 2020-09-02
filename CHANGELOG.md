@@ -83,7 +83,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
-  (#1260)
+  (#1260, #1400)
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
 * Premature end of acquisition on Windows (#1397)
