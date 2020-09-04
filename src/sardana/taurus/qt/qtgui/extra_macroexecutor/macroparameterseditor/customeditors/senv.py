@@ -27,9 +27,7 @@ from taurus.external.qt import Qt
 from taurus import Database
 from taurus.core.taurusbasetypes import TaurusElementType
 from taurus.core.tango.tangodatabase import TangoAttrInfo
-from taurus.qt.qtgui.input import TaurusAttrListComboBox
 from taurus.qt.qtgui.tree import TaurusDbTreeWidget
-from taurus.qt.qtgui.resource import getThemeIcon
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.macroparameterseditor import MacroParametersEditor
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.parameditors import LineEditParam, ParamBase, ComboBoxParam, CheckBoxParam, DirPathParam, MSAttrListComboBoxParam
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.model import ParamEditorModel
@@ -90,6 +88,9 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
             self.valueWidget = None
 
         self.valueWidget, label = getSenvValueEditor(text, self)
+        if text == "ActiveMntGrp":
+            self.valueWidget.setModel(self.model())
+            self.valueWidget.setModel("/MeasurementGroupList")
 
         paramRepeatIndex = self.model().index(1, 0, self.rootIndex())
         repeatIndex = paramRepeatIndex.child(0, 0)
@@ -110,8 +111,6 @@ def getSenvValueEditor(envName, parent):
     label = "value:"
     if envName == "ActiveMntGrp":
         editor = MSAttrListComboBoxParam(parent)
-        editor.setUseParentModel(True)
-        editor.setModel("/MeasurementGroupList")
     elif envName == "ExtraColumns":
         editor = ExtraColumnsEditor(parent)
         label = None
@@ -135,9 +134,9 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         addNewColumnButton = Qt.QPushButton(
-            getThemeIcon("list-add"), "Add new column...", self)
+            Qt.QIcon.fromTheme("list-add"), "Add new column...", self)
         removeSelectedColumnsButton = Qt.QPushButton(
-            getThemeIcon("list-remove"), "Remove selected...", self)
+            Qt.QIcon.fromTheme("list-remove"), "Remove selected...", self)
         buttonsLayout = Qt.QHBoxLayout()
         buttonsLayout.addWidget(addNewColumnButton)
         buttonsLayout.addWidget(removeSelectedColumnsButton)
@@ -223,7 +222,7 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             editor.setView(treeView)
         elif index.column() == 2:
             editor = MSAttrListComboBox(parent)
-            editor.setUseParentModel(True)
+            editor.setModel(index.model())
             editor.setModel("/InstrumentList")
         else:
             editor = Qt.QItemDelegate.createEditor(self, parent, option, index)
@@ -385,9 +384,12 @@ CUSTOM_EDITOR = SenvEditor
 if __name__ == "__main__":
     import sys
     import taurus
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
+    from sardana.taurus.core.tango.sardana.macro import MacroNode
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
     args = app.get_command_line_args()
     editor = SenvEditor()
     macroServer = taurus.Device(args[0])

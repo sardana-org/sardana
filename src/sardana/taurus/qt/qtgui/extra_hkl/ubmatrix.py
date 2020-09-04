@@ -23,8 +23,6 @@
 ##
 ##############################################################################
 
-__docformat__ = 'restructuredtext'
-
 import sys
 
 import sardana
@@ -46,6 +44,8 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 global flag_update
 flag_update = 0
+
+__docformat__ = 'restructuredtext'
 
 
 class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -463,14 +463,14 @@ class UBMatrixBase(TaurusWidget):
 
 
 def main():
-
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog  <model>"
     parser.set_description(
-        "a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
+        "a taurus application for setting diffractometer parameters: "
+        "ubmatrix, lattice, reflections, ...")
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("ubmatrix")
     args = app.get_command_line_args()
     if len(args) < 1:

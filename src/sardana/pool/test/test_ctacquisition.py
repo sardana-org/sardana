@@ -24,7 +24,7 @@
 ##############################################################################
 
 import time
-from taurus.external import unittest
+import unittest
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolMeasurementGroup,
@@ -64,22 +64,20 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
               'PoolMeasurementGroup instance'
         self.assertIsInstance(self.pmg, PoolMeasurementGroup, msg)
 
-    # TODO: until the measurement group does not have a default software
-    # synchronizer mark this test as expected failure.
-    @unittest.expectedFailure
     def test_acquisition(self):
         """Test acquisition using the created measurement group without
         using a Sardana pool."""
         msg = 'Pool Measurement Group does not acquire'
         integ_time = .1
         self.pmg.integration_time = integ_time
+        self.pmg.prepare()
         self.pmg.start_acquisition()
 
         acq = self.pmg.acquisition
         # 'acquiring..'
         while acq.is_running():
             time.sleep(0.05)
-        self.assertEqual(self._pct.value, integ_time, msg)
+        self.assertEqual(self._pct.value.value, integ_time, msg)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

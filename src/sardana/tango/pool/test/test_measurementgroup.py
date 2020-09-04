@@ -32,7 +32,7 @@ import threading
 # TODO: decide what to use: taurus or PyTango
 import PyTango
 from PyTango import DeviceProxy
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
 
@@ -171,10 +171,10 @@ class MeasSarTestTestCase(SarTestTestCase):
     def prepare_meas(self, params):
         """ Set the measurement group parameters
         """
-        synchronization = params["synchronization"]
+        synch_description = params["synch_description"]
         codec = CodecFactory().getCodec('json')
-        data = codec.encode(('', synchronization))
-        self.meas.write_attribute('synchronization', data[1])
+        data = codec.encode(('', synch_description))
+        self.meas.write_attribute('SynchDescription', data[1])
 
     def _add_attribute_listener(self, config):
         self.attr_listener = TangoAttributeListener()
@@ -220,31 +220,49 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.prepare_meas(params)
         chn_names = self._add_attribute_listener(config)
         # Do acquisition
+        self.meas.write_attribute("NbStarts", 1)
+        self.meas.Prepare()
         self.meas.Start()
         while self.meas.State() == PyTango.DevState.MOVING:
             print("Acquiring...")
             time.sleep(0.1)
         time.sleep(1)
-        repetitions = params['synchronization'][0][SynchParam.Repeats]
+        repetitions = params['synch_description'][0][SynchParam.Repeats]
         self._acq_asserts(chn_names, repetitions)
+
+    def push_event(self, event):
+        value = event.attr_value.value
+        self.meas_state = value
+        if value == PyTango.DevState.MOVING:
+            self.meas_started = True
+        elif self.meas_started and value == PyTango.DevState.ON:
+            self.meas_finished.set()
 
     def stop_meas_cont_acquisition(self, params, config):
         '''Helper method to do measurement and stop it'''
         self.create_meas(config)
         self.prepare_meas(params)
+        self.meas_state = None
+        self.meas_started = False
+        self.meas_finished = threading.Event()
         chn_names = self._add_attribute_listener(config)
         # Do measurement
-        self.meas.Start()
-        # starting timer (0.2 s) which will stop the measurement group
-        threading.Timer(0.2, self.stopMeas).start()
-        while self.meas.State() == PyTango.DevState.MOVING:
-            print("Acquiring...")
-            time.sleep(0.1)
-        state = self.meas.State()
+        id_ = self.meas.subscribe_event("State",
+                                        PyTango.EventType.CHANGE_EVENT,
+                                        self.push_event)
+        try:
+            # starting timer (0.2 s) which will stop the measurement group
+            self.meas.write_attribute("NbStarts", 1)
+            self.meas.Prepare()
+            self.meas.Start()
+            threading.Timer(0.2, self.stopMeas).start()
+            self.assertTrue(self.meas_finished.wait(5), "mg has not stopped")
+        finally:
+            self.meas.unsubscribe_event(id_)
         desired_state = PyTango.DevState.ON
         msg = 'mg state after stop is %s (should be %s)' %\
-            (state, desired_state)
-        self.assertEqual(state, desired_state, msg)
+            (self.meas_state, desired_state)
+        self.assertEqual(self.meas_state, desired_state, msg)
         for name in chn_names:
             channel = PyTango.DeviceProxy(name)
             state = channel.state()
@@ -269,14 +287,25 @@ class MeasSarTestTestCase(SarTestTestCase):
         SarTestTestCase.tearDown(self)
 
 
-synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+synch_description1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .01},
                      SynchParam.Total: {SynchDomain.Time: .02},
                      SynchParam.Repeats: 10}]
 
 params_1 = {
-    "synchronization": synchronization1,
-    "integ_time": 0.01,
+    "synch_description": synch_description1,
+    "integ_time": 0.1,
+    "name": '_exp_01'
+}
+
+synch_description2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                       SynchParam.Active: {SynchDomain.Time: 0.1},
+                       SynchParam.Total: {SynchDomain.Time: 0.15},
+                       SynchParam.Repeats: 10}]
+
+params_2 = {
+    "synch_description": synch_description2,
+    "integ_time": 0.1,
     "name": '_exp_01'
 }
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
@@ -361,11 +390,11 @@ doc_6 = 'Stop of the synchronized acquisition with four channels from two'\
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
             params=params_1, config=config_3)
 @insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_4,
-            params=params_1, config=config_1)
+            params=params_2, config=config_1)
 @insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_5,
-            params=params_1, config=config_2)
+            params=params_2, config=config_2)
 @insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_6,
-            params=params_1, config=config_3)
+            params=params_2, config=config_3)
 class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 

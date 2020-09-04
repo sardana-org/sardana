@@ -27,9 +27,8 @@
 It contains specific part of sardana device pool"""
 
 
-import collections
-
 __all__ = ["InterruptException", "StopException", "AbortException",
+           "ReleaseException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
@@ -47,21 +46,20 @@ import sys
 import time
 import traceback
 import weakref
+import json
+from datetime import datetime
 import numpy
-
+import threading
 import PyTango
+import collections
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
-    DeviceProxy
-from taurus import Factory, Device, Attribute
+    DeviceProxy, AttributeProxy
+from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as \
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator, \
+    TangoDeviceNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessDict
@@ -72,6 +70,9 @@ from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 from sardana import sardanacustomsettings
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
+
+from sardana.pool import AcqSynchType
+from sardana.taurus.core.tango.sardana import PlotType
 
 Ready = Standby = DevState.ON
 Counting = Acquiring = Moving = DevState.MOVING
@@ -110,6 +111,10 @@ class StopException(InterruptException):
 
 
 class AbortException(InterruptException):
+    pass
+
+
+class ReleaseException(InterruptException):
     pass
 
 
@@ -231,12 +236,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         if evt_value is None:
             v = None
         else:
-            v = evt_value.value
+            v = evt_value.rvalue
+            if hasattr(v, "magnitude"):
+                v = v.magnitude
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            last_val = self._attr.read(cache=not force).rvalue
+            if hasattr(last_val, "magnitude"):
+                last_val = last_val.magnitude
+            self.last_val = last_val
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -306,7 +316,7 @@ class PoolElement(BaseElement, TangoDevice):
         self.getStateEG()
 
     def _find_pool_obj(self):
-        pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        pool = get_pool_for_device(self.getParentObj(), self.getDeviceProxy())
         return pool
 
     def _find_pool_data(self):
@@ -454,6 +464,9 @@ class PoolElement(BaseElement, TangoDevice):
         # instr_name = instr_name[:instr_name.index('(')]
         return instr_name
 
+    def setInstrumentName(self, instr_name):
+        self.getInstrumentObj().write(instr_name)
+
     def getInstrument(self):
         instr_name = self.getInstrumentName()
         if not instr_name:
@@ -464,7 +477,6 @@ class PoolElement(BaseElement, TangoDevice):
     def start(self, *args, **kwargs):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
-        evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, equal=False)
             self.__go_time = 0
@@ -475,8 +487,6 @@ class PoolElement(BaseElement, TangoDevice):
         except:
             evt_wait.disconnect()
             raise
-        finally:
-            evt_wait.unlock()
         ts2 = evt_wait.getRecordedEvents().get(DevState.MOVING, ts2)
         return (ts2,)
 
@@ -488,21 +498,25 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        # Due to taurus-org/taurus #573 we need to divide the timeout
-        # in two intervals
-        if timeout is not None:
+        if timeout is None:
+            # 0.1 s of timeout with infinite retries facilitates aborting
+            # by raising exceptions from a different threads
+            timeout = 0.1
+            retries = -1
+        else:
+            # Due to taurus-org/taurus #573 we need to divide the timeout
+            # in two intervals
             timeout = timeout / 2
+            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
-        evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=1)
+                               timeout=timeout, retries=retries)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
-            evt_wait.unlock()
             evt_wait.disconnect()
 
     @reservedOperation
@@ -551,41 +565,43 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            # TODO: For Taurus 4 / Taurus 3 compatibility
-            if hasattr(self, "stateObj"):
-                state_value = self.stateObj.read().rvalue
-                # state_value is DevState enumeration (IntEnum)
-                state = state_value.name.capitalize()
-            else:
-                state = str(self.state()).capitalize()
+            t = time.time()
+            state_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: use expiration_period=float("inf") to always use event
+            #  value (taurus-org/taurus#1105)
+            state = self.stateObj.read()
+            state_time = state.time.strftime("%H:%M:%S.%f")
+            # state_value is DevState enumeration (IntEnum)
+            state = state.rvalue.name.capitalize()
         except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                state = traceback.format_exception_only(*e_info)
-        except:
+                state = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            state = traceback.format_exception_only(*e_info)
-        try:
-            msg.append(tab + "   State: " + state)
-        except TypeError:
-            msg.append(tab + "   State: " + state[0])
+            state = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "   State: " + state + " ({})".format(state_time))
 
         try:
-            e_info = sys.exc_info()[:2]
-            status = self.status()
-            status = status.replace('\n', indent)
+            t = time.time()
+            status_time = datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")
+            # TODO: ideally status should come from the event and no extra
+            #  readout should be made
+            status = self.read_attribute("status")
+            status_time = status.time.strftime("%H:%M:%S.%f")
+            status = status.value.replace('\n', indent)
         except DevFailed as df:
             if len(df.args):
                 status = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
-                status = traceback.format_exception_only(*e_info)
-        except:
+                status = traceback.format_exception_only(*e_info)[0].rstrip()
+        except Exception:
             e_info = sys.exc_info()[:2]
-            status = traceback.format_exception_only(*e_info)
-        msg.append(tab + "  Status: " + status)
+            status = traceback.format_exception_only(*e_info)[0].rstrip()
+        msg.append(tab + "  Status: " + status + " ({})".format(status_time))
 
         return msg
 
@@ -653,12 +669,6 @@ class Controller(PoolElement):
                 continue
             axes.append(elem.getAxis())
         return sorted(axes)
-
-    def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
-               "Use getUsedAxes instead.")
-        self.warning(msg)
-        self.getUsedAxes()
 
     def getLastUsedAxis(self):
         """Return the last used axis (the highest axis) in this controller
@@ -1372,20 +1382,65 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
+        self._raw_data = None
+        self._pending_event_data = None
+        self._local_changes = False
+        self.set_data(data)
+
+    def set_data(self, data, force=False):
+        # object each time
         if isinstance(data, str):
             data = CodecFactory().decode(('json', data))
-        self.raw_data = data
+        if not force:
+            if self._raw_data == data:
+                # The new data received on the on_change_event was generated by
+                # this object.
+                return
+            elif self._local_changes:
+                self._pending_event_data = data
+                return
+        self._pending_event_data = None
+        self._local_changes = False
+
+        self._raw_data = data
         self.__dict__.update(data)
 
         # dict<str, dict>
         # where key is the channel name and value is the channel data in form
-        # of a dict as receveid by the MG configuration attribute
+        # of a dict as received by the MG configuration attribute
         self.channels = channels = CaselessDict()
+        self.channels_names = channels_names = CaselessDict()
+        self.channels_labels = channels_labels = CaselessDict()
+        self.controllers_names = controllers_names = CaselessDict()
+        self.controllers_channels = controllers_channels = CaselessDict()
+        self.controllers_alias = CaselessDict()
 
-        for _, ctrl_data in list(self.controllers.items()):
+        # TODO private controllers attr
+        for ctrl_name, ctrl_data in list(self.controllers.items()):
+            try:
+                if ctrl_name != '__tango__':
+                    proxy = DeviceProxy(ctrl_name)
+                    ctrl_full_name = ctrl_name
+                    ctrl_name = proxy.alias()
+                    self.controllers_alias[ctrl_full_name] = ctrl_name
+
+                controllers_names[ctrl_name] = ctrl_data
+                controllers_channels[ctrl_name] = []
+            except Exception:
+                pass
             for channel_name, channel_data in \
                     list(ctrl_data['channels'].items()):
                 channels[channel_name] = channel_data
+                name = channel_data['name']
+                channels_names[name] = channel_data
+                label = channel_data['label']
+                channels_labels[name] = channel_data
+                index = channel_data['index']
+                ch_data = {'fullname': channel_name,
+                           'label': label,
+                           'name': name,
+                           'index': index}
+                controllers_channels[ctrl_name].append(ch_data)
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
@@ -1393,14 +1448,24 @@ class MGConfiguration(object):
         #      CaselessDict(getChannelConfigs(data, sort=False))
         #####################
 
-        # seq<dict> each element is the channel data in form of a dict as
-        # receveid by the MG configuration attribute. This seq is just a cache
-        # ordered by channel index in the MG.
+        # Create ordered list by channel index in the MG as cache
+        #    channel_list: seq<dict> each element is the channel data in form
+        #    of a dict as received by the MG configuration attribute.
+        #    channel_list_name: seq<str>
+        #    controller_list_names: seg<str>
         self.channel_list = len(channels) * [None]
+        self.channel_list_name = len(channels) * [None]
+        self.controller_list_name = []
 
-        for channel in list(channels.values()):
-            self.channel_list[channel['index']] = channel
+        for channel, channel_data in channels.items():
+            idx = channel_data['index']
+            self.channel_list[idx] = channel_data
+            self.channel_list_name[idx] = channel
 
+        for channel_name in self.channel_list_name:
+            ctrl = self._get_ctrl_for_element(channel_name)
+            if ctrl not in self.controller_list_name:
+                self.controller_list_name.append(ctrl)
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
         # where key is a device name and value is a list with two elements:
         #  - A device proxy or None if there was an error building it
@@ -1445,14 +1510,14 @@ class MGConfiguration(object):
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
-            params = tg_attr_validator.getParams(data_source)
+            params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
             else:
                 # Handle tango channel
-                dev_name = params['devicename'].lower()
-                attr_name = params['attributename'].lower()
+                dev_name = params['devname'].lower()
+                attr_name = params['_shortattrname'].lower()
                 host, port = params.get('host'), params.get('port')
                 if host is not None and port is not None:
                     dev_name = "tango://{0}:{1}/{2}".format(host, port,
@@ -1679,9 +1744,640 @@ class MGConfiguration(object):
                     ret[channel_data['full_name']] = None
         return ret
 
+    def _get_channel_data(self, channel_name):
+        if channel_name in self.channels_names:
+            return self.channels_names[channel_name]
+        elif channel_name in self.channels_labels:
+            return self.channels_labels[channel_name]
+        elif channel_name in self.channels:
+            return self.channels[channel_name]
+        v = TangoDeviceNameValidator()
+        names = v.getNames(channel_name)
+        msg = 'element "{}" is not in {}'.format(channel_name, self.label)
+        if names is None:
+            v = TangoAttributeNameValidator()
+            names = v.getNames(channel_name)
+            if names is None:
+                raise KeyError(msg)
+        full_name = names[0]
+        data = self.channels.get(full_name)
+        if data is None:
+            raise KeyError(msg)
+        return data
+
+    def _get_ctrl_data(self, ctrl_name):
+        if ctrl_name in self.controllers_names:
+            return self.controllers_names[ctrl_name]
+        elif ctrl_name in self.controllers:
+            return self.controllers[ctrl_name]
+        v = TangoDeviceNameValidator()
+        names = v.getNames(ctrl_name)
+        msg = 'element "{}" is not in {}'.format(ctrl_name, self.label)
+        if names is None:
+            raise KeyError(msg)
+        full_name = names[0]
+        data = self.controllers.get(full_name)
+        if data is None:
+            raise KeyError(msg)
+        return data
+
+    def _set_channels_key(self, key, value, channels_names=None,
+                          apply_cfg=True):
+
+        self._local_changes = True
+        if channels_names is None:
+            channels_names = self.channels.keys()
+        # Protections:
+        if key in ['enabled', 'output']:
+            if type(value) != bool:
+                raise ValueError('The value must be a boolean')
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+            channel[key] = value
+        if apply_cfg:
+            self.applyConfiguration()
+
+    def _get_channels_key(self, key, channels_names=None, use_fullname=False):
+        """
+        Helper method to return the value for one channel configuration key,
+        if the key does not exist the value will be None.
+        """
+        result = collections.OrderedDict({})
+
+        if channels_names is None:
+            channels_names = self.channel_list_name
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+            if use_fullname:
+                label = channel['full_name']
+            else:
+                label = channel['label']
+            try:
+                value = channel[key]
+            except KeyError:
+                result[label] = None
+                continue
+            if key == 'plot_axes':
+                res = []
+                for v in value:
+                    if v not in ['<mov>', '<idx>']:
+                        v = self.channels[v]['label']
+                    res.append(v)
+                value = res
+            result[label] = value
+        return result
+
+    def _set_ctrls_key(self, key, value, ctrls_names=None, apply_cfg=True):
+        self._local_changes = True
+        if ctrls_names is None:
+            ctrls_names = self.controllers.keys()
+
+        for ctrl_name in ctrls_names:
+            # if ctrl_name == '__tango__':
+            #     continue
+            ctrl = self._get_ctrl_data(ctrl_name)
+            ctrl[key] = value
+        if apply_cfg:
+            self.applyConfiguration()
+
+    def _get_ctrls_key(self, key, ctrls_names=None, use_fullname=False):
+        """
+        Helper method to return the value for one controller configuration key,
+        if the key does not exist the value will be None.
+        """
+        result = collections.OrderedDict({})
+        if ctrls_names is None:
+            ctrls_names = self.controller_list_name
+
+        for ctrl_name in ctrls_names:
+            if ctrl_name == '__tango__':
+                result[ctrl_name] = None
+                continue
+            ctrl = self._get_ctrl_data(ctrl_name)
+
+            if use_fullname:
+                label = ctrl_name
+            else:
+                label = DeviceProxy(ctrl_name).alias()
+
+            try:
+                value = ctrl[key]
+            except KeyError:
+                result[label] = None
+                continue
+
+            if key in ['timer', 'monitor']:
+                value = self.channels[value]['label']
+            elif key == 'synchronizer' and value != 'software':
+                value = DeviceProxy(value).alias()
+
+            result[label] = value
+        return result
+
+    def _get_ctrl_for_channel(self, channels_names, unique=False):
+        result = collections.OrderedDict({})
+
+        if channels_names is None:
+            channels_names = self.channel_list_name
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+            try:
+                ctrl = channel['_controller_name']
+            except KeyError:
+                ctrl = '__tango__'
+            if unique and ctrl in result.values():
+                raise KeyError('There are more than one channel of the same '
+                               'controller')
+            result[channel['full_name']] = ctrl
+
+        return result
+
+    def _get_ctrl_channels(self, ctrl, use_fullname=False):
+        idx_channel = {}
+        if ctrl not in self.controllers_channels:
+            ctrl = self.controllers_alias[ctrl]
+        channels_datas = self.controllers_channels[ctrl]
+        for channel_data in channels_datas:
+            if use_fullname:
+                name = channel_data['fullname']
+            else:
+                name = channel_data['label']
+            idx = channel_data['index']
+            idx_channel[idx] = name
+        channels = []
+        for idx in sorted(idx_channel):
+            channels.append(idx_channel[idx])
+
+        return channels
+
+    def _get_channels_for_element(self, element, use_fullname=False):
+        channels = []
+        if element in self.controllers_channels:
+            channels += self._get_ctrl_channels(element, use_fullname)
+        else:
+            channels += [element]
+        return channels
+
+    def _get_ctrl_for_element(self, element):
+        if element in self.controllers_channels:
+            ctrl = element
+        else:
+            # TODO: find more elegant way
+            channel_ctrl = self._get_ctrl_for_channel([element])
+            ctrl = list(channel_ctrl.values())[0]
+        return ctrl
+
+    def applyConfiguration(self, timeout=3):
+        if not self._local_changes:
+            return
+        if self._pending_event_data is not None:
+            self.set_data(self._pending_event_data, force=True)
+            raise RuntimeError('The configuration changed on the server '
+                               'during your changes.')
+        mg = self._mg()
+        try:
+            mg.setConfiguration(self._raw_data)
+        except Exception as e:
+            self._local_changes = False
+            self._pending_event_data = None
+            data = mg.getConfigurationAttrEG().readValue(force=True)
+            self.set_data(data, force=True)
+            raise e
+        self._local_changes = False
+        self._pending_event_data = None
+        if not mg._flg_event.wait(timeout):
+            raise RuntimeError('timeout on applying configuration')
+
+    def _getValueRefEnabledChannels(self, channels=None, use_fullname=False):
+        """get acquisition Enabled channels.
+
+        :param channels: (seq<str>) a list of channels names to get the
+        Enabled info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where the key are the channels and value the
+        Enabled state
+        """
+
+        return self._get_channels_key('value_ref_enabled', channels,
+                                      use_fullname)
+
+    def _setValueRefEnabledChannels(self, state, channels=None,
+                                    apply_cfg=True):
+        """Enable acquisition of the indicated channels.
+
+        :param state: <bool> The state of the channels to be set.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self._set_channels_key('value_ref_enabled', state, channels, apply_cfg)
+
+    def _getValueRefPatternChannels(self, channels=None, use_fullname=False):
+        """get acquisition Enabled channels.
+
+        :param channels: (seq<str>) a list of channels names to get the
+        Enabled info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where the key are the channels and value the
+        Enabled state
+        """
+
+        return self._get_channels_key('value_ref_pattern', channels,
+                                      use_fullname)
+
+    def _setValueRefPatternChannels(self, pattern, channels=None,
+                                    apply_cfg=True):
+        """Enable acquisition of the indicated channels.
+
+        :param pattern: <str> The state of the channels to be set.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self._set_channels_key('value_ref_pattern', pattern, channels,
+                               apply_cfg)
+
+    def _getEnabledChannels(self, channels=None, use_fullname=False):
+        """get acquisition Enabled channels.
+
+        :param channels: (seq<str>) a list of channels names to get the
+        Enabled info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where the key are the channels and value the
+        Enabled state
+        """
+
+        return self._get_channels_key('enabled', channels, use_fullname)
+
+    def _setEnabledChannels(self, state, channels=None, apply_cfg=True):
+        """Enable acquisition of the indicated channels.
+
+        :param state: <bool> The state of the channels to be set.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self._set_channels_key('enabled', state, channels, apply_cfg)
+
+    def _getOutputChannels(self, channels=None, use_fullname=False):
+        """get the output State of the channels.
+
+        :param channels: (list<str>) a string indicating the channel name,
+        in case of None, it will return all the Outputs Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where keys are channel names and
+        value the Outputs configuration
+        """
+
+        return self._get_channels_key('output', channels, use_fullname)
+
+    def _setOutputChannels(self, state, channels=None, apply_cfg=True):
+        """Set the Output state of the indicated channels.
+
+        :param state: (bool) Indicate the state of the output.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+
+        self._set_channels_key('output', state, channels, apply_cfg)
+
+    def _getPlotTypeChannels(self, channels=None, use_fullname=False):
+        """get the Plot Type for the channel indicated. In case of empty
+        channel value it will return  all the Plot Type Info
+
+        :param channels: (list<str>) Indicate the channel to return the
+        Plot Type Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the plot axes info
+        """
+        # TODO: Change to return enum value SEP12
+        return self._get_channels_key('plot_type', channels, use_fullname)
+
+    def _setPlotTypeChannels(self, ptype, channels=None, apply_cfg=True):
+        """Set the Plot Type for the indicated channels.
+
+        :param ptype: <str> string indicating the type name
+        :param channels: (seq<str>) a list of strings indicating the channels
+        to apply the PlotType
+        """
+
+        msg_error = 'Wrong value! PlotType allowed: ' \
+                    '{0}'.format(PlotType.keys())
+        if type(ptype) == str:
+            if ptype.lower() not in map(str.lower, PlotType.keys()):
+                raise ValueError(msg_error)
+            for value in PlotType.keys():
+                if value.lower() == ptype.lower():
+                    ptype = PlotType[value]
+                    break
+        elif type(ptype) == int:
+            try:
+                PlotType[ptype]
+            except Exception:
+                raise ValueError(msg_error)
+        else:
+            raise ValueError()
+        self._set_channels_key('plot_type', ptype, channels, apply_cfg)
+
+    def _getPlotAxesChannels(self, channels=None, use_fullname=False):
+        """get the PlotAxes for the channel indicated. In case of empty channel
+        value it will return  all the PlotAxes Info
+
+        :param channels: (list<str>) Indicate the channel to return the
+        PlotAxes Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the plot axes info
+        """
+
+        return self._get_channels_key('plot_axes', channels, use_fullname)
+
+    def _setPlotAxesChannels(self, axes, channels_names=None, apply_cfg=True):
+        """Set the PlotAxes for the indicated channels.
+
+        :param axes: <seq(str)> string indicating the axis name
+        :param channels_names: (seq<str>) a list of strings indicating the
+        channels to apply the PlotAxes
+        """
+        # Validate axes values
+        for i, value in enumerate(axes):
+            if value in ['<idx>', '<mov>']:
+                continue
+            else:
+                axes[i] = self._get_channel_data(value)["full_name"]
+
+        if channels_names is None:
+            channels_names = self.channels.keys()
+
+        for channel_name in channels_names:
+            channel_data = self._get_channel_data(channel_name)
+
+            # Check the current channel plot type
+            plot_type = PlotType[PlotType[channel_data['plot_type']]]
+            if plot_type == PlotType.No:
+                raise RuntimeError('You must set firs the PlotType')
+            elif plot_type == PlotType.Spectrum:
+                if len(axes) != 1:
+                    raise ValueError('The Spectrum Type only allows one axis')
+            elif plot_type == PlotType.Image:
+                if len(axes) != 2:
+                    raise ValueError('The Image Type only allows two axis')
+
+        self._set_channels_key('plot_axes',  axes, [channel_name], apply_cfg)
+
+    def _getCtrlsTimer(self, ctrls=None, use_fullname=False):
+        """get the acquisition Timer.
+
+        :param ctrls: <list(str)> list of Controllers names to get the timer
+        info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where keys are controller names and
+        value the Timer Info
+        """
+
+        return self._get_ctrls_key('timer', ctrls, use_fullname)
+
+    def _setCtrlsTimer(self, timers, apply_cfg=True):
+        """Set the acquisition Timer to the controllers compatibles,
+        it finds the controller comptible with this timer and set it
+        .
+        :param timer_name: <str> strings indicating the timer name
+        """
+        result = self._get_ctrl_for_channel(timers, unique=True)
+        meas_ctrl = self.channels[self.timer]['_controller_name']
+
+        for timer, ctrl in result.items():
+            if ctrl == meas_ctrl:
+                self._local_changes = True
+                self._raw_data['timer'] = timer
+            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
+
+    def _getCtrlsMonitor(self, ctrls=None, use_fullname=False):
+        """get the Monitor for the channel indicated. In case of empty channel
+        value it will return  all the Monitor Info
+
+        :param ctrls: <str> Indicate the controllers to return the Monitor Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the Monitor Info
+        """
+
+        return self._get_ctrls_key('monitor', ctrls, use_fullname)
+
+    def _setCtrlsMonitor(self, monitors, apply_cfg=True):
+        """Set the Monitor for to the controllers compatibles,
+        it finds the controller comptible with this timer and set it
+
+        :param monitors: (seq<str>) a list of strings indicating the channels
+        to apply the monitor
+        :param monitor: <str> string indicating the monitor name
+        """
+
+        result = self._get_ctrl_for_channel(monitors, unique=True)
+        meas_ctrl = self.channels[self.monitor]['_controller_name']
+
+        for monitor, ctrl in result.items():
+            if ctrl == meas_ctrl:
+                self._local_changes = True
+                self._raw_data['monitor'] = monitor
+            self._set_ctrls_key('monitor', monitor, [ctrl], apply_cfg)
+
+    def _getCtrlsSynchronization(self, ctrls=None, use_fullname=False):
+        """get the Synchronization for the channel indicated. In case of empty
+        ctrl value it will return  all the Synchronization Info
+
+        :param ctrl: <str> Indicate the controllers to return the
+        Synchronization Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are controllers names and
+        value the Synchronization Info
+        """
+
+        return self._get_ctrls_key('synchronization', ctrls, use_fullname)
+
+    def _setCtrlsSynchronization(self, synchronization, ctrls=None,
+                                 apply_cfg=True):
+        """Set the Synchronization to the indicated controllers.
+
+        :param synchronization: <str> string indicating the synchronization
+        :param ctrls: (seq<str>) a list of strings indicating the channels
+        to apply the Synchronization
+        name
+        """
+        msg_error = 'Wrong value! Synchronization allowed: ' \
+                    '{0}'.format(AcqSynchType.keys())
+        if type(synchronization) == str:
+            if synchronization.lower() not in map(str.lower,
+                                                  AcqSynchType.keys()):
+                raise ValueError(msg_error)
+            for value in AcqSynchType.keys():
+                if value.lower() == synchronization.lower():
+                    synchronization = AcqSynchType[value]
+                    break
+        elif type(synchronization) == int:
+            try:
+                AcqSynchType[synchronization]
+            except Exception:
+                raise ValueError(msg_error)
+        else:
+            raise ValueError()
+        self._set_ctrls_key('synchronization', synchronization, ctrls,
+                            apply_cfg)
+
+    def _getCtrlsSynchronizer(self, ctrls=None, use_fullname=False):
+        """get the synchronizer for the channel indicated. In case of empty
+        channel value it will return  all the Synchronizers Info
+
+        :param ctrls: <str> Indicate the controllers to return the
+        Synchronizer Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+        :return  a OrderedDict where keys are controllers names and
+        value the synchronizer info
+        """
+
+        return self._get_ctrls_key('synchronizer', ctrls, use_fullname)
+
+    def _setCtrlsSynchronizer(self, synchronizer, ctrls=None, apply_cfg=True):
+        """Set the synchronizer for the indicated controollers. In case of
+        empty ctrls value it will be applied to all the controllers
+
+        :param syncronizer: <str> string indicating the synchronizer name
+        :param ctrls: (seq<str>) a list of strings indicating the
+        controllers to apply the synchronizer
+        """
+        if synchronizer == 'software':
+            pass
+        else:
+            # TODO: Improve how to check if the element is a trigger_gate
+            sync = Device(synchronizer)
+            if 'triggergate' not in sync.fullname:
+                raise ValueError('The "{0}" is not a '
+                                 'triggergate'.format(synchronizer))
+            synchronizer = sync.fullname
+        self._set_ctrls_key('synchronizer', synchronizer, ctrls, apply_cfg)
+
+    def _getTimerName(self):
+        return self._getTimer()['name']
+
+    def _getTimer(self):
+        return self.channels[self.timer]
+
+    def _getTimerValue(self):
+        return self._getTimerName()
+
+    def _getMonitorName(self):
+        return self._getMonitor()['name']
+
+    def _getMonitor(self):
+        return self.channels[self.monitor]
+
+    def getValues(self, parallel=True):
+        return self.read(parallel=parallel)
+
+    def _getCounters(self):
+        return [c for c in self.getChannels() if c['full_name'] != self.timer]
+
+    def _getChannelNames(self):
+        return [ch['name'] for ch in self.getChannels()]
+
+    def _getCounterNames(self):
+        return [ch['name'] for ch in self.getCounters()]
+
+    def _getChannelLabels(self):
+        return [ch['label'] for ch in self.getChannels()]
+
+    def _getCounterLabels(self):
+        return [ch['label'] for ch in self.getCounters()]
+
+    def _getChannel(self, name):
+        return self.channels[name]
+
+    def getChannelsEnabledInfo(self):
+        """
+        Returns information about **only enabled** channels present in the
+        measurement group in a form of ordered, based on the channel index,
+        list.
+
+        :return: list with channels info
+        :rtype: list<TangoChannelInfo>
+        """
+        return self.getChannelsInfoList(only_enabled=True)
+
+    def getCountersInfo(self):
+        return self.getCountersInfoList()
+
+    def setTimer(self, timer, apply_cfg=True):
+        """DEPRECATED: Set the Global Timer to the measurement group.
+
+        Also it changes the timer in the controllers with the previous timer.
+
+        :param timer: <str> timer name
+        """
+        self._mg().warning("setTimer() is deprecated since Jul20. "
+                           "Global measurement group timer does not exist")
+        result = self._get_ctrl_for_channel([timer], unique=True)
+
+        for timer, ctrl in result.items():
+            self._local_changes = True
+            self._raw_data['timer'] = timer
+            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
+
+    def getTimer(self):
+        """DEPRECATED"""
+        self._mg().warning("getTimer() is deprecated since Jul20. "
+                           "Global measurement group timer does not exist")
+        return self._getTimer()
+
+    def getMonitor(self):
+        """DEPRECATED"""
+        self._mg().warning("getMonitor() is deprecated since Jul20. "
+                           "Global measurement group monitor does not exist")
+        return self._getMonitor()
+
+    def __repr__(self):
+        return json.dumps(self._raw_data, indent=4, sort_keys=True)
+
 
 class MeasurementGroup(PoolElement):
-    """ Class encapsulating MeasurementGroup functionality."""
+    """MeasurementGroup Sardana-Taurus extension.
+
+    Setting configuration parameters using e.g.,
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled` or
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setTimer`, etc.
+    by default applies changes on the server. Since setting the configuration
+    means passing to the server all the configuration parameters of
+    the measurement group at once this behavior can be changed with the
+    ``apply=False``. Then the configuration changes are kept locally.
+    This is useful when changing more then one parameter. In this case only
+    setting of the last parameter should use ``apply=True`` or use
+    `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.applyConfiguration`
+    afterwards::
+
+        # or in a macro use: meas_grp = self.getMeasurementGroup("mntgrp01")
+        meas_grp = taurus.Device("mntgrp01")
+        meas_grp.setEnabled(False, apply=False)
+        meas_grp.setEnabled(True, "ct01", "ct02")
+    """
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
@@ -1690,6 +2386,7 @@ class MeasurementGroup(PoolElement):
         self._last_integ_time = None
         self.call__init__(PoolElement, name, **kw)
 
+        self._flg_event = threading.Event()
         self.__cfg_attr = self.getAttribute('configuration')
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
@@ -1716,12 +2413,16 @@ class MeasurementGroup(PoolElement):
         return self._getAttrEG('Configuration')
 
     def setConfiguration(self, configuration):
+        self._flg_event.clear()
         codec = CodecFactory().getCodec('json')
         f, data = codec.encode(('', configuration))
         self.write_attribute('configuration', data)
 
     def _setConfiguration(self, data):
-        self._configuration = MGConfiguration(self, data)
+        if self._configuration is None:
+            self._configuration = MGConfiguration(self, data)
+        else:
+            self._configuration.set_data(data)
 
     def getConfiguration(self, force=False):
         if force or self._configuration is None:
@@ -1733,79 +2434,8 @@ class MeasurementGroup(PoolElement):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
-
-    def getTimerName(self):
-        return self.getTimer()['name']
-
-    def getTimer(self):
-        cfg = self.getConfiguration()
-        return cfg.channels[cfg.timer]
-
-    def getTimerValue(self):
-        return self.getTimerName()
-
-    def getMonitorName(self):
-        return self.getMonitor()['name']
-
-    def getMonitor(self):
-        cfg = self.getConfiguration()
-        return cfg.channels[cfg.monitor]
-
-    def setTimer(self, timer_name):
-        try:
-            self.getChannel(timer_name)
-        except KeyError:
-            raise Exception("%s does not contain a channel named '%s'"
-                            % (str(self), timer_name))
-        cfg = self.getConfiguration().raw_data
-        cfg['timer'] = timer_name
-        import json
-        self.write_attribute("configuration", json.dumps(cfg))
-
-    def getChannels(self):
-        return self.getConfiguration().getChannels()
-
-    def getCounters(self):
-        cfg = self.getConfiguration()
-        return [c for c in self.getChannels() if c['full_name'] != cfg.timer]
-
-    def getChannelNames(self):
-        return [ch['name'] for ch in self.getChannels()]
-
-    def getCounterNames(self):
-        return [ch['name'] for ch in self.getCounters()]
-
-    def getChannelLabels(self):
-        return [ch['label'] for ch in self.getChannels()]
-
-    def getCounterLabels(self):
-        return [ch['label'] for ch in self.getCounters()]
-
-    def getChannel(self, name):
-        return self.getConfiguration().channels[name]
-
-    def getChannelInfo(self, name):
-        return self.getConfiguration().getChannelInfo(name)
-
-    def getChannelsInfo(self):
-        return self.getConfiguration().getChannelsInfoList()
-
-    def getChannelsEnabledInfo(self):
-        """Returns information about **only enabled** channels present in the
-        measurement group in a form of ordered, based on the channel index,
-        list.
-
-        :return: list with channels info
-        :rtype: list<TangoChannelInfo>
-        """
-        return self.getConfiguration().getChannelsInfoList(only_enabled=True)
-
-    def getCountersInfo(self):
-        return self.getConfiguration().getCountersInfoList()
-
-    def getValues(self, parallel=True):
-        return self.getConfiguration().read(parallel=parallel)
+        self._setConfiguration(evt_value.rvalue)
+        self._flg_event.set()
 
     def getValueBuffers(self):
         value_buffers = []
@@ -1838,17 +2468,653 @@ class MeasurementGroup(PoolElement):
     def setAcquisitionMode(self, acqMode):
         self.getAcquisitionModeObj().write(acqMode)
 
-    def getSynchronizationObj(self):
-        return self._getAttrEG('Synchronization')
+    def getSynchDescriptionObj(self):
+        return self._getAttrEG('SynchDescription')
 
-    def getSynchronization(self):
-        return self._getAttrValue('Synchronization')
+    def getSynchDescription(self):
+        return self._getAttrValue('SynchDescription')
 
-    def setSynchronization(self, synchronization):
+    def setSynchDescription(self, synch_description):
         codec = CodecFactory().getCodec('json')
-        _, data = codec.encode(('', synchronization))
-        self.getSynchronizationObj().write(data)
+        _, data = codec.encode(('', synch_description))
+        self.getSynchDescriptionObj().write(data)
         self._last_integ_time = None
+
+    def _get_channels_for_elements(self, elements):
+        if not elements:
+            return None
+        config = self.getConfiguration()
+        channels = []
+        for element in elements:
+            channels += config._get_channels_for_element(element)
+        return channels
+
+    def _get_ctrl_for_elements(self, elements):
+        if not elements:
+            return None
+        ctrls = []
+        config = self.getConfiguration()
+        for element in elements:
+            ctrl = config._get_ctrl_for_element(element)
+            if ctrl in ctrls:
+                continue
+            ctrls.append(ctrl)
+        return ctrls
+
+    def setOutput(self, output, *elements, apply=True):
+        """Set the output configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the output
+        on the controller means setting it to all channels of this controller
+        present in this measurement group.
+
+        :param output: `True` - output enabled, `False` - output disabled
+        :type output: bool
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setOutputChannels(output, channels, apply_cfg=apply)
+
+    def getOutput(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, bool)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config._getOutputChannels(channels, use_fullname=ret_full_name)
+
+    def setEnabled(self, enabled, *elements, apply=True):
+        """Set the enabled configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the enabled
+        on the controller means setting it to all channels of this controller
+        present in this measurement group.
+
+        :param enabled: `True` - element enabled, `False` - element disabled
+        :type enabled: bool
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setEnabledChannels(enabled, channels, apply_cfg=apply)
+
+    def getEnabled(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the enabled
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, bool)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config._getEnabledChannels(channels, use_fullname=ret_full_name)
+
+    def setPlotType(self, plot_type, *elements, apply=True):
+        """Set the enabled configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the plot
+        type on the controller means setting it to all channels of this
+        controller present in this measurement group.
+
+        :param plot_type: 'No'/0 , 'Spectrum'/1, 'Image'/2
+        :type plot_type: str or int
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setPlotTypeChannels(plot_type, channels, apply_cfg=apply)
+
+    def getPlotType(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the plot
+        type from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, int)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        # TODO Change the documentation when _getPlotTypeChannels return enum
+        #  value
+        return config._getPlotTypeChannels(channels,
+                                           use_fullname=ret_full_name)
+
+    def setPlotAxes(self, plot_axes, *elements, apply=True):
+        """Set the enabled configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the plot
+        axes on the controller means setting it to all channels of this
+        controller present in this measurement group.
+
+        :param plot_axes: ['<mov>'] / ['<mov>', '<idx>']
+        :type plot_axes: list(str)
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setPlotAxesChannels(plot_axes, channels, apply_cfg=apply)
+
+    def getPlotAxes(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the plot
+        axes from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, str)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config._getPlotAxesChannels(channels,
+                                           use_fullname=ret_full_name)
+
+    def setValueRefEnabled(self, value_ref_enabled, *elements, apply=True):
+        """Set the output configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the value
+        reference enabled on the controller means setting it to all channels
+        of this controller present in this measurement group.
+
+        :param value_ref_enabled: `True` - enabled, `False` - disabled
+        :type value_ref_enabled: bool
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setValueRefEnabledChannels(value_ref_enabled, channels,
+                                           apply_cfg=apply)
+
+    def getValueRefEnabled(self, *elements, ret_full_name=False):
+        """Get the value reference enabled configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the value
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, bool)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config._getValueRefEnabledChannels(channels,
+                                                  use_fullname=ret_full_name)
+
+    def setValueRefPattern(self, value_ref_pattern, *elements, apply=True):
+        """Set the output configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the value
+        reference pattern on the controller means setting it to all channels
+        of this controller present in this measurement group.
+
+        :param value_ref_pattern: `/path/file{index:03d}.txt`
+        :type value_ref_pattern: :py:obj:`str`
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config._setValueRefPatternChannels(value_ref_pattern, channels,
+                                           apply_cfg=apply)
+
+    def getValueRefPattern(self, *elements, ret_full_name=False):
+        """Get the value reference enabled configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the value
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, str)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config._getValueRefPatternChannels(channels,
+                                                  use_fullname=ret_full_name)
+
+    def _get_value_per_channel(self, config, ctrls_values, use_fullname=False):
+        channels_values = collections.OrderedDict({})
+        for ctrl, value in ctrls_values.items():
+            for channel in config._get_ctrl_channels(ctrl, use_fullname):
+                channels_values[channel] = value
+        return channels_values
+
+    def setTimer(self, timer, *elements, apply=True):
+        """Set the timer configuration for the given channels of the same
+        controller.
+
+        .. note:: Currently the controller's timer must be unique. Hence this
+           method will set it for the whole controller regardless of the
+           ``elements`` argument.
+
+        :param timer: channel use as timer
+        :type timer: :py:obj:`str`
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        config._setCtrlsTimer([timer], apply_cfg=apply)
+
+    def getTimer(self, *elements, ret_full_name=False, ret_by_ctrl=False):
+        """Get the timer configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their timer
+            configurations
+        :rtype: dict(str, str)
+        """
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_timers = config._getCtrlsTimer(ctrls, use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_timers
+        else:
+            return self._get_value_per_channel(config, ctrls_timers,
+                                               use_fullname=ret_full_name)
+
+    def setMonitor(self, monitor, *elements, apply=True):
+        """Set the monitor configuration for the given channels of the same
+        controller.
+
+        .. note:: Currently the controller's monitor must be unique.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
+
+        :param monitor: channel use as monitor
+        :type monitor: :py:obj:`str`
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the moniotor per channel when it is
+        #  allowed.
+        config._setCtrlsMonitor([monitor], apply_cfg=apply)
+
+    def getMonitor(self, *elements, ret_full_name=False, ret_by_ctrl=False):
+        """Get the monitor configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their monitor
+            configurations
+        :rtype: dict(str, str)
+        """
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_monitor = config._getCtrlsMonitor(ctrls,
+                                                use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_monitor
+        else:
+            return self._get_value_per_channel(config, ctrls_monitor,
+                                               use_fullname=ret_full_name)
+
+    def setSynchronizer(self, synchronizer, *elements, apply=True):
+        """Set the synchronizer configuration for the given channels or
+        controller.
+
+        .. note:: Currently the controller's synchronizer must be unique.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
+
+        :param synchronizer: triger/gate element name or software
+        :type synchronizer: :py:obj:`str`
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config._setCtrlsSynchronizer(synchronizer, ctrls, apply_cfg=apply)
+
+    def getSynchronizer(self, *elements, ret_full_name=False,
+                        ret_by_ctrl=False):
+        """Get the synchronizer configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their synchronizer
+            configurations
+        :rtype: dict(str, str)
+        """
+        # TODO: Implement solution to set the synchronizer per channel when it
+        #  is allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_sync = config._getCtrlsSynchronizer(ctrls,
+                                                  use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_sync
+        else:
+            return self._get_value_per_channel(config, ctrls_sync,
+                                               use_fullname=ret_full_name)
+
+    def setSynchronization(self, synchronization, *elements, apply=True):
+        """Set the synchronization configuration for the given channels or
+        controller.
+
+        .. note:: Currently the controller's synchronization must be unique.
+           Hence this method will set it for the whole controller regardless of
+           the ``elements`` argument.
+
+        :param synchronization: synchronization type e.g. Trigger, Gate or
+          Start
+        :type synchronization: `sardana.pool.AcqSynchType`
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the synchronization per channel when
+        #  it is allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config._setCtrlsSynchronization(synchronization, ctrls,
+                                        apply_cfg=apply)
+
+    def getSynchronization(self, *elements, ret_full_name=False,
+                           ret_by_ctrl=False):
+        """Get the synchronization configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their
+            synchronization configurations
+        :rtype: dict<`str`, `sardana.pool.AcqSynchType`>
+        """
+        # TODO: Implement solution to set the synchronization per channel
+        #  when it is allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_sync = \
+            config._getCtrlsSynchronization(ctrls, use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_sync
+        else:
+            return self._get_value_per_channel(config, ctrls_sync,
+                                               use_fullname=ret_full_name)
+
+    def applyConfiguration(self):
+        """Apply configuration changes kept locally on the server.
+
+        Setting configuration parameters using e.g.,
+        `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled`
+        or
+        `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setTimer`,
+        etc.
+        with ``apply=False`` keeps the changes locally. Use this method to
+        apply them on the server afterwards.
+        """
+        self.getConfiguration().applyConfiguration()
+
+    #########################################################################
+    # TODO: review the following API
+
+    def getChannelsEnabledInfo(self):
+        """Returns information about **only enabled** channels present in the
+        measurement group in a form of ordered, based on the channel index,
+        list.
+        :return: list with channels info
+        :rtype: list<TangoChannelInfo>
+        """
+        return self.getConfiguration().getChannelsInfoList(only_enabled=True)
+
+    def getCountersInfo(self):
+        return self.getConfiguration().getCountersInfoList()
+
+    def getValues(self, parallel=True):
+        return self.getConfiguration().getValues(parallel)
+
+    def getChannels(self):
+        return self.getConfiguration().getChannels()
+
+    def getCounters(self):
+        return self.getConfiguration()._getCounters()
+
+    def getChannelNames(self):
+        return self.getConfiguration()._getChannelNames()
+
+    def getCounterNames(self):
+        return self.getConfiguration()._getCounterNames()
+
+    def getChannelLabels(self):
+        return self.getConfiguration()._getChannelLabels()
+
+    def getCounterLabels(self):
+        return self.getConfiguration()._getCounterLabels()
+
+    def getChannel(self, name):
+        return self.getConfiguration()._getChannel(name)
+
+    def getChannelInfo(self, name):
+        return self.getConfiguration().getChannelInfo(name)
+
+    #########################################################################
+
+    def getChannelsInfo(self):
+        """DEPRECATED"""
+        self.warning('Deprecation warning: you should use '
+                     '"getChannelsInfoList" instead of "getChannelsInfo"')
+        return self.getConfiguration().getChannelsInfoList()
+
+    def getMonitorName(self):
+        """DEPRECATED"""
+        self.warning("getMonitorName() is deprecated since Jul20. "
+                     "Global measurement group monitor does not exist.")
+        return self.getConfiguration()._getMonitorName()
+
+    def getTimerName(self):
+        """DEPRECATED"""
+        self.warning("getTimerName() is deprecated since Jul20. "
+                     "Global measurement group timer does not exist.")
+        return self.getConfiguration()._getTimerName()
+
+    def getTimerValue(self):
+        """DEPRECATED"""
+        self.warning("getTimerValue() is deprecated since Jul20. "
+                     "Global measurement group timer does not exist.")
+        return self.getConfiguration()._getTimerValue()
+
+    def enableChannels(self, channels):
+        '''DEPRECATED: Enable acquisition of the indicated channels.
+
+        :param channels: (seq<str>) a sequence of strings indicating
+           channel names
+        '''
+        self.warning("enableChannels() in deprecated since Jul20. "
+                     "Use setEnabled() instead.")
+        self.setEnabled(True, *channels)
+
+    def disableChannels(self, channels):
+        '''DEPRECATED: Disable acquisition of the indicated channels.
+
+        :param channels: (seq<str>) a sequence of strings indicating
+           channel names
+        '''
+        self.warning("enableChannels() in deprecated since Jul20. "
+                     "Use setEnabled() instead.")
+        self.setEnabled(False, *channels)
 
     # NbStarts Methods
     def getNbStartsObj(self):
@@ -2023,42 +3289,6 @@ class MeasurementGroup(PoolElement):
                     channel.valueRefBufferChanged)
         self._value_ref_buffer_channels = None
 
-    def enableChannels(self, channels):
-        '''Enable acquisition of the indicated channels.
-
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        '''
-        self._enableChannels(channels, True)
-
-    def disableChannels(self, channels):
-        '''Disable acquisition of the indicated channels.
-
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        '''
-        self._enableChannels(channels, False)
-
-    def _enableChannels(self, channels, state):
-        found = {}
-        for channel in channels:
-            found[channel] = False
-        cfg = self.getConfiguration()
-        for channel in cfg.getChannels():
-            name = channel['name']
-            if name in channels:
-                channel['enabled'] = state
-                found[name] = True
-        wrong_channels = []
-        for ch, f in list(found.items()):
-            if f is False:
-                wrong_channels.append(ch)
-        if len(wrong_channels) > 0:
-            msg = 'channels: %s are not present in measurement group' % \
-                  wrong_channels
-            raise Exception(msg)
-        self.setConfiguration(cfg.raw_data)
-
     def _start(self, *args, **kwargs):
         try:
             self.Start()
@@ -2132,12 +3362,13 @@ class MeasurementGroup(PoolElement):
         self.prepare()
         return self.count_raw(start_time)
 
-    def count_continuous(self, synchronization, value_buffer_cb=None):
+    def count_continuous(self, synch_description, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
-        :param synchronization: synchronization description
-        :type synchronization: list of groups with equidistant synchronizations
+        :param synch_description: synchronization description
+        :type synch_description: list of groups with equidistant
+          synchronizations
         :param value_buffer_cb: callback on value buffer updates
         :type value_buffer_cb: callable
         :return: state and eventually value buffers if no callback was passed
@@ -2153,10 +3384,13 @@ class MeasurementGroup(PoolElement):
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
-        self.setSynchronization(synchronization)
+        self.setSynchDescription(synch_description)
+        self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
-        self.count_raw(start_time)
-        self.unsubscribeValueBuffer(value_buffer_cb)
+        try:
+            self.count_raw(start_time)
+        finally:
+            self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -2285,10 +3519,10 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value)
+            elems = CodecFactory().decode(evt_value.rvalue)
         except:
             self.error("Could not decode element info")
-            self.info("value: '%s'", evt_value.value)
+            self.info("value: '%s'", evt_value.rvalue)
             self.debug("Details:", exc_info=1)
             return
         elements = self.getElementsInfo()
@@ -2504,6 +3738,11 @@ class Pool(TangoDevice, MoveableSource):
 
     def deleteController(self, name):
         return self.deleteElement(name)
+
+    def createInstrument(self, full_name, class_name):
+        self.command_inout("CreateInstrument", [full_name, class_name])
+        elements_info = self.getElementsInfo()
+        return self._wait_for_element_in_container(elements_info, full_name)
 
 
 def registerExtensions():

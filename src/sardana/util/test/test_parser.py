@@ -25,7 +25,7 @@
 
 """Tests for parser utilities."""
 
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.util.parser import ParamParser
 

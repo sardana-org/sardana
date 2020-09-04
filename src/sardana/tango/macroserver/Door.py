@@ -271,6 +271,8 @@ class Door(SardanaDevice):
             event_value = self.calculate_tango_status(event_value)
         elif name == "recorddata":
             format, value = event_value
+            if format is None:
+                format = "utf8_json"
             codec = CodecFactory().getCodec(format)
             event_value = codec.encode(('', value))
         else:
@@ -352,10 +354,6 @@ class Door(SardanaDevice):
     def read_MacroStatus(self, attr):
         attr.set_value('', '')
 
-    def Abort(self):
-        self.debug("Abort is deprecated. Use StopMacro instead")
-        return self.StopMacro()
-
     def AbortMacro(self):
         macro = self.getRunningMacro()
         if macro is None:
@@ -363,8 +361,18 @@ class Door(SardanaDevice):
         self.debug("aborting %s" % macro._getDescription())
         self.macro_executor.abort()
 
-    def is_Abort_allowed(self):
-        return True
+    def ReleaseMacro(self):
+        macro = self.getRunningMacro()
+        if macro is None:
+            return
+        self.debug("releasing %s" % macro._getDescription())
+        self.macro_executor.release()
+
+    def is_ReleaseMacro_allowed(self):
+        is_release_allowed = (self.get_state() == Macro.Running
+                              or self.get_state() == Macro.Pause)
+        return is_release_allowed
+
 
     def PauseMacro(self):
         macro = self.getRunningMacro()
@@ -457,13 +465,13 @@ class DoorClass(SardanaDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Abort':
-            [[DevVoid, ""],
-             [DevVoid, ""]],
         'PauseMacro':
             [[DevVoid, ""],
              [DevVoid, ""]],
         'AbortMacro':
+            [[DevVoid, ""],
+             [DevVoid, ""]],
+        'ReleaseMacro':
             [[DevVoid, ""],
              [DevVoid, ""]],
         'StopMacro':

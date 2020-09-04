@@ -34,7 +34,6 @@ from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel
 from taurus.qt.qtgui.model import EditorToolBar
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 from taurus.qt.qtgui.table import TaurusBaseTableWidget
 from taurus.qt.qtgui.panel import TaurusModelChooser
 from taurus.core.taurusbasetypes import TaurusElementType
@@ -125,8 +124,8 @@ def createChannelDict(channel, index=None, **kwargs):
         #           'timer': '', #should contain a channel name
         #           'monitor': '', #should contain a channel name
         #           'trigger': '', #should contain a channel name
-        'value_ref_enabled': False,  # bool
-        'value_ref_pattern': '',  # str
+        # 'value_ref_enabled': False,  # bool
+        # 'value_ref_pattern': '',  # str
         'conditioning': '',  # this is a python expresion to be evaluated for conditioning the data. The data for this channel can be referred as 'x' and data from other channels can be referred by channel name
         'normalization': Normalization.No,  # one of the Normalization enumeration members
         # string indicating the location of the data of this channel within
@@ -202,27 +201,27 @@ def createChannelDict(channel, index=None, **kwargs):
 
 def getElementTypeIcon(t):
     if t == ChannelView.Channel:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.Enabled:
-        return getIcon(":/status/true.svg")
+        return Qt.QIcon("status:true.svg")
     elif t == ChannelView.Output:
-        return getThemeIcon("utilities-terminal")
+        return Qt.QIcon.fromTheme("utilities-terminal")
     elif t == ChannelView.PlotType:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.PlotAxes:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.Timer:
-        return getIcon(":/status/flag-green-clock.svg")
+        return Qt.QIcon("status:flag-green-clock.svg")
     elif t == ChannelView.Monitor:
-        return getIcon(":/status/flag-green.svg")
+        return Qt.QIcon("status:flag-green.svg")
     elif t == ChannelView.Synchronization:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.NXPath:
-        return getThemeIcon("document-save-as")
+        return Qt.QIcon.fromTheme("document-save-as")
     elif t == ChannelView.Synchronizer:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
 
-    return getIcon(":/tango.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -387,7 +386,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
     def icon(self, index):
         taurus_role = index.model().role(index.column())
         if taurus_role == ChannelView.Channel:
-            return getIcon(":/actions/system-shutdown.svg")
+            return Qt.QIcon("actions:system-shutdown.svg")
 
 
 class MntGrpUnitItem(TaurusBaseTreeItem):
@@ -529,16 +528,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ch_name, ch_data = index.internalPointer().itemData()
             unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
-            try:
-                synchronization = unitdict[key]
-            except KeyError:
-                # backwards compatibility for configurations before SEP6
-                synchronization = unitdict.get('trigger_type', None)
-                if synchronization is not None:
-                    msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply"
-                           " configuration in order to upgrade.")
-                    self.warning(msg)
+            synchronization = unitdict[key]
             return AcqSynchType[synchronization]
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
@@ -974,7 +964,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
     KnownPerspectives = {
         "Channel": {
             "label": "Channels",
-            "icon": ":/actions/system-shutdown.svg",
+            "icon": "actions:system-shutdown.svg",
             "tooltip": "View by channel",
             "model": [BaseMntGrpChannelModel, ],
         },

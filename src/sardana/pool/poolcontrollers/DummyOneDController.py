@@ -174,7 +174,7 @@ class DummyOneDController(OneDController):
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate):
             if self.integ_time is not None:
-                n = t // self.integ_time
+                n = int(t // self.integ_time)
                 cp = 0
                 if n > self._repetitions:
                     cp = n - self._repetitions
@@ -248,7 +248,7 @@ class DummyOneDController(OneDController):
     def StartAll(self):
         self.start_time = time.time()
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency_time):
         idx = axis - 1
         if value > 0:
             self.integ_time = value

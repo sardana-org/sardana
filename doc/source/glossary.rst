@@ -247,12 +247,12 @@ Glossary
         people unfamiliar with Python sometimes use a numerical counter instead::
 
             for i in range(len(food)):
-                print food[i]
+                print(food[i])
 
         As opposed to the cleaner, Pythonic method::
 
             for piece in food:
-                print piece
+                print(piece)
              
     sequence
         An :term:`iterable` which supports efficient element access using integer
@@ -263,6 +263,11 @@ Glossary
         supports :meth:`__getitem__` and :meth:`__len__`, but is considered a
         mapping rather than a sequence because the lookups use arbitrary
         :term:`immutable` keys rather than integers.
+
+    singleton pattern
+        Singleton pattern is a software design pattern that restricts the
+        instantiation of a class to one "single" instance. This is useful when
+        exactly one object is needed to coordinate actions across the system.
 
     slice
         An object usually containing a portion of a :term:`sequence`.  A slice is

@@ -57,7 +57,9 @@ Afterward, spock :term:`CLI` will start normally:
 
     Spock's sardana extension 1.0 loaded with profile: spockdoor (linked to door 'LAB-01-D01')
 
-    LAB-01-D01 [1]: 
+    LAB-01-D01 [1]:
+.. note::
+    If you want to connect to another gate you need to create a new spock profile.
 
 Starting spock with a custom profile
 ------------------------------------
@@ -388,10 +390,8 @@ of files:
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
-You can show plots for the current scan (i.e. plotting the scan *online*) by:
-
-* launching the :func:`showscan online <sardana.spock.magic.showscan>` command
-* using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
+You can show plots for the current scan (i.e. plotting the scan *online*) by
+launching the :func:`showscan online <sardana.spock.magic.showscan>` command.
 
 Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
 file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`
@@ -645,17 +645,17 @@ spock console:
 Using spock as a Tango_ console
 -------------------------------
 
-As metioned in the beggining of this chapter, the sardana spock automatically
-activates the PyTango_ 's ipython console extension. Therefore all Tango_
+As mentioned in the beginning of this chapter, the sardana spock automatically
+activates the PyTango_ 's ipython console extension [#]_. Therefore all Tango_
 features are automatically available on the sardana spock console. For example,
-creating a :class:`~PyTango.DeviceProxy` will work inside the sardana spock
+creating a :class:`tango.DeviceProxy` will work inside the sardana spock
 console:
 
 .. sourcecode:: spock
 
-    LAB-01-D01 [1]: tgtest = PyTango.DeviceProxy("sys/tg_test/1")
+    LAB-01-D01 [1]: tgtest = Device("sys/tg_test/1")
     
-    LAB-01-D01 [2]: print( tgtest.state() )
+    LAB-01-D01 [2]: print(tgtest.state())
     RUNNING
 
 .. rubric:: Footnotes

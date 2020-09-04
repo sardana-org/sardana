@@ -212,7 +212,7 @@ the macro function version of *Hello, World!*::
     
 .. note::
     If you already know a little about Python_ your are probably wondering why
-    not use ``print "Hello, World!"``?
+    not use ``print("Hello, World!")``?
 
     Remember that your macro will be executed by a Sardana server which may be
     running in a different computer than the computer you are working on.
@@ -225,9 +225,6 @@ the macro function version of *Hello, World!*::
     function (it is a bit more powerful than 
     :meth:`~sardana.macroserver.macro.Macro.output`\, and has a slightly
     different syntax) ::
-
-        # mandatory first line in your code if you use Python < 3.0
-        from __future__ import print_function
         
         from sardana.macroserver.macro import macro
         
@@ -252,6 +249,8 @@ includes :keyword:`for` and :keyword:`while` loops, :keyword:`if` ...
             wave = wave_device.wave
             wave_fft = numpy.fft.fft(wave)
             
+
+.. _sardana-macro-parameters:
 
 Adding parameters to your macro
 -------------------------------
@@ -469,7 +468,7 @@ this parameter any name but usually, by convention it is called ``self``).
 your macro to do all kinds of things, among others, to obtain the sardana
 elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
 these functions and the
-:ref:`Sardana-Taurus extensions API reference <sardana-taurus-api>`
+:ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
 describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
@@ -582,7 +581,7 @@ messages with different levels:
     * :meth:`~Macro.output`
     
 As you've seen, the special :meth:`~Macro.output` function has the same effect
-as a print statement (with slightly different arguments).
+as a print function (with slightly different arguments).
 
 Log messages may have several destinations depending on how your sardana server
 is configured. At least, one destination of each log message is the client(s)
@@ -739,7 +738,7 @@ using :meth:`~Macro.data`:
         # and the result of the Macro.prepare method
         my_scan, _ = ret 
         self.runMacro(my_scan)
-        print len(my_scan.data)
+        self.print(len(my_scan.data))
 
 A set of macro call examples can be found
 :ref:`here <sardana-devel-macro-call-examples>`.
@@ -769,7 +768,7 @@ macro. So, without further delay, here is the *Hello, World!* example::
         """Hello, World! macro"""
         
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-add-parameters:
 
@@ -818,7 +817,7 @@ prepare HelloWorld to run only after year 1989:
                 raise Exception("HelloWorld can only run after year 1989")
     
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-handling-macro-stop-and-abort:
 
@@ -923,6 +922,49 @@ using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
     the macro. Using the method appends just one hook but does not affect
     the general hooks eventually attached to the macro.
 
+.. _sardana-macro-accessing-tango:
+
+Accessing Tango from your macros
+--------------------------------
+
+Your macros almost certainly will need to access Tango_ devices, either
+external, for example, coming from the vacuum system or any other
+arbitrary system integrated with Tango Device Server or internal to Sardana
+(Sardana elements are currently exported as Tango devices) e.g.: motors,
+measurement group, etc.
+
+There exists different :term:`API` to access to Tango_ devices.
+
+First, to access Sardana elements it is recommended to use the Sardana
+:term:`API`: e.g.: `~sardana.macroserver.macro.Macro.getMoveable` to obtain
+any moveable (motor or pseudo motor),
+`~sardana.macroserver.macro.Macro.getMeasurementGroup` to obtain a measurement
+group.
+
+.. note::
+    By :ref:`adding parameters to your macro <sardana-macro-parameters>`
+    you get the same objects as if you were using the above methods.
+    Their classes are documented in:
+    :ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
+
+Any external Tango device could be accessed with Taurus_ (using
+`taurus.Device`) or simply with PyTango_ (using `tango.DeviceProxy`).
+Taurus gives you some benefits over PyTango:
+
+- seamless attribute configuration management e.g.: unit aware attribute
+  read and write, simplified way to read/write attribute configuration, etc.
+- unique way to access different data sources e.g. Tango_, EPICS_,
+  `hdf5 <https://github.com/taurus-org/h5file-scheme>`_, etc.
+- simplified way to use Tango_ events
+
+However the above benefits are not for free and more precisely are for some
+extra time overhead (in milliseconds range).
+
+As a rule of thumb, if you you don't mind the extra overhead and value the
+simplified usage you should use Taurus. If you strive for very optimal access
+to Tango and don't need these benefits then most probably PyTango will work
+better for you.
+
 .. _sardana-macro-using-external-libraries:
 
 Using external python libraries
@@ -986,6 +1028,10 @@ example::
         self.pyplot.title(r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
         self.pyplot.xlabel('$x$')
         self.pyplot.legend()
+        self.pyplot.draw()
+
+The last call to ``pyplot.draw()`` is important to ensure the client updates
+the figure properly.
 
 Running this macro from spock will result in something like:
 
@@ -1017,6 +1063,7 @@ Just for fun, the following macro computes a fractal and plots it as an image::
             mask = (fractal == 255) & (abs(z) > 10)
             fractal[mask] = 254 * n / finteractions
         self.pyplot.imshow(fractal)
+        self.pyplot.draw()
 
 And the resulting image (interactions=20, density=512):
 
@@ -1048,6 +1095,11 @@ This means that the following code which works in a normal IPython_ console will
 Also consider that each time you plot the complete data to be plotted is sent
 from the server to the client... so please avoid plotting arrays of 10,000,000
 points!
+
+Clients like spock receive the requests to plot in a separate thread.
+Matplotlib has a long history of issues concerning plot updates using different
+threads. To mitigate these effects please be sure to call ``self.pyplot.draw()``
+on your macro every time you need to be sure the matplotlib figure is up to date.
 
 .. _sardana-macro-input:
 
@@ -1533,14 +1585,26 @@ it. The job begins to run when added. When the job finishes, it sets the
 
 The second method is to use standard Python threading_ library.
 
+Adding your macros to Sardana
+-----------------------------
+
+To add your macros to Sardana, you need to configure the macro plugin discovery
+path (MacroPath property)::
+
+  _MACRO_SERVER.put_property({"MacroPath":["<Your macro dir path>"]})
+
+.. note::
+  You can add more than one path, but be careful! The path order is important.
+  Macros in the higher position paths will take precedence over the lower position paths.
 
 .. rubric:: Footnotes
 
 .. [#f1] To find the absolute path for sardana's source code type on the
-         command line ``python -c "import sys, sardana; sys.stdout.write(str(sardana.__path__))"``
+         command line ``python3 -c "import sys, sardana; sys.stdout.write
+         (str(sardana.__path__))"``
 
 .. [#f2] To check which version of Python_ you are using type on the command
-         line ``python -c "import sys; sys.stdout.write(sys.version)"``
+         line ``python3 -c "import sys; sys.stdout.write(sys.version)"``
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle

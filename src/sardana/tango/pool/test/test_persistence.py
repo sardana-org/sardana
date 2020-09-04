@@ -24,7 +24,7 @@
 ##############################################################################
 
 import PyTango
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
@@ -68,7 +68,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
                                  self.elem_name])
         # Restart Pool
         self._starter.stopDs(hard_kill=True)
-        self._starter.startDs()
+        self._starter.startDs(wait_seconds=20)
         # Check if the element exists
         try:
             obj = PyTango.DeviceProxy(self.elem_name)

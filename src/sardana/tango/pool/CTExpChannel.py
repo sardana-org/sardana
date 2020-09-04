@@ -39,7 +39,8 @@ from taurus.core.util.log import DebugIt
 
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
-from sardana.tango.core.util import to_tango_type_format, exception_str
+from sardana.tango.core.util import to_tango_type_format, to_tango_quality, \
+    exception_str
 
 from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
     PoolTimerableDeviceClass
@@ -137,10 +138,9 @@ class CTExpChannel(PoolTimerableDevice):
             if name == "timer" and value is None:
                 value = "None"
             elif name == "value":
-                w_value = event_source.get_value_attribute().w_value
-                state = self.ct.get_state()
-                if state == State.Moving:
-                    quality = AttrQuality.ATTR_CHANGING
+                value_attr = event_source.get_value_attribute()
+                w_value = value_attr.w_value
+                quality = to_tango_quality(value_attr.quality)
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,

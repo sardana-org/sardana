@@ -33,7 +33,7 @@ import os
 import ctypes
 import PyTango
 
-from taurus.core import TaurusEventType, TaurusSWDevState
+from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
@@ -53,12 +53,8 @@ else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
     BaseGUIViewer = object
 
-try:
-    RUNNING_STATE = TaurusSWDevState.Running
-except RuntimeError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core import TaurusDevState
-    RUNNING_STATE = TaurusDevState.Ready
+
+RUNNING_STATE = TaurusDevState.Ready
 
 
 class GUIViewer(BaseGUIViewer):
@@ -71,19 +67,6 @@ class GUIViewer(BaseGUIViewer):
         self.plot()
 
     def show_scan(self, scan_nb=None, scan_history_info=None, directory_map=None):
-        if scan_nb is None and scan_history_info is None:
-            #==================================================================
-            # Hack to avoid ipython-qt issues. See similar workaround in expconf magic command
-            # @todo: do this in a better way
-            #import taurus.qt.qtgui.plot
-            #w = taurus.qt.qtgui.plot.TaurusTrend()
-            #w.model = "scan://" + self._door.getNormalName()
-            # w.show()
-            import subprocess
-            args = ['taurustrend', 'scan://%s' % self._door.getNormalName()]
-            subprocess.Popen(args)
-            #==================================================================
-            return
         scan_dir, scan_file = None, None
         if scan_nb is None:
             import h5py
@@ -349,22 +332,61 @@ class SpockBaseDoor(BaseDoor):
     def runMacro(self, obj, parameters=[], synch=False):
         return BaseDoor.runMacro(self, obj, parameters=parameters, synch=synch)
 
+    def _handle_second_release(self):
+        try:
+            self.write('4th Ctrl-C received: Releasing...\n')
+            self.release()
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self.write('5th Ctrl-C received: Giving up...\n')
+            self.write('(The macro is probably still executing the on_abort '
+                       'method. Either wait or restart the server.)\n')
+
+    def _handle_first_release(self):
+        try:
+            self.write('3rd Ctrl-C received: Releasing...\n')
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self._handle_second_release()
+
+    def _handle_abort(self):
+        try:
+            self.write('2nd Ctrl-C received: Aborting...\n')
+            self.block_lines = 0
+            self.abort()
+            self.writeln("Aborting done!")
+        except KeyboardInterrupt:
+            self._handle_first_release()
+
+    def _handle_stop(self):
+        try:
+            self.write('\nCtrl-C received: Stopping...\n')
+            self.block_lines = 0
+            self.stop()
+            self.writeln("Stopping done!")
+        except KeyboardInterrupt:
+            self._handle_abort()
+
     def _runMacro(self, xml, **kwargs):
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
             print("Unable to run macro: No connection to door '%s'" %
                   self.getSimpleName())
             raise Exception("Unable to run macro: No connection")
+        if self.stateObj.read().rvalue == PyTango.DevState.RUNNING:
+            print("Another macro is running. Wait until it finishes...")
+            raise Exception("Unable to run macro: door in RUNNING state")
         if xml is None:
             xml = self.getRunningXML()
         kwargs['synch'] = True
         try:
             return BaseDoor._runMacro(self, xml, **kwargs)
         except KeyboardInterrupt:
-            self.write('\nCtrl-C received: Stopping... ')
-            self.block_lines = 0
-            self.stop()
-            self.writeln("Done!")
+            self._handle_stop()
         except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, str):
@@ -425,10 +447,7 @@ class SpockBaseDoor(BaseDoor):
     def plot(self):
         self._plotter.run()
 
-    def show_scan(self, scan_nb=None, online=False):
-        if online:
-            self._plotter.show_scan()
-            return
+    def show_scan(self, scan_nb=None):
         env = self.getEnvironment()
         scan_history_info = env.get("ScanHistory")
         directory_map = env.get("DirectoryMap")
@@ -489,7 +508,9 @@ class SpockBaseDoor(BaseDoor):
         if data is None:
             return
         data = data[1]
-        if data['type'] == 'function':
+        if (isinstance(data, dict)
+                and 'type' in data
+                and data['type'] == 'function'):
             func_name = data['func_name']
             if func_name.startswith("pyplot."):
                 func_name = self.MathFrontend + "." + func_name
@@ -594,7 +615,7 @@ class SpockMacroServer(BaseMacroServer):
             # TODO: when it becomes possible to do:
             # some taurus.Device.<attr name> = <value>
             # replace device_proxy with element
-            device_proxy = element.getObj().getHWObj()
+            device_proxy = element.getObj().getDeviceProxy()
             genutils.expose_variable(element.name, device_proxy)
         return element
 

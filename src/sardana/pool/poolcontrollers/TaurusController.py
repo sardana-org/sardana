@@ -48,7 +48,7 @@ class TaurusCounterTimerController(CounterTimerController):
     def DeleteDevice(self, axis):
         self._axes_taurus_attr.pop(axis)
 
-    def LoadOne(self, axis, value):
+    def LoadOne(self, axis, value, repetitions, latency):
         pass
 
     def StateOne(self, axis):

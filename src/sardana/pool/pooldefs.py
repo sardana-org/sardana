@@ -31,7 +31,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
 __docformat__ = 'restructuredtext'
 
 from operator import __getitem__
-from taurus.external.enum import IntEnum
+from enum import IntEnum
 from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 
@@ -89,7 +89,7 @@ class SynchDomain(SynchEnum):
 
 
 class SynchParam(SynchEnum):
-    """Enumeration of synchronization's group parameters.
+    """Enumeration of synchronization description group parameters.
 
     - Delay - initial delay (relative to the synchronization start)
     - Total - total interval

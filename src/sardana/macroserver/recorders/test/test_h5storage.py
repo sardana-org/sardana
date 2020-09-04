@@ -31,7 +31,7 @@ from datetime import datetime
 
 import h5py
 import numpy
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 
 from sardana.macroserver.scan import ColumnDesc
 from sardana.macroserver.recorders.h5storage import NXscanH5_FileRecorder

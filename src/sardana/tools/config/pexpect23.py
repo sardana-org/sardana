@@ -1633,7 +1633,7 @@ class searcher_string (object):
             ss.append((self.timeout_index, '    %d: TIMEOUT' %
                        self.timeout_index))
         ss.sort()
-        ss = zip(*ss)[1]
+        ss = list(zip(*ss))[1]
         return '\n'.join(ss)
 
     def search(self, buffer, freshlen, searchwindowsize=None):
@@ -1731,7 +1731,7 @@ class searcher_re (object):
             ss.append((self.timeout_index, '    %d: TIMEOUT' %
                        self.timeout_index))
         ss.sort()
-        ss = zip(*ss)[1]
+        ss = list(zip(*ss))[1]
         return '\n'.join(ss)
 
     def search(self, buffer, freshlen, searchwindowsize=None):

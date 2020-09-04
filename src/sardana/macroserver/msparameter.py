@@ -29,7 +29,7 @@ macros"""
 __all__ = ["WrongParam", "MissingParam", "SupernumeraryParam",
            "UnknownParamObj", "WrongParamType", "MissingRepeat",
            "SupernumeraryRepeat", "TypeNames", "Type", "ParamType",
-           "ParamRepeat", "ElementParamType", "ElementParamInterface",
+           "ElementParamType", "ElementParamInterface",
            "AttrParamType", "AbstractParamTypes", "ParamDecoder"]
 
 __docformat__ = 'restructuredtext'
@@ -184,26 +184,6 @@ class ParamType(MSBaseObject):
         kwargs = MSBaseObject.serialize(self, *args, **kwargs)
         kwargs['composed'] = False
         return kwargs
-
-
-class ParamRepeat(object):
-    # opts: min, max
-
-    def __init__(self, *param_def, **opts):
-        self.param_def = param_def
-        self.opts = {'min': 1, 'max': None}
-        self.opts.update(opts)
-        self._obj = list(param_def)
-        self._obj.append(self.opts)
-
-    def items(self):
-        return list(self.opts.items())
-
-    def __getattr__(self, name):
-        return self.opts[name]
-
-    def obj(self):
-        return self._obj
 
 
 class ElementParamType(ParamType):
@@ -436,9 +416,9 @@ class ParamDecoder:
                     param = param_type.getObj(str(value))
 
             except ValueError as e:
-                raise WrongParamType from e
+                raise WrongParamType(str(e)) from e
             except UnknownParamObj as e:
-                raise WrongParam from e
+                raise WrongParam(str(e)) from e
             if param is None and not optional_param:
                 msg = 'Could not create %s parameter "%s" for "%s"' % \
                       (param_type.getName(), name, raw_param)
@@ -588,9 +568,9 @@ class FlatParamDecoder:
                     try:
                         val = par_type.getObj(par_str)
                     except ValueError as e:
-                        raise WrongParamType from e
+                        raise WrongParamType(str(e)) from e
                     except UnknownParamObj as e:
-                        raise WrongParam from e
+                        raise WrongParam(str(e)) from e
                     if val is None:
                         msg = 'Could not create %s parameter "%s" for "%s"' % \
                               (par_type.getName(), name, par_str)

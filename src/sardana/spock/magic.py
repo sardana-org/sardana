@@ -45,11 +45,7 @@ def expconf(self, parameter_s=''):
         print("Error importing ExpDescriptionEditor "
               "(hint: is taurus extra_sardana installed?)")
         return
-    try:
-        doorname = get_door().name()
-    except TypeError:
-        # TODO: For Taurus 4 adaptation
-        doorname = get_door().fullname
+    doorname = get_door().fullname
     # =======================================================================
     # ugly hack to avoid ipython/qt thread problems #e.g. see
     # https://sourceforge.net/p/sardana/tickets/10/
@@ -96,11 +92,8 @@ def showscan(self, parameter_s=''):
                 print("Error importing ShowScanOnline")
                 print(e)
                 return
-            try:
-                doorname = get_door().name()
-            except TypeError:
-                # TODO: For Taurus 4 adaptation
-                doorname = get_door().fullname
+
+            doorname = get_door().fullname
             # ===============================================================
             # ugly hack to avoid ipython/qt thread problems #e.g. see
             # https://sourceforge.net/p/sardana/tickets/10/
@@ -117,13 +110,10 @@ def showscan(self, parameter_s=''):
             fname = sys.modules[ShowScanOnline.__module__].__file__
             args = ['python3', fname, doorname, '--taurus-log-level=error']
             subprocess.Popen(args)
-
-        # show the scan plot, ignoring the plot configuration
-        elif params[0].lower() == 'online_raw':
-            online = True
+            return
         else:
             scan_nb = int(params[0])
-    door.show_scan(scan_nb, online=online)
+            door.show_scan(scan_nb)
 
 
 def spsplot(self, parameter_s=''):

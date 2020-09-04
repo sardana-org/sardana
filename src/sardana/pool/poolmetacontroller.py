@@ -269,24 +269,10 @@ class ControllerClass(SardanaClass):
 
         self.ctrl_properties = props = CaselessDict()
         self.ctrl_properties_descriptions = []
-        dep_msg = ("Defining the controller property description using a "
-                   + "string is deprecated, use "
-                   + "sardana.pool.controller.Description constant instead.")
-        for k, v in list(klass.class_prop.items()):  # old member
-            props[k] = DataInfo.toDataInfo(k, v)
-            if Description in v:
-                self.ctrl_properties_descriptions.append(v[Description])
-            elif 'Description' in v:
-                self.warning(dep_msg)
-                self.ctrl_properties_descriptions.append(v['Description'])
-
         for k, v in list(klass.ctrl_properties.items()):
             props[k] = DataInfo.toDataInfo(k, v)
             if Description in v:
                 self.ctrl_properties_descriptions.append(v[Description])
-            elif 'Description' in v:
-                self.warning(dep_msg)
-                self.ctrl_properties_descriptions.append(v['Description'])
 
         self.dict_extra['properties'] = tuple(klass.ctrl_properties)
         self.dict_extra['properties_desc'] = self.ctrl_properties_descriptions
@@ -296,8 +282,6 @@ class ControllerClass(SardanaClass):
             ctrl_attrs[k] = DataInfo.toDataInfo(k, v)
 
         self.axis_attributes = axis_attrs = CaselessDict()
-        for k, v in list(klass.ctrl_extra_attributes.items()):  # old member
-            axis_attrs[k] = DataInfo.toDataInfo(k, v)
         for k, v in list(klass.axis_attributes.items()):
             axis_attrs[k] = DataInfo.toDataInfo(k, v)
 
@@ -319,9 +303,6 @@ class ControllerClass(SardanaClass):
                 self.pseudo_counter_roles = (klass.__name__,)
             self.dict_extra['counter_roles'] = self.counter_roles
             self.dict_extra['pseudo_counter_roles'] = self.pseudo_counter_roles
-
-        if ElementType.IORegister in types:
-            self.dict_extra['predefined_values'] = klass.predefined_values
 
         init_args = inspect.getargspec(klass.__init__)
         if init_args.varargs is None or init_args.keywords is None:

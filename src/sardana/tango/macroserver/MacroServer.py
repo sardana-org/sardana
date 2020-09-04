@@ -153,7 +153,7 @@ class MacroServer(SardanaDevice):
             # force the element list cache to be rebuild next time someone reads
             # the element list
             self.ElementsCache = None
-            self.set_attribute(elems_attr, value=evt_value.value)
+            self.set_attribute(elems_attr, value=evt_value.rvalue)
             #self.push_change_event('Elements', *evt_value.value)
         elif evt_name in ("elementcreated", "elementdeleted"):
             # force the element list cache to be rebuild next time someone reads

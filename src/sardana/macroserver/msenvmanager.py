@@ -32,6 +32,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import shelve
+from itertools import zip_longest
 import operator
 
 from taurus.core.util.containers import CaselessDict
@@ -226,7 +227,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasDoorMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <door name>.<macro name>.<property name>"""
-        return not self._getDoorMacroPropertyEnv() is None
+        return not self._getDoorMacroPropertyEnv(prop) is None
 
     def _getMacroPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
@@ -243,7 +244,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <macro name>.<property name>"""
-        return not self._getMacroPropertyEnv() is None
+        return not self._getMacroPropertyEnv(prop) is None
 
     def _getDoorPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
@@ -260,7 +261,7 @@ class EnvironmentManager(MacroServerManager):
     def _hasDoorPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
         <door name>.<property name>"""
-        return not self._getDoorPropertyEnv() is None
+        return not self._getDoorPropertyEnv(prop) is None
 
     def _getEnv(self, prop):
         """Returns the property value for a property which must have the
@@ -407,13 +408,13 @@ class EnvironmentManager(MacroServerManager):
 
         return ret
 
-    def _pairwise(self, iterable):
-        itnext = iter(iterable).__next__
-        while True:
-            yield itnext(), itnext()
+    def _grouper(self, iterable):
+        # https://docs.python.org/3/library/itertools.html#itertools-recipes
+        args = [iter(iterable)] * 2
+        return zip_longest(*args)
 
     def _dictFromSequence(self, seq):
-        return dict(self._pairwise(seq))
+        return dict(self._grouper(seq))
 
     def _encode(self, d):
         ret = {}

@@ -7,10 +7,21 @@
 
 .. automodule:: sardana.taurus.core.tango.sardana
 
+.. rubric:: Functions
+
+.. hlist::
+    :columns: 3
+
+    * :func:`registerExtensions`
+    * :func:`unregisterExtensions`
+
 .. rubric:: Modules
 
 .. toctree::
     :maxdepth: 1
     
     pool <sardana/pool>
+    macroserver <sardana/macroserver>
 
+.. autofunction:: registerExtensions
+.. autofunction:: unregisterExtensions
