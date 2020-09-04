@@ -1,4 +1,10 @@
 """A RichJupyterWidget that loads a spock profile.
+
+.. note::
+        The `qtspock` module has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
 """
 import sys
 import pickle
@@ -47,6 +53,12 @@ class SpockKernelManager(QtKernelManager):
     """
     A kernel manager that checks the spock profile before starting a kernel.
 
+    .. note::
+        The `SpockKernelManager` class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+
     If the check fails, i.e., the profile does not exist or has a different
     version, an ipython kernel without spock functionality is started instead
     and the attribute `valid_spock_profile` is set to `False`.
@@ -77,6 +89,12 @@ class SpockKernelManager(QtKernelManager):
 
 class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     """A RichJupyterWidget that starts a kernel with a spock profile.
+
+    .. note::
+        The `QtSpockWidget` class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
 
     It is important to call `shutdown_kernel` to gracefully clean up the
     started subprocesses.
@@ -326,7 +344,14 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
 
 class QtSpock(TaurusMainWindow):
-    """A standalone QtSpock window"""
+    """A standalone QtSpock window
+
+    .. note::
+        The `QtSpock` class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
     def __init__(self, parent=None, designMode=False):
         super().__init__(parent, designMode)
         self.spockWidget = QtSpockWidget(parent=self)
