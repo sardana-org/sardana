@@ -1342,34 +1342,6 @@ def run():
     max_counts = getattr(sardanacustomsettings,
                          'TAURUS_MAX_DEPRECATION_COUNTS', 0)
     tauruscustomsettings._MAX_DEPRECATIONS_LOGGED = max_counts
-    #
-
-    try:
-        try:
-            # IPython 4.x
-            from traitlets import Unicode
-            from qtconsole.rich_jupyter_widget import RichIPythonWidget
-            from qtconsole.qtconsoleapp import IPythonQtConsoleApp
-            # TODO: check if we can/should set IPythonQtConsoleApp.version
-        except:
-            # IPython <4.x
-            from IPython.utils.traitlets import Unicode
-            from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-            from IPython.qt.console.qtconsoleapp import IPythonQtConsoleApp
-            IPythonQtConsoleApp.version.default_value = release.version
-
-        class SpockConsole(RichIPythonWidget):
-
-            banner = Unicode(config=True)
-
-            def _banner_default(self):
-                config = get_config()
-                return config.FrontendWidget.banner
-
-        IPythonQtConsoleApp.widget_factory = SpockConsole
-
-    except ImportError:
-        pass
 
     try:
         check_requirements()
