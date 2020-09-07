@@ -128,27 +128,28 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     Useful methods of the base class include execute, interrupt_kernel,
     restart_kernel, and clear.
 
-    Parameters
-    ----------
-    profile : string
+    :param profile:
         The name of the spock profile to use. The default is 'spockdoor'.
-    kernel : string
+    :type profile: str
+    :param kernel:
         The name of the kernel to use. The default is 'python3'.
-    use_model_from_profile : bool
+    :type  kernel: str
+    :param use_model_from_profile:
         If true, the door name is taken from the spock profile, otherwise it
         has to be set via setModel.
-    **kwargs
+    :type use_model_from_profile: bool
+    :param kwargs:
         All remaining keywords are passed to the RichJupyterWidget base class
 
-    Examples
-    --------
-    >>> from taurus.external.qt import Qt
-    >>> from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget
-    >>> app = Qt.QApplication([])
-    ... widget = QtSpockWidget()
-    ... widget.show()
-    ... app.aboutToQuit.connect(widget.shutdown_kernel)
-    ... app.exec_()
+    Examples::
+
+        from taurus.external.qt import Qt
+        from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget
+        app = Qt.QApplication([])
+        widget = QtSpockWidget()
+        widget.show()
+        app.aboutToQuit.connect(widget.shutdown_kernel)
+        app.exec_()
     """
     def __init__(
             self,
@@ -316,18 +317,16 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         The command will import the pickle module in the user namespace. This
         may overwrite a user defined variable with the same name.
 
-        Parameters
-        ----------
-        var : str
+        :param var:
             The name of the variable to be retrieved
-        timeout : int or None
+        :type var:  str
+        :param timeout:
             Number of seconds to wait for reply. If no reply is recieved, a
             `Queue.Empty` exception is thrown. The default is to wait
             indefinitely
-
-        Returns
-        -------
-        The value of the variable from the user namespace
+        :type timeout:  int or None
+        :return:
+            The value of the variable from the user namespace
         """
         pickle_dumps = 'pickle.dumps({})'.format(var)
         msg_id = self.blocking_client.execute(
