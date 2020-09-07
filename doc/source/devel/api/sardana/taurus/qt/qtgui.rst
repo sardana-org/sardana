@@ -4,3 +4,10 @@
 ================================
 
 .. automodule:: sardana.taurus.qt.qtgui
+
+.. rubric:: Modules
+
+.. toctree::
+    :maxdepth: 1
+
+    extra_sardana <qtgui/extra_sardana>
