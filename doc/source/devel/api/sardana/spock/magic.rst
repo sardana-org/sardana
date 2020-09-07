@@ -7,4 +7,5 @@
 
 .. rubric:: Functions
 
+.. autofunction:: sardana.spock.magic.edmac
 .. autofunction:: sardana.spock.magic.showscan
