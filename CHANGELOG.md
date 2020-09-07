@@ -24,7 +24,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Automatic scan statistics calculation with the `scanstats` macro as the `post-scan`
-  hook stored in the `ScanStats` environment variable (#880)
+  hook stored in the `ScanStats` environment variable (#880, #1402)
 * `pic`, `cen` to move the scanned motor to the peak and center of FWHM values
   respectively (#890)
 * `where` macro to print the scanned motor position (#890)
