@@ -30,6 +30,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `where` macro to print the scanned motor position (#890)
 * `plotselect` macro for configuring channels for online scan plotting (#824)
 * `genv` macro for printing environment variable values (#888)
+* QtSpock widget (`QtSpock` and `QtSpockWidget`) - *experimental* (#1109)
 * Dump info on channels if MG acq fails in step scan, ct and uct (#1308)
 * Add timestamp to element's dumped information (#1308)
 * Quality to `SardanaAttribute` (#1353)
