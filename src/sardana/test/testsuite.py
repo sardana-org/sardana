@@ -31,7 +31,7 @@ __docformat__ = 'restructuredtext'
 
 
 def main():
-    print("sardanatestsuite was removed in Sardana 3.0.2. "
+    print("sardanatestsuite was removed in Sardana 3.0.3. "
           "Use pytest to run tests.")
     import sys
     sys.exit(1)

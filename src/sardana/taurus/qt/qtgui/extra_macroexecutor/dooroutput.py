@@ -153,7 +153,7 @@ class DoorDebug(Qt.QPlainTextEdit):
 
         from taurus.core.util.log import warning
 
-        msg = ("DoorDebug is deprecated since version 3.0.2. "
+        msg = ("DoorDebug is deprecated since version 3.0.3. "
                "Use DoorOutput 'Show debug details' feature instead.")
         warning(msg)
 
