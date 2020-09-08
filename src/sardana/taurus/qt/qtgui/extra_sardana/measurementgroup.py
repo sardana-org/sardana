@@ -524,7 +524,15 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Synchronization:
             ch_name, ch_data = index.internalPointer().itemData()
-            unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
+            ctrlname = ch_data['_controller_name']
+            if ctrlname.startswith("__"):
+                return None
+            ch_info = self.getAvailableChannels()[ch_name]
+            if ch_info['type'] not in ('CTExpChannel',
+                                       'OneDExpChannel',
+                                       'TwoDExpChannel'):
+                return None
+            unitdict = self.getPyData(ctrlname=ctrlname)
             key = self.data_keys_map[taurus_role]
             synchronization = unitdict[key]
             return AcqSynchType[synchronization]
