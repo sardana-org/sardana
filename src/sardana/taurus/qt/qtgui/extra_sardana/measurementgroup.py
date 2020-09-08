@@ -83,7 +83,7 @@ from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
 DEFAULT_STRING_LENGTH = 80
 
 
-def  createChannelDict(channel, index=None, **kwargs):
+def createChannelDict(channel, index=None, **kwargs):
     from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
     import PyTango
     import numpy
