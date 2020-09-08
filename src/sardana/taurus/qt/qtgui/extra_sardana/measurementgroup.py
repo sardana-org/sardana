@@ -83,7 +83,7 @@ from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
 DEFAULT_STRING_LENGTH = 80
 
 
-def createChannelDict(channel, index=None, **kwargs):
+def  createChannelDict(channel, index=None, **kwargs):
     from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
     import PyTango
     import numpy
@@ -494,20 +494,18 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Channel:  # channel column is not editable
             return flags
-        elif taurus_role == ChannelView.Synchronization:
+        elif taurus_role in (ChannelView.Timer,
+                             ChannelView.Monitor,
+                             ChannelView.Synchronizer,
+                             ChannelView.Synchronization):
             ch_name, ch_data = index.internalPointer().itemData()
             if not ch_data['_controller_name'].startswith("__"):
                 ch_info = self.getAvailableChannels()[ch_name]
-                # only timer/monitor columns of counter timers are editable
-                if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
+                # only timerable channels accept these configurations
+                if ch_info['type'] in ('CTExpChannel',
+                                       'OneDExpChannel',
+                                       'TwoDExpChannel'):
                     flags |= Qt.Qt.ItemIsEditable
-        elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
-            ch_name, ch_data = index.internalPointer().itemData()
-            if not ch_data['_controller_name'].startswith("__"):
-                #ch_info = self.getAvailableChannels()[ch_name]
-                # if 'CTExpChannel' == ch_info['type']: #only timer/monitor columns of counter timers are editable
-                #    flags |= Qt.Qt.ItemIsEditable
-                flags |= Qt.Qt.ItemIsEditable
         else:
             flags |= Qt.Qt.ItemIsEditable
         return flags
