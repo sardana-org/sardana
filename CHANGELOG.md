@@ -57,6 +57,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Improve macro aborting in Spock (2nd, 3rd and eventual 4th Ctrl+C now act
+  on the macro). Also print additional information on what is happening while
+  stopping and aborting (#1256, #978, #34) 
 * Use `tango.EnsureOmnitThread` to protect Sardana threads
   (Tango is not thread safe) (#1298)
 * Avoid using Tango `AttributeProxy` in limits protection to not be affected
@@ -64,7 +67,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid deadlock in Sardana-Taurus models e.g. `MeasurementGroup.count()` or
   `Motor.move()` (#1348)
   * Remove redundant protection in PoolElement.start() and waitFinish()
-* Fast repetitions of single acqusition measurements (counts) on MeasurementGroup (#1353)
+* Fast repetitions of single acquisition measurements (counts) on MeasurementGroup (#1353)
 * Pre-mature returning to ON state of MeasurementGroup at the end of measurement (#1353) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
