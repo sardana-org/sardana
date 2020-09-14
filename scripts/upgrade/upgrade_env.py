@@ -7,8 +7,11 @@ IMPORTANT:
 3. a new env file with an additional .db extension will be created. You
    should **NOT** change the macroserver EnvironmentDb property. The dbm
    will figure out automatically the file extension
-4. a backup will of the original environment will be available with the
+4. a backup of the original environment will be available with the
    extension .py2
+5. run the script with the same OS user as you run the Sardana/MacroServer
+   server or after running the script give write permission to the newly
+   created environment file to the OS user that you run the server
 
 Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
 """
