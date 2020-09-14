@@ -72,6 +72,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * `macroxecutor` and `sequencer` now react on added/removed macros #295
+* Avoid printing `None` in `wm` and `wa` macros for `DialPosition` attribute and print
+  the `Position` attribute twice for pseudo motors (#929, #953, #1411, #1412)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
