@@ -101,6 +101,8 @@ class _wm(Macro):
                             value = float('NaN')
                             if attr.name == 'dialposition':
                                 value = motor.getDialPosition()
+                                if value is None:
+                                    value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)
                 except PyTango.AsynReplyNotArrived:
