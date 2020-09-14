@@ -2083,10 +2083,10 @@ class scanstats(Macro):
             while y_data[idx] >= half_max:
                 idx = idx+1
 
-            x0 = x[idx]
-            x1 = x[idx+1]
-            y0 = y_data[idx]
-            y1 = y_data[idx+1]
+            x0 = x[idx-1]
+            x1 = x[idx]
+            y0 = y_data[idx-1]
+            y1 = y_data[idx]
 
             uhmx = (half_max*(x1-x0) - (y0*x1)+(y1*x0)) / (y1-y0)
         except ZeroDivisionError:
