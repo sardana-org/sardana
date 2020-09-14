@@ -2043,10 +2043,17 @@ class scanstats(Macro):
         if lower_left and lower_right:
             # it is a peak-like function
             y_data = y
-        else:
+        elif lower_left:
             # it is an erf-like function
             # use the gradient for further calculation
             y_data = numpy.gradient(y)
+            # use also the half maximum of the gradient
+            half_max = (numpy.max(y_data)-numpy.min(y_data)) \
+                / 2+numpy.min(y_data)
+        else:
+            # it is an erf-like function
+            # use the gradient for further calculation
+            y_data = -1*numpy.gradient(y)
             # use also the half maximum of the gradient
             half_max = (numpy.max(y_data)-numpy.min(y_data)) \
                 / 2+numpy.min(y_data)
