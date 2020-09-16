@@ -1499,8 +1499,6 @@ class MGConfiguration(object):
         # representing channel data as received in raw data
         self.non_tango_channels = None
 
-        self.initialized = False
-
     def _build(self):
         # internal channel structure that groups channels by tango device so
         # they can be read as a group minimizing this way the network requests
