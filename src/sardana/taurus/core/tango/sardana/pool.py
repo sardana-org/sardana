@@ -1393,6 +1393,34 @@ class MGConfiguration(object):
         self.set_data(data)
 
     def set_data(self, data, force=False):
+        # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
+        # where key is a device name and value is a list with two elements:
+        #  - A device proxy or None if there was an error building it
+        #  - A dict where keys are attribute names and value is a reference to
+        #    a dict representing channel data as received in raw data
+        self.tango_dev_channels = None
+
+        # Number of elements in tango_dev_channels in error (could not build
+        # DeviceProxy, probably)
+        self.tango_dev_channels_in_error = 0
+
+        # dict<str, tuple<str, str, TangoChannelInfo>>
+        # where key is a channel name and value is a tuple of three elements:
+        #  - device name
+        #  - attribute name
+        #  - attribute information or None if there was an error trying to get
+        #    the information
+        self.tango_channels_info = None
+
+        # Number of elements in tango_channels_info_in_error in error
+        # (could not build attribute info, probably)
+        self.tango_channels_info_in_error = 0
+
+        # dict<str, dict>
+        # where key is a channel name and data is a reference to a dict
+        # representing channel data as received in raw data
+        self.non_tango_channels = None
+
         # object each time
         if isinstance(data, str):
             data = CodecFactory().decode(('json', data))
@@ -1471,35 +1499,6 @@ class MGConfiguration(object):
             ctrl = self._get_ctrl_for_element(channel_name)
             if ctrl not in self.controller_list_name:
                 self.controller_list_name.append(ctrl)
-        # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
-        # where key is a device name and value is a list with two elements:
-        #  - A device proxy or None if there was an error building it
-        #  - A dict where keys are attribute names and value is a reference to
-        #    a dict representing channel data as received in raw data
-        self.tango_dev_channels = None
-
-        # Number of elements in tango_dev_channels in error (could not build
-        # DeviceProxy, probably)
-        self.tango_dev_channels_in_error = 0
-
-        # dict<str, tuple<str, str, TangoChannelInfo>>
-        # where key is a channel name and value is a tuple of three elements:
-        #  - device name
-        #  - attribute name
-        #  - attribute information or None if there was an error trying to get
-        #    the information
-        self.tango_channels_info = None
-
-        # Number of elements in tango_channels_info_in_error in error
-        # (could not build attribute info, probably)
-        self.tango_channels_info_in_error = 0
-
-        # dict<str, dict>
-        # where key is a channel name and data is a reference to a dict
-        # representing channel data as received in raw data
-        self.non_tango_channels = None
-
-        self.initialized = False
 
     def _build(self):
         # internal channel structure that groups channels by tango device so
