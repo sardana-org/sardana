@@ -16,7 +16,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * better curve colors and symbols
 * Measurement group (Taurus extension) configuration API with methods to
   set/get: enabled, output, plot type, plot axes, timer, monitor, synchronizer,
-  value ref enabled, value ref pattern parameters(#867)
+  value ref enabled, value ref pattern parameters(#867, #1415, #1416)
 * Experiment configuration (expconf) macros
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
