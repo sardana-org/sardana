@@ -947,7 +947,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleasead]: https://github.com/sardana-org/sardana/compare/3.0.3...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/3.0.3...HEAD
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
