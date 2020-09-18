@@ -924,7 +924,7 @@ class MeasurementConfiguration(object):
                 channel_data:
             if self._value_ref_compat:
                 msg = 'value_ref_pattern/value_ref_enabled is deprecated ' \
-                      'for non-referable channels since Jul20. Re-apply ' \
+                      'for non-referable channels since 3.0.3. Re-apply ' \
                       'configuration in order to upgrade.'
                 self._parent.warning(msg)
                 channel_data.pop('value_ref_enabled')

@@ -17,6 +17,15 @@ Showscan online is a simplified Taurus application which provides live scan
 plots. The number of plots and their configuration depends on the
 :ref:`measurement group plotting configuration <expconf_ui_measurementgroup>`.
 
+It can be launched from Spock using the :class:`~sardana.spock.magic.showscan`
+command:
+
+.. sourcecode:: spock
+
+    LAB-01-D01 [1]: showscan online
+
+or with the console command: ``showscan``.
+
 When started it gets populated with empty plots of the
 :ref:`active measurement group <activemntgrp>`. As soon as you start
 scanning the curves and the legend will start to appear. Even if you change
@@ -26,10 +35,18 @@ behavior is to keep the plotted data available for inspection after the scan
 execution.
 
 .. figure:: /_static/showscan-online.png
-    :height: 600
 
-    Showscan online plotting two physical counters against the point
-    number and a pseudo counter against the moveable.
+    Showscan online plotting one physical counter against the motor's
+    position.
+
+Another interesting feature of this widget is its multi plot organization when
+you ask for plotting multiple curves. You can choose between having a separate
+plot per curve or group curves by the selected x axis
+
+.. figure:: /_static/showscan-online-multi.png
+
+    Showscan online plotting three physical counters against the motor's
+    position on separate plots.
 
 ----------------
 Showscan offline

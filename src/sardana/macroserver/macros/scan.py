@@ -336,7 +336,7 @@ class aNscan(Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -964,7 +964,7 @@ motor2 sqrt(y*x+3)
             yield step
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -1826,7 +1826,7 @@ class meshct(Macro, Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -1875,7 +1875,7 @@ class timescan(Macro, Hookable):
         return self.nr_interv
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -1885,8 +1885,10 @@ class timescan(Macro, Hookable):
 
 class scanstats(Macro):
     """Calculate basic statistics of the enabled and plotted channels in
-    the active measurement group for the last scan. Print it and publish it
-    in the env. The macro must be hooked in the post-scan hook place.
+    the active measurement group for the last scan. If no channel is selected
+    for plotting it fallbacks to the first enabled channel. Print stats and
+    publish them in the env.
+    The macro must be hooked in the post-scan hook place.
     """
 
     env = ("ActiveMntGrp", )
@@ -1904,6 +1906,10 @@ class scanstats(Macro):
         if not parent:
             self.warning("for now the scanstats macro can only be executed as"
                          " a post-scan hook")
+            return
+        if not hasattr(parent, "motors"):
+            self.warning("scan must involve at least one moveable "
+                         "to calculate statistics")
             return
 
         active_meas_grp = self.getEnv("ActiveMntGrp")
@@ -1928,9 +1934,21 @@ class scanstats(Macro):
                 elif enabled and meas_grp.getPlotType(chan)[chan] == 1:
                     calc_channels.append(chan)
 
-        if calc_channels == []:
+        if len(calc_channels) == 0:
             # fallback is first enabled channel in meas_grp
             calc_channels.append(next(iter(enabled_channels)))
+
+        scalar_channels = []
+        for _, chan in self.getExpChannels().items():
+            if chan.type in ("OneDExpChannel", "TwoDExpChannel"):
+                continue
+            scalar_channels.append(chan.name)
+        calc_channels = [ch for ch in calc_channels if ch in scalar_channels]
+
+        if len(calc_channels) == 0:
+            self.warning("measurement group must contain at least one "
+                         "enabled scalar channel to calculate statistics")
+            return
 
         selected_motor = str(parent.motors[0])
         stats = {}
@@ -2025,10 +2043,17 @@ class scanstats(Macro):
         if lower_left and lower_right:
             # it is a peak-like function
             y_data = y
-        else:
+        elif lower_left:
             # it is an erf-like function
             # use the gradient for further calculation
             y_data = numpy.gradient(y)
+            # use also the half maximum of the gradient
+            half_max = (numpy.max(y_data)-numpy.min(y_data)) \
+                / 2+numpy.min(y_data)
+        else:
+            # it is an erf-like function
+            # use the gradient for further calculation
+            y_data = -1*numpy.gradient(y)
             # use also the half maximum of the gradient
             half_max = (numpy.max(y_data)-numpy.min(y_data)) \
                 / 2+numpy.min(y_data)
@@ -2065,10 +2090,10 @@ class scanstats(Macro):
             while y_data[idx] >= half_max:
                 idx = idx+1
 
-            x0 = x[idx]
-            x1 = x[idx+1]
-            y0 = y_data[idx]
-            y1 = y_data[idx+1]
+            x0 = x[idx-1]
+            x1 = x[idx]
+            y0 = y_data[idx-1]
+            y1 = y_data[idx]
 
             uhmx = (half_max*(x1-x0) - (y0*x1)+(y1*x0)) / (y1-y0)
         except ZeroDivisionError:

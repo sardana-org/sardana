@@ -23,16 +23,22 @@
 ##
 ##############################################################################
 
-"""
-DEPRECATED
-"""
+""""""
 
-__docformat__ = 'restructuredtext'
+__all__ = ["which_python_executable"]
 
 
-def main():
-    print("sardanatestsuite was removed in Sardana 3.0.3. "
-          "Use pytest to run tests.")
-    import sys
-    sys.exit(1)
+from taurus.core.util.whichexecutable import whichfile
 
+
+def which_python_executable():
+    """Return full path to python executable.
+
+    On some OS Python 3 is executed with python3 but in conda environments it
+    is executed with python. Return Python 3 executable regardless of the
+    Python installation.
+    """
+    executable = whichfile("python3")
+    if executable is None:
+        executable = whichfile("python")
+    return executable

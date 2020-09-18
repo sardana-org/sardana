@@ -892,6 +892,14 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         self._latency_time = 0
         self._synchronization = AcqSynch.SoftwareTrigger
 
+    def StartOne(self, axis, value):
+        """**Controller API**. Override if necessary.
+        Called to do a start of the given axis (whatever start means).
+
+        :param int axis: axis number
+        :param float value: new value"""
+        pass
+
 
 class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
     """Base class for a trigger/gate controller. Inherit from this class to

@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-## [Unreleased]
+## [3.0.3] 2020-09-18
 
 ### Added
 
@@ -16,13 +16,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   * better curve colors and symbols
 * Measurement group (Taurus extension) configuration API with methods to
   set/get: enabled, output, plot type, plot axes, timer, monitor, synchronizer,
-  value ref enabled, value ref pattern parameters(#867)
+  value ref enabled, value ref pattern parameters(#867, #1415, #1416)
 * Experiment configuration (expconf) macros
   * Measurement group configuration macros: `set_meas_conf` and `get_meas_conf` (#690)
   * Active measurement group selection macros: `set_meas` and `get_meas` (#690)
   * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Automatic scan statistics calculation with the `scanstats` macro as the `post-scan`
-  hook stored in the `ScanStats` environment variable (#880)
+  hook stored in the `ScanStats` environment variable (#880, #1402)
 * `pic`, `cen` to move the scanned motor to the peak and center of FWHM values
   respectively (#890)
 * `where` macro to print the scanned motor position (#890)
@@ -53,9 +53,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   the documentation (#1275)
 * Register a TaurusValue factory for pool widgets (#1333)
 * Direct links to Sardana-Taurus model API (#1335)
+* Use GitHub workflows to upload to PyPI (#1253, #1166, #1408, #1189)
 
 ### Fixed
 
+* Improve macro aborting in Spock (2nd, 3rd and eventual 4th Ctrl+C now act
+  on the macro). Also print additional information on what is happening while
+  stopping and aborting (#1256, #978, #34) 
 * Use `tango.EnsureOmnitThread` to protect Sardana threads
   (Tango is not thread safe) (#1298)
 * Avoid using Tango `AttributeProxy` in limits protection to not be affected
@@ -63,10 +67,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid deadlock in Sardana-Taurus models e.g. `MeasurementGroup.count()` or
   `Motor.move()` (#1348)
   * Remove redundant protection in PoolElement.start() and waitFinish()
-* Fast repetitions of single acqusition measurements (counts) on MeasurementGroup (#1353)
+* Fast repetitions of single acquisition measurements (counts) on MeasurementGroup (#1353)
 * Pre-mature returning to ON state of MeasurementGroup at the end of measurement (#1353) 
 * Default macro parameter values in macroexecutor (#1153)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
+* `macroxecutor` and `sequencer` now react on added/removed macros #295
+* Avoid printing `None` in `wm` and `wa` macros for `DialPosition` attribute and print
+  the `Position` attribute twice for pseudo motors (#929, #953, #1411, #1412)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
@@ -82,9 +89,12 @@ This file follows the formats and conventions from [keepachangelog.com]
   configurable with `MACROEXECUTOR_MAX_HISTORY` (#1307)
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
-  (#1260)
+  (#1260, #1400)
 * Fix fast operations (motion & acq) by propertly clearing operation context and
   resetting of acq ctrls dicts (#1300)
+* Premature end of acquisition on Windows (#1397)
+* `timescan` with referable channels (#1399, #1401)
+* Use proper python3 executable regardeless of installation (#1398)
 * Environment variables validation before macro execution when these are defined
   on door's or macro's level (#1390)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
@@ -96,6 +106,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Controller's `StateOne()` that returns only state (#621, #1342)
+* Fix problems with non-timerable channels in expconf (#1409)
 * Allow MacroButton widget to be smaller - minimum size to show the macro name (#1265)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
@@ -156,7 +167,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `SetPar()` and `GerPar()`
   * `SetExtraAttributePar()` and `GetExtraAttributePar()`
   * `ctrl_properties` with "Description" as `str`
-* `CounterTimerController` controller API (#1315, #1362):
+* `CounterTimerController` controller API (#1315, #1362, #1403):
   * `_trigger_type`
   * `PreStartAllCT()`, `PreStartOneCT()`, `StartAllCT()` and `StartOneCT()`
 * `PseudoMotorController` controller API (#1315, #1363)
@@ -174,7 +185,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `trigger_type`
 * `Label` and `Calibration` attributes of `DiscretePseudMotor` controller
   (#1315, #1374)
-* MacroButton's methods (#1315, #1379)
+* MacroButton's methods (#1315, #1379, #1405)
   * `toggleProgress()`
   * `updateMacroArgumentFromSignal()`
   * `connectArgEditors()`
@@ -936,7 +947,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.6...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/3.0.3...HEAD
+[3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4
 [2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
