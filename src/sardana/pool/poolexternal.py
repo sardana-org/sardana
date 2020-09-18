@@ -55,10 +55,10 @@ class PoolTangoObject(PoolBaseExternalObject):
 
     def __init__(self, **kwargs):
         scheme = kwargs.pop('scheme', 'tango')
-        attribute_name = kwargs.pop('attributename')
+        attribute_name = kwargs.pop('_shortattrname')
         host, port = kwargs.pop('host', None), kwargs.pop('port', None)
-        devalias = kwargs.pop('devalias', None)
-        device_name = kwargs.pop('devicename', None)
+        devalias = kwargs.pop('_devalias', None)
+        device_name = kwargs.pop('devname', None)
         if host is None:
             db = PyTango.Database()
             host, port = db.get_db_host(), db.get_db_port()
@@ -80,7 +80,8 @@ class PoolTangoObject(PoolBaseExternalObject):
         self._attribute_name = attribute_name
         self._config = None
         self._device = None
-        kwargs['name'] = attribute_name
+        # TODO evaluate to use alias instead of device_name
+        kwargs['name'] = '{0}/{1}'.format(device_name, attribute_name)
         kwargs['full_name'] = full_name
         PoolBaseExternalObject.__init__(self, **kwargs)
 

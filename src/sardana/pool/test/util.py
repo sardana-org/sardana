@@ -51,8 +51,8 @@ class AttributeListener(object):
         # of buffered attributes) or from the value in case of normal
         # attributes
         chunk = v
-        idx = chunk.keys()
-        value = [sardana_value.value for sardana_value in chunk.values()]
+        idx = list(chunk.keys())
+        value = [sardana_value.value for sardana_value in list(chunk.values())]
         # filling the measurement records
         with self.data_lock:
             channel_data = self.data.get(obj_name, [])
@@ -65,7 +65,7 @@ class AttributeListener(object):
         '''Construct a table-like array with padded  channel data as columns.
         Return the '''
         with self.data_lock:
-            max_len = max([len(d) for d in self.data.values()])
+            max_len = max([len(d) for d in list(self.data.values())])
             dtype_spec = []
             table = []
             for k in sorted(self.data.keys()):
@@ -73,5 +73,5 @@ class AttributeListener(object):
                 v.extend([None] * (max_len - len(v)))
                 table.append(v)
                 dtype_spec.append((k, self.dtype))
-            a = numpy.array(zip(*table), dtype=dtype_spec)
+            a = numpy.array(list(zip(*table)), dtype=dtype_spec)
             return a

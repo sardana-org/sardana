@@ -35,12 +35,8 @@ __docformat__ = 'restructuredtext'
 import threading
 import weakref
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
@@ -49,7 +45,7 @@ from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, \
 
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
-from sardana.pool.poolsynchronization import SynchronizationDescription
+from sardana.pool.poolsynchronization import SynchDescription
 from sardana.pool.poolexternal import PoolExternalObject
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
@@ -439,10 +435,7 @@ class MeasurementConfiguration(object):
         self._parent = None
         if parent is not None:
             self._parent = weakref.proxy(parent)
-
         self._config = None
-        self._use_fqdn = True
-
         # Structure to store the controllers and their channels
         self._timerable_ctrls = {}
         self._zerod_ctrls = []
@@ -458,6 +451,9 @@ class MeasurementConfiguration(object):
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
         self.changed = False
+        # provide back. compatibility for value_ref_{enabled,pattern}
+        # config parameters created with Sardana < 3.
+        self._value_ref_compat = False
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -518,7 +514,7 @@ class MeasurementConfiguration(object):
         """
         timerable_ctrls = []
         if acq_synch is None:
-            for ctrls in self._timerable_ctrls.values():
+            for ctrls in list(self._timerable_ctrls.values()):
                 timerable_ctrls += ctrls
         elif isinstance(acq_synch, list):
             acq_synch_list = acq_synch
@@ -601,8 +597,21 @@ class MeasurementConfiguration(object):
         """Return measurement configuration serializable data structure."""
         return self._user_config
 
-    def set_configuration_from_user(self, cfg, to_fqdn=True):
-        """Load measurement configuration from serializable data structure."""
+    def set_configuration_from_user(self, cfg):
+        """Set measurement configuration from serializable data structure.
+
+        Setting of the configuration includes the validation process. Setting
+        of invalid configuration raises an exception hence it is not necessary
+        that the client application does the validation.
+
+        The configuration parameters for given channels/controllers may differ
+        depending on their types e.g. 0D channel does not support timer
+        parameter while C/T does.
+
+        .. todo::
+            Raise exceptions when setting _Synchronization_ parameter for
+            external channels, 0D and PSeudoCounters.
+        """
 
         pool = self._parent.pool
 
@@ -635,7 +644,7 @@ class MeasurementConfiguration(object):
         user_config['label'] = label
         user_config['description'] = description
 
-        for ctrl_name, ctrl_data in cfg['controllers'].items():
+        for ctrl_name, ctrl_data in list(cfg['controllers'].items()):
             # backwards compatibility for measurement groups created before
             # implementing feature-372:
             # https://sourceforge.net/p/sardana/tickets/372/
@@ -649,68 +658,67 @@ class MeasurementConfiguration(object):
             if ch_count == 0:
                 continue
 
-            external = ctrl_name.startswith('__')
+            external = ctrl_name in ['__tango__']
+
             if external:
                 ctrl = ctrl_name
             else:
-                if to_fqdn:
-                    ctrl_name = _to_fqdn(ctrl_name, logger=self._parent)
                 ctrl = pool.get_element_by_full_name(ctrl_name)
                 assert ctrl.get_type() == ElementType.Controller
 
             user_config['controllers'][ctrl_name] = user_config_ctrl = {}
             ctrl_conf = {}
-
-            synchronizer = ctrl_data.get('synchronizer', 'software')
             conf_synch = None
-            if synchronizer is None or synchronizer == 'software':
-                ctrl_conf['synchronizer'] = 'software'
-                user_config_ctrl['synchronizer'] = 'software'
+
+            # The external controllers should not have synchronizer
+
+            if external:
+                if 'synchronizer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have synchronizer')
+                if 'monitor' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have monitor')
+                if 'timer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have timer')
             else:
-                if to_fqdn:
-                    synchronizer = _to_fqdn(synchronizer,
-                                            logger=self._parent)
+                synchronizer = ctrl_data.get('synchronizer', 'software')
+                if synchronizer is None or synchronizer == 'software':
+                    ctrl_conf['synchronizer'] = 'software'
+                    user_config_ctrl['synchronizer'] = 'software'
+                else:
+                    user_config_ctrl['synchronizer'] = synchronizer
+                    pool_synch = pool.get_element_by_full_name(synchronizer)
+                    pool_synch_ctrl = pool_synch.controller
+                    conf_synch_ctrl = None
+                    conf_synch = None
+                    for conf_ctrl_created in synch_ctrls:
+                        if pool_synch_ctrl == conf_ctrl_created.element:
+                            conf_synch_ctrl = conf_ctrl_created
+                            for conf_synch_created in \
+                                    conf_ctrl_created.get_channels():
+                                if pool_synch == conf_synch_created.element:
+                                    conf_synch = conf_synch_created
+                                    break
+                            break
 
-                user_config_ctrl['synchronizer'] = synchronizer
-                pool_synch = pool.get_element_by_full_name(synchronizer)
-                pool_synch_ctrl = pool_synch.controller
-                conf_synch_ctrl = None
-                conf_synch = None
-                for conf_ctrl_created in synch_ctrls:
-                    if pool_synch_ctrl == conf_ctrl_created.element:
-                        conf_synch_ctrl = conf_ctrl_created
-                        for conf_synch_created in \
-                                conf_ctrl_created.get_channels():
-                            if pool_synch == conf_synch_created.element:
-                                conf_synch = conf_synch_created
-                                break
-                        break
+                    if conf_synch_ctrl is None:
+                        conf_synch_ctrl = \
+                            ControllerConfiguration(pool_synch_ctrl)
+                        synch_ctrls.append(conf_synch_ctrl)
 
-                if conf_synch_ctrl is None:
-                    conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
-                    synch_ctrls.append(conf_synch_ctrl)
+                    if conf_synch is None:
+                        conf_synch = SynchronizerConfiguration(pool_synch)
+                        conf_synch_ctrl.add_channel(conf_synch)
 
-                if conf_synch is None:
-                    conf_synch = SynchronizerConfiguration(pool_synch)
-                    conf_synch_ctrl.add_channel(conf_synch)
-
-                ctrl_conf['synchronizer'] = conf_synch
-
-            try:
-                synchronization = ctrl_data['synchronization']
-            except KeyError:
-                # backwards compatibility for configurations before SEP6
+                    ctrl_conf['synchronizer'] = conf_synch
                 try:
-                    synchronization = ctrl_data['trigger_type']
-                    msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply "
-                           "configuration in order to upgrade.")
-                    self._parent.warning(msg)
+                    synchronization = ctrl_data['synchronization']
                 except KeyError:
                     synchronization = AcqSynchType.Trigger
-
-            ctrl_conf['synchronization'] = synchronization
-            user_config_ctrl['synchronization'] = synchronization
+                ctrl_conf['synchronization'] = synchronization
+                user_config_ctrl['synchronization'] = synchronization
 
             acq_synch = None
             if external:
@@ -721,12 +729,8 @@ class MeasurementConfiguration(object):
                                                      synchronization)
                 ctrl_acq_synch[ctrl] = acq_synch
                 timer = ctrl_data.get("timer")
-                if timer is not None and to_fqdn:
-                    timer = _to_fqdn(timer, self._parent)
                 ctrl_conf["timer"] = timer
                 monitor = ctrl_data.get("monitor")
-                if monitor is not None and to_fqdn:
-                    monitor = _to_fqdn(monitor, self._parent)
                 ctrl_conf["monitor"] = monitor
                 ctrl_item = TimerableControllerConfiguration(ctrl, ctrl_conf)
             else:
@@ -735,17 +739,14 @@ class MeasurementConfiguration(object):
             ctrl_enabled = False
             if 'channels' in ctrl_data:
                 user_config_ctrl['channels'] = user_config_channel = {}
-            for ch_name, ch_data in ctrl_data['channels'].items():
+            for ch_name, ch_data in list(ctrl_data['channels'].items()):
                 if external:
                     validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getParams(full_name)
+                    params = validator.getUriGroups(full_name)
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
-                    if to_fqdn:
-                        ch_name = _to_fqdn(ch_name, logger=self._parent)
-                        ch_data['full_name'] = ch_name
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
@@ -772,17 +773,11 @@ class MeasurementConfiguration(object):
                 msg_error = ''
                 if ctrl_item.timer is None:
                     timer_name = ctrl_data['timer']
-                    if to_fqdn:
-                        timer_name = _to_fqdn(timer_name,
-                                              logger=self._parent)
                     ch_timer = pool.get_element_by_full_name(timer_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'timer. '.format(ch_timer.name)
                 if ctrl_item.monitor is None:
                     monitor_name = ctrl_data['monitor']
-                    if to_fqdn:
-                        monitor_name = _to_fqdn(monitor_name,
-                                                logger=self._parent)
                     ch_monitor = pool.get_element_by_full_name(monitor_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'monitor.'.format(ch_monitor.name)
@@ -823,7 +818,7 @@ class MeasurementConfiguration(object):
                     # Skip controllers disabled
                     pass
                 elif acq_synch in (AcqSynch.SoftwareTrigger,
-                                 AcqSynch.SoftwareGate):
+                                   AcqSynch.SoftwareGate):
                     if ctrl_item.timer.index < master_timer_idx_sw:
                         master_timer_sw = ctrl_item.timer
                         master_timer_idx_sw = ctrl_item.timer.index
@@ -854,8 +849,6 @@ class MeasurementConfiguration(object):
         else:  # Measurement Group with all channel synchronized by hardware
             mnt_grp_timer = cfg.get('timer')
             if mnt_grp_timer:
-                if to_fqdn:
-                    mnt_grp_timer = _to_fqdn(mnt_grp_timer, self._parent)
                 user_config['timer'] = mnt_grp_timer
             else:
                 # for backwards compatibility use a random monitor
@@ -868,8 +861,6 @@ class MeasurementConfiguration(object):
         else:  # Measurement Group with all channel synchronized by hardware
             mnt_grp_monitor = cfg.get('monitor')
             if mnt_grp_monitor:
-                if to_fqdn:
-                    mnt_grp_monitor = _to_fqdn(mnt_grp_monitor, self._parent)
                 user_config['monitor'] = mnt_grp_monitor
             else:
                 # for backwards compatibility use a random monitor
@@ -927,6 +918,22 @@ class MeasurementConfiguration(object):
         if ctype != ElementType.External and channel.is_referable():
             value_ref_enabled = channel_data.get('value_ref_enabled', False)
             channel_data['value_ref_enabled'] = value_ref_enabled
+            value_ref_pattern = channel_data.get('value_ref_pattern', '')
+            channel_data['value_ref_pattern'] = value_ref_pattern
+        elif 'value_ref_enabled' in channel_data or 'value_ref_pattern' in \
+                channel_data:
+            if self._value_ref_compat:
+                msg = 'value_ref_pattern/value_ref_enabled is deprecated ' \
+                      'for non-referable channels since 3.0.3. Re-apply ' \
+                      'configuration in order to upgrade.'
+                self._parent.warning(msg)
+                channel_data.pop('value_ref_enabled')
+                channel_data.pop('value_ref_pattern')
+            else:
+                msg = ('The channel {} is not referable. You can not set '
+                       'the enabled and/or the pattern parameters.').format(
+                        name)
+                raise ValueError(msg)
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
@@ -970,7 +977,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # by default software synchronizer initial domain is set to Position
         self._sw_synch_initial_domain = SynchDomain.Position
 
-        self._synchronization = SynchronizationDescription()
+        self._synch_description = SynchDescription()
 
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
@@ -989,13 +996,15 @@ class PoolMeasurementGroup(PoolGroupElement):
         # check if software synchronizer is occupied
         synch_soft = self.acquisition._synch._synch_soft
         acq_sw = self.acquisition._sw_acq
+        acq_sw_start = self.acquisition._sw_start_acq
         acq_0d = self.acquisition._0d_acq
-        if state in (State.On, State.Unknown) \
-            and (synch_soft.is_started() or
-                 acq_sw._is_started() or
-                 acq_0d._is_started()):
+        if (state in (State.On, State.Unknown)
+            and (synch_soft.is_started()
+                 or acq_sw._is_started()
+                 or acq_sw_start._is_started()
+                 or acq_0d._is_started())):
             state = State.Moving
-            status += "/nSoftware synchronization is in progress"
+            status += "\nSoftware synchronization is in progress"
         return state, status
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
@@ -1024,6 +1033,22 @@ class PoolMeasurementGroup(PoolGroupElement):
             if element.get_type() is ElementType.TriggerGate:
                 return
         return PoolGroupElement.add_user_element(self, element, index)
+
+    def rename_element(self, old_name, new_name, propagate=1):
+        """Rename element in the controller.
+
+        :param old_name: old name of the element
+        :type old_name: :obj:`str`
+        :param new_name: new name of the element
+        :type new_name: :obj:`str`
+        :param propagate: 0 for not propagating, 1 to propagate,
+               2 propagate with priority
+        :type propagate: :obj:`int`
+        """
+        self._config['label'] = new_name
+        self.fire_event(EventType("configuration", priority=propagate),
+                        self._config)
+
     # -------------------------------------------------------------------------
     # configuration
     # -------------------------------------------------------------------------
@@ -1038,16 +1063,16 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self._config
 
     # TODO: Check if it needed
-    def set_configuration(self, config=None, propagate=1, to_fqdn=True):
-        self._config._use_fqdn = to_fqdn
+    def set_configuration(self, config=None, propagate=1):
         self._config.configuration = config
         self._config_dirty = True
         if not propagate:
             return
-        self.fire_event(EventType("configuration", priority=propagate), config)
+        self.fire_event(EventType("configuration", priority=propagate),
+                        config)
 
-    def set_configuration_from_user(self, cfg, propagate=1, to_fqdn=True):
-        self._config.set_configuration_from_user(cfg, to_fqdn)
+    def set_configuration_from_user(self, cfg, propagate=1):
+        self._config.set_configuration_from_user(cfg)
         self._config_dirty = True
         if not propagate:
             return
@@ -1068,14 +1093,15 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_integration_time(self):
-        integration_time = self._synchronization.active_time
-        if type(integration_time) == float:
+        integration_time = self._synch_description.active_time
+        if isinstance(integration_time, float):
             return integration_time
         elif len(integration_time) == 0:
-            raise Exception("The synchronization group has not been"
-                            " initialized")
+            raise Exception("The synchronization description group has not"
+                            " been initialized")
         elif len(integration_time) > 1:
-            raise Exception("There are more than one synchronization groups")
+            raise Exception("There are more than one synchronization"
+                            "description groups")
 
     def set_integration_time(self, integration_time, propagate=1):
         total_time = integration_time + self.latency_time
@@ -1083,7 +1109,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                   SynchParam.Active: {SynchDomain.Time: integration_time},
                   SynchParam.Total: {SynchDomain.Time: total_time},
                   SynchParam.Repeats: 1}]
-        self.set_synchronization(synch)
+        self.set_synch_description(synch)
         if not propagate:
             return
         self.fire_event(EventType("integration_time", priority=propagate),
@@ -1128,22 +1154,24 @@ class PoolMeasurementGroup(PoolGroupElement):
                                 doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
-    # synchronization
+    # synch_description
     # -------------------------------------------------------------------------
 
-    def get_synchronization(self):
-        return self._synchronization
+    def get_synch_description(self):
+        return self._synch_description
 
-    def set_synchronization(self, synchronization, propagate=1):
-        self._synchronization = SynchronizationDescription(synchronization)
+    def set_synch_description(self, description, propagate=1):
+        self._synch_description = \
+            SynchDescription(description)
         self._config_dirty = True  # acquisition mode goes to configuration
         if not propagate:
             return
-        self.fire_event(EventType("synchronization", priority=propagate),
-                        synchronization)
+        self.fire_event(EventType("synch_description",
+                                  priority=propagate),
+                        description)
 
-    synchronization = property(get_synchronization, set_synchronization,
-                               doc="the current acquisition mode")
+    synch_description = property(get_synch_description, set_synch_description,
+                                 doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
     # moveable
@@ -1162,7 +1190,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                         moveable)
 
     moveable = property(get_moveable, set_moveable,
-                        doc="moveable source used in synchronization")
+                        doc="moveable source used in synchronization "
+                            "description")
 
     # -------------------------------------------------------------------------
     # latency time
@@ -1221,12 +1250,10 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # -------------------------------------------------------------------------
 
-    def prepare(self, multiple=1):
+    def prepare(self):
         """Prepare for measurement.
 
         Delegate measurement preparation to the acquisition action.
-
-        ..todo:: remove multiple argument
         """
         if len(self.get_user_elements()) == 0:
             # All channels were disabled
@@ -1255,37 +1282,26 @@ class PoolMeasurementGroup(PoolGroupElement):
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
-        kwargs = {'head': self,
-                  'multiple': multiple}
+        kwargs = {'head': self}
 
         self.acquisition.prepare(self.configuration,
                                  self.acquisition_mode,
                                  value,
-                                 self._synchronization,
+                                 self._synch_description,
                                  self._moveable_obj,
                                  self.sw_synch_initial_domain,
                                  self.nb_starts,
                                  **kwargs)
 
-    def start_acquisition(self, value=None, multiple=1):
+    def start_acquisition(self, value=None):
         """Start measurement.
 
         Delegate start measurement to the acquisition action.
         Provide backwards compatibility for starts without previous prepare.
-
-        ..todo:: remove value and multiple arguments.
         """
         if self._pending_starts == 0:
-            msg = "starting acquisition without prior preparing is " \
-                  "deprecated since version Jan18."
-            self.warning(msg)
-            self.debug("Preparing with number_of_starts equal to 1")
-            nb_starts = self.nb_starts
-            self.set_nb_starts(1, propagate=0)
-            try:
-                self.prepare(multiple)
-            finally:
-                self.set_nb_starts(nb_starts, propagate=0)
+            msg = "prepare is mandatory before starting acquisition"
+            raise RuntimeError(msg)
         self._aborted = False
         self._pending_starts -= 1
         if not self._simulation_mode:

@@ -47,6 +47,7 @@ import os
 import re
 import numpy as np
 
+from sardana.sardanautils import py2_round
 from sardana.macroserver.macro import Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
@@ -136,7 +137,7 @@ class _diffrac:
 
     def check_collinearity(self, h0, k0, l0, h1, k1, l1):
 
-        print h0
+        print(h0)
         cpx = k0 * l1 - l0 * k1
         cpy = l0 * h1 - h0 * l1
         cpz = h0 * k1 - k0 * h1
@@ -1551,7 +1552,7 @@ class loadcrystal(iMacro, _diffrac):
                 self.output("New directory %s not found" % newdir)
                 return
 
-        res = filter(lambda x: x.endswith('.txt'), files)
+        res = [x for x in files if x.endswith('.txt')]
         if len(res) == 0:
             self.output("No crystals available in set directory. Nothing done")
             return
@@ -1605,7 +1606,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.h_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1615,7 +1616,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.k_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1625,7 +1626,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.l_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1661,11 +1662,7 @@ class _blockprintmove(Macro, _diffrac):
         while(moving):
             moving = 0
             for angle in self.angle_names:
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(mot_dev, "stateObj"):
-                    angle_state = tmp_dev[angle].stateObj.read().rvalue
-                else:
-                    angle_state = tmp_dev[angle].state()
+                angle_state = tmp_dev[angle].stateObj.read().rvalue
                 if angle_state == 6:
                     moving = 1
             if flagprint == 1:

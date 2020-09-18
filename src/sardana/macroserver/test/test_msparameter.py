@@ -1,4 +1,4 @@
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 
 from sardana.macroserver.macro import Type
@@ -106,7 +106,7 @@ class TestParamDecoder(unittest.TestCase):
         try:
             param_decoder = ParamDecoder(self.type_manager, params_def,
                                          params_raw)
-        except Exception, e:
+        except Exception as e:
             exception = e
         if expected_params:
             exception_message = getattr(exception, "message", None)

@@ -42,15 +42,16 @@ try:
 except:
     pygments = None
 
-from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
-from taurus.core.util.enumeration import Enumeration
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel, \
     TaurusBaseProxyModel
 from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_LIST_MIME_TYPE, \
     TAURUS_MODEL_MIME_TYPE
 
-_MOD, _CLS, _FNC, _TNG = ":/python-module.png", ":/class.png", ":/function.png", ":/tango.png"
+_MOD = ":python-module.png"
+_CLS = ":class.png"
+_FNC = ":function.png"
+_TNG = ":tango.png"
 
 TYPE_MAP = {
     "ControllerLibrary": ("Controller libraries", _MOD, "Controller library",),
@@ -78,9 +79,8 @@ def getElementTypeLabel(t):
 
 
 def getElementTypeIcon(t):
-    import taurus.qt.qtgui.resource
     try:
-        return taurus.qt.qtgui.resource.getIcon(TYPE_MAP.get(t, (None, _TNG))[1])
+        return Qt.QIcon(TYPE_MAP.get(t, (None, _TNG))[1])
     except:
         return None
 
@@ -231,11 +231,11 @@ class SardanaBaseElementModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def accept(self, element):
@@ -442,11 +442,11 @@ class SardanaEnvironmentModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def accept(self, environment):
@@ -460,7 +460,7 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         env = dev.getEnvironment()
         root = self._rootItem
 
-        for key, value in env.items():
+        for key, value in list(env.items()):
             if not self.accept(key):
                 continue
             env_item = EnvironmentTreeItem(self, (key, value), root)

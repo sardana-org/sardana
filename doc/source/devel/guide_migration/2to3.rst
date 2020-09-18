@@ -1,0 +1,52 @@
+.. _2to3:
+
+========
+v2 -> v3
+========
+
+Sardana v3 is the first Sardana release which **only** supports Python 3.5 or
+higher. Due to the dropping of support to Python 2 Sardana v3 is not backwards
+compatible with the previous versions. Below you can find
+the incompatibilities and the necessary migration steps.
+
+MacroServer environment
+=======================
+
+Environments created with Python 2 needs to be ported to Python 3.
+In order to do that you can use the
+`upgrade_env.py <https://github.com/sardana-org/sardana/blob/develop/scripts/upgrade/upgrade_env.py>`_ script.
+
+This requires a choice of the shelve backend (either gnu or dumb)
+at the moment of migration. The same decision is also important for new
+Sardana systems. In this last case it can be tuned with this
+`~sardana.sardanacustomsettings.MS_ENV_SHELVE_BACKEND`.
+
+Plugins migration to Python 3
+=============================
+
+Sardana plugins (macros, controllers and recorders) and all their dependencies
+e.g. external libraries, needs to be migrated to Python 3. You can find hints
+on how to pass this process in this
+`ALBA's internal presentation <https://alba-synchrotron.gitlab.io/controls-section/slides_py2to3#4>`_
+(slides 4 - 34).
+
+GUIs migration to Python 3
+==========================
+
+Sardana-Taurus GUIs which use the :ref:`MacroButton<macrobutton>` and all
+their dependencies e.g. external libraries, needs to be migrated to Python 3.
+It has not been observed that other
+:ref:`Sardana-Taurus widgets<sardana-taurus>` require their GUIs to be migrated.
+
+Other (non Python 3 related) incompatibilities
+==============================================
+
+Sardana v3 was reduced by long time ago deprecated features. You can
+find a list of them together with the suggested substitutes in this
+`table <https://github.com/sardana-org/sardana/issues/1315>`_.
+
+
+
+
+
+

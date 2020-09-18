@@ -35,28 +35,146 @@ to be used within a TaurusGui for managing panels for:
           `taurus.qt.qtgui.taurusgui.macrolistener`
 """
 
-from __future__ import print_function
+
 
 from builtins import object
 
 import datetime
+import collections
 
-from taurus.core.util.containers import CaselessList
+import numpy
+
+try:
+    import pyqtgraph
+except ImportError:
+    pyqtgraph = None
+
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.base import TaurusBaseComponent
+from taurus.core.util.containers import ArrayBuffer, LoopList
+
+from sardana.taurus.core.tango.sardana import PlotType
 
 
-__all__ = ['MacroBroker', 'DynamicPlotManager']
+__all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
+
 __docformat__ = 'restructuredtext'
 
+COLORS = [Qt.QColor(Qt.Qt.red),
+          Qt.QColor(Qt.Qt.green),
+          Qt.QColor(Qt.Qt.magenta),
+          Qt.QColor(Qt.Qt.blue),
+          Qt.QColor(Qt.Qt.cyan),
+          Qt.QColor(Qt.Qt.yellow),
+          Qt.QColor(Qt.Qt.white)]
 
-class ChannelFilter(object):
+SYMBOLS = ['x', 'o', 't', 't1', 't2', 't3', 's', 'p']
 
-    def __init__(self, chlist):
-        self.chlist = tuple(chlist)
+CURVE_STYLES = [(color, symbol) for symbol in SYMBOLS for color in COLORS]
 
-    def __call__(self, x):
-        return x in self.chlist
+NO_PLOT_MESSAGE = 'Plots cannot be displayed (pyqtgraph not installed)'
+
+
+def assertPlotAvailability(exit_on_error=True):
+    if pyqtgraph is None:
+        Qt.QMessageBox.critical(None, 'Plot error', NO_PLOT_MESSAGE)
+        if exit_on_error:
+            exit(1)
+
+
+def empty_data(nb_points):
+    return ArrayBuffer(numpy.full(nb_points, numpy.nan))
+
+
+class MultiPlotWidget(Qt.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = Qt.QVBoxLayout(self)
+        self.win = pyqtgraph.GraphicsLayoutWidget()
+        layout.addWidget(self.win)
+        self._plots = {}
+        self._timer = None
+        self._event_nb = 0
+        self._last_event_nb = 0
+
+    # plots: a list of plots
+    # each plot is:
+    #   dict: { x_axis: { name: axis-name, label: axis-label
+    #           curves: [{ name: curve_name, label: curve_label }] }
+
+    def prepare(self, plots, nb_points=None):
+        self.win.clear()
+        plot_widgets = {}
+        nb_points = 2**16 if nb_points is None else nb_points
+        plots_per_row = int(len(plots)**0.5)
+        for idx, plot in enumerate(plots):
+            plot_curves = {}
+            x_axis, curves = plot['x_axis'], plot['curves']
+            if idx % plots_per_row == 0:
+                self.win.nextRow()
+            nb_curves = len(curves)
+            labels = dict(bottom=x_axis['label'])
+            if nb_curves == 1:
+                labels['left'] = curves[0]['label']
+            plot_widget = self.win.addPlot(labels=labels)
+            plot_widget.showGrid(x=True, y=True)
+            if nb_curves > 1:
+                plot_widget.addLegend()
+            plot_widget.x_axis = dict(x_axis, data=empty_data(nb_points))
+            styles = LoopList(CURVE_STYLES)
+            for curve in curves:
+                pen, symbol = styles.current()
+                styles.next()
+                style = dict(pen=pen, symbol=symbol,
+                             symbolSize=5, symbolPen=pen, symbolBrush=pen)
+                curve_item = plot_widget.plot(name=curve['label'], **style)
+                curve_item.curve_data = empty_data(nb_points)
+                plot_curves[curve['name']] = curve_item
+            plot_widgets[plot_widget] = plot_curves
+        self._plots = plot_widgets
+        self._event_nb = 0
+        self._last_event_nb = 0
+        self._start_update()
+
+    def onNewPoint(self, data):
+        # update internal data and mark the new event
+        for plot_widget, curves in self._plots.items():
+            x_axis = plot_widget.x_axis
+            x_data = x_axis['data']
+            x_data.append(data[x_axis['name']])
+            for curve_name, curve_item in curves.items():
+                y_data = curve_item.curve_data
+                y_data.append(data[curve_name])
+        self._event_nb += 1
+
+    def onEnd(self, data):
+        self.do_update()
+        self._end_update()
+
+    def do_update(self):
+        if self._event_nb == self._last_event_nb:
+            return
+        self._last_event_nb = self._event_nb
+        for plot_widget, curves in self._plots.items():
+            x_axis = plot_widget.x_axis
+            x_data = x_axis['data']
+            for curve_name, curve_item in curves.items():
+                y_data = curve_item.curve_data
+                curve_item.setData(x_data.contents(), y_data.contents())
+
+    def _start_update(self):
+        self._end_update()
+        timer = Qt.QTimer()
+        timer.timeout.connect(self.do_update)
+        # refresh curves at a fix rate of ~5Hz
+        timer.start(200)
+        self._timer = timer
+
+    def _end_update(self):
+        if self._timer:
+            self._timer.stop()
+        self._timer = None
 
 
 class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
@@ -71,20 +189,30 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
     used.
     '''
 
+    plots_available = pyqtgraph is not None
+
     newShortMessage = Qt.pyqtSignal('QString')
+
+    Single = 'single'  # each curve has its own plot
+    XAxis = 'x-axis'   # group curves with same X-Axis
 
     def __init__(self, parent=None):
         Qt.QObject.__init__(self, parent)
         TaurusBaseComponent.__init__(self, self.__class__.__name__)
 
-        self.__panels = {}
+        self._group_mode = self.XAxis
+        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
-        self._trends1d = {}
-        self._trends2d = {}
+        self._plot = MultiPlotWidget()
+        self.createPanel(
+            self._plot, 'Scan plot', registerconfig=False, permanent=False)
 
-        self._parent_can_notify_changes = False
-        if hasattr(parent, 'experimentConfigurationChanged'):
-            self._parent_can_notify_changes = True
+    def setGroupMode(self, group):
+        assert group in (self.Single, self.XAxis)
+        self._group_mode = group
+
+    def groupMode(self):
+        return self._group_mode
 
     def setModel(self, doorname):
         '''reimplemented from :meth:`TaurusBaseComponent`
@@ -105,18 +233,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
         self._checkJsonRecorder()
 
-        # read the expconf
-        expconf = self.door.getExperimentConfiguration()
-        self.onExpConfChanged(expconf)
-
-        # Connect experimentConfigurationChanged signal,
-        # The event can be emitted by parents like expconf or emitted by QDoor
-        if self._parent_can_notify_changes:
-            self.parent().experimentConfigurationChanged.connect(
-                self.onExpConfChanged)
-        else:
-            self.door.recordDataUpdated.connect(self.onRecordDataUpdated)
-            self.old_arg = None
+        self.door.recordDataUpdated.connect(self.onRecordDataUpdated)
+        self.message_template = 'Ready!'
 
     def _checkJsonRecorder(self):
         '''Checks if JsonRecorder env var is set and offers to set it'''
@@ -145,200 +263,104 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         :param arg: RecordData Tuple
         :return:
         """
-
-        # Filter events sent by itself
-        if arg == self.old_arg:
-            return
-
-        self.old_arg = arg
-
         data = arg[1]
         if 'type' in data:
-            if data['type'] == 'data_desc':
-                expconf = self.door.getExperimentConfiguration()
-                self.onExpConfChanged(expconf)
-                self.door.recordDataUpdated.emit(arg)
+            event_type = data['type']
+            if event_type == 'data_desc':
+                self.prepare(data)
+            elif event_type == 'record_data':
+                self.newPoint(data)
+            elif event_type == 'record_end':
+                self.end(data)
 
-    def onExpConfChanged(self, expconf):
-        '''
-        Slot to be called when experimental configuration changes. It should
-        remove the temporary panels and create the new ones needed.
+    def prepare(self, data_desc):
+        """
+        Prepare UI for a new scan. Rebuilds plots as necessary to adapt to the
+        new scan channels and moveables
+        """
+        data = data_desc['data']
+        col_map = {column['name']: column for column in data['column_desc']}
 
-        :param expconf: (dict) An Experiment Description dictionary. See
-                        :meth:`sardana.taurus.qt.qtcore.tango.sardana.
-                        QDoor.getExperimentDescription`
-                        for more details
-        '''
-
-        from sardana.taurus.core.tango.sardana import PlotType
-        from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
-        activeMntGrp = expconf['ActiveMntGrp']
-        if activeMntGrp is None:
-            return
-        if activeMntGrp not in expconf['MntGrpConfigs']:
-            self.warning(
-                "ActiveMntGrp '%s' is not defined" %
-                activeMntGrp)
-            return
-        mgconfig = expconf['MntGrpConfigs'][activeMntGrp]
-        channels = dict(getChannelConfigs(mgconfig, sort=False))
-
-        # classify by type of plot:
-        trends1d = {}
-        trends2d = {}
-
-        for chname, chdata in channels.items():
-            ptype = chdata['plot_type']
+        # Build list of curves. Each curve has the same column info from the
+        # event and additionally the x-axis it should be plot against
+        curves = []
+        for column in data['column_desc']:
+            ch_name = column['name']
+            ptype = column.get('plot_type', PlotType.No)
             if ptype == PlotType.No:
                 continue
-            elif ptype == PlotType.Spectrum:
-                axes = tuple(chdata['plot_axes'])
-                # TODO: get default value from the channel.
-                ndim = chdata.get('ndim', 0) or 0
-                if ndim == 0:  # this is a trend
-                    if axes in trends1d:
-                        trends1d[axes].append(chname)
-                    else:
-                        trends1d[axes] = CaselessList([chname])
-                elif ndim == 1:  # a 1D plot (e.g. a spectrum)
-                    pass  # TODO: implement
-                else:
-                    self.warning('Cannot create plot for %s', chname)
-
             elif ptype == PlotType.Image:
-                axes = tuple(chdata['plot_axes'])
-                # TODO: get default value from the channel.
-                ndim = chdata.get('ndim', 1)
-                if ndim == 0:  # a mesh-like plot?
-                    pass  # TODO implement
-                elif ndim == 1:  # a 2D trend
-                    if axes in trends2d:
-                        trends2d[axes].append(chname)
-                    else:
-                        trends2d[axes] = CaselessList([chname])
-                elif ndim == 2:  # a 2D plot (e.g. an image)
-                    pass  # TODO: implement
-                else:
-                    self.warning('Cannot create plot for %s', chname)
-        try:
-            # TODO: adapt _updateTemporaryTrends1D to use tpg
-            new1d, removed1d = self._updateTemporaryTrends1D(trends1d)
-            self.newShortMessage.emit("Changed panels (%i new, %i removed)"
-                                      % (len(new1d), len(removed1d)))
-        except Exception as e:
-            self.warning(
-                'Plots cannot be updated. Only qwt5 is supported for now'
-            )
-            self.error(e)
-
-        # try:
-        #     # TODO: adapt _updateTemporaryTrends2D to use tpg
-        #     print(trends2d)
-        #     new2d, removed2d = self._updateTemporaryTrends2D(trends2d)
-        #     self.newShortMessage.emit("Changed panels (%i new, %i removed)"
-        #                               % (len(new2d), len(removed2d)))
-        # except Exception as e:
-        #     self.warning(
-        #         'Plots 2d cannot be updated. Only qwt5 is supported for now'
-        #     )
-        #     self.error(e)
-
-    def _updateTemporaryTrends1D(self, trends1d):
-        '''adds necessary trend1D panels and removes no longer needed ones
-
-        :param trends1d: (dict) A dict whose keys are tuples of axes and
-                         whose values are list of model names to plot
-
-        :returns: (tuple) two lists new,rm:new contains the names of the new
-                  panels and rm contains the names of the removed panels
-        '''
-        from taurus.qt.qtgui.plot import TaurusTrend  # TODO: use tpg instead!
-        newpanels = []
-        for axes, plotables in trends1d.items():
-            if not axes:
+                self.warning('Unsupported image plot for %s', ch_name)
                 continue
-            if axes not in self._trends1d:
-                w = TaurusTrend()
-                w.setXIsTime(False)
-                w.setScanDoor(self.getModelObj().getFullName())
-                # TODO: use a standard key for <idx> and <mov>
-                w.setScansXDataKey(axes[0])
-                pname = u'Trend1D - %s' % ":".join(axes)
-                panel = self.createPanel(w, pname, registerconfig=False,
-                                         permanent=False)
-                try:  # if the panel is a dockwidget, raise it
-                    panel.raise_()
-                except Exception:
-                    pass
-                self._trends1d[axes] = pname
-                newpanels.append(pname)
-
-            widget = self.getPanelWidget(self._trends1d[axes])
-            flt = ChannelFilter(plotables)
-            widget.onScanPlotablesFilterChanged(flt)
-
-        # remove trends that are no longer configured
-        removedpanels = []
-        olditems = list(self._trends1d.items())
-        for axes, name in olditems:
-            if axes not in trends1d:
-                removedpanels.append(name)
-                self.removePanel(name)
-                self._trends1d.pop(axes)
-
-        return newpanels, removedpanels
-
-    def _updateTemporaryTrends2D(self, trends2d):
-        '''adds necessary trend2D panels and removes no longer needed ones
-
-        :param trends2d: (dict) A dict whose keys are tuples of axes and
-                         whose values are list of model names to plot
-
-        :returns: (tuple) two lists new,rm:new contains the names of the new
-                  panels and rm contains the names of the removed panels
-
-        ..note:: Not fully implemented yet
-        '''
-        try:
-            from taurus.qt.qtgui.extra_guiqwt.taurustrend2d import \
-                TaurusTrend2DDialog
-            from taurus.qt.qtgui.extra_guiqwt.image import (
-                TaurusTrend2DScanItem)
-        except Exception:
-            self.info('guiqwt extension cannot be loaded. '
-                      + '2D Trends will not be created')
-            raise
-            return
-
-        newpanels = []
-        for axes, plotables in trends2d.items():
-            for chname in plotables:
-                pname = u'Trend2D - %s' % chname
-                if pname in self._trends2d:
-                    self._trends2d[pname].widget().trendItem.clearTrend()
+            x_axes = ['point_nb' if axis == '<idx>' else axis
+                      for axis in column.get('plot_axes', ())]
+            ndim = column.get('ndim', 0) or 0
+            if ptype == PlotType.Spectrum:
+                if ndim == 0:  # this is a trend
+                    for x_axis in x_axes:
+                        x_label = col_map[x_axis]['label']
+                        curve = dict(column, x_axis=x_axis,
+                                     x_axis_label=x_label)
+                        curves.append(curve)
                 else:
-                    axis = axes[0]
-                    w = TaurusTrend2DDialog(stackMode='event')
-                    plot = w.get_plot()
-                    name = self.getModelObj().getFullName()
-                    t2d = TaurusTrend2DScanItem(chname, axis,
-                                                name)
-                    plot.add_item(t2d)
-                    self.createPanel(w, pname, registerconfig=False,
-                                     permanent=False)
-                    self._trends2d[(axes, chname)] = pname
-                    newpanels.append(pname)
+                    self.warning('Cannot create spectrum plot for %d dims '
+                                 'channel %r', ndim, ch_name)
 
-        # remove trends that are no longer configured
-        removedpanels = []
-        olditems = list(self._trends2d.items())
-        for axes, name in olditems:
-            if axes not in trends2d:
-                removedpanels.append(name)
-                self.removePanel(name)
-                self._trends2d.pop(axes)
+        if self._group_mode == self.Single:
+            plots = []
+            for curve in curves:
+                plot = dict(x_axis=dict(name=curve['x_axis'],
+                                        label=curve['x_axis_label']),
+                            curves=[curve])
+                plots.append(plot)
+        elif self._group_mode == self.XAxis:
+            plot_map = {}
+            for curve in curves:
+                x_axis = curve['x_axis']
+                plot = plot_map.get(x_axis)
+                if plot is None:
+                    plot = dict(x_axis=dict(name=curve['x_axis'],
+                                            label=curve['x_axis_label']),
+                                curves=[])
+                    plot_map[x_axis] = plot
+                plot['curves'].append(curve)
+            plots = tuple(plot_map.values())
+        else:
+            raise NotImplementedError
 
-        return newpanels, removedpanels
+        nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
+        self._plot.prepare(plots, nb_points=nb_points)
+
+        # build status message
+        serialno = 'Scan #{}'.format(data.get('serialno', '?'))
+        title = data.get('title', 'unnamed operation')
+        if data.get('scandir') and data.get('scanfile'):
+            scan_file = data['scanfile']
+            if isinstance(scan_file, (list, tuple)):
+                scan_file = '&'.join(data['scanfile'])
+            saving = data['scandir'] + '/' + scan_file
+        else:
+            saving = 'no saving!'
+        started = 'Started ' + data.get('starttime', '?')
+        progress = '{progress}'
+        self.message_template = ' | '.join((serialno, title, started,
+                                            progress, saving))
+        self.newShortMessage.emit(
+            self.message_template.format(progress='Preparing...'))
+
+    def newPoint(self, point):
+        data = point['data']
+        self._plot.onNewPoint(data)
+        point_nb = 'Point #{}'.format(data['point_nb'])
+        msg = self.message_template.format(progress=point_nb)
+        self.newShortMessage.emit(msg)
+
+    def end(self, end_data):
+        data = end_data['data']
+        self._plot.onEnd(data)
+        progress = 'Ended {}'.format(data['endtime'])
+        msg = self.message_template.format(progress=progress)
+        self.newShortMessage.emit(msg)
 
     def createPanel(self, widget, name, **kwargs):
         '''Creates a "panel" from a widget. In this basic implementation this
@@ -373,19 +395,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         widget.setParent(None)
         widget.close()
 
-    def removePanels(self, names=None):
-        '''removes panels.
-
-        :param names: (seq<str>) names of the panels to be removed. If None is
-                      given (default), all the panels are removed.
-        '''
-        if names is None:
-            names = (list(self._trends1d.values())
-                     + list(self._trends2d.values()))
-            # TODO: do the same for other temporary panels
-        for pname in names:
-            self.removePanel(pname)
-
 
 class MacroBroker(DynamicPlotManager):
     '''A manager of all macro-related panels of a TaurusGui.
@@ -411,8 +420,6 @@ class MacroBroker(DynamicPlotManager):
 
         # connect the broker to shared data
         Qt.qApp.SDM.connectReader("doorName", self.setModel)
-        Qt.qApp.SDM.connectReader("expConfChanged", self.onExpConfChanged)
-        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def setModel(self, doorname):
         ''' Reimplemented from :class:`DynamicPlotManager`.'''
@@ -506,7 +513,7 @@ class MacroBroker(DynamicPlotManager):
                           'doorNameChanged')
 
         # Create ExpDescriptionEditor dialog
-        self.__expDescriptionEditor = ExpDescriptionEditor(plotsButton=False)
+        self.__expDescriptionEditor = ExpDescriptionEditor()
         SDM.connectReader("doorName", self.__expDescriptionEditor.setModel)
         mainwindow.createPanel(self.__expDescriptionEditor,
                                'Experiment Config',
@@ -576,14 +583,9 @@ class MacroBroker(DynamicPlotManager):
                           self.__doorOutput.onDoorWarningChanged)
         SDM.connectReader("doorErrorChanged",
                           self.__doorOutput.onDoorErrorChanged)
-        mainwindow.createPanel(self.__doorOutput, 'DoorOutput',
-                               registerconfig=False, permanent=True)
-
-        # puts doorDebug
-        self.__doorDebug = DoorDebug()
         SDM.connectReader("doorDebugChanged",
-                          self.__doorDebug.onDoorDebugChanged)
-        mainwindow.createPanel(self.__doorDebug, 'DoorDebug',
+                          self.__doorOutput.onDoorDebugChanged)
+        mainwindow.createPanel(self.__doorOutput, 'DoorOutput',
                                registerconfig=False, permanent=True)
 
         # puts doorResult
@@ -632,7 +634,7 @@ class MacroBroker(DynamicPlotManager):
         door.command_inout('abort')
         # send stop/abort to all pools
         pools = door.macro_server.getElementsOfType('Pool')
-        for pool in pools.values():
+        for pool in list(pools.values()):
             self.info('Sending %s command to %s' % (cmd, pool.getFullName()))
             try:
                 pool.getObj().command_inout(cmd)

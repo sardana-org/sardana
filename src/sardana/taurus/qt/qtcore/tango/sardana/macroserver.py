@@ -30,7 +30,7 @@ __all__ = ["QDoor", "QMacroServer",
 
 import copy
 from taurus.core.taurusbasetypes import TaurusEventType
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 
 from sardana.taurus.core.tango.sardana.macroserver import BaseMacroServer, \
     BaseDoor
@@ -49,15 +49,15 @@ class QDoor(BaseDoor, Qt.QObject):
 
     # sometimes we emit None hence the type is object
     # (but most of the data are passed with type list)
-    resultUpdated = Qt.pyqtSignal(object)
-    recordDataUpdated = Qt.pyqtSignal(object)
-    macroStatusUpdated = Qt.pyqtSignal(object)
-    errorUpdated = Qt.pyqtSignal(object)
-    warningUpdated = Qt.pyqtSignal(object)
-    infoUpdated = Qt.pyqtSignal(object)
-    outputUpdated = Qt.pyqtSignal(object)
-    debugUpdated = Qt.pyqtSignal(object)
-    experimentConfigurationChanged = Qt.pyqtSignal(object)
+    resultUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    recordDataUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    macroStatusUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    errorUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    warningUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    infoUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    outputUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    debugUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
     elementsChanged = Qt.pyqtSignal()
     environmentChanged = Qt.pyqtSignal()
 
@@ -95,8 +95,8 @@ class QDoor(BaseDoor, Qt.QObject):
     def logReceived(self, log_name, output):
         res = BaseDoor.logReceived(self, log_name, output)
         log_name = log_name.lower()
-        recordDataUpdated = getattr(self, "%sUpdated" % log_name)
-        recordDataUpdated.emit(output)
+        logUpdated = getattr(self, "%sUpdated" % log_name)
+        logUpdated.emit(output)
         return res
 
     def _prepare_connections(self):
@@ -113,7 +113,7 @@ class QDoor(BaseDoor, Qt.QObject):
         # one or more measurement group was deleted
         mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
         new_mntgrps_connected = []
-        for name, mg in mntgrps.items():
+        for name, mg in list(mntgrps.items()):
             if name not in self._mntgrps_connected:
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
@@ -172,7 +172,7 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
     elementsUpdated = Qt.pyqtSignal()
     elementsChanged = Qt.pyqtSignal()
     macrosUpdated = Qt.pyqtSignal()
-    environmentChanged = Qt.pyqtSignal(object)
+    environmentChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)

@@ -22,13 +22,16 @@ configurable via :ref:`sardana-macroserver-api-macropath` and
 :ref:`sardana-macroserver-api-recorderpath` attributes. In case Sardana is
 used with Tango this configuration is accessible via the ``MacroPath`` and
 ``RecorderPath`` :class:`~sardana.tango.macroserver.MacroServer.MacroServer`
-device properties.
+device properties. Both ``MacroPath`` and ``RecorderPath`` properties may
+contain an ordered, colon-separated list of directories.
 
 Your plugins may need to access to third party Python modules. One can
 configure the directory where to look for them via
 :ref:`sardana-macroserver-api-pythonpath` attribute. In case Sardana is
 used with Tango this configuration is accessible via the ``PythonPath``
 :class:`~sardana.tango.macroserver.MacroServer.MacroServer` device property.
+``PythonPath`` property may contain an ordered, colon-separated list of
+directories.
 
 Multiple macros can run concurrently in the MacroServer and the maximum number
 of these threads is configurable via

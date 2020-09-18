@@ -99,9 +99,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'sardana'
-copyright = u'2012, ALBA - CELLS, Creative Commons Attribution-Share Alike 3.0'
-copyright = u"""Except where otherwise noted, content on this site is
+project = 'sardana'
+copyright = '2012, ALBA - CELLS, Creative Commons Attribution-Share Alike 3.0'
+copyright = """Except where otherwise noted, content on this site is
 licensed under a Creative Commons Attribution 3.0 License"""
 
 # Ideally we would like to put the following html code for copyright...
@@ -135,7 +135,7 @@ release = sardana.Release.version
 exclude_trees = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
-# default_role = None
+default_role = "obj"
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -243,8 +243,8 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'sardana.tex', u'Sardana Documentation',
-     u'Sardana team', 'manual'),
+    ('index', 'sardana.tex', 'Sardana Documentation',
+     'Sardana team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -289,13 +289,23 @@ graphviz_output_format = 'png'  # 'svg'
 # -- Options for reference to other documentation ------------------------
 
 intersphinx_mapping = {
-    'https://docs.python.org/dev': None,
-    'https://docs.scipy.org/doc/scipy/reference': None,
-    'https://docs.scipy.org/doc/numpy': None,
-    'http://ipython.org/ipython-doc/stable/': None,
-    'http://pytango.readthedocs.io/en/stable/': None,
-    'http://taurus-scada.org': None,
-    'http://pyqt.sourceforge.net/Docs/PyQt4/': None,
-    'https://matplotlib.org/': None,
-    'https://pythonhosted.org/guiqwt/': None,
+    'python': ('https://docs.python.org/3', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'ipython': ('http://ipython.org/ipython-doc/stable/', None),
+    'pytango': ('https://pytango.readthedocs.io/en/stable/', None),
+    'taurus': ('http://taurus-scada.org', None),
+    'pyqt': ('https://www.riverbankcomputing.com/static/Docs/PyQt5/', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'guiqwt': ('https://guiqwt.readthedocs.io/en/latest/', None),
 }
+
+
+def _skip_read_attr_hardware(app, what, name, obj, skip, options):
+    if what == "class" and name == "read_attr_hardware":
+        return True
+
+
+def setup(app):
+    # due to tango-controls/pytango#352 we need to exclude read_attr_hardware
+    app.connect('autodoc-skip-member', _skip_read_attr_hardware)

@@ -136,7 +136,7 @@ class BaseMotion(Moveable):
 
         first_elem = elements[0]
 
-        if isinstance(first_elem, (str, unicode)):
+        if isinstance(first_elem, str):
             self.init_by_names(elements, moveable_srcs, allow_repeat,
                                allow_unknown)
         else:
@@ -271,12 +271,12 @@ class Motion(BaseMotion):
 
         # map<MoveableSource, Moveable>
         ms_moveables = {}
-        for moveable_source, ms_names in ms_elem_names.items():
+        for moveable_source, ms_names in list(ms_elem_names.items()):
             moveable = moveable_source.getMoveable(ms_names)
             ms_moveables[moveable_source] = moveable
 
         # list<Moveable>
-        moveable_list = ms_moveables.values()
+        moveable_list = list(ms_moveables.values())
 
         # list<tuple(int moveable_index, int position_index)>
         pos_to_moveable = len(names) * [None, ]
@@ -338,7 +338,7 @@ class Motion(BaseMotion):
             for moveable_source in moveable_sources:
                 moveable = moveable_source.getMoveable([name])
                 if not moveable is None:
-                    if not ms_elems.has_key(moveable_source):
+                    if moveable_source not in ms_elems:
                         ms_elems[moveable_source] = []
                     moveable_source_moveables = ms_elems.get(moveable_source)
                     present = name in moveable_source_moveables
@@ -565,18 +565,18 @@ def test():
     try:
         m = Motion(["m1", "m2"], [ms1, ms2, ms3], read_only=True)
         m.startMove([0.5, 20.4])
-    except Exception, e:
-        assert(e.message == "Trying to move read only motion")
+    except Exception as e:
+        assert(str(e) == "Trying to move read only motion")
 
     try:
         m = Motion(["m1", "m1"], [ms1, ms2, ms3])
-    except Exception, e:
-        assert(e.message == "Moveable item m1 appears more than once")
+    except Exception as e:
+        assert(str(e) == "Moveable item m1 appears more than once")
 
     try:
         m = Motion(["m1", "m999"], [ms1, ms2, ms3])
-    except Exception, e:
-        assert(e.message == "Moveable item m999 not found")
+    except Exception as e:
+        assert(str(e) == "Moveable item m999 not found")
 
 if __name__ == "__main__":
     test()

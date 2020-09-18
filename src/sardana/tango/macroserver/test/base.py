@@ -78,15 +78,15 @@ class BaseMacroServerTestCase(object):
             self._msstarter.addNewDevice(self.door_name, klass='Door')
             # Add properties
             if properties:
-                for key, values in properties.items():
+                for key, values in list(properties.items()):
                     db.put_device_property(self.ms_name,
                                            {key: values})
             # start MS server
-            self._msstarter.startDs()
+            self._msstarter.startDs(wait_seconds=20)
             self.door = PyTango.DeviceProxy(self.door_name)
-        except Exception, e:
+        except Exception as e:
             # force tearDown in order to eliminate the MacroServer
-            print e
+            print(e)
             self.tearDown()
 
     def tearDown(self):
@@ -110,16 +110,21 @@ class BaseMacroServerTestCase(object):
                 "ds_exec_name": "MacroServer",
                 "ds_inst_name": ds_inst_name}
         ms_properties = os.path.normpath(ms_properties)
-        try:
-            os.remove(ms_properties)
-        except Exception, e:
-            msg = "Not possible to remove macroserver environment file"
-            print(msg)
-            print("Details: %s" % e)
+        extensions = [".bak", ".dat", ".dir"]
+        for ext in extensions:
+            name = ms_properties + ext
+            if not os.path.exists(name):
+                continue
+            try:
+                os.remove(name)
+            except Exception as e:
+                msg = "Not possible to remove macroserver environment file"
+                print(msg)
+                print(("Details: %s" % e))
 
 
 if __name__ == '__main__':
     bms = BaseMacroServerTestCase()
     bms.setUp()
-    print bms.door, bms.macroserver
+    print(bms.door, bms.macroserver)
     bms.tearDown()

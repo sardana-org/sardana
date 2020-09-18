@@ -115,7 +115,7 @@ Here is an example of the possible implementation of
 
     class SpringfieldCounterTimerController(CounterTimerController):
 
-        def LoadOne(self, axis, value, repetitions):
+        def LoadOne(self, axis, value, repetitions, latency):
             self.springfield.LoadChannel(axis, value)
 
 .. _sardana-countertimercontroller-howto-value:
@@ -474,7 +474,7 @@ Here is an example of the possible implementation of
 
     class SpringfieldCounterTimerController(CounterTimerController):
 
-        def LoadOne(self, axis, value, repetitions):
+        def LoadOne(self, axis, value, repetitions, latency):
             self.springfield.LoadChannel(axis, value)
             self.springfield.SetRepetitions(repetitions)
             return value

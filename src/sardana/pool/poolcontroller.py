@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import weakref
-import StringIO
+import io
 import traceback
 import functools
 
@@ -71,7 +71,7 @@ class PoolBaseController(PoolBaseElement):
         raise NotImplementedError
 
     def get_ctrl_type_names(self):
-        return map(ElementType.whatis, self.get_ctrl_types())
+        return list(map(ElementType.whatis, self.get_ctrl_types()))
 
     def is_online(self):
         return True
@@ -84,7 +84,7 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
-        sio = StringIO.StringIO()
+        sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
         s = sio.getvalue()
         sio.close()
@@ -118,9 +118,9 @@ class PoolBaseController(PoolBaseElement):
 
     def remove_element(self, elem, propagate=1):
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
-        f = self._element_ids.has_key(eid)
+        f = eid in self._element_ids
         if not f:
-            f = self._pending_element_ids.has_key(eid)
+            f = eid in self._pending_element_ids
             if not f:
                 raise Exception("element '%s' is not in controller")
             del self._pending_element_ids[eid]
@@ -162,9 +162,9 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_axis(self, axis, propagate=1):
-        f = self._element_axis.has_key(axis)
+        f = axis in self._element_axis
         if not f:
-            f = self._pending_element_axis.has_key(axis)
+            f = axis in self._pending_element_axis
             if not f:
                 raise Exception("element '%s' is not in controller")
             elem = self._pending_element_axis[axis]
@@ -380,7 +380,7 @@ class PoolController(PoolBaseController):
             self._ctrl_info = self._lib_info.get_controller(class_name)
         self._init()
 
-        for elem in elem_axis.values():
+        for elem in list(elem_axis.values()):
             self.add_element(elem, propagate=0)
 
         state, status = State.Fault, ""
@@ -567,7 +567,7 @@ class PoolController(PoolBaseController):
             information for each axis and a boolean telling if an error occured
         :rtype: dict<PoolElement, state info>, bool"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_states is None:
             ctrl_states = {}
 
@@ -595,6 +595,8 @@ class PoolController(PoolBaseController):
                 if state_info is None:
                     raise Exception("%s.StateOne(%s(%d)) returns 'None'"
                                     % (self.name, element.name, axis))
+                if state_info in State:
+                    state_info = (state_info, None)
                 state_info = state_info, None
             except:
                 exc_info = sys.exc_info()
@@ -660,7 +662,7 @@ class PoolController(PoolBaseController):
         :return: a map containing the controller value information for each axis
         :rtype: dict<PoolElement, SardanaValue>"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -744,7 +746,7 @@ class PoolController(PoolBaseController):
         :rtype: dict<PoolElement, SardanaValue>
         """
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -830,7 +832,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.stop_axes(axes)
@@ -916,7 +918,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.abort_axes(axes)
@@ -972,13 +974,13 @@ class PoolController(PoolBaseController):
     def raw_move(self, axis_pos):
         ctrl = self.ctrl
         ctrl.PreStartAll()
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ret = ctrl.PreStartOne(axis, dial_position)
             if not ret:
                 raise Exception("%s.PreStartOne(%d, %f) returns False"
                                 % (self.name, axis, dial_position))
 
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ctrl.StartOne(axis, dial_position)
 
         ctrl.StartAll()

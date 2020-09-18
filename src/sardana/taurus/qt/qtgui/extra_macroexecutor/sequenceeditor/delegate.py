@@ -90,7 +90,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
                 paramType = node.type()
                 if paramType in globals.EDITOR_COMBOBOX_PARAMS:
                     comboBox = AttrListComboBoxParam(parent, node)
-                    comboBox.setUseParentModel(True)
+                    comboBox.setModel(index.model())
                     return comboBox
                 elif paramType in globals.EDITOR_SPINBOX_PARAMS:
                     return SpinBoxParam(parent, node)

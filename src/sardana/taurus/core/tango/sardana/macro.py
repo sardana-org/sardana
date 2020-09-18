@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
+
 ##############################################################################
 ##
 # This file is part of Sardana
@@ -24,7 +24,7 @@ from __future__ import absolute_import
 ##############################################################################
 
 """The macro submodule."""
-from __future__ import absolute_import
+
 __all__ = ["MacroInfo", "Macro", "MacroNode", "ParamFactory",
            "MacroRunException"]
 
@@ -103,13 +103,13 @@ class MacroInfo(object):
         return not self._isParamAtomic(p)
 
     def _isParamAtomic(self, p):
-        return type(p['type']) in types.StringTypes
+        return isinstance(p['type'], str)
 
     def _buildParameterLine(self, parameters):
         l = []
         for p in parameters:
             t = p['type']
-            if type(t) in types.StringTypes:
+            if isinstance(t, str):
                 # Simple parameter
                 l.append('<%s>' % p['name'])
             else:
@@ -122,7 +122,7 @@ class MacroInfo(object):
         l = []
         for p in parameters:
             t = p['type']
-            if type(t) in types.StringTypes:
+            if isinstance(t, str):
                 # Simple parameter
                 l.append('{name} : ({type}) {description}'.format(**p))
             else:
@@ -270,13 +270,13 @@ class MacroInfo(object):
             raise Exception('Macro %s does not return any result' % self.name)
         result_info = self.getResult()
         rtype = result_info['type']
+        # TODO: formalize and document way of passing files with macro result
         if rtype == 'File':
             fd, filename = tempfile.mkstemp(prefix='spock_', text=True)
-            os.write(fd, result[1])
-            os.close(fd)
-            # put the local filename in the result
-            result.insert(0, filename)
-            return result
+            with os.fdopen(fd, 'w') as fp:
+                result = result[0]
+                fp.write(result)
+            return filename, result
         res = []
         for idx, item in enumerate(result):
             result_info = self.getResult(idx)
@@ -483,7 +483,12 @@ class ParamNode(BaseNode):
 
 
 class SingleParamNode(ParamNode):
-    """Single parameter class."""
+    """Single parameter class.
+    
+    .. todo: All the usages of setValue are converting the
+             values to str before calling the setter.
+             This most probably should not be the case - to be fixed
+    """
 
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
@@ -511,9 +516,7 @@ class SingleParamNode(ParamNode):
         self._value = value
 
     def defValue(self):
-        if self._defValue is None:
-            return None
-        return str(self._defValue)
+        return self._defValue
 
     def setDefValue(self, defValue):
         if defValue == "None":
@@ -532,7 +535,7 @@ class SingleParamNode(ParamNode):
         # set value attribute only if it is different than the default value
         # the server will assign the default value anyway.
         if value is not None or str(value).lower() != 'none':
-            if value != self.defValue():
+            if value != str(self.defValue()):
                 paramElement.set("value", value)
         return paramElement
 
@@ -572,7 +575,7 @@ class SingleParamNode(ParamNode):
         Empty list indicates default value."""
         if isinstance(v, list):
             if len(v) == 0:
-                v = self.defValue()
+                v = str(self.defValue())
             elif not isinstance(self.parent(), RepeatNode):
                 msg = "Only members of repeat parameter allow list values"
                 raise ValueError(msg)
@@ -1021,7 +1024,7 @@ class MacroNode(BranchNode):
 
     def toSpockCommand(self):
         values, alerts = self.toRun()
-        values = map(str, values)
+        values = list(map(str, values))
         return "%s %s" % (self.name(), str.join(' ', values))
 
     def value(self):
@@ -1284,8 +1287,8 @@ class SequenceNode(BranchNode):
             try:
                 macroParams = ParamParser(paramsDef).parse(plainTextParams)
             except ParseError as e:
-                msg = "{0} can not be parsed ({1})".format(plainTextMacro,
-                                                           e.message)
+                msg = "{0} can not be parsed ({1})".format(plainTextMacro, e)
+                # TODO: think of using `raise from` syntax
                 raise ValueError(msg)
             macro.fromList(macroParams)
 
@@ -1307,7 +1310,8 @@ def ParamFactory(paramInfo):
     """
     if isinstance(paramInfo.get('type'), list):
         param = RepeatParamNode(param=paramInfo)
-        if param.min() > 0:
+        param_min = param.min()
+        if param_min is not None and param_min > 0:
             param.addRepeat()
     else:
         param = SingleParamNode(param=paramInfo)

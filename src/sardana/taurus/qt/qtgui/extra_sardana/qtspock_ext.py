@@ -7,7 +7,7 @@
 ##
 # http://www.sardana-controls.org/
 ##
-# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2020 DESY
 ##
 # Sardana is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -24,4 +24,9 @@
 ##
 ##############################################################################
 
-"""This package provides the spock generic utilities for ipython 0.10"""
+from IPython.core.magic import register_line_magic
+
+
+@register_line_magic
+def edmac(self, parameter_s=''):
+    return "edmac macro not implemented for qtspock"

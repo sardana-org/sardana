@@ -26,17 +26,13 @@
 """This module is part Sardana Python library. It defines the base clases
 for Sardana buffers"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaBuffer", "LateValueException", "EarlyValueException"]
 
 import weakref
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from .sardanavalue import SardanaValue
 from .sardanaevent import EventGenerator, EventType

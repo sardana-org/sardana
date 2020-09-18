@@ -10,7 +10,7 @@
 .. hlist::
     :columns: 3
 
-    * :class:`SynchronizationDescription`
+    * :class:`SynchDescription`
     * :class:`PoolSynchronization`
 
 PoolSynchronization
@@ -24,13 +24,13 @@ PoolSynchronization
     :members:
     :undoc-members:
 
-SynchronizationDescription
---------------------------
+SynchDescription
+----------------
 
-.. inheritance-diagram:: SynchronizationDescription
+.. inheritance-diagram:: SynchDescription
     :parts: 1
 
-.. autoclass:: SynchronizationDescription
+.. autoclass:: SynchDescription
     :show-inheritance:
     :members:
     :undoc-members:

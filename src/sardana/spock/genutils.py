@@ -48,13 +48,7 @@ def get_ipython_version():
     import IPython
     v = None
     try:
-        try:
-            v = IPython.Release.version
-        except:
-            try:
-                v = IPython.release.version
-            except:
-                pass
+        v = IPython.release.version
     except:
         pass
     return v
@@ -64,10 +58,8 @@ def get_ipython_version_list():
     ipv_str = get_ipython_version()
     return translate_version_str2list(ipv_str)
 
+
 ipv = get_ipython_version_list()
-if ipv >= [0, 10] and ipv < [0, 11]:
-    from ipython_00_10.genutils import *
-elif ipv >= [0, 11] and ipv < [1, 0]:
-    from ipython_00_11.genutils import *
-else:
-    from ipython_01_00.genutils import *
+if ipv < [1, 0]:
+    raise Exception("IPython > 1 is required")
+from .ipython_01_00.genutils import *  # noqa

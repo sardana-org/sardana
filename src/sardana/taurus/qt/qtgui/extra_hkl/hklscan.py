@@ -23,8 +23,6 @@
 ##
 ##############################################################################
 
-__docformat__ = 'restructuredtext'
-
 import sys
 
 import sardana
@@ -39,7 +37,7 @@ import taurus.core
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-from displayscanangles import DisplayScanAngles
+from .displayscanangles import DisplayScanAngles
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
@@ -49,6 +47,8 @@ from PyTango import *
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
     TaurusMacroConfigurationDialog, \
     TaurusMacroDescriptionViewer, DoorOutput, DoorDebug, DoorResult
+
+__docformat__ = 'restructuredtext'
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -121,7 +121,7 @@ class HKLScan(TaurusWidget):
         angles_names = []
         angles_taurus_label = []
 
-        gap_x = 800 / self.nb_motors
+        gap_x = 800 // self.nb_motors
 
         try:
             angles_names = self.device.motorroles
@@ -361,8 +361,8 @@ def main():
     parser.usage = "%prog  <model> [door_name]"
     parser.set_description("a taurus application for performing hkl scans")
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:
@@ -378,7 +378,8 @@ def main():
     if len(args) > 1:
         w.onDoorChanged(args[1])
     else:
-        print "WARNING: Not door name supplied. Connection to MacroServer/Door not automatically done"
+        print("WARNING: Not door name supplied. Connection to "
+              "MacroServer/Door not automatically done")
     w.show()
 
     sys.exit(app.exec_())

@@ -264,7 +264,7 @@ class BasicDummyTwoDController(TwoDController):
         if self._armed:
             sta = State.Moving
             status = "Armed"
-        elif axis in self.counting_channels:
+        elif axis in self.counting_channels and self.start_time is not None:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
@@ -329,7 +329,7 @@ class BasicDummyTwoDController(TwoDController):
 
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
-            for axis, channel in self.counting_channels.items():
+            for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
         elif axis in self.counting_channels:
@@ -342,12 +342,16 @@ class BasicDummyTwoDController(TwoDController):
                                      AcqSynch.HardwareGate):
             self._disconnect_hardware_synchronization()
             self._armed = False
+        self.start_time = None
 
     def AbortOne(self, axis):
         if axis not in self.counting_channels:
             return
         now = time.time()
-        elapsed_time = now - self.start_time
+        if self.start_time is not None:
+            elapsed_time = now - self.start_time
+        else:
+            elapsed_time = 0
         self._finish(elapsed_time, axis)
 
     def getAmplitude(self, axis):
@@ -434,7 +438,7 @@ class BasicDummyTwoDController(TwoDController):
         # for the moment only react on first trigger
         if type_.name.lower() == "active" and value == 0:
             self._armed = False
-            for axis, channel in self.counting_channels.iteritems():
+            for axis, channel in self.counting_channels.items():
                 channel.is_counting = True
             self.start_time = time.time()
 
@@ -522,7 +526,7 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             channel.buffer_values.extend([img] * nb_new_acq)
             if channel.value_ref_enabled:
                 start = self.start_idx * self.repetitions + channel.acq_idx
-                for img_idx in xrange(start, start + nb_new_acq):
+                for img_idx in range(start, start + nb_new_acq):
                     value_ref_pattern = channel.value_ref_pattern
                     scheme, path, dataset_name, msg = generate_ref(
                         value_ref_pattern, img_idx)

@@ -118,7 +118,7 @@ class IntegralAccumulation(BaseAccumulation):
         else:
             last_value, last_timestamp = self.last_value
             dt = timestamp - last_timestamp
-            self.sum += dt * (last_value + value) / 2.0
+            self.sum += dt * (last_value + value) / 2
             total_dt = timestamp - self.start_time
             self.value = self.sum / total_dt
             self.last_value = value, timestamp

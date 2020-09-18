@@ -57,7 +57,9 @@ Afterward, spock :term:`CLI` will start normally:
 
     Spock's sardana extension 1.0 loaded with profile: spockdoor (linked to door 'LAB-01-D01')
 
-    LAB-01-D01 [1]: 
+    LAB-01-D01 [1]:
+.. note::
+    If you want to connect to another gate you need to create a new spock profile.
 
 Starting spock with a custom profile
 ------------------------------------
@@ -188,10 +190,41 @@ Stopping macros
 ---------------
 
 Some macros may take a long time to execute. To stop a macro in the middle of
-its execution type :kbd:`Control+c`.
+its execution type :kbd:`Control+c`. If the stopping process last too long,
+you may trigger the aborting process with a second :kbd:`Control+c`.
+Here be patient, further issuing of :kbd:`Control+c` may leave your macro
+in an uncontrolled way. Use them only if you are sure that the aborting
+process will not bring your system to a safe state.
 
 Macros that move motors or acquire data from sensors will automatically stop all
 motion and/or all acquisition.
+
+While stopping and aborting macros Spock reports you what happens behind the
+scene with informative messages:
+
+.. sourcecode:: spock
+
+    LAB-01-D01 [1]: ascan mot01 0 10 100 0.1
+    Operation will be saved in /tmp/test.h5 (HDF5::NXscan from NXscanH5_FileRecorder)
+    Scan #342 started at Wed Sep  9 23:01:14 2020. It will take at least 0:00:10.174246
+                                           tg_test
+     #Pt No    mot01      ct01     gct01    double_scalar     dt
+       0         0        0.1     2.98023e-08      243.47     0.0967791
+       1        0.1       0.1     5.91929e-08      243.47     0.239136
+       2        0.2       0.1     1.1595e-07      243.47     0.384191
+    ^C
+    Ctrl-C received: Stopping...
+    Stopping Motion(['mot01']) reserved by ascan
+    Motion(['mot01']) stopped
+    Stopping mntgrp_expconf reserved by ascan
+    mntgrp_expconf stopped
+    Stopping /monitor reserved by ascan
+    Stopping /mirror reserved by ascan
+    Stopping /slit reserved by ascan
+    Operation saved in /tmp/test.h5 (HDF5::NXscan)
+    Scan #342 ended at Wed Sep  9 23:01:15 2020, taking 0:00:01.055814. Dead time 33.7% (motion dead time 12.8%)
+    Executing ascan.on_stop method...
+    Stopping done!
 
 Exiting spock
 -------------
@@ -388,10 +421,8 @@ of files:
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
-You can show plots for the current scan (i.e. plotting the scan *online*) by:
-
-* launching the :func:`showscan online <sardana.spock.magic.showscan>` command
-* using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
+You can show plots for the current scan (i.e. plotting the scan *online*) by
+launching the :func:`showscan online <sardana.spock.magic.showscan>` command.
 
 Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
 file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`
@@ -645,17 +676,17 @@ spock console:
 Using spock as a Tango_ console
 -------------------------------
 
-As metioned in the beggining of this chapter, the sardana spock automatically
-activates the PyTango_ 's ipython console extension. Therefore all Tango_
+As mentioned in the beginning of this chapter, the sardana spock automatically
+activates the PyTango_ 's ipython console extension [#]_. Therefore all Tango_
 features are automatically available on the sardana spock console. For example,
-creating a :class:`~PyTango.DeviceProxy` will work inside the sardana spock
+creating a :class:`tango.DeviceProxy` will work inside the sardana spock
 console:
 
 .. sourcecode:: spock
 
-    LAB-01-D01 [1]: tgtest = PyTango.DeviceProxy("sys/tg_test/1")
+    LAB-01-D01 [1]: tgtest = Device("sys/tg_test/1")
     
-    LAB-01-D01 [2]: print( tgtest.state() )
+    LAB-01-D01 [2]: print(tgtest.state())
     RUNNING
 
 .. rubric:: Footnotes

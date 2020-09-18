@@ -27,9 +27,10 @@
 """This module is part of the Python Pool library. It defines the classes
 for the synchronization"""
 
-__all__ = ["PoolSynchronization", "SynchronizationDescription", "TGChannel"]
+__all__ = ["PoolSynchronization", "SynchDescription", "TGChannel"]
 
 import time
+import threading
 from functools import partial
 from taurus.core.util.log import DebugIt
 from sardana import State
@@ -61,7 +62,7 @@ class TGChannel(PoolActionItem):
         return getattr(self.element, name)
 
 
-class SynchronizationDescription(list):
+class SynchDescription(list):
     """Synchronization description. It is composed from groups - repetitions
     of equidistant synchronization events. Each group is described by
     :class:`~sardana.pool.pooldefs.SynchParam` parameters which may have
@@ -90,8 +91,9 @@ class SynchronizationDescription(list):
     def _get_param(self, param, domain=SynchDomain.Time):
         """
         Extract parameter from synchronization description and its groups. If
-        there is only one group in the synchronization then returns float
-        with the value. Otherwise a list of floats with different values.
+        there is only one group in the synchronization description then
+        returns float with the value. Otherwise a list of floats with
+        different values.
 
         :param param: parameter type
         :type param: :class:`~sardana.pool.pooldefs.SynchParam`
@@ -116,6 +118,8 @@ class PoolSynchronization(PoolAction):
     """Synchronization action.
 
     It coordinates trigger/gate elements and software synchronizer.
+
+    .. todo: Think of moving the ready/busy mechanism to PoolAction
     """
 
     def __init__(self, main_element, name="Synchronization"):
@@ -129,19 +133,36 @@ class PoolSynchronization(PoolAction):
         soft_synch_name = main_element.name + "-SoftSynch"
         self._synch_soft = FunctionGenerator(name=soft_synch_name)
         self._listener = None
+        self._ready = threading.Event()
+        self._ready.set()
+
+    def _is_ready(self):
+        return self._ready.is_set()
+
+    def _wait(self, timeout=None):
+        return self._ready.wait(timeout)
+
+    def _set_ready(self, _=None):
+        self._ready.set()
+
+    def _is_busy(self):
+        return not self._ready.is_set()
+
+    def _set_busy(self):
+        self._ready.clear()
 
     def add_listener(self, listener):
         self._listener = listener
 
-    def start_action(self, ctrls, synchronization, moveable=None,
+    def start_action(self, ctrls, synch_description, moveable=None,
                      sw_synch_initial_domain=None, *args, **kwargs):
         """Start synchronization action.
 
         :param ctrls: list of enabled trigger/gate controllers
         :type ctrls: list
-        :param synchronization: synchronization description
-        :type synchronization:
-         :class:`~sardana.pool.poolsynchronization.SynchronizationDescription`
+        :param synch_description: synchronization description
+        :type synch_description:
+         :class:`~sardana.pool.poolsynchronization.SynchDescription`
         :param moveable: (optional) moveable object used as the
          synchronization source in the Position domain
         :type moveable: :class:`~sardna.pool.poolmotor.PoolMotor` or
@@ -159,12 +180,12 @@ class PoolSynchronization(PoolAction):
                 pool_ctrl.ctrl.PreSynchAll()
                 for channel in ctrl.get_channels(enabled=True):
                     axis = channel.axis
-                    ret = pool_ctrl.ctrl.PreSynchOne(axis, synchronization)
+                    ret = pool_ctrl.ctrl.PreSynchOne(axis, synch_description)
                     if not ret:
                         msg = ("%s.PreSynchOne(%d) returns False" %
                                (ctrl.name, axis))
                         raise Exception(msg)
-                    pool_ctrl.ctrl.SynchOne(axis, synchronization)
+                    pool_ctrl.ctrl.SynchOne(axis, synch_description)
                 pool_ctrl.ctrl.SynchAll()
 
             # attaching listener (usually acquisition action)
@@ -172,7 +193,7 @@ class PoolSynchronization(PoolAction):
             if self._listener is not None:
                 if sw_synch_initial_domain is not None:
                     self._synch_soft.initial_domain = sw_synch_initial_domain
-                self._synch_soft.set_configuration(synchronization)
+                self._synch_soft.set_configuration(synch_description)
                 self._synch_soft.add_listener(self._listener)
                 remove_acq_listener = partial(self._synch_soft.remove_listener,
                                               self._listener)
@@ -253,7 +274,7 @@ class PoolSynchronization(PoolAction):
 
         # Triggering loop
         # TODO: make nap configurable (see motion or acquisition loops)
-        nap = 0.2
+        nap = 0.01
         while True:
             self.read_state_info(ret=states)
             if not self.is_triggering(states):
@@ -261,7 +282,7 @@ class PoolSynchronization(PoolAction):
             time.sleep(nap)
 
         # Set element states after ending the triggering
-        for element, state_info in states.items():
+        for element, state_info in list(states.items()):
             with element:
                 element.clear_operation()
                 state_info = element._from_ctrl_state_info(state_info)

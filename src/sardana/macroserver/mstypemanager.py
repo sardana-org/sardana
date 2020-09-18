@@ -72,7 +72,7 @@ class TypeManager(MacroServerManager):
             return
 
         if self._modules:
-            for _, types_dict in self._modules.items():
+            for _, types_dict in list(self._modules.items()):
                 for type_name in types_dict:
                     Type.removeType(type_name)
 
@@ -138,8 +138,8 @@ class TypeManager(MacroServerManager):
     def getTypeListStr(self):
         type_list_basic, type_list_obj = [], []
 
-        for _, type_class_dict in self._modules.items():
-            for tname, tklass in type_class_dict.items():
+        for _, type_class_dict in list(self._modules.items()):
+            for tname, tklass in list(type_class_dict.items()):
                 if tklass.hasCapability(ParamType.ItemList):
                     type_list_obj.append("%s*" % tname)
                 else:
@@ -149,7 +149,7 @@ class TypeManager(MacroServerManager):
         return type_list
 
     def getTypeClass(self, type_name):
-        for _, type_class_dict in self._modules.items():
+        for _, type_class_dict in list(self._modules.items()):
             tklass = type_class_dict.get(type_name)
             if tklass is None:
                 continue
@@ -163,4 +163,4 @@ class TypeManager(MacroServerManager):
         return self._inst_dict
 
     def getTypeNames(self):
-        return self._inst_dict.keys()
+        return list(self._inst_dict.keys())

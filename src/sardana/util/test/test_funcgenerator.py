@@ -27,7 +27,7 @@ import timeit
 import numpy
 from threading import Event, Timer
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 from taurus.core.util import ThreadPool
 
 from sardana.pool.pooldefs import SynchDomain, SynchParam
@@ -127,7 +127,7 @@ class FuncGeneratorTestCase(TestCase):
         self.thread_pool.add(self.func_generator.run, self._done)
         self.event.wait(100)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0, 10)
+        active_event_ids_ok = list(range(0, 10))
         msg = "Received active event ids: %s, expected: %s" % (
             active_event_ids, active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
@@ -163,7 +163,7 @@ class FuncGeneratorTestCase(TestCase):
         self.event.wait(3)
         position.remove_listener(self.func_generator)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0, 10)
+        active_event_ids_ok = list(range(0, 10))
         msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
                                                                active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
@@ -183,7 +183,7 @@ class FuncGeneratorTestCase(TestCase):
         self.event.wait(3)
         position.remove_listener(self.func_generator)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0, 10)
+        active_event_ids_ok = list(range(0, 10))
         msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
                                                                active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)

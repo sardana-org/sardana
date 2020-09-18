@@ -25,8 +25,8 @@
 
 """This module contains a definition for ViewOptions"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+
 
 __all__ = ['ViewOption']
 
@@ -37,9 +37,7 @@ def ViewOptionMeta(name, bases, attrs):
     return type(name, bases, attrs)
 
 
-class ViewOption(object):
-    __metaclass__ = ViewOptionMeta
-
+class ViewOption(object, metaclass=ViewOptionMeta):
     _DEFAULT_VIEW_OPTIONS = {
         'ShowDial': True,
         'ShowCtrlAxis': False,

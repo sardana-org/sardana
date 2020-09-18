@@ -26,12 +26,13 @@
 """This module contains the class definition for the MacroServer generic
 scan"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+import collections
+import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
-           "MacroFunc", "Type", "ParamRepeat", "Table", "List", "ViewOption",
+           "MacroFunc", "Type", "Table", "List", "ViewOption",
            "LibraryError", "Optional"]
 
 __docformat__ = 'restructuredtext'
@@ -43,7 +44,7 @@ import types
 import ctypes
 import weakref
 import operator
-import StringIO
+import io
 import threading
 import traceback
 
@@ -54,19 +55,15 @@ from taurus.console.list import List
 
 from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
+from sardana.util.thread import _asyncexc
 
-from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat, \
-    Optional
+from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
-    MacroWrongParameterType, UnknownEnv, UnknownMacro, LibraryError
+    ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
+    LibraryError
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
-
-asyncexc = ctypes.pythonapi.PyThreadState_SetAsyncExc
-# first define the async exception function args. This is
-# absolutely necessary for 64 bits machines.
-asyncexc.argtypes = (ctypes.c_long, ctypes.py_object)
 
 
 class OverloadPrint(object):
@@ -185,7 +182,7 @@ class Hookable(Logger):
         return self.__class__.hints.get('allowsHooks')
 
     def getHints(self):
-        return self._getHookHintsDict().keys()
+        return list(self._getHookHintsDict().keys())
 
     def getHooks(self, hint=None):
         """This will return a list of hooks that have the given hint. Two reserved
@@ -286,7 +283,7 @@ class Hookable(Logger):
         if hasattr(self, '_hookHintsDict'):
             del self._hookHintsDict
         # create _hookHintsDict
-        self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
+        self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
         nohints = self._hookHintsDict['_NOHINTS_']
         for hook, hints in self._hooks:
             if len(hints) == 0:
@@ -402,8 +399,8 @@ class macro(object):
         fn.macro_data = {}
         fn.param_def = self.param_def
         fn.result_def = self.result_def
-        fn.hints = self.env
-        fn.env = self.hints
+        fn.hints = self.hints
+        fn.env = self.env
         fn.interactive = self.interactive
         return fn
 
@@ -771,7 +768,12 @@ class Macro(Logger):
         """**Macro API**.
         Sends the given data to the RecordData attribute of the Door
 
-        :param data: (sequence) the data to be sent"""
+        :param data: data to be sent (must be compatible with the codec)
+        :type data: object
+        :param codec: codec to encode data (in Tango server None defaults
+            to "utf8_json")
+        :type codec: str or None
+        """
         self._sendRecordData(data, codec)
 
     def _sendRecordData(self, data, codec=None):
@@ -846,7 +848,7 @@ class Macro(Logger):
         """
         fd = kwargs.get('file', sys.stdout)
         if fd in (sys.stdout, sys.stderr):
-            out = StringIO.StringIO()
+            out = io.StringIO()
             kwargs['file'] = out
             end = kwargs.get('end', '\n')
             if end == '\n':
@@ -1328,10 +1330,10 @@ class Macro(Logger):
         macro_name = None
         arg0 = args[0]
         if len(args) == 1:
-            if type(arg0) in types.StringTypes:
+            if isinstance(arg0, str):
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
-            elif operator.isSequenceType(arg0):
+            elif isinstance(arg0, collections.Sequence):
                 # dealing with sth like args = (['ascan', 'th', '0', '100',
                 # '10', '1.0'],)
                 macro_name = arg0[0]
@@ -1388,9 +1390,9 @@ class Macro(Logger):
         """**Macro API**. Sends an line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -1470,7 +1472,7 @@ class Macro(Logger):
             automatically reserve the object for this macro [default: True]
 
         :return: the object or None if no compatible object is found"""
-        if not isinstance(name, (str, unicode)):
+        if not isinstance(name, str):
             raise self._buildWrongParamExp("getObj", "name", "string",
                                            str(type(name)))
 
@@ -1973,7 +1975,7 @@ class Macro(Logger):
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
-        if not view_options.has_key(name):
+        if name not in view_options:
             ViewOption.reset_option(view_options, name)
             self.setEnv('_ViewOptions', view_options)
         return view_options[name]
@@ -2054,9 +2056,9 @@ class Macro(Logger):
         Sends a line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -2234,15 +2236,14 @@ class Macro(Logger):
         """**Unofficial Macro API**."""
         return self._pause_event.isPaused()
 
-    @classmethod
-    def hasResult(cls):
+    def hasResult(self):
         """**Unofficial Macro API**. Returns True if the macro should return
         a result or False otherwise
 
         :return: True if the macro should return a result or False otherwise
         :rtype: bool
         """
-        return len(cls.result_def) > 0
+        return len(self.result_def) > 0
 
     def getResult(self):
         """**Unofficial Macro API**. Returns the macro result object (if any)
@@ -2305,7 +2306,7 @@ class Macro(Logger):
         macro"""
         for obj in args:
             # isiterable
-            if not type(obj) in map(type, ([], ())):
+            if not type(obj) in list(map(type, ([], ()))):
                 # if not operator.isSequenceType(obj) or type(obj) in
                 # types.StringTypes:
                 obj = (obj,)
@@ -2332,14 +2333,14 @@ class Macro(Logger):
         if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
-                if operator.isMappingType(i):
+                if isinstance(i, collections.Mapping):
                     new_range = i.get('range')
                     if new_range is not None:
                         macro_status['range'] = new_range
                     new_step = i.get('step')
                     if new_step is not None:
                         macro_status['step'] = new_step
-                elif operator.isNumberType(i):
+                elif isinstance(i, numbers.Number):
                     macro_status['step'] = i
                 macro_status['state'] = 'step'
                 yield macro_status
@@ -2361,8 +2362,8 @@ class Macro(Logger):
         """
         if out is None:
             out = ()
-        if operator.isSequenceType(out) and not type(out) in types.StringTypes:
-            out = map(str, out)
+        if isinstance(out, collections.Sequence) and not type(out) in str:
+            out = list(map(str, out))
         else:
             out = (str(out),)
         return out
@@ -2382,6 +2383,8 @@ class Macro(Logger):
         protecting it against exceptions"""
         try:
             self.on_abort()
+        except ReleaseException:
+            pass
         except Exception:
             Logger.error(self, "Error in on_abort(): %s",
                          traceback.format_exc())
@@ -2409,7 +2412,7 @@ class Macro(Logger):
             th = self._macro_thread
             th_id = ctypes.c_long(th.ident)
             Logger.debug(self, "Sending AbortException to %s", th.name)
-            ret = asyncexc(th_id, ctypes.py_object(AbortException))
+            ret = _asyncexc(th_id, ctypes.py_object(AbortException))
             i += 1
             if ret == 0:
                 # try again
@@ -2483,7 +2486,7 @@ class MacroFunc(Macro):
     def __init__(self, *args, **kwargs):
         function = kwargs['function']
         self._function = function
-        kwargs['as'] = self._function.func_name
+        kwargs['as'] = self._function.__name__
         if function.param_def is not None:
             self.param_def = function.param_def
         if function.result_def is not None:

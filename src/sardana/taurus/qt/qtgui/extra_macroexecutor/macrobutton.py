@@ -37,7 +37,7 @@ import PyTango
 
 import taurus
 from taurus.core import TaurusEventType, TaurusDevice
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.button import TaurusCommandButton
@@ -55,7 +55,7 @@ class DoorStateListener(Qt.QObject):
 
     __pyqtSignals__ = ["doorStateChanged"]
 
-    doorStateChanged = Qt.pyqtSignal(object)
+    doorStateChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in (TaurusEventType.Change, TaurusEventType.Periodic):
@@ -76,8 +76,8 @@ class MacroButton(TaurusWidget):
 
     __pyqtSignals__ = ['statusUpdated', 'resultUpdated']
 
-    statusUpdated = Qt.pyqtSignal(object)
-    resultUpdated = Qt.pyqtSignal(object)
+    statusUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    resultUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -99,11 +99,6 @@ class MacroButton(TaurusWidget):
     # More detais in #293 and taurus-org/taurus#635
     def handleEvent(self, evt_src, evt_type, evt_value):
         pass
-
-    def toggleProgress(self, visible):
-        '''deprecated'''
-        self.warning('toggleProgress is deprecated. Use showProgress')
-        self.showProgress(visible)
 
     def showProgress(self, visible):
         '''Set whether the progress bar is shown
@@ -247,29 +242,6 @@ class MacroButton(TaurusWidget):
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
-    def updateMacroArgumentFromSignal(self, index, obj, signal):
-        '''deprecated'''
-        msg = 'updateMacroArgumentFromSignal is deprecated. connectArgEditors'
-        self.warning(msg)
-        self.connect(obj, signal,
-                     functools.partial(self.updateMacroArgument, index))
-
-    def connectArgEditors(self, signals):
-        """
-        Associate signals to argument changes.
-
-        :param signals: (seq<pyqtsignals>) An ordered sequence of signals
-        """
-
-        for i, signal in enumerate(signals):
-            if not self.__isSignal(signal):
-                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
-                sender, sig = signal
-                self.deprecated(dep='Passing (sender, signature) tuples',
-                                alt='pyqtSignal objects', rel='2.5.1')
-                signal = getattr(sender, sig.split('(')[0])
-            signal.connect(functools.partial(self.updateMacroArgument, i))
-
     @staticmethod
     def __isSignal(obj):
         if not hasattr(obj, 'emit'):
@@ -300,7 +272,7 @@ class MacroButton(TaurusWidget):
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
-        except Exception, e:
+        except Exception as e:
             self.ui.button.setChecked(False)
             raise e
 
@@ -382,7 +354,8 @@ if __name__ == '__main__':
     parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
-                            app_version=taurus.Release.version)
+                            app_version=taurus.Release.version,
+                            cmd_line_parser=parser)
 
     args = app.get_command_line_args()
 
@@ -415,7 +388,7 @@ if __name__ == '__main__':
 
         def toggle_progress(self, toggle):
             visible = self.show_progress.isChecked()
-            self.mb.toggleProgress(visible or toggle)
+            self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
 
@@ -423,7 +396,7 @@ if __name__ == '__main__':
             try:
                 pars = door.macro_server.getMacroInfoObj(macro_name).parameters
             except AttributeError as e:
-                print "Macro %s does not exists!" % macro_name
+                print("Macro %s does not exists!" % macro_name)
                 return None
 
             param_names = []
@@ -468,7 +441,9 @@ if __name__ == '__main__':
                 _argEditors.append(self.argEdit)
 
             for e, v in zip(_argEditors, d_values):
-                e.setText(v)
+                if v is None:
+                    continue
+                e.setText(str(v))
 
             # Create bottom layout
             self.mb = MacroButton()
@@ -493,9 +468,9 @@ if __name__ == '__main__':
             # Toggle progressbar
             self.show_progress.stateChanged.connect(self.toggle_progress)
             # connect the argument editors
-            # signals = [(e, 'textChanged(QString)') for e in _argEditors]
-            signals = [getattr(e, 'textChanged') for e in _argEditors]
-            self.mb.connectArgEditors(signals)
+            for i, editor in enumerate(_argEditors):
+                slot = functools.partial(self.mb.updateMacroArgument, i)
+                editor.textChanged.connect(slot)
 
             self.setLayout(Qt.QVBoxLayout())
             self.layout().addWidget(self.w_arg)

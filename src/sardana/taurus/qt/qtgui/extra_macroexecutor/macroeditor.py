@@ -32,8 +32,6 @@ except Exception as e:
     raise ImportError('MacroEditor requires Qsci  (qscintilla): %r', e)
 
 
-from taurus.qt.qtgui.resource import getThemeIcon
-
 
 class MacroEditor(Qsci.QsciScintilla):
     __pyqtSignals__ = ("modelChanged(const QString &)",)
@@ -54,36 +52,39 @@ class MacroEditor(Qsci.QsciScintilla):
         self.pythonLexer.setAPIs(self.api)
         self.textEdit.setLexer(self.pythonLexer)
 
-        self.newAction = Qt.QAction(getThemeIcon("document-new"), "New", self)
+        self.newAction = Qt.QAction(Qt.QIcon.fromTheme("document-new"), "New",
+                                    self)
         self.newAction.triggered.connect(self.newFile)
         self.newAction.setToolTip("Create new file")
         self.newAction.setShortcut("Ctrl+N")
 
         self.openAction = Qt.QAction(
-            getThemeIcon("document-open"), "Open", self)
+            Qt.QIcon.fromTheme("document-open"), "Open", self)
         self.openAction.triggered.connect(self.openFile)
         self.openAction.setToolTip("Open existing file")
         self.openAction.setShortcut("Ctrl+O")
 
         self.saveAction = Qt.QAction(
-            getThemeIcon("document-save"), "Save", self)
+            Qt.QIcon.fromTheme("document-save"), "Save", self)
         self.saveAction.triggered.connect(self.saveFile)
         self.saveAction.setToolTip("Save document to disk")
         self.saveAction.setShortcut("Ctrl+S")
 
-        self.saveAsAction = Qt.QAction(getThemeIcon(
+        self.saveAsAction = Qt.QAction(Qt.QIcon.fromTheme(
             "document-save-as"), "Save as...", self)
         self.saveAction.triggered.connect(self.saveFile)
         self.saveAsAction.setToolTip("Save document under a new name")
 
-        self.cutAction = Qt.QAction(getThemeIcon("edit-cut"), "Cut", self)
+        self.cutAction = Qt.QAction(Qt.QIcon.fromTheme("edit-cut"), "Cut",
+                                    self)
         self.cutAction.triggered.connect(self.cut)
         self.cutAction.setToolTip(
             "Cut current selection's contents to the clipboard")
         self.cutAction.setShortcut("Ctrl+X")
         self.cutAction.setEnabled(False)
 
-        self.copyAction = Qt.QAction(getThemeIcon("edit-copy"), "Copy", self)
+        self.copyAction = Qt.QAction(Qt.QIcon.fromTheme("edit-copy"), "Copy",
+                                     self)
         self.copyAction.triggered.connect(self.copy)
         self.copyAction.setToolTip(
             "Copy current selection's contents to the clipboard")
@@ -91,7 +92,7 @@ class MacroEditor(Qsci.QsciScintilla):
         self.copyAction.setEnabled(False)
 
         self.pasteAction = Qt.QAction(
-            getThemeIcon("edit-paste"), "Paste", self)
+            Qt.QIcon.fromTheme("edit-paste"), "Paste", self)
         self.pasteAction.triggered.connect(self.paste)
         self.pasteAction.setToolTip(
             "Paste the clipboard's contents into the current selection")

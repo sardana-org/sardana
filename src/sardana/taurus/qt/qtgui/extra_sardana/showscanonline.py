@@ -27,9 +27,11 @@
 
 __all__ = ["ShowScanOnline"]
 
-from sardana.taurus.qt.qtgui.macrolistener import \
-    DynamicPlotManager
+import click
+
 from taurus.qt.qtgui.taurusgui import TaurusGui
+from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
+                                                   assertPlotAvailability)
 
 
 class ShowScanOnline(DynamicPlotManager):
@@ -83,31 +85,34 @@ class TaurusGuiLite(TaurusGui):
     SPLASH_LOGO_NAME = None
 
 
-def main():
+@click.command()
+@click.option('--group', default='x-axis',
+              type=click.Choice(['single', 'x-axis']),
+              help='group curves')
+@click.option('--taurus-log-level',
+              type=click.Choice(['critical', 'error', 'warning', 'info',
+                                 'debug', 'trace']),
+              default='error', show_default=True,
+              help='Show only logs with priority LEVEL or above')
+@click.argument('door')
+def main(group, taurus_log_level, door):
+    import taurus
+    taurus.setLogLevel(getattr(taurus, taurus_log_level.capitalize()))
 
     from taurus.qt.qtgui.application import TaurusApplication
-    import sys
 
-    from taurus.core.util.argparse import get_taurus_parser
-
-    parser = get_taurus_parser()
-    parser.set_usage("python showscanonline.py [door_name]")
     app = TaurusApplication(app_name='Showscan Online', org_domain="Sardana",
-                            org_name="Tango communinity",
-                            cmd_line_parser=parser)
+                            org_name="Tango communinity", cmd_line_parser=None)
+
+    assertPlotAvailability()
 
     gui = TaurusGuiLite()
-    args = app.get_command_line_args()
 
-    if len(args) < 1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    door_name = args[0]
     widget = ShowScanOnline(gui)
-    widget.setModel(door_name)
+    widget.setModel(door)
+    widget.setGroupMode(group)
     gui.show()
-    sys.exit(app.exec_())
+    return app.exec_()
 
 
 if __name__ == "__main__":

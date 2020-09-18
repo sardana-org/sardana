@@ -34,7 +34,7 @@ __docformat__ = 'restructuredtext'
 
 from taurus.console import Alignment
 from taurus.console.list import List
-from sardana.macroserver.macro import Macro, Type, ParamRepeat, ViewOption
+from sardana.macroserver.macro import Macro, Type, ViewOption
 
 Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
 
@@ -47,9 +47,8 @@ class _ls(Macro):
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
-        ['filter',
-         ParamRepeat(['filter', Type.String, ".*",
-                      'a regular expression filter'], min=1),
+        ['filter', [['filter', Type.String, ".*",
+                     'a regular expression filter'], {'min': 1}],
          [".*"], 'a regular expression filter'],
     ]
 
@@ -146,7 +145,7 @@ class _lsobj(_ls):
         nb = len(objs)
         if nb is 0:
             if self.subtype is Macro.All:
-                if isinstance(self.type, (str, unicode)):
+                if isinstance(self.type, str):
                     t = self.type.lower()
                 else:
                     t = ", ".join(self.type).lower()

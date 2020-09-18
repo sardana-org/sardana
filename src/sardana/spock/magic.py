@@ -31,6 +31,7 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'post_mortem', 'macrodata', 'edmac', 'spock_late_startup_hook',
            'spock_pre_prompt_hook']
 
+from sardana.util.whichpython import which_python_executable
 from .genutils import MSG_DONE, MSG_FAILED
 from .genutils import get_ipapi
 from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
@@ -42,14 +43,10 @@ def expconf(self, parameter_s=''):
     try:
         from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
-        print "Error importing ExpDescriptionEditor " \
-              "(hint: is taurus extra_sardana installed?)"
+        print("Error importing ExpDescriptionEditor "
+              "(hint: is taurus extra_sardana installed?)")
         return
-    try:
-        doorname = get_door().name()
-    except TypeError:
-        # TODO: For Taurus 4 adaptation
-        doorname = get_door().fullname
+    doorname = get_door().fullname
     # =======================================================================
     # ugly hack to avoid ipython/qt thread problems #e.g. see
     # https://sourceforge.net/p/sardana/tickets/10/
@@ -64,7 +61,8 @@ def expconf(self, parameter_s=''):
     import subprocess
     import sys
     fname = sys.modules[ExpDescriptionEditor.__module__].__file__
-    args = ['python', fname, doorname]
+    python_executable = which_python_executable()
+    args = [python_executable, fname, doorname]
     if parameter_s == '--auto-update':
         args.insert(2, parameter_s)
     subprocess.Popen(args)
@@ -85,7 +83,7 @@ def showscan(self, parameter_s=''):
     """
     params = parameter_s.split()
     door = get_door()
-    online, scan_nb = False, None
+    scan_nb = None
     if len(params) > 0:
         if params[0].lower() == 'online':
             try:
@@ -93,14 +91,11 @@ def showscan(self, parameter_s=''):
                     ShowScanOnline
 
             except Exception as e:
-                print "Error importing ShowScanOnline"
-                print e
+                print("Error importing ShowScanOnline")
+                print(e)
                 return
-            try:
-                doorname = get_door().name()
-            except TypeError:
-                # TODO: For Taurus 4 adaptation
-                doorname = get_door().fullname
+
+            doorname = get_door().fullname
             # ===============================================================
             # ugly hack to avoid ipython/qt thread problems #e.g. see
             # https://sourceforge.net/p/sardana/tickets/10/
@@ -115,15 +110,14 @@ def showscan(self, parameter_s=''):
             import subprocess
             import sys
             fname = sys.modules[ShowScanOnline.__module__].__file__
-            args = ['python', fname, doorname]
+            python_executable = which_python_executable()
+            args = [python_executable, fname, doorname,
+                    '--taurus-log-level=error']
             subprocess.Popen(args)
-
-        # show the scan plot, ignoring the plot configuration
-        elif params[0].lower() == 'online_raw':
-            online = True
+            return
         else:
             scan_nb = int(params[0])
-    door.show_scan(scan_nb, online=online)
+    door.show_scan(scan_nb)
 
 
 def spsplot(self, parameter_s=''):
@@ -145,17 +139,17 @@ def debug(self, parameter_s=''):
     door = get_door()
     if len(params) == 0:
         s = door.getDebugMode() and 'on' or 'off'
-        print "debug mode is %s" % s
+        print("debug mode is %s" % s)
         return
     elif len(params) == 1:
         s = params[0].lower()
         if s not in ('off', 'on'):
-            print "Usage: debug [on|off]"
+            print("Usage: debug [on|off]")
             return
         door.setDebugMode(s == 'on')
-        print "debug mode is now %s" % s
+        print("debug mode is now %s" % s)
     else:
-        print "Usage: debug [on|off]"
+        print("Usage: debug [on|off]")
 
 
 def www(self, parameter_s=''):
@@ -177,7 +171,7 @@ def www(self, parameter_s=''):
             return
         exc = "".join(last_macro.exc_stack)
         door.write(exc)
-    except Exception, e:
+    except Exception as e:
         door.writeln("Unexpected exception occurred executing www:",
                      stream=door.Error)
         door.writeln(str(e), stream=door.Error)
@@ -249,7 +243,7 @@ def edmac(self, parameter_s=''):
     macro_info_obj = ms.getMacroInfoObj(macro_name)
     if not is_new_macro:
         if macro_info_obj is None:
-            print "Macro '%s' could not be found" % macro_name
+            print("Macro '%s' could not be found" % macro_name)
             return
         macro_lib = macro_info_obj.module
 
@@ -259,21 +253,21 @@ def edmac(self, parameter_s=''):
                    ' override the already existing macro in module "%s"'
                    % (macro_name, macro_lib, macro_info_obj.module))
             if not ask_yes_no(msg, 'y'):
-                print "Aborting edition..."
+                print("Aborting edition...")
                 return
 
     macro_info = (macro_lib, macro_name)
-    print 'Opening %s.%s...' % macro_info
+    print('Opening %s.%s...' % macro_info)
 
     try:
         remote_fname, code, line_nb = ms.GetMacroCode(macro_info)
-    except PyTango.DevFailed, e:
+    except PyTango.DevFailed as e:
         PyTango.Except.print_exception(e)
         return
 
     fd, local_fname = tempfile.mkstemp(prefix='spock_%s_' % pars[0],
                                        suffix='.py', text=True)
-    os.write(fd, code)
+    os.write(fd, code.encode('utf8'))
     os.close(fd)
 
     cmd = 'edit -x -n %s %s' % (line_nb, local_fname)
@@ -281,23 +275,23 @@ def edmac(self, parameter_s=''):
     ip.magic(cmd)
 
     if ask_yes_no('Do you want to apply the new code on the server?', 'y'):
-        print 'Storing...',
+        print('Storing...', end=' ')
         try:
-            f = file(local_fname)
+            f = open(local_fname)
             try:
                 new_code = f.read()
                 ms.SetMacroCode([remote_fname, new_code])
-                print MSG_DONE
-            except Exception, e:
-                print MSG_FAILED
-                print 'Reason:', str(e)
+                print(MSG_DONE)
+            except Exception as e:
+                print(MSG_FAILED)
+                print('Reason:', str(e))
             f.close()
         except:
-            print 'Could not open file \'%s\' for safe transfer to the ' \
-                  'server' % local_fname
-            print 'Did you forget to save?'
+            print('Could not open file \'%s\' for safe transfer to the '
+                  'server' % local_fname)
+            print('Did you forget to save?')
     else:
-        print "Discarding changes..."
+        print("Discarding changes...")
 
     # if os.path.exists(local_fname):
     #    if ask_yes_no('Delete temporary file \'%s\'?' % local_fname, 'y'):
@@ -317,7 +311,7 @@ def spock_late_startup_hook(self):
     except:
         import traceback
 
-        print "Exception in spock_late_startup_hook:"
+        print("Exception in spock_late_startup_hook:")
         traceback.print_exc()
 
 
@@ -327,7 +321,7 @@ def spock_pre_prompt_hook(self):
     except:
         import traceback
 
-        print "Exception in spock_pre_prompt_hook:"
+        print("Exception in spock_pre_prompt_hook:")
         traceback.print_exc()
 
 # def spock_pre_runcode_hook(self):

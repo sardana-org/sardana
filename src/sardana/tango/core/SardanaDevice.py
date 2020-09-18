@@ -25,7 +25,7 @@
 
 """Generic Sardana Tango device module"""
 
-from __future__ import with_statement
+
 
 __all__ = ["SardanaDevice", "SardanaDeviceClass"]
 
@@ -184,7 +184,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Internal method. Initialize the device when tango database is not
         being used (example: in demos)"""
         _, _, props = self._get_nodb_device_info()
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             setattr(self, prop_name, prop_value)
 
     def delete_device(self):
@@ -254,12 +254,12 @@ class SardanaDevice(Device_4Impl, Logger):
         try:
             attr.set_write_value(w_value)
         except DevFailed as df:
-            df0 = df[0]
+            df0 = df.args[0]
             reason = df0.reason
             # if outside limit prefix the description with the device name
             if reason == PyTango.constants.API_WAttrOutsideLimit:
                 desc = self.alias + ": " + df0.desc
-                _df = DevFailed(*df[1:])
+                _df = DevFailed(*df.args[1:])
                 PyTango.Except.re_throw_exception(
                     _df, df0.reason, desc, df0.origin)
             raise df
@@ -405,7 +405,7 @@ class SardanaDevice(Device_4Impl, Logger):
                 try:
                     attr.set_write_value(w_value)
                 except DevFailed as df:
-                    error = df[0]
+                    error = df.args[0]
                     reason = error.reason
                     if reason == PyTango.constants.API_WAttrOutsideLimit and\
                        attr_name == 'position':

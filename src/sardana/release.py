@@ -28,7 +28,7 @@ __docformat__ = "restructuredtext"
 
 
 """
-Release data for the taurus project. It contains the following members:
+Release data for the sardana project. It contains the following members:
 
     - version : (str) version string
     - description : (str) brief description
@@ -47,17 +47,7 @@ name = 'sardana'
 
 # we use semantic versioning (http://semver.org/) and we update it using the
 # bumpversion script (https://github.com/peritus/bumpversion)
-version = '2.8.6'
-
-# generate version_info and revision (**deprecated** since v 2.1.2--alpha).
-if '-' in version:
-    _v, _rel = version.split('-')
-else:
-    _v, _rel = version, ''
-
-_v = tuple([int(n) for n in _v.split('.')])
-version_info = _v + (_rel, 0)   # deprecated, do not use
-revision = str(version_info[4])  # deprecated, do not use
+version = '3.0.3'
 
 description = "instrument control and data acquisition system"
 

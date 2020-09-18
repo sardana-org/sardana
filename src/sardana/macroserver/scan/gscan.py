@@ -41,12 +41,9 @@ import numpy as np
 
 import PyTango
 import taurus
+import collections
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
@@ -54,7 +51,9 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
+from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
@@ -187,7 +186,6 @@ class GScan(Logger):
       strict order after finishing acquisition but before recording the step.
     - 'post-step-hooks' : (optional) a sequence of callables to be called in
       strict order after finishing recording the step.
-    - 'hooks' : (deprecated, use post-acq-hooks instead)
     - 'point_id' : a hashable identifing the scan point.
     - 'check_func' : (optional) a list of callable objects.
       callable(moveables, counters)
@@ -214,7 +212,7 @@ class GScan(Logger):
     - DataHandler with the following recorders:
     - OutputRecorder (depends on ``OutputCols`` environment variable)
     - SharedMemoryRecorder (depends on ``SharedMemory`` environment variable)
-    - FileRecorder (depends on ``ScanDir`` and ``ScanData``
+    - FileRecorder (depends on ``ScanDir``, ``ScanData`` and ``ScanRecorder``
       environment variables)
     - ScanDataEnvironment with the following contents:
 
@@ -301,7 +299,7 @@ class GScan(Logger):
             macro.info("ActiveMntGrp not defined. Using %s", mnt_grp)
             macro.setEnv('ActiveMntGrp', mnt_grp.getName())
         else:
-            if not isinstance(mnt_grp_name, (str, unicode)):
+            if not isinstance(mnt_grp_name, str):
                 t = type(mnt_grp_name).__name__
                 raise TypeError("ActiveMntGrp MUST be string. It is '%s'" % t)
 
@@ -312,7 +310,7 @@ class GScan(Logger):
             raise ScanSetupError("ActiveMntGrp has invalid value: '%s'"
                                  % mnt_grp_name)
 
-        self._master = mnt_grp.getTimer()
+        self._master = mnt_grp.getConfiguration().getTimer()
 
         if self._master is None:
             raise ScanSetupError('%s has no timer defined' % mnt_grp.getName())
@@ -435,7 +433,7 @@ class GScan(Logger):
                     ret.append(TangoExtraData(**kw))
                 except InterruptException:
                     raise
-                except Exception, colexcept:
+                except Exception as colexcept:
                     colname = kw.get('label', str(i))
                     self.macro.warning("Extra column %s is invalid: %s",
                                        colname, str(colexcept))
@@ -483,26 +481,34 @@ class GScan(Logger):
         macro = self.macro
         try:
             scan_dir = macro.getEnv('ScanDir')
+            if scan_dir == '' or None:
+                macro.warning('ScanDir value is empty')
+                raise Exception('ScanDir value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv '
-                          'ScanDir <abs directory>") to enable it')
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanDir <abs directory>")')
             return ()
 
-        if not isinstance(scan_dir, (str, unicode)):
+        if not isinstance(scan_dir, str):
             scan_dir_t = type(scan_dir).__name__
             raise TypeError("ScanDir MUST be string. It is '%s'" % scan_dir_t)
 
         try:
             file_names = macro.getEnv('ScanFile')
+            if file_names == [''] or None:
+                macro.warning('ScanFile value is empty')
+                raise Exception('ScanFile value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv '
-                          'ScanFile <scan file(s)>") to enable it')
+                          'be stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanFile <scan file(s)>")')
             return ()
 
         scan_recorders = []
@@ -513,16 +519,16 @@ class GScan(Logger):
         except UnknownEnv:
             pass
 
-        if isinstance(file_names, (str, unicode)):
+        if isinstance(file_names, str):
             file_names = (file_names,)
-        elif not operator.isSequenceType(file_names):
+        elif not isinstance(file_names, collections.Sequence):
             scan_file_t = type(file_names).__name__
             raise TypeError("ScanFile MUST be string or sequence of strings."
                             " It is '%s'" % scan_file_t)
 
-        if isinstance(scan_recorders, (str, unicode)):
+        if isinstance(scan_recorders, str):
             scan_recorders = (scan_recorders,)
-        elif not operator.isSequenceType(scan_recorders):
+        elif not isinstance(scan_recorders, collections.Sequence):
             scan_recorders_t = type(scan_recorders).__name__
             raise TypeError("ScanRecorder MUST be string or sequence of "
                             "strings. It is '%s'" % scan_recorders_t)
@@ -540,7 +546,7 @@ class GScan(Logger):
                 file_recorders.append(file_recorder)
             except InterruptException:
                 raise
-            except AmbiguousRecorderError, e:
+            except AmbiguousRecorderError as e:
                 macro.error('Select recorder that you would like to use '
                             '(i.e. set ScanRecorder environment variable).')
                 raise e
@@ -665,7 +671,10 @@ class GScan(Logger):
         for ci in channels_info:
             full_name = ci.full_name
             try:
-                channel = taurus.Device(full_name)
+                # Use DeviceProxy instead of taurus to avoid crashes in Py3
+                # See: tango-controls/pytango#292
+                # channel = taurus.Device(full_name)
+                channel = PyTango.DeviceProxy(full_name)
                 instrument = channel.instrument
             except Exception:
                 # full_name of external channels is the name of the attribute
@@ -861,7 +870,7 @@ class GScan(Logger):
                     v_motors = self.get_virtual_motors()
                     motion_time, acq_time = 0.0, 0.0
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         end_pos = step['positions']
                         max_path_duration = 0.0
                         for v_motor, start, stop in zip(v_motors,
@@ -882,7 +891,7 @@ class GScan(Logger):
             else:
                 try:
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         point_nb += 1
                 finally:
                     total_time = self.macro.getTimeEstimation()
@@ -970,7 +979,7 @@ class GScan(Logger):
             scan_history = []
 
         scan_file = env['ScanFile']
-        if isinstance(scan_file, (str, unicode)):
+        if isinstance(scan_file, str):
             scan_file = scan_file,
 
         names = [col.name for col in env['datadesc']]
@@ -1003,10 +1012,13 @@ class GScan(Logger):
             endstatus = ScanEndStatus.Normal
         except StopException:
             endstatus = ScanEndStatus.Stop
+            raise
         except AbortException:
             endstatus = ScanEndStatus.Abort
+            raise
         except Exception:
             endstatus = ScanEndStatus.Exception
+            raise
         finally:
             self._env["endstatus"] = endstatus
             self.end()
@@ -1015,8 +1027,6 @@ class GScan(Logger):
                 if hasattr(macro, 'getHooks'):
                     for hook in macro.getHooks('post-scan'):
                         hook()
-            else:
-                raise
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
@@ -1075,7 +1085,7 @@ class SScan(GScan):
             self.stepUp(i, step, lstep)
             lstep = step
             if scream:
-                yield ((i + 1) / nb_points) * 100.0
+                yield ((i + 1) / nb_points) * 100
 
         if not scream:
             yield 100.0
@@ -1107,7 +1117,7 @@ class SScan(GScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, self.motion.moveable_list)
             raise
         self.debug("[ END ] motion")
 
@@ -1128,7 +1138,7 @@ class SScan(GScan):
         self.macro.checkPoint()
 
         if state != Ready:
-            self.dump_information(n, step)
+            self.dump_information(n, step, self.motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
                 "Motion ended with %s\n" % str(state)
             raise ScanException({'msg': m})
@@ -1146,10 +1156,18 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        if self._deterministic_scan:
-            state, data_line = mg.count_raw()
-        else:
-            state, data_line = mg.count(integ_time)
+        try:
+            if self._deterministic_scan:
+                state, data_line = mg.count_raw()
+            else:
+                state, data_line = mg.count(integ_time)
+        except InterruptException:
+            raise
+        except Exception:
+            names = mg.ElementList
+            elements = [self.macro.getObj(name) for name in names]
+            self.dump_information(n, step, elements)
+            raise
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
@@ -1165,20 +1183,6 @@ class SScan(GScan):
                 raise
             except Exception:
                 pass
-
-        # hooks for backwards compatibility:
-        if 'hooks' in step:
-            self.macro.info('Deprecation warning: you should use '
-                            '"post-acq-hooks" instead of "hooks" in the step '
-                            'generator')
-            for hook in step.get('hooks', ()):
-                hook()
-                try:
-                    step['extrainfo'].update(hook.getStepExtraInfo())
-                except InterruptException:
-                    raise
-                except Exception:
-                    pass
 
         # Add final moveable positions
         data_line['point_nb'] = n
@@ -1202,11 +1206,10 @@ class SScan(GScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 
@@ -1443,7 +1446,7 @@ class CScan(GScan):
                                      deceleration=motor_backup["deceleration"])
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when restoring motor's backup (%s)" % e
                 raise ScanException(msg)
 
@@ -1466,7 +1469,7 @@ class CScan(GScan):
                                      deceleration=self.get_min_dec_time(motor))
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when setting fast motion (%s)" % e
                 raise ScanException(msg)
 
@@ -1580,7 +1583,7 @@ class CScan(GScan):
         :param attributes: (OrderedDict) dictionary with attribute names (keys)
             and attribute values (values)
         """
-        for param, value in attributes.items():
+        for param, value in list(attributes.items()):
             try:
                 motor._getAttrEG(param).write(value)
             except Exception:
@@ -1860,7 +1863,7 @@ class CSScan(CScan):
                 macro.checkPoint()
 
                 try:
-                    point_nb, step = period_steps.next()
+                    point_nb, step = next(period_steps)
                 except StopIteration:
                     self._all_waypoints_finished = True
                     break
@@ -1932,7 +1935,7 @@ class CSScan(CScan):
                     self.data.addRecord(data_line)
 
                     if scream:
-                        yield ((point_nb + 1) / nb_points) * 100.0
+                        yield ((point_nb + 1) / nb_points) * 100
                 else:
                     break
                 old_curr_time = curr_time
@@ -1952,8 +1955,21 @@ class CSScan(CScan):
 class CAcquisition(object):
 
     def __init__(self):
-        self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
-                                       Qsize=100000)
+        # protect older versions of Taurus (without the worker_cls argument)
+        # remove it whenever we bump Taurus dependency
+        try:
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000,
+                                           worker_cls=OmniWorker)
+        except TypeError:
+            import taurus
+            taurus.warning("Your Sardana system is affected by bug"
+                           "tango-controls/pytango#307. Please use "
+                           "Taurus with taurus-org/taurus#1081.")
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 
@@ -2030,39 +2046,37 @@ class CAcquisition(object):
         .. todo:: add validation for psuedo counters
         """
         non_compatible_channels = []
+        validator = TangoDeviceNameValidator()
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
             name = channel_info["name"]
-            try:
-                taurus.Device(full_name)
-            except Exception:
-                # external channels are attributes so Device constructor fails
+            if not validator.isValid(full_name):
                 non_compatible_channels.append(name)
-                continue
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
 
 
-def generate_timestamps(synchronization, initial_timestamp=0):
+def generate_timestamps(synch_description, initial_timestamp=0):
     """Generate theoretical timestamps at which the acquisition should take
     place according to the synchronization description
 
-    :param synchronization: synchronization description data structure
-    :type synchronization: list<dict>
+    :param synch_description: synchronization description data
+      structure
+    :type synch_description: list<dict>
     :param initial_timestamp: initial timestamp to start from
     :type initial_timestamp: float
     """
     ret = dict()
     timestamp = initial_timestamp
     index = 0
-    for group in synchronization:
+    for group in synch_description:
         delay = group[SynchParam.Delay][SynchDomain.Time]
         total = group[SynchParam.Total][SynchDomain.Time]
         repeats = group[SynchParam.Repeats]
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats):
+        for _ in range(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
@@ -2082,9 +2096,9 @@ def generate_positions(motors, starts, finals, nb_points):
         label = motor.getName()
         dtype_spec.append((label, 'float64'))
     # convert to numpy array for easier handling
-    table = np.array(zip(*moveable_positions), dtype=dtype_spec)
+    table = np.array(list(zip(*moveable_positions)), dtype=dtype_spec)
     n_rows = table.shape[0]
-    for i in xrange(n_rows):
+    for i in range(n_rows):
         row = dict()
         for label in table.dtype.names:
             row[label] = table[label][i]
@@ -2121,7 +2135,6 @@ class CTScan(CScan, CAcquisition):
                            in strict order before starting to move
       - 'post-move-hooks': (optional) a sequence of callables to be called
                            in strict order after finishing the move
-      - 'hooks' : (deprecated, use post-acq-hooks instead)
       - 'waypoint_id' : a hashable identifing the waypoint
       - 'check_func' : (optional) a list of callable objects.
                        callable(moveables, counters)
@@ -2361,8 +2374,8 @@ class CTScan(CScan, CAcquisition):
                  SynchParam.Total: {SynchDomain.Position: total_position,
                                     SynchDomain.Time: total_time},
                  SynchParam.Repeats: repeats}]
-            self.debug('Synchronization: %s' % synch)
-            measurement_group.setSynchronization(synch)
+            self.debug('SynchDescription: %s' % synch)
+            measurement_group.setSynchDescription(synch)
             self.macro.checkPoint()
 
             # extra post configuration
@@ -2404,7 +2417,7 @@ class CTScan(CScan, CAcquisition):
                     continue
                 try:
                     self.configure_motor(motor, attributes)
-                except ScanException, e:
+                except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
 
@@ -2428,7 +2441,7 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nb_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            for index, data in theoretical_positions.items():
+            for index, data in list(theoretical_positions.items()):
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
             # TODO: this changes the initial data on-the-fly - seems like not
@@ -2436,18 +2449,14 @@ class CTScan(CScan, CAcquisition):
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
-                pre_acq_hooks = macro.getHooks('pre-start')
-                if len(pre_acq_hooks) > 0:
-                    self.macro.warning("pre-start hook place is deprecated,"
-                                       "use pre-acq instead")
-                pre_acq_hooks += waypoint.get('pre-acq-hooks', [])
-
+                pre_acq_hooks = waypoint.get('pre-acq-hooks', [])
                 for hook in pre_acq_hooks:
                     hook()
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-
+            self.measurement_group.setNbStarts(1)
+            self.measurement_group.prepare()
             mg_id = self.measurement_group.start()
             if i == 0:
                 first_timestamp = time.time()
@@ -2474,11 +2483,7 @@ class CTScan(CScan, CAcquisition):
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
             finally:
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(measurement_group, "stateObj"):
-                    state = measurement_group.stateObj.read().rvalue
-                else:
-                    state = measurement_group.state()
+                state = measurement_group.stateObj.read().rvalue
                 if state == PyTango.DevState.MOVING:
                     measurement_group.Stop()
                     if end_move:
@@ -2628,7 +2633,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
 
         try:
@@ -2637,7 +2642,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
         self._sum_acq_time += integ_time
 
@@ -2647,7 +2652,7 @@ class HScan(SScan):
         m_state, m_positions = motion.readState(), motion.readPosition()
 
         if m_state != Ready:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
                 "Motion ended with %s\n" % str(m_state)
             raise ScanException({'msg': m})
@@ -2676,11 +2681,10 @@ class HScan(SScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 
@@ -2688,9 +2692,9 @@ class TScan(GScan, CAcquisition):
     """Time scan.
 
     Macro that employs the time scan must define the synchronization
-    information in either of the following two ways:
-      - synchronization attribute that follows the synchronization format of
-      the measurement group
+    description in either of the following two ways:
+      - synch_description attribute that follows the synchronization
+      description format of the measurement group
       - integ_time, nb_points and latency_time (optional) attributes
     """
     def __init__(self, macro, generator=None,
@@ -2699,9 +2703,9 @@ class TScan(GScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self._synchronization = None
+        self._synch_description = None
 
-    def _create_synchronization(self, active_time, repeats, latency_time=0):
+    def _create_synch_description(self, active_time, repeats, latency_time=0):
         delay_time = 0
         mg_latency_time = self.measurement_group.getLatencyTime()
         if mg_latency_time > latency_time:
@@ -2709,38 +2713,39 @@ class TScan(GScan, CAcquisition):
                             mg_latency_time)
             latency_time = mg_latency_time
         total_time = active_time + latency_time
-        synchronization = [
+        synch_description = [
             {SynchParam.Delay: {SynchDomain.Time: delay_time},
              SynchParam.Active: {SynchDomain.Time: active_time},
              SynchParam.Total: {SynchDomain.Time: total_time},
              SynchParam.Repeats: repeats}]
-        return synchronization
+        return synch_description
 
-    def get_synchronization(self):
-        if self._synchronization is not None:
-            return self._synchronization
-        if hasattr(self.macro, "synchronization"):
-            synchronization = self.macro.synchronization
+    def get_synch_description(self):
+        if self._synch_description is not None:
+            return self._synch_description
+        if hasattr(self.macro, "synch_description"):
+            synch_description = self.macro.synch_description
         else:
             try:
                 active_time = getattr(self.macro, "integ_time")
                 repeats = getattr(self.macro, "nb_points")
             except AttributeError:
-                msg = "Macro object is missing synchronization attributes"
+                msg = "Macro object is missing synchronization description " \
+                      "attributes"
                 raise ScanSetupError(msg)
             latency_time = getattr(self.macro, "latency_time", 0)
-            synchronization = self._create_synchronization(active_time,
-                                                           repeats,
-                                                           latency_time)
-        self._synchronization = synchronization
-        return synchronization
+            synch_description = \
+                self._create_synch_description(active_time, repeats,
+                                               latency_time)
+        self._synch_description = synch_description
+        return synch_description
 
-    synchronization = property(get_synchronization)
+    synch_description = property(get_synch_description)
 
     def scan_loop(self):
         macro = self.macro
         measurement_group = self.measurement_group
-        synchronization = self.synchronization
+        synch_description = self.synch_description
 
         compatible, channels = \
             self.is_measurement_group_compatible(measurement_group)
@@ -2751,7 +2756,8 @@ class TScan(GScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
-        theoretical_timestamps = generate_timestamps(synchronization)
+        theoretical_timestamps = \
+            generate_timestamps(synch_description)
         self.data.initial_data = theoretical_timestamps
         msg = "Relative timestamp (dt) column contains theoretical values"
         self.macro.warning(msg)
@@ -2761,8 +2767,10 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
-        measurement_group.count_continuous(synchronization,
-                                           self.value_buffer_changed)
+        measurement_group.setNbStarts(1)
+        measurement_group.count_continuous(synch_description,
+                                           self.value_buffer_changed,
+                                           self.value_ref_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
@@ -2789,12 +2797,13 @@ class TScan(GScan, CAcquisition):
             i = self.macro.getIntervalEstimation()
             return t, i
 
-        if not hasattr(self.macro, "synchronization"):
-            raise AttributeError("synchronization is mandatory to estimate")
-        synchronization = self.macro.synchronization
+        if not hasattr(self.macro, "synch_description"):
+            raise AttributeError("synch_description is mandatory "
+                                 "to estimate")
+        synch_description = self.macro.synch_description
         time = 0
         intervals = 0
-        for group in synchronization:
+        for group in synch_description:
             delay = group[SynchParam.Delay][SynchDomain.Time]
             time += delay
             total = group[SynchParam.Total][SynchDomain.Time]

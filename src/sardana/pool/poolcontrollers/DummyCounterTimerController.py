@@ -139,7 +139,7 @@ class DummyCounterTimerController(CounterTimerController):
         if self._armed:
             sta = State.Moving
             status = "Armed"
-        elif axis in self.counting_channels:
+        elif axis in self.counting_channels and self.start_time is not None:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
@@ -182,10 +182,10 @@ class DummyCounterTimerController(CounterTimerController):
         if self._armed:
             return  # still armed - no trigger/gate arrived yet
         # if in acquisition then calculate the values to return
-        if self.counting_channels:
+        if self.counting_channels and self.start_time is not None:
             now = time.time()
             elapsed_time = now - self.start_time
-            for axis, channel in self.read_channels.items():
+            for axis, channel in list(self.read_channels.items()):
                 self._updateChannelState(axis, elapsed_time)
                 if channel.is_counting:
                     self._updateChannelValue(axis, elapsed_time)
@@ -250,7 +250,7 @@ class DummyCounterTimerController(CounterTimerController):
 
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
-            for axis, channel in self.counting_channels.items():
+            for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
         elif axis in self.counting_channels:
@@ -263,12 +263,16 @@ class DummyCounterTimerController(CounterTimerController):
                                      AcqSynch.HardwareGate):
             self._disconnect_hardware_synchronization()
             self._armed = False
+        self.start_time = None
 
     def AbortOne(self, axis):
         if axis not in self.counting_channels:
             return
         now = time.time()
-        elapsed_time = now - self.start_time
+        if self.start_time is not None:
+            elapsed_time = now - self.start_time
+        else:
+            elapsed_time = 0
         self._finish(elapsed_time, axis)
 
     def GetCtrlPar(self, par):
@@ -339,8 +343,8 @@ class DummyCounterTimerController(CounterTimerController):
         e.g. start, active passive
         """
         # for the moment only react on first trigger
-        if type_.name.lower() == "active" and value == 0:
+        if type_.name.lower() == "start":
             self._armed = False
-            for axis, channel in self.counting_channels.iteritems():
+            for axis, channel in self.counting_channels.items():
                 channel.is_counting = True
             self.start_time = time.time()

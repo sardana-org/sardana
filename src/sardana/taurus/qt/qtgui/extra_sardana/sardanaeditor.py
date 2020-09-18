@@ -44,13 +44,13 @@ from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 # consider adding an utility in taurusedirot to create actions
 from spyder.utils.qthelpers import create_action
 
-from macrotree import MacroSelectionDialog
-from elementtree import SardanaElementTreeWidget
+from .macrotree import MacroSelectionDialog
+from .elementtree import SardanaElementTreeWidget
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, \
     SardanaElementTypeModel, SardanaTypeTreeItem, SardanaRootTreeItem
 
-from sardanabasewizard import SardanaBaseWizard, SardanaBasePage
+from .sardanabasewizard import SardanaBaseWizard, SardanaBasePage
 
 _MACRO_LIB_TEMPLATE = """#!/usr/bin/env python
 {copyright}
@@ -289,7 +289,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
             self.debug("Creating local file %s...", local_filename)
             fname, lib_code, line = macro_server.GetMacroCode(
                 (macro_lib_name,))
-            fd = file(local_filename, "w")
+            fd = open(local_filename, "w")
             fd.write(lib_code)
             fd.close()
             self.debug("Loading local file %s...", local_filename)
@@ -345,7 +345,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         # transform into relative path
         rel_filename = filename[filename.index(osp.sep) + 1:]
         local_filename = osp.join(self._tmp_dir, rel_filename)
-        f = file(local_filename, "w")
+        f = open(local_filename, "w")
 
         # TODO: ask for additional imports
         # TODO: check if door environment has copyright variable
@@ -407,7 +407,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
                 _, code, line = self.get_macro_code(module, name)
                 line = int(line)
                 self.debug("Creating local file %s...", local_filename)
-                fd = file(local_filename, "w")
+                fd = open(local_filename, "w")
                 fd.write(code)
                 fd.close()
                 if idx is None:
@@ -460,7 +460,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
                 _, code, line = self.get_macro_code(module)
                 line = int(line)
                 self.debug("Creating local file %s...", local_filename)
-                fd = file(local_filename, "w")
+                fd = open(local_filename, "w")
                 fd.write(code)
                 fd.close()
                 if idx is None:
@@ -484,7 +484,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         if not res:
             return
         local_filename = file_info.filename
-        fd = file(local_filename, "r")
+        fd = open(local_filename, "r")
         code = fd.read()
         fd.close()
         remote_filename = local_filename[len(self._tmp_dir):]
@@ -567,6 +567,7 @@ def main():
         import taurus.core.util.argparse
         parser = taurus.core.util.argparse.get_taurus_parser()
         parser.usage = "%prog [options] <macro server name>"
+
         app = Application(sys.argv, cmd_line_parser=parser,
                           app_name="Macro editor demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community")

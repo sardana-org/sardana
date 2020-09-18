@@ -47,10 +47,6 @@
 
 .. autodata:: sardana.sardanadefs.InterfacesExpanded
 
-.. autodata:: sardana.sardanadefs.INTERFACES
-
-.. autodata:: sardana.sardanadefs.INTERFACES_EXPANDED
-
 .. rubric:: Functions
 
 .. autofunction:: sardana.sardanadefs.from_dtype_str
