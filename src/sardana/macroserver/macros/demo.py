@@ -226,15 +226,6 @@ def sar_demo(self):
     self.print("DONE!")
 
 
-@macro([["motor", Type.Moveable, None, '']])
-def mym2(self, pm):
-    self.output(pm.getMotorNames())
-    elements = list(map(self.getMoveable, pm.elements))
-    self.output(elements)
-    self.output(type(pm))
-    self.output(type(elements[0]))
-
-
 @macro()
 def clear_sar_demo_hkl(self):
     """Undoes changes done with sar_demo"""
