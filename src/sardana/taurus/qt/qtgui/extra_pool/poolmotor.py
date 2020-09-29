@@ -595,6 +595,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.layout().addLayout(limits_layout, 0, 0)
 
         self.lbl_read = TaurusLabel()
+        self.lbl_read.setFgRole('rvalue.magnitude')
         self.lbl_read.setBgRole('quality')
         self.lbl_read.setSizePolicy(Qt.QSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
