@@ -47,7 +47,7 @@ name = 'sardana'
 
 # we use semantic versioning (http://semver.org/) and we update it using the
 # bumpversion script (https://github.com/peritus/bumpversion)
-version = '3.0.3'
+version = '3.0.4-alpha'
 
 description = "instrument control and data acquisition system"
 
