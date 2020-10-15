@@ -2382,8 +2382,10 @@ class CTScan(CScan, CAcquisition):
             initial_position = start
             total_time = abs(total_position) / path.max_vel
             delay_time = path.max_vel_time
+            delay_position = start - path.initial_user_pos
             synch = [
-                {SynchParam.Delay: {SynchDomain.Time: delay_time},
+                {SynchParam.Delay: {SynchDomain.Time: delay_time,
+                                    SynchDomain.Position: delay_position},
                  SynchParam.Initial: {SynchDomain.Position: initial_position},
                  SynchParam.Active: {SynchDomain.Position: active_position,
                                      SynchDomain.Time: active_time},
