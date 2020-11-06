@@ -195,6 +195,7 @@ the most basic features of a continuous scan:: ::
    (with more elaborated waypoint generator), see the code of 
    :class:`~sardana.macroserver.macros.scan.meshc`
 
+.. _sardana-macros-scanframework-determscan:
 
 Deterministic scans
 -------------------
