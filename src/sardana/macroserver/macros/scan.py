@@ -709,6 +709,7 @@ class mesh(Macro, Hookable):
         self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
         self.finals = numpy.array([m1_final_pos, m2_final_pos], dtype='d')
         self.nr_intervs = numpy.array([m1_nr_interv, m2_nr_interv], dtype='i')
+        self.nb_points = (m1_nr_interv + 1) * (m2_nr_interv + 1)
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
 
