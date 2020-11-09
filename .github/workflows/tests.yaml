@@ -1,0 +1,21 @@
+name: CI tests
+
+on: [pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install on container & test
+      uses: docker://reszelaz/sardana
+      with:
+        volumes:
+        - .:/sardana 
+      run: |
+        sleep 10
+        cd /sardana && python3 setup.py install
+        supervisorctl start Pool
+        supervisorctl start MacroServer
+        xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana-*.egg/sardana
