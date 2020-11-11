@@ -189,7 +189,6 @@ class PoolDevice(SardanaDevice):
 
         std_attrs, dyn_attrs = attr_data
         dev_class = self.get_device_class()
-        multi_attr = self.get_device_attr()
         multi_class_attr = dev_class.get_class_attr()
         klass_attr_names = []
         klass_attrs = multi_class_attr.get_attr_list()
@@ -201,18 +200,10 @@ class PoolDevice(SardanaDevice):
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in list(std_attrs.items()):
                 attr_name, data_info, attr_info = data_info
-                # Create the attribute
                 attr = self.add_standard_attribute(attr_name, data_info,
                                                    attr_info, read,
                                                    write, is_allowed)
                 attrs[attr.get_name()] = None
-                # Now remove it from the class attributes, 
-                # This makes it possible for another device of the same class to add 
-                # an attribute with the same name but other parameters
-                dev_class = self.get_device_class()
-                multi_class_attr = dev_class.get_class_attr()
-                multi_class_attr.remove_attr(attr.get_name(),
-                                         attr.get_cl_name())
 
         if dyn_attrs is not None:
             read = self.__class__._read_DynamicAttribute
@@ -228,10 +219,13 @@ class PoolDevice(SardanaDevice):
                 # Now remove it from the class attributes, 
                 # This makes it possible for another device of the same class to add 
                 # an attribute with the same name but other parameters
-                dev_class = self.get_device_class()
-                multi_class_attr = dev_class.get_class_attr()
-                multi_class_attr.remove_attr(attr.get_name(),
-                                         attr.get_cl_name())
+                try:
+                    dev_class = self.get_device_class()
+                    multi_class_attr = dev_class.get_class_attr()
+                    multi_class_attr.remove_attr(attr.get_name(),
+                                             attr.get_cl_name())
+                except Exception as e:
+                    self.debug("Cant remove dynamic attribute {}, error: {}", attr.get_name(), e)                            
         return attrs
 
     def add_dynamic_attribute(self, attr_name, data_info, attr_info, read,
