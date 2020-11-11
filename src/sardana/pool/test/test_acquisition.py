@@ -567,6 +567,14 @@ class Acquisition2DHardwareStartTestCase(BaseAcquisitionHardwareTestCase,
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
+
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
@@ -618,6 +626,14 @@ class AcquisitionCTHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
+
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
@@ -635,6 +651,14 @@ class Acquisition2DHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
         BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
