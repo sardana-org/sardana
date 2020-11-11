@@ -1081,6 +1081,9 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
                 self.read_value(ret=values)
                 for acquirable, value in list(values.items()):
                     self._process_value_buffer(acquirable, value)
+                self.read_value_ref(ret=value_refs)
+                for acquirable, value_ref in list(value_refs.items()):
+                    self._process_value_ref_buffer(acquirable, value_ref)
 
             time.sleep(nap)
             i += 1
