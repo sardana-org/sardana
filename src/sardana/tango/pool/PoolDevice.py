@@ -188,18 +188,31 @@ class PoolDevice(SardanaDevice):
         attr_data = self.get_dynamic_attributes()
 
         std_attrs, dyn_attrs = attr_data
-        self.remove_unwanted_dynamic_attributes(std_attrs, dyn_attrs)
-
+        dev_class = self.get_device_class()
+        multi_attr = self.get_device_attr()
+        multi_class_attr = dev_class.get_class_attr()
+        klass_attr_names = []
+        klass_attrs = multi_class_attr.get_attr_list()
+        for ind in range(len(klass_attrs)):
+            klass_attr_names.append(klass_attrs[ind].get_name())
         if std_attrs is not None:
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in list(std_attrs.items()):
                 attr_name, data_info, attr_info = data_info
+                # Create the attribute
                 attr = self.add_standard_attribute(attr_name, data_info,
                                                    attr_info, read,
                                                    write, is_allowed)
                 attrs[attr.get_name()] = None
+                # Now remove it from the class attributes, 
+                # This makes it possible for another device of the same class to add 
+                # an attribute with the same name but other parameters
+                dev_class = self.get_device_class()
+                multi_class_attr = dev_class.get_class_attr()
+                multi_class_attr.remove_attr(attr.get_name(),
+                                         attr.get_cl_name())
 
         if dyn_attrs is not None:
             read = self.__class__._read_DynamicAttribute
@@ -207,79 +220,19 @@ class PoolDevice(SardanaDevice):
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in list(dyn_attrs.items()):
                 attr_name, data_info, attr_info = data_info
+                # Create the attribute
                 attr = self.add_dynamic_attribute(attr_name, data_info,
                                                   attr_info, read,
                                                   write, is_allowed)
                 attrs[attr.get_name()] = None
+                # Now remove it from the class attributes, 
+                # This makes it possible for another device of the same class to add 
+                # an attribute with the same name but other parameters
+                dev_class = self.get_device_class()
+                multi_class_attr = dev_class.get_class_attr()
+                multi_class_attr.remove_attr(attr.get_name(),
+                                         attr.get_cl_name())
         return attrs
-
-    def remove_unwanted_dynamic_attributes(self, new_std_attrs, new_dyn_attrs):
-        """Removes unwanted dynamic attributes from previous device creation"""
-
-        dev_class = self.get_device_class()
-        multi_attr = self.get_device_attr()
-        multi_class_attr = dev_class.get_class_attr()
-        static_attr_names = \
-            list(map(str.lower, list(dev_class.attr_list.keys())))
-        static_attr_names.extend(('state', 'status'))
-
-        new_attrs = CaselessDict(new_std_attrs)
-        new_attrs.update(new_dyn_attrs)
-
-        device_attr_names = []
-        for i in range(multi_attr.get_attr_nb()):
-            device_attr_names.append(multi_attr.get_attr_by_ind(i).get_name())
-
-        for attr_name in device_attr_names:
-            attr_name_lower = attr_name.lower()
-            if attr_name_lower in static_attr_names:
-                continue
-            try:
-                self.remove_attribute(attr_name)
-            except:
-                self.warning("Error removing dynamic attribute %s",
-                             attr_name_lower)
-                self.debug("Details:", exc_info=1)
-
-        klass_attr_names = []
-        klass_attrs = multi_class_attr.get_attr_list()
-        for ind in range(len(klass_attrs)):
-            klass_attr_names.append(klass_attrs[ind].get_name())
-
-        for attr_name in klass_attr_names:
-            attr_name_lower = attr_name.lower()
-            if attr_name_lower in static_attr_names:
-                continue
-            # if new dynamic attribute is in class attribute then delete it
-            # from class attribute to be later on added again (eventually
-            # with diffent data type or data format)
-            if attr_name_lower in new_attrs:
-                try:
-                    attr = multi_class_attr.get_attr(attr_name)
-
-                    old_type = CmdArgType(attr.get_type())
-                    old_format = attr.get_format()
-                    old_access = attr.get_writable()
-
-                    new_attr = new_attrs[attr_name]
-                    new_type, new_format, new_access = new_attr[1][0][:3]
-                    differ = new_type != old_type or \
-                        new_format != old_format or \
-                        new_access != old_access
-                    if differ:
-                        self.info("Replacing dynamic attribute %s", attr_name)
-                        self.debug("old type: %s, new type: %s",
-                                   old_type, new_type)
-                        self.debug("old format: %s, new format: %s",
-                                   old_format, new_format)
-                        self.debug("old access: %s, new access: %s",
-                                   old_access, new_access)
-                        multi_class_attr.remove_attr(attr.get_name(),
-                                                     attr.get_cl_name())
-                except:
-                    self.warning("Error removing dynamic attribute %s from "
-                                 " device class", attr_name)
-                    self.debug("Details:", exc_info=1)
 
     def add_dynamic_attribute(self, attr_name, data_info, attr_info, read,
                               write, is_allowed):
