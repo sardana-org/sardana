@@ -11,6 +11,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Execute per measurement preparation in `mesh` scan macro (#1437)
 * Recorders tests helpers (#1439)
 
 ## [3.0.3] 2020-09-18
