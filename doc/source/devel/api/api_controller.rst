@@ -13,6 +13,7 @@ Controller API reference
     * :class:`ZeroDController` - 0D controller API
     * :class:`PseudoMotorController` - PseudoMotor controller API
     * :class:`PseudoCounterController` - PseudoCounter controller API
+    * :class:`TriggerGateController` - Trigger/Gate controller API
     * :class:`IORegisterController` - IORegister controller API
 
 .. _sardana-controller-data-type:

@@ -72,6 +72,9 @@ class DummyTriggerGateController(TriggerGateController):
             print(e)
         return sta, status
 
+    def PrepareOne(self, axis, nb_starts):
+        self._log.debug('PrepareOne(%d): entering...' % axis)
+
     def PreStartAll(self):
         pass
 
