@@ -18,4 +18,4 @@ jobs:
         cd /sardana && python3 setup.py install
         supervisorctl start Pool
         supervisorctl start MacroServer
-        xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana-*.egg/sardana
+        xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana-*.egg/sardana"
