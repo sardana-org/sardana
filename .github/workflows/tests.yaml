@@ -14,6 +14,7 @@ jobs:
       run: python3 setup.py install
     - name: Start servers
       run: |
+        /usr/bin/supervisord
         sleep 10
         supervisorctl start Pool
         supervisorctl start MacroServer
