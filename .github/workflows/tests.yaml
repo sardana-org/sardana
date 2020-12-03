@@ -5,17 +5,17 @@ on: [pull_request]
 jobs:
   tests:
     runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Install on container & test
-      uses: paresy/docker-run-action@v1
-      with:
-        image: reszelaz/sardana-test
-        options: -h sardana-test -v ${{github.workspace}}:/sardana
-        run: |
-          sleep 10
-          cd /sardana && python3 setup.py install
-          supervisorctl start Pool
-          supervisorctl start MacroServer
-          xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana-*.egg/sardana"
+    container:
+      image: reszelaz/sardana-test
+    steps:  
+    - uses: actions/checkout@v2
+    - name: Install sardana
+      run: python3 setup.py install
+    - name: Start servers
+      run: |
+        sleep 10
+        supervisorctl start Pool
+        supervisorctl start MacroServer
+    - name: Run tests
+      run: xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana-*.egg/sardana"
+  
