@@ -9,7 +9,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install on container & test
-      uses: addnab/docker-run-action@v1
+      uses: paresy/docker-run-action@v1
       with:
         image: reszelaz/sardana-test
         options: -h sardana-test -v ${{github.workspace}}:/sardana
