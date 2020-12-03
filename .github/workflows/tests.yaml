@@ -12,7 +12,7 @@ jobs:
       uses: addnab/docker-run-action@v1
       with:
         image: reszelaz/sardana-test
-        options:  -v ${{github.workspace}}:/sardana
+        options: -h sardana-test -v ${{github.workspace}}:/sardana
         run: |
           sleep 10
           cd /sardana && python3 setup.py install
