@@ -15,6 +15,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Continously read value references in hardware synchronized acquisition 
   instead of reading only at the end (#1442, #1448)
 * Recorders tests helpers (#1439)
+* Disable flake8 job in travis CI (#1455)
 
 ## [3.0.3] 2020-09-18
 
