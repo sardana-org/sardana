@@ -12,6 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Fixed
 
 * Execute per measurement preparation in `mesh` scan macro (#1437)
+* Continously read value references in hardware synchronized acquisition 
+  instead of reading only at the end (#1442, #1448)
 * Recorders tests helpers (#1439)
 
 ## [3.0.3] 2020-09-18
