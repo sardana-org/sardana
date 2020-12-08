@@ -27,6 +27,7 @@
 
 import os
 import tempfile
+import contextlib
 import multiprocessing
 from datetime import datetime
 
@@ -36,6 +37,26 @@ from unittest import TestCase
 
 from sardana.macroserver.scan import ColumnDesc
 from sardana.macroserver.recorders.h5storage import NXscanH5_FileRecorder
+from sardana.macroserver.recorders.h5util import _h5_file_handler
+
+
+@contextlib.contextmanager
+def h5_write_session(fname, swmr_mode=False):
+    """Context manager for HDF5 file write session.
+
+    Maintains HDF5 file opened for the context lifetime.
+    It optionally can open the file as SWRM writer.
+
+    :param fname: Path of the file to be opened
+    :type fname: str
+    :param swmr_mode: Use SWMR write mode
+    :type swmr_mode: bool
+    """
+    fd = _h5_file_handler.open_file(fname, swmr_mode)
+    try:
+        yield fd
+    finally:
+        _h5_file_handler.close_file(fname)
 
 
 COL1_NAME = "col1"
@@ -232,10 +253,11 @@ def test_swmr(tmpdir):
     q = multiprocessing.Queue()
     reader = multiprocessing.Process(target=read_file, args=(path, q,))
 
-    scan(path, serialno=0)
-    reader.start()
-    info = q.get()
-    assert info == "opened"
-    scan(path, serialno=1)
-    q.put("end")
-    reader.join()
+    with h5_write_session(path):
+        scan(path, serialno=0)
+        reader.start()
+        info = q.get()
+        assert info == "opened"
+        scan(path, serialno=1)
+        q.put("end")
+        reader.join()
