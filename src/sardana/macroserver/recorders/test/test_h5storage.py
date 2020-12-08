@@ -27,6 +27,7 @@
 
 import os
 import tempfile
+import multiprocessing
 from datetime import datetime
 
 import h5py
@@ -36,8 +37,17 @@ from unittest import TestCase
 from sardana.macroserver.scan import ColumnDesc
 from sardana.macroserver.recorders.h5storage import NXscanH5_FileRecorder
 
+
 COL1_NAME = "col1"
 
+ENV = {
+    "serialno": 0,
+    "starttime": None,
+    "title": "test",
+    "user": "user",
+    "datadesc": None,
+    "endtime": None
+}
 
 class RecordList(dict):
 
@@ -65,14 +75,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         except OSError:
             pass
 
-        self.env = {
-            "serialno": 0,
-            "starttime": None,
-            "title": "test",
-            "user": "user",
-            "datadesc": None,
-            "endtime": None
-        }
+        self.env = ENV
         self.record_list = RecordList(self.env)
 
     def test_dtype_float64(self):
@@ -193,3 +196,46 @@ class TestNXscanH5_FileRecorder(TestCase):
             os.remove(self.path)
         except OSError:
             pass
+
+
+def test_swmr(tmpdir):
+    path = str(tmpdir / "file.h5")
+
+    def scan(path, serialno=0):
+        env = ENV.copy()
+        env["serialno"] = serialno
+        record_list = RecordList(env)
+        nb_records = 2
+        # create description of channel data
+        data_desc = [
+            ColumnDesc(name=COL1_NAME,
+                       label=COL1_NAME,
+                       dtype="float64",
+                       shape=())
+        ]
+        env["datadesc"] = data_desc
+        # simulate sardana scan
+        recorder = NXscanH5_FileRecorder(filename=path)
+        env["starttime"] = datetime.now()
+        recorder._startRecordList(record_list)
+        for i in range(nb_records):
+            record = Record({COL1_NAME: 0.1}, i)
+            recorder._writeRecord(record)
+        env["endtime"] = datetime.now()
+        recorder._endRecordList(record_list)
+
+    def read_file(path, q):
+        with h5py.File(path, mode="r"):
+            q.put("opened")
+            q.get()
+
+    q = multiprocessing.Queue()
+    reader = multiprocessing.Process(target=read_file, args=(path, q,))
+
+    scan(path, serialno=0)
+    reader.start()
+    info = q.get()
+    assert info == "opened"
+    scan(path, serialno=1)
+    q.put("end")
+    reader.join()
