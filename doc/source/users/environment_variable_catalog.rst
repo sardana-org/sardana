@@ -300,6 +300,17 @@ be used). Recorder class is implicitly selected based on the file extension.
 For example "myexperiment.spec" will by default store data in SPEC
 compatible format.
 
+.. _scanh5swmr:
+
+ScanH5SWMR
+~~~~~~~~~~
+
+*Not mandatory, set by user*
+
+Enable/disable HDF5 SWMR mode when using HDF5 *write sessions* with
+:ref:`sardana-users-scan-data-storage-nxscanh5_filerecorder`.
+
+
 .. _scanrecorder:
 
 ScanRecorder
