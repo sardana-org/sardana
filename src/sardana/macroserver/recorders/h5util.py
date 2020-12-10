@@ -29,6 +29,7 @@ This module provides a recorder for NXscans implemented with h5py (no nxs)
 
 import os
 import h5py
+import atexit
 
 
 def _open_h5_file(fname, libver='earliest'):
@@ -43,6 +44,7 @@ class _H5FileHandler:
 
     def __init__(self):
         self._files = {}
+        atexit.register(self.clean_up)
 
     def __getitem__(self, fname):
         return self._files[fname]
@@ -68,5 +70,10 @@ class _H5FileHandler:
         except KeyError:
             raise ValueError('{} is not opened'.format(fname))
         fd.close()
+
+    def clean_up(self):
+        for file in self.files:
+            self.close_file(file)
+
 
 _h5_file_handler = _H5FileHandler()
