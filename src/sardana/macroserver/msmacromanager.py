@@ -84,7 +84,7 @@ def islambda(f):
         f.__name__ == (lambda: True).__name__
 
 
-def is_macro(macro, abs_file=None, logger=None):
+def _is_macro(macro, abs_file=None, logger=None):
     """Helper function to determine if a certain python object is a valid
     macro"""
     if inspect.isclass(macro):
@@ -92,30 +92,27 @@ def is_macro(macro, abs_file=None, logger=None):
             return False
         # if it is a class defined in some other module forget it to
         # avoid replicating the same macro in different macro files
-        try:
-            # use normcase to treat case insensitivity of paths on
-            # certain platforms e.g. Windows
-            if os.path.normcase(inspect.getabsfile(macro)) !=\
-               os.path.normcase(abs_file):
-                return False
-        except TypeError:
+
+        # use normcase to treat case insensitivity of paths on
+        # certain platforms e.g. Windows
+        if os.path.normcase(inspect.getabsfile(macro)) !=\
+           os.path.normcase(abs_file):
             return False
+
     elif callable(macro) and not islambda(macro):
         # if it is a function defined in some other module forget it to
         # avoid replicating the same macro in different macro files
-        try:
-            # use normcase to treat case insensitivity of paths on
-            # certain platforms e.g. Windows
-            if os.path.normcase(inspect.getabsfile(macro)) !=\
-               os.path.normcase(abs_file):
-                return False
-        except TypeError:
+
+        # use normcase to treat case insensitivity of paths on
+        # certain platforms e.g. Windows
+        if os.path.normcase(inspect.getabsfile(macro)) !=\
+           os.path.normcase(abs_file):
             return False
 
         if not hasattr(macro, 'macro_data'):
             return False
 
-        args, varargs, keywords, _ = inspect.getargspec(macro)
+        args, varargs, keywords, *_ = inspect.getfullargspec(macro)
         if len(args) == 0:
             if logger:
                 logger.debug("Could not add macro %s: Needs at least one "
@@ -136,6 +133,13 @@ def is_macro(macro, abs_file=None, logger=None):
     else:
         return False
     return True
+
+
+def is_macro(macro, abs_file=None, logger=None):
+    try:
+        return _is_macro(macro, abs_file=abs_file, logger=logger)
+    except Exception:
+        return False
 
 
 def is_flat_list(obj):
@@ -523,8 +527,9 @@ class MacroManager(MacroServerManager):
                     elif (macro_name in list(self._macro_dict.keys())
                             and self._macro_dict[macro_name].lib != macro_lib):
                         isoverwritten = True
-                        msg = ('Macro "{}" defined in "{}" macro library'
-                               + ' has been overwritten by "{}" macro library')
+                        msg = ('Macro "{0}" defined in "{1}" macro library'
+                               + ' has been overwritten by "{2}" macro library'
+                               )
                         old_lib_name = self._macro_dict[macro_name].lib.name
                         self.debug(msg.format(macro_name, old_lib_name,
                                               macro_lib.name))
@@ -792,10 +797,14 @@ class MacroManager(MacroServerManager):
         macro_name = macro_class.__name__
 
         environment = init_opts.get('environment')
+        executor = init_opts.get('executor')
+        door_name = executor.door.name
 
         r = []
         for env in macro_env:
-            if not environment.has_env(env):
+            if not environment.has_env(env,
+                                       macro_name=macro_name,
+                                       door_name=door_name):
                 r.append(env)
         if r:
             raise MissingEnv("The macro %s requires the following missing "
@@ -820,13 +829,16 @@ class MacroManager(MacroServerManager):
         macro_env = code.env or ()
 
         environment = init_opts.get('environment')
-
+        executor = init_opts.get('executor')
+        door_name = executor.door.name
+        macro_name = meta.name
         r = []
         for env in macro_env:
-            if not environment.has_env(env):
+            if not environment.has_env(env,
+                                       macro_name=macro_name,
+                                       door_name=door_name):
                 r.append(env)
         if r:
-            macro_name = meta.name
             raise MissingEnv("The macro %s requires the following missing "
                              "environment to be defined: %s"
                              % (macro_name, str(r)))

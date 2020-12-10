@@ -32,7 +32,7 @@ should be used for integration and system tests as well.
 The following are some key points to keep in mind when using this framework:
 
 * Most of the tests in the Sardana Test Framework use :mod:`unittest`.
-  Since Sardana Jan20 we decided to move to `pytest <https://docs.pytest.org>`_
+  Since Sardana 3.0.2 we decided to move to `pytest <https://docs.pytest.org>`_
   and we plan to gradually migrate the already existing tests.
 * All test-related code is contained in submodules named ``test`` which appear
   in any module of Sardana.

@@ -309,13 +309,6 @@ class MeasurementGroup(PoolGroupDevice):
     def Stop(self):
         self.measurement_group.stop()
 
-    def StartMultiple(self, n):
-        try:
-            self.wait_for_operation()
-        except:
-            raise Exception("Cannot acquire: already involved in an operation")
-        self.measurement_group.start_acquisition(multiple=n)
-
 
 class MeasurementGroupClass(PoolGroupDeviceClass):
 
@@ -331,8 +324,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
     #    Command definitions
     cmd_list = {
         'Prepare': [[DevVoid, ""], [DevVoid, ""]],
-        'Start': [[DevVoid, ""], [DevVoid, ""]],
-        'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
+        'Start': [[DevVoid, ""], [DevVoid, ""]]
     }
     cmd_list.update(PoolGroupDeviceClass.cmd_list)
 

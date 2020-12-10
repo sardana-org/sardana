@@ -7,8 +7,11 @@ IMPORTANT:
 3. a new env file with an additional .db extension will be created. You
    should **NOT** change the macroserver EnvironmentDb property. The dbm
    will figure out automatically the file extension
-4. a backup will of the original environment will be available with the
+4. a backup of the original environment will be available with the
    extension .py2
+5. run the script with the same OS user as you run the Sardana/MacroServer
+   server or after running the script give write permission to the newly
+   created environment file to the OS user that you run the server
 
 Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
 """
@@ -32,7 +35,7 @@ def get_ds_full_name(dev_name):
     return db_dev.DbGetDeviceInfo(dev_name)[1][3]
 
 
-def get_ms_properties(ms_name, ms_ds_name):
+def get_ms_properties(ms_name, ds_name):
     db = PyTango.Database()
     prop = db.get_device_property(ms_name, "EnvironmentDb")
     ms_properties = prop["EnvironmentDb"]
@@ -40,9 +43,9 @@ def get_ms_properties(ms_name, ms_ds_name):
         dft_ms_properties = os.path.join(
             DefaultEnvBaseDir,
             DefaultEnvRelDir)
-        ds_inst_name = ms_ds_name.split("/")[1]
+        ds_exec_name, ds_inst_name = ds_name.split("/")
         ms_properties = dft_ms_properties % {
-            "ds_exec_name": "MacroServer",
+            "ds_exec_name": ds_exec_name,
             "ds_inst_name": ds_inst_name}
     else:
         ms_properties = ms_properties[0]
@@ -75,10 +78,10 @@ def upgrade_env(ms_name, backend):
     db = PyTango.Database()
     try:
         ms_info = db.get_device_info(ms_name)
-        ms_ds_name = ms_info.ds_full_name
+        ds_name = ms_info.ds_full_name
     except AttributeError:
-        ms_ds_name = get_ds_full_name(ms_name)
-    env_filename = get_ms_properties(ms_name, ms_ds_name)
+        ds_name = get_ds_full_name(ms_name)
+    env_filename = get_ms_properties(ms_name, ds_name)
     migrate_file(env_filename, backend)
 
 

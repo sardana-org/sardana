@@ -30,6 +30,7 @@ for the synchronization"""
 __all__ = ["PoolSynchronization", "SynchDescription", "TGChannel"]
 
 import time
+import threading
 from functools import partial
 from taurus.core.util.log import DebugIt
 from sardana import State
@@ -117,6 +118,8 @@ class PoolSynchronization(PoolAction):
     """Synchronization action.
 
     It coordinates trigger/gate elements and software synchronizer.
+
+    .. todo: Think of moving the ready/busy mechanism to PoolAction
     """
 
     def __init__(self, main_element, name="Synchronization"):
@@ -130,6 +133,23 @@ class PoolSynchronization(PoolAction):
         soft_synch_name = main_element.name + "-SoftSynch"
         self._synch_soft = FunctionGenerator(name=soft_synch_name)
         self._listener = None
+        self._ready = threading.Event()
+        self._ready.set()
+
+    def _is_ready(self):
+        return self._ready.is_set()
+
+    def _wait(self, timeout=None):
+        return self._ready.wait(timeout)
+
+    def _set_ready(self, _=None):
+        self._ready.set()
+
+    def _is_busy(self):
+        return not self._ready.is_set()
+
+    def _set_busy(self):
+        self._ready.clear()
 
     def add_listener(self, listener):
         self._listener = listener
@@ -254,7 +274,7 @@ class PoolSynchronization(PoolAction):
 
         # Triggering loop
         # TODO: make nap configurable (see motion or acquisition loops)
-        nap = 0.2
+        nap = 0.01
         while True:
             self.read_state_info(ret=states)
             if not self.is_triggering(states):

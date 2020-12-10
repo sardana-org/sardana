@@ -28,7 +28,7 @@ __init__.py:
 """
 
 from .motor import TaurusMotorH, TaurusMotorH2, TaurusMotorV, TaurusMotorV2  # noqa
-from .poolmotor import PoolMotorSlim, LabelWidgetDragsDeviceAndAttribute  # noqa
+from .poolmotor import LabelWidgetDragsDeviceAndAttribute  # noqa
 from .poolmotor import (PoolMotorTV, PoolMotorTVLabelWidget,  # noqa
     PoolMotorTVReadWidget, PoolMotorTVWriteWidget, PoolMotorTVUnitsWidget,  # noqa
     PoolMotor)  # noqa

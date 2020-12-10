@@ -99,7 +99,7 @@ class ascan_demo(Macro):
         return self._gScan.data  # the GScan provides scan data
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -184,7 +184,7 @@ class ascanr(Macro, Hookable):
         return self._gScan.data
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -296,7 +296,7 @@ class toothedtriangle(Macro, Hookable):
         return self._gScan.data
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points
@@ -429,11 +429,13 @@ class reg2scan(Macro):
 
 class reg3scan(Macro):
     """reg3scan.
-    Do an absolute scan of the specified motors with different number of intervals for each region.
-    It uses the gscan framework. All the motors will be drived to the same position in each step
+    Do an absolute scan of the specified motors with different number of
+    intervals for each region. It uses the gscan framework.
+    All the motors will be drived to the same position in each step
 
-    NOTE: Due to a ParamRepeat limitation, integration time has to be
-    specified before the regions.
+    .. note::
+        integration time is specified before the regions to facilitate
+        input of parameters in Spock.
     """
 
     hints = {'scan': 'reg3scan'}

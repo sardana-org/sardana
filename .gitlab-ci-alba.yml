@@ -1,8 +1,0 @@
-# This file is for configuring the CI/CD for creating (unofficial) 
-# debian packages for sardana at ALBA
-# It has no efect unless you configure your gitlab instance to use it.
-# TODO: generalise this so that it does not depend on ALBA's infrastructure
-
-include: 
-- https://git.cells.es/ctpkg/ci/ctpipeline/raw/master/ctjobdefs-ci.yml
-- https://git.cells.es/ctpkg/ci/ctpipeline/raw/master/ctpipeline.yml

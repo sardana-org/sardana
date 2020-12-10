@@ -100,11 +100,6 @@ class MacroButton(TaurusWidget):
     def handleEvent(self, evt_src, evt_type, evt_value):
         pass
 
-    def toggleProgress(self, visible):
-        '''deprecated'''
-        self.warning('toggleProgress is deprecated. Use showProgress')
-        self.showProgress(visible)
-
     def showProgress(self, visible):
         '''Set whether the progress bar is shown
 
@@ -246,29 +241,6 @@ class MacroButton(TaurusWidget):
         self.macro_args[index] = value
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
-
-    def updateMacroArgumentFromSignal(self, index, obj, signal):
-        '''deprecated'''
-        msg = 'updateMacroArgumentFromSignal is deprecated. connectArgEditors'
-        self.warning(msg)
-        self.connect(obj, signal,
-                     functools.partial(self.updateMacroArgument, index))
-
-    def connectArgEditors(self, signals):
-        """
-        Associate signals to argument changes.
-
-        :param signals: (seq<pyqtsignals>) An ordered sequence of signals
-        """
-
-        for i, signal in enumerate(signals):
-            if not self.__isSignal(signal):
-                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
-                sender, sig = signal
-                self.deprecated(dep='Passing (sender, signature) tuples',
-                                alt='pyqtSignal objects', rel='2.5.1')
-                signal = getattr(sender, sig.split('(')[0])
-            signal.connect(functools.partial(self.updateMacroArgument, i))
 
     @staticmethod
     def __isSignal(obj):
@@ -416,7 +388,7 @@ if __name__ == '__main__':
 
         def toggle_progress(self, toggle):
             visible = self.show_progress.isChecked()
-            self.mb.toggleProgress(visible or toggle)
+            self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
 
@@ -496,9 +468,9 @@ if __name__ == '__main__':
             # Toggle progressbar
             self.show_progress.stateChanged.connect(self.toggle_progress)
             # connect the argument editors
-            # signals = [(e, 'textChanged(QString)') for e in _argEditors]
-            signals = [getattr(e, 'textChanged') for e in _argEditors]
-            self.mb.connectArgEditors(signals)
+            for i, editor in enumerate(_argEditors):
+                slot = functools.partial(self.mb.updateMacroArgument, i)
+                editor.textChanged.connect(slot)
 
             self.setLayout(Qt.QVBoxLayout())
             self.layout().addWidget(self.w_arg)

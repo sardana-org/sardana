@@ -169,7 +169,8 @@ class SarTestTestCase(BasePoolTestCase):
                 _cleanup_device(elem_name)
             try:
                 self.pool.DeleteElement(elem_name)
-            except:
+            except Exception as e:
+                print(e)
                 dirty_elems.append(elem_name)
 
         for ctrl_name in self.ctrl_list:

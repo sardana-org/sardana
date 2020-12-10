@@ -89,7 +89,8 @@ class PoolBaseGroup(PoolContainer):
     def _calculate_element_state(self, elem, elem_state_info):
         u_state, u_status = elem_state_info
         if u_status is None:
-            u_status = '%s is None' % elem.name
+            state_str = "None" if u_state is None else State.whatis(u_state)
+            u_status = '{} is {}'.format(elem.name, state_str)
         else:
             u_status = u_status.split("\n", 1)[0]
         return u_state, u_status

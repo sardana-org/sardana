@@ -35,8 +35,6 @@ class DummyIORController(IORegisterController):
 
     MaxDevice = 1024
 
-    predefined_values = "0", "Online", "1", "Offline", "2", "Standby"
-
     def __init__(self, inst, props, *args, **kwargs):
         IORegisterController.__init__(self, inst, props, *args, **kwargs)
         self.myvalue = 1

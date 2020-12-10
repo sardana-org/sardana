@@ -37,7 +37,7 @@ import weakref
 import datetime
 
 from .sardanaevent import EventGenerator, EventType
-from .sardanadefs import ScalarNumberFilter
+from .sardanadefs import ScalarNumberFilter, AttrQuality
 from .sardanavalue import SardanaValue
 
 
@@ -54,6 +54,7 @@ class SardanaAttribute(EventGenerator):
         self._r_value = None
         self._last_event_value = None
         self._w_value = None
+        self._quality = AttrQuality.Valid
         self.filter = lambda a, b: True
         self.config = SardanaAttributeConfiguration()
         if initial_value is not None:
@@ -212,6 +213,12 @@ class SardanaAttribute(EventGenerator):
         if self.has_write_value():
             return self._w_value
 
+    def get_quality(self):
+        return self._quality
+
+    def set_quality(self, quality):
+        self._quality = quality
+
     def get_exc_info(self):
         """Returns the exception information (like :func:`sys.exc_info`) about
         last attribute readout or None if last read did not generate an
@@ -291,6 +298,8 @@ class SardanaAttribute(EventGenerator):
                      "current read value for this attribute")
     w_value = property(get_write_value, set_write_value,
                        "current write value for this attribute")
+    quality = property(get_quality, set_quality,
+                       "current quality for this attribute")
     timestamp = property(get_timestamp, doc="the read timestamp")
     w_timestamp = property(get_write_timestamp, doc="the write timestamp")
     error = property(in_error)

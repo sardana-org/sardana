@@ -186,7 +186,6 @@ class GScan(Logger):
       strict order after finishing acquisition but before recording the step.
     - 'post-step-hooks' : (optional) a sequence of callables to be called in
       strict order after finishing recording the step.
-    - 'hooks' : (deprecated, use post-acq-hooks instead)
     - 'point_id' : a hashable identifing the scan point.
     - 'check_func' : (optional) a list of callable objects.
       callable(moveables, counters)
@@ -213,7 +212,7 @@ class GScan(Logger):
     - DataHandler with the following recorders:
     - OutputRecorder (depends on ``OutputCols`` environment variable)
     - SharedMemoryRecorder (depends on ``SharedMemory`` environment variable)
-    - FileRecorder (depends on ``ScanDir`` and ``ScanData``
+    - FileRecorder (depends on ``ScanDir``, ``ScanData`` and ``ScanRecorder``
       environment variables)
     - ScanDataEnvironment with the following contents:
 
@@ -1190,20 +1189,6 @@ class SScan(GScan):
             except Exception:
                 pass
 
-        # hooks for backwards compatibility:
-        if 'hooks' in step:
-            self.macro.info('Deprecation warning: you should use '
-                            '"post-acq-hooks" instead of "hooks" in the step '
-                            'generator')
-            for hook in step.get('hooks', ()):
-                hook()
-                try:
-                    step['extrainfo'].update(hook.getStepExtraInfo())
-                except InterruptException:
-                    raise
-                except Exception:
-                    pass
-
         # Add final moveable positions
         data_line['point_nb'] = n
         data_line['timestamp'] = dt
@@ -2155,7 +2140,6 @@ class CTScan(CScan, CAcquisition):
                            in strict order before starting to move
       - 'post-move-hooks': (optional) a sequence of callables to be called
                            in strict order after finishing the move
-      - 'hooks' : (deprecated, use post-acq-hooks instead)
       - 'waypoint_id' : a hashable identifing the waypoint
       - 'check_func' : (optional) a list of callable objects.
                        callable(moveables, counters)
@@ -2387,8 +2371,10 @@ class CTScan(CScan, CAcquisition):
             initial_position = start
             total_time = abs(total_position) / path.max_vel
             delay_time = path.max_vel_time
+            delay_position = start - path.initial_user_pos
             synch = [
-                {SynchParam.Delay: {SynchDomain.Time: delay_time},
+                {SynchParam.Delay: {SynchDomain.Time: delay_time,
+                                    SynchDomain.Position: delay_position},
                  SynchParam.Initial: {SynchDomain.Position: initial_position},
                  SynchParam.Active: {SynchDomain.Position: active_position,
                                      SynchDomain.Time: active_time},
@@ -2470,18 +2456,14 @@ class CTScan(CScan, CAcquisition):
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
-                pre_acq_hooks = macro.getHooks('pre-start')
-                if len(pre_acq_hooks) > 0:
-                    self.macro.warning("pre-start hook place is deprecated,"
-                                       "use pre-acq instead")
-                pre_acq_hooks += waypoint.get('pre-acq-hooks', [])
-
+                pre_acq_hooks = waypoint.get('pre-acq-hooks', [])
                 for hook in pre_acq_hooks:
                     hook()
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-
+            self.measurement_group.setNbStarts(1)
+            self.measurement_group.prepare()
             mg_id = self.measurement_group.start()
             if i == 0:
                 first_timestamp = time.time()
@@ -2794,7 +2776,8 @@ class TScan(GScan, CAcquisition):
         yield 0
         measurement_group.setNbStarts(1)
         measurement_group.count_continuous(synch_description,
-                                           self.value_buffer_changed)
+                                           self.value_buffer_changed,
+                                           self.value_ref_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()

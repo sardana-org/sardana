@@ -61,7 +61,8 @@ from taurus.core.util.log import Logger
 
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
-    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
+    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode, \
+    AttrQuality
 from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
@@ -426,14 +427,27 @@ TFORMAT_MAP = {
 }
 R_TFORMAT_MAP = dict((v, k) for k, v in list(TFORMAT_MAP.items()))
 
-#: dictionary dict<:class:`sardana.DataAccess`, :class:`PyTango.AttrWriteType`>
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
+TQUALITY_MAP = {
+    AttrQuality.Valid: PyTango.AttrQuality.ATTR_VALID,
+    AttrQuality.Invalid: PyTango.AttrQuality.ATTR_INVALID,
+    AttrQuality.Alarm: PyTango.AttrQuality.ATTR_ALARM,
+    AttrQuality.Changing: PyTango.AttrQuality.ATTR_CHANGING,
+    AttrQuality.Warning: PyTango.AttrQuality.ATTR_WARNING
+}
+
+
+R_TQUALITY_MAP = dict((v, k) for k, v in list(TQUALITY_MAP.items()))
+
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
 TACCESS_MAP = {
     DataAccess.ReadOnly: READ,
     DataAccess.ReadWrite: READ_WRITE,
 }
 
 R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
-
 
 def exception_str(etype=None, value=None, sep='\n'):
     if etype is None:
@@ -494,6 +508,16 @@ def from_tango_type_format(dtype, dformat=PyTango.SCALAR):
     :rtype: tuple< :obj:`~sardana.DataType`, :obj:`~sardana.DataFormat` >"""
     return R_TTYPE_MAP[dtype], R_TFORMAT_MAP[dformat]
 
+
+def to_tango_quality(quality):
+    """Transforms a :obj:`~sardana.AttrQuality` into a
+    :obj:`~PyTango.AttrQuality`
+
+    :param access: the quality to be transformed
+    :type access: :obj:`~sardana.AttrQuality`
+    :return: the tango attribute quality
+    :rtype: :obj:`PyTango.AttrQuality`"""
+    return TQUALITY_MAP[quality]
 
 def to_tango_attr_info(attr_name, attr_info):
     if isinstance(attr_info, DataInfo):

@@ -166,6 +166,8 @@ class Value(SardanaAttribute):
                                      "values (you gave %d)" % (obj.name, l_u, l_v))
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc(axis, physical_values)
+            if result.error:
+                self._exc_info = result.exc_info
         except SardanaException as se:
             self._exc_info = se.exc_info
             result = SardanaValue(exc_info=se.exc_info)
