@@ -220,7 +220,6 @@ class TestNXscanH5_FileRecorder(TestCase):
 
 
 def test_swmr(tmpdir):
-    path = str(tmpdir / "file.h5")
 
     def scan(path, serialno=0):
         env = ENV.copy()
@@ -245,19 +244,19 @@ def test_swmr(tmpdir):
         env["endtime"] = datetime.now()
         recorder._endRecordList(record_list)
 
-    def read_file(path, q):
+    def read_file(path, event):
         with h5py.File(path, mode="r"):
-            q.put("opened")
-            q.get()
+            event.set()
+            event.wait()
 
-    q = multiprocessing.Queue()
-    reader = multiprocessing.Process(target=read_file, args=(path, q,))
-
+    path = str(tmpdir / "file.h5")
+    event = multiprocessing.Event()
+    reader = multiprocessing.Process(target=read_file, args=(path, event))
     with h5_write_session(path):
         scan(path, serialno=0)
         reader.start()
-        info = q.get()
-        assert info == "opened"
+        event.wait()
+        event.clear()
         scan(path, serialno=1)
-        q.put("end")
+        event.set()
         reader.join()
