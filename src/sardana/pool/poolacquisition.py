@@ -812,6 +812,30 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         finally:
             self._value_info.finish_one()
 
+    def _process_value_buffer(self, acquirable, value, final=False):
+        final_str = "final " if final else ""
+        if is_value_error(value):
+            self.error("Loop %sread value error for %s" % (final_str,
+                                                           acquirable.name))
+            msg = "Details: " + "".join(
+                traceback.format_exception(*value.exc_info))
+            self.debug(msg)
+            acquirable.put_value(value, propagate=2)
+        else:
+            acquirable.extend_value_buffer(value, propagate=2)
+
+    def _process_value_ref_buffer(self, acquirable, value_ref, final=False):
+        final_str = "final " if final else ""
+        if is_value_error(value_ref):
+            self.error("Loop read ref %svalue error for %s" %
+                       (final_str, acquirable.name))
+            msg = "Details: " + "".join(
+                traceback.format_exception(*value_ref.exc_info))
+            self.debug(msg)
+            acquirable.put_value_ref(value_ref, propagate=2)
+        else:
+            acquirable.extend_value_ref_buffer(value_ref, propagate=2)
+
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
         based on the current unit trigger modes and states returned by the
@@ -886,43 +910,12 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
             pool_ctrl = channel.controller
             ctrl = pool_ctrl.ctrl
             ctrl.PreLoadAll()
-            try:
-                res = ctrl.PreLoadOne(axis, value, repetitions,
-                                      latency)
-            except TypeError:
-                try:
-                    res = ctrl.PreLoadOne(axis, value, repetitions)
-                    msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version 2.7.0."
-                           "Use PreLoadOne(axis, value, repetitions, "
-                           "latency_time) instead.")
-                    self.warning(msg)
-                except TypeError:
-                    res = ctrl.PreLoadOne(axis, value)
-                    msg = ("PreLoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use PreLoadOne(axis, value, "
-                           "repetitions, latency_time) instead.")
-                    self.warning(msg)
+            res = ctrl.PreLoadOne(axis, value, repetitions, latency)
             if not res:
                 msg = ("%s.PreLoadOne(%d) returned False" %
                        (pool_ctrl.name, axis))
                 raise Exception(msg)
-            try:
-                ctrl.LoadOne(axis, value, repetitions, latency)
-            except TypeError:
-                try:
-                    ctrl.LoadOne(axis, value, repetitions)
-                    msg = ("LoadOne(axis, value, repetitions) is"
-                           "deprecated since version Jan18."
-                           "Use LoadOne(axis, value, repetitions, "
-                           "latency_time) instead.")
-                    self.warning(msg)
-                except TypeError:
-                    ctrl.LoadOne(axis, value)
-                    msg = ("LoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use LoadOne(axis, value, "
-                           "repetitions) instead.")
-                    self.warning(msg)
+            ctrl.LoadOne(axis, value, repetitions, latency)
             ctrl.LoadAll()
 
         with ActionContext(self):
@@ -1087,15 +1080,10 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
             if not i % nb_states_per_value:
                 self.read_value(ret=values)
                 for acquirable, value in list(values.items()):
-                    if is_value_error(value):
-                        self.error("Loop read value error for %s" %
-                                   acquirable.name)
-                        msg = "Details: " + "".join(
-                            traceback.format_exception(*value.exc_info))
-                        self.debug(msg)
-                        acquirable.put_value(value)
-                    else:
-                        acquirable.extend_value_buffer(value)
+                    self._process_value_buffer(acquirable, value)
+                self.read_value_ref(ret=value_refs)
+                for acquirable, value_ref in list(value_refs.items()):
+                    self._process_value_ref_buffer(acquirable, value_ref)
 
             time.sleep(nap)
             i += 1
@@ -1107,24 +1095,11 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
         for acquirable, state_info in list(states.items()):
             if acquirable in values:
                 value = values[acquirable]
-                if is_value_error(value):
-                    self.error("Loop final read value error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value.exc_info))
-                    self.debug(msg)
-                    acquirable.put_value(value)
-                else:
-                    acquirable.extend_value_buffer(value, propagate=2)
+                self._process_value_buffer(acquirable, value, final=True)
             if acquirable in value_refs:
                 value_ref = value_refs[acquirable]
-                if is_value_error(value_ref):
-                    self.error("Loop final read value ref error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value_ref.exc_info))
-                    self.debug(msg)
-                acquirable.extend_value_ref_buffer(value_ref, propagate=2)
+                self._process_value_ref_buffer(acquirable, value_ref,
+                                               final=True)
             state_info = acquirable._from_ctrl_state_info(state_info)
             set_state_info = functools.partial(acquirable.set_state_info,
                                                state_info,

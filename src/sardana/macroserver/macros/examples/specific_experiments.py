@@ -41,7 +41,7 @@ class xas_acq(Macro, Hookable):
 
     Perform an X-ray absorption scan experiment. Data is stored in a NXxas-compliant file.
     """
-    hints = {'FileRecorder': 'NXxas_FileRecorder', 'scan': 'xas_acq', 'allowsHooks': (
+    hints = {'scan': 'xas_acq', 'allowsHooks': (
         'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step')}
     # env = ('MonochromatorEnergy', )#'AbsorbedBeam', 'IncomingBeam',
     # 'Monitor') #this hints that the macro requires the ActiveMntGrp
@@ -123,7 +123,7 @@ class xas_acq(Macro, Hookable):
         return self._gScan.data  # the GScan provides scan data
 
     def _get_nr_points(self):
-        msg = ("nr_points is deprecated since version Jan20. "
+        msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
         return self.nb_points

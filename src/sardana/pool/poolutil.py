@@ -43,6 +43,16 @@ class _PoolUtil(object):
         return self
 
     def get_device(self, *args, **kwargs):
+        """Factory method to create a single `tango.DeviceProxy` instance
+        per controller instance.
+
+        :param ctrl_name: Controller name to which assign the proxy object
+        :type ctrl_name: `str`
+        :param device_name: Tango device name
+        :type device_name: `str`
+        :return: single device proxy object
+        :rtype: `tango.DeviceProxy`
+        """
         ctrl_name = args[0]
         device_name = args[1]
         with self._lock:
@@ -56,8 +66,15 @@ class _PoolUtil(object):
         return dev
 
     get_motor = get_phy_motor = get_pseudo_motor = get_motor_group = \
-        get_exp_channel = get_ct_channel = get_zerod_channel = get_oned_channel = \
-        get_twod_channel = get_pseudo_counter_channel = get_measurement_group = \
-        get_com_channel = get_ioregister = get_device
+        get_exp_channel = get_ct_channel = get_zerod_channel = \
+        get_oned_channel = get_twod_channel = get_pseudo_counter_channel = \
+        get_measurement_group = get_com_channel = get_ioregister = get_device
 
+
+#: Singleton instance of the `~sardana.pool.poolutil._PoolUtil` class.
+#:
+#: It is a factory of `tango.DeviceProxy` objects and ensures only one
+#: instance of such objects is created for the whole process.
+#: Please refer to the `~sardana.pool.poolutil._PoolUtil` API on the available
+#: methods.
 PoolUtil = _PoolUtil()

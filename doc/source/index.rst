@@ -50,7 +50,7 @@ Projects related to Sardana
 .. _ESRF: http://esrf.eu
 .. _LGPL: http://www.gnu.org/licenses/lgpl.html
 .. _PyPi: http://pypi.python.org/pypi/sardana 
-.. _Documentation: http://sardana.readthedocs.org
+.. _Documentation: https://sardana-controls.org
 .. _Tango: http://www.tango-controls.org/
 .. _Taurus: http://taurus-scada.org/
 .. _IPython: http://ipython.org/

@@ -595,6 +595,8 @@ class PoolController(PoolBaseController):
                 if state_info is None:
                     raise Exception("%s.StateOne(%s(%d)) returns 'None'"
                                     % (self.name, element.name, axis))
+                if state_info in State:
+                    state_info = (state_info, None)
                 state_info = state_info, None
             except:
                 exc_info = sys.exc_info()

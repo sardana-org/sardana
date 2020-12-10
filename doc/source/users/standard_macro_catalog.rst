@@ -88,6 +88,7 @@ environment related macros
     :columns: 5
     
     * :class:`~sardana.macroserver.macros.env.lsenv`
+    * :class:`~sardana.macroserver.macros.env.genv`
     * :class:`~sardana.macroserver.macros.env.senv`
     * :class:`~sardana.macroserver.macros.env.usenv`
     * :class:`~sardana.macroserver.macros.env.dumpenv`
@@ -134,6 +135,7 @@ experiment configuration macros
     * :class:`~sardana.macroserver.macros.expconf.defsnap`
     * :class:`~sardana.macroserver.macros.expconf.udefsnap`
     * :class:`~sardana.macroserver.macros.expconf.lssnap`
+    * :class:`~sardana.macroserver.macros.standard.plotselect`
 
 general hooks macros
 --------------------
@@ -218,3 +220,7 @@ scan related macros
     :columns: 5
 
     * :class:`~sardana.macroserver.macros.standard.newfile`
+    * :class:`~sardana.macroserver.macros.scan.scanstats`
+    * :class:`~sardana.macroserver.macros.standard.where`
+    * :class:`~sardana.macroserver.macros.standard.pic`
+    * :class:`~sardana.macroserver.macros.standard.cen`

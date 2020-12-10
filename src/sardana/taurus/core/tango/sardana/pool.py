@@ -479,6 +479,11 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait.connect(self.getAttribute("state"))
         try:
             evt_wait.waitEvent(DevState.MOVING, equal=False)
+            # Clear event set to not confuse the value coming from the
+            # connection with the event of of end of the operation
+            # in the next wait event. This was observed on Windows where
+            # the time stamp resolution is very poor.
+            evt_wait.clearEventSet()
             self.__go_time = 0
             self.__go_start_time = ts1 = time.time()
             self._start(*args, **kwargs)
@@ -669,12 +674,6 @@ class Controller(PoolElement):
                 continue
             axes.append(elem.getAxis())
         return sorted(axes)
-
-    def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
-               "Use getUsedAxes instead.")
-        self.warning(msg)
-        self.getUsedAxes()
 
     def getLastUsedAxis(self):
         """Return the last used axis (the highest axis) in this controller
@@ -1394,6 +1393,34 @@ class MGConfiguration(object):
         self.set_data(data)
 
     def set_data(self, data, force=False):
+        # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
+        # where key is a device name and value is a list with two elements:
+        #  - A device proxy or None if there was an error building it
+        #  - A dict where keys are attribute names and value is a reference to
+        #    a dict representing channel data as received in raw data
+        self.tango_dev_channels = None
+
+        # Number of elements in tango_dev_channels in error (could not build
+        # DeviceProxy, probably)
+        self.tango_dev_channels_in_error = 0
+
+        # dict<str, tuple<str, str, TangoChannelInfo>>
+        # where key is a channel name and value is a tuple of three elements:
+        #  - device name
+        #  - attribute name
+        #  - attribute information or None if there was an error trying to get
+        #    the information
+        self.tango_channels_info = None
+
+        # Number of elements in tango_channels_info_in_error in error
+        # (could not build attribute info, probably)
+        self.tango_channels_info_in_error = 0
+
+        # dict<str, dict>
+        # where key is a channel name and data is a reference to a dict
+        # representing channel data as received in raw data
+        self.non_tango_channels = None
+
         # object each time
         if isinstance(data, str):
             data = CodecFactory().decode(('json', data))
@@ -1472,35 +1499,6 @@ class MGConfiguration(object):
             ctrl = self._get_ctrl_for_element(channel_name)
             if ctrl not in self.controller_list_name:
                 self.controller_list_name.append(ctrl)
-        # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
-        # where key is a device name and value is a list with two elements:
-        #  - A device proxy or None if there was an error building it
-        #  - A dict where keys are attribute names and value is a reference to
-        #    a dict representing channel data as received in raw data
-        self.tango_dev_channels = None
-
-        # Number of elements in tango_dev_channels in error (could not build
-        # DeviceProxy, probably)
-        self.tango_dev_channels_in_error = 0
-
-        # dict<str, tuple<str, str, TangoChannelInfo>>
-        # where key is a channel name and value is a tuple of three elements:
-        #  - device name
-        #  - attribute name
-        #  - attribute information or None if there was an error trying to get
-        #    the information
-        self.tango_channels_info = None
-
-        # Number of elements in tango_channels_info_in_error in error
-        # (could not build attribute info, probably)
-        self.tango_channels_info_in_error = 0
-
-        # dict<str, dict>
-        # where key is a channel name and data is a reference to a dict
-        # representing channel data as received in raw data
-        self.non_tango_channels = None
-
-        self.initialized = False
 
     def _build(self):
         # internal channel structure that groups channels by tango device so
@@ -2339,7 +2337,7 @@ class MGConfiguration(object):
 
         :param timer: <str> timer name
         """
-        self._mg().warning("setTimer() is deprecated since Jul20. "
+        self._mg().warning("setTimer() is deprecated since 3.0.3. "
                            "Global measurement group timer does not exist")
         result = self._get_ctrl_for_channel([timer], unique=True)
 
@@ -2350,13 +2348,13 @@ class MGConfiguration(object):
 
     def getTimer(self):
         """DEPRECATED"""
-        self._mg().warning("getTimer() is deprecated since Jul20. "
+        self._mg().warning("getTimer() is deprecated since 3.0.3. "
                            "Global measurement group timer does not exist")
         return self._getTimer()
 
     def getMonitor(self):
         """DEPRECATED"""
-        self._mg().warning("getMonitor() is deprecated since Jul20. "
+        self._mg().warning("getMonitor() is deprecated since 3.0.3. "
                            "Global measurement group monitor does not exist")
         return self._getMonitor()
 
@@ -3086,19 +3084,19 @@ class MeasurementGroup(PoolElement):
 
     def getMonitorName(self):
         """DEPRECATED"""
-        self.warning("getMonitorName() is deprecated since Jul20. "
+        self.warning("getMonitorName() is deprecated since 3.0.3. "
                      "Global measurement group monitor does not exist.")
         return self.getConfiguration()._getMonitorName()
 
     def getTimerName(self):
         """DEPRECATED"""
-        self.warning("getTimerName() is deprecated since Jul20. "
+        self.warning("getTimerName() is deprecated since 3.0.3. "
                      "Global measurement group timer does not exist.")
         return self.getConfiguration()._getTimerName()
 
     def getTimerValue(self):
         """DEPRECATED"""
-        self.warning("getTimerValue() is deprecated since Jul20. "
+        self.warning("getTimerValue() is deprecated since 3.0.3. "
                      "Global measurement group timer does not exist.")
         return self.getConfiguration()._getTimerValue()
 
@@ -3108,7 +3106,7 @@ class MeasurementGroup(PoolElement):
         :param channels: (seq<str>) a sequence of strings indicating
            channel names
         '''
-        self.warning("enableChannels() in deprecated since Jul20. "
+        self.warning("enableChannels() in deprecated since 3.0.3. "
                      "Use setEnabled() instead.")
         self.setEnabled(True, *channels)
 
@@ -3118,7 +3116,7 @@ class MeasurementGroup(PoolElement):
         :param channels: (seq<str>) a sequence of strings indicating
            channel names
         '''
-        self.warning("enableChannels() in deprecated since Jul20. "
+        self.warning("enableChannels() in deprecated since 3.0.3. "
                      "Use setEnabled() instead.")
         self.setEnabled(False, *channels)
 
@@ -3368,7 +3366,8 @@ class MeasurementGroup(PoolElement):
         self.prepare()
         return self.count_raw(start_time)
 
-    def count_continuous(self, synch_description, value_buffer_cb=None):
+    def count_continuous(self, synch_description, value_buffer_cb=None,
+                         value_ref_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -3377,6 +3376,9 @@ class MeasurementGroup(PoolElement):
           synchronizations
         :param value_buffer_cb: callback on value buffer updates
         :type value_buffer_cb: callable
+        :param value_ref_buffer_cb: callback on value reference
+          buffer updates
+        :type value_ref_buffer_cb: callable
         :return: state and eventually value buffers if no callback was passed
         :rtype: tuple<list<DevState>,<list>>
 
@@ -3393,10 +3395,12 @@ class MeasurementGroup(PoolElement):
         self.setSynchDescription(synch_description)
         self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
+        self.subscribeValueRefBuffer(value_ref_buffer_cb)
         try:
             self.count_raw(start_time)
         finally:
             self.unsubscribeValueBuffer(value_buffer_cb)
+            self.unsubscribeValueRefBuffer(value_ref_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"

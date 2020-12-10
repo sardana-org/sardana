@@ -248,7 +248,7 @@ class DummyOneDController(OneDController):
     def StartAll(self):
         self.start_time = time.time()
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency_time):
         idx = axis - 1
         if value > 0:
             self.integ_time = value

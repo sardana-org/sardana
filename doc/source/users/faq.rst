@@ -92,6 +92,16 @@ write Sardana controllers and pseudo controllers can be found
 This documentation also includes the :term:`API` which can be used to interface
 to the specific hardware item.
 
+How to access Tango from within macros or controllers
+--------------------------------------------------------------------------------
+In your macros and controllers almost certainly you will need to access Tango
+devices (including Sardana elements) to read or write their attributes,
+execute commands, etc. There exist different ways of accessing them: Sardana,
+Taurus or PyTango :term:`API`. See more on which to choose in this chapters:
+
+* :ref:`sardana-macro-accessing-tango`
+* :ref:`sardana-controller-accessing-tango`
+
 How to add your own file format?
 --------------------------------
 Documentation how to add your own file format can be found here **<LINK>**.
