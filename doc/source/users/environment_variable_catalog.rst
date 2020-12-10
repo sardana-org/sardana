@@ -308,7 +308,7 @@ ScanRecorder
 
 Its value may be either of type string or of list of strings. If
 ScanRecorder variable is defined, it explicitly indicates which recorder
-class should be used and for which file defined by ScanFile (based on the 
+class should be used and for which file defined by ScanFile (based on the
 order).
 
 Example 1:
@@ -333,6 +333,17 @@ Example 2:
 
 .. seealso:: More about the extension to recorder map in
              :ref:`sardana-writing-recorders`.
+
+.. _scanuser:
+
+ScanUser
+~~~~~~~~
+*Not mandatory, set by user*
+
+Its value is of type string. Its value is delivered to the recorders which
+may use it, for example, as a user contact information. If not set, the OS
+user executing the Sardana server (which executes the scan) will be passed to
+the recorders instead.
 
 .. _sharedmemory:
 
