@@ -14,6 +14,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Execute per measurement preparation in `mesh` scan macro (#1437)
 * Continously read value references in hardware synchronized acquisition 
   instead of reading only at the end (#1442, #1448)
+* Avoid problems when defining different, e.g. shape, standard attributes,
+  e.g. pseudo counter's value, in controllers (#1440, #1446)
 * Recorders tests helpers (#1439)
 * Disable flake8 job in travis CI (#1455)
 
