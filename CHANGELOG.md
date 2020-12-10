@@ -9,6 +9,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
+* Avoid double printing of user units in PMTV: read widget and units widget (#1424)
 
 ### Fixed
 
