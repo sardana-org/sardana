@@ -7,7 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* ...
+* Initial delay in position domain to the synchronization description
+  in *ct* like continuous scans (#1428)
 
 ### Fixed
 
