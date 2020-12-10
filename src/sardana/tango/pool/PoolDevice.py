@@ -33,6 +33,7 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
+from copy import deepcopy
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
     DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
@@ -690,7 +691,9 @@ class PoolElementDevice(PoolDevice):
             attr_name_lower = attr_name.lower()
             if attr_name_lower in std_attrs_lower:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
-                tg_info = dev_class.standard_attr_list[attr_name]
+                # copy in order to leave the class attributes untouched
+                # the downstream code can append MaxDimSize to the attr. info
+                tg_info = deepcopy(dev_class.standard_attr_list[attr_name])
                 std_attrs[attr_name] = attr_name, tg_info, data_info
             else:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
