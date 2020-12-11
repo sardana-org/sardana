@@ -1063,23 +1063,51 @@ class GScan(Logger):
 class SScan(GScan):
     """Step scan"""
 
+    def __init__(self, macro, generator=None, moveables=[], env={},
+                 constraints=[], extrainfodesc=[]):
+        GScan.__init__(self, macro, generator=generator, moveables=moveables,
+                       env=env, constraints=constraints,
+                       extrainfodesc=extrainfodesc)
+        self._deterministic_scan = None
+
+    @property
+    def deterministic_scan(self):
+        """Check if the scan is a deterministic scan.
+
+        Scan is considered as deterministic scan if
+        the `~sardana.macroserver.macro.Macro` specialization owning
+        the scan object contains ``nb_points`` and ``integ_time`` attributes.
+
+        Scan flow depends on this property (some optimizations are applied).
+        These can be disabled by setting this property to `False`.
+        """
+        if self._deterministic_scan is None:
+            macro = self.macro
+            if hasattr(macro, "nb_points") and hasattr(macro, "integ_time"):
+                self._deterministic_scan = True
+            else:
+                self._deterministic_scan = False
+        return self._deterministic_scan
+
+    @deterministic_scan.setter
+    def deterministic_scan(self, value):
+        self._deterministic_scan = value
+
     def scan_loop(self):
         lstep = None
         macro = self.macro
         scream = False
 
-        self._deterministic_scan = False
         if hasattr(macro, "nb_points"):
             nb_points = float(macro.nb_points)
-            if hasattr(macro, "integ_time"):
-                integ_time = macro.integ_time
-                self.measurement_group.putIntegrationTime(integ_time)
-                self.measurement_group.setNbStarts(nb_points)
-                self.measurement_group.prepare()
-                self._deterministic_scan = True
             scream = True
         else:
             yield 0.0
+
+        if self.deterministic_scan:
+            self.measurement_group.putIntegrationTime(macro.integ_time)
+            self.measurement_group.setNbStarts(macro.nb_points)
+            self.measurement_group.prepare()
 
         self._sum_motion_time = 0
         self._sum_acq_time = 0
@@ -1162,7 +1190,7 @@ class SScan(GScan):
         # Acquire data
         self.debug("[START] acquisition")
         try:
-            if self._deterministic_scan:
+            if self.deterministic_scan:
                 state, data_line = mg.count_raw()
             else:
                 state, data_line = mg.count(integ_time)
