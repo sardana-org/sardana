@@ -1067,6 +1067,15 @@ class SScan(GScan):
 
     @property
     def deterministic_scan(self):
+        """Check if the scan is a deterministic scan.
+
+        Scan is considered as deterministic scan if
+        the `~sardana.macroserver.macro.Macro` specialization owning
+        the scan object contains ``nb_points`` and ``integ_time`` attributes.
+
+        Scan flow depends on this property (some optimizations are applied).
+        These can be disabled by setting this property to `False`.
+        """
         if self._deterministic_scan is None:
             macro = self.macro
             if hasattr(macro, "nb_points") and hasattr(macro, "integ_time"):
