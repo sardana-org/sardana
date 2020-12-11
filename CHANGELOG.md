@@ -7,6 +7,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* *scan information* and *scan point* forms to the *showscan online* widget (#1386)
+* `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
+  widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
