@@ -88,6 +88,9 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
             self.valueWidget = None
 
         self.valueWidget, label = getSenvValueEditor(text, self)
+        if text == "ActiveMntGrp":
+            self.valueWidget.setModel(self.model())
+            self.valueWidget.setModel("/MeasurementGroupList")
 
         paramRepeatIndex = self.model().index(1, 0, self.rootIndex())
         repeatIndex = paramRepeatIndex.child(0, 0)
@@ -108,8 +111,6 @@ def getSenvValueEditor(envName, parent):
     label = "value:"
     if envName == "ActiveMntGrp":
         editor = MSAttrListComboBoxParam(parent)
-        editor.setUseParentModel(True)
-        editor.setModel("/MeasurementGroupList")
     elif envName == "ExtraColumns":
         editor = ExtraColumnsEditor(parent)
         label = None
@@ -221,7 +222,7 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             editor.setView(treeView)
         elif index.column() == 2:
             editor = MSAttrListComboBox(parent)
-            editor.setUseParentModel(True)
+            editor.setModel(index.model())
             editor.setModel("/InstrumentList")
         else:
             editor = Qt.QItemDelegate.createEditor(self, parent, option, index)
@@ -383,9 +384,12 @@ CUSTOM_EDITOR = SenvEditor
 if __name__ == "__main__":
     import sys
     import taurus
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
+    from sardana.taurus.core.tango.sardana.macro import MacroNode
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
     args = app.get_command_line_args()
     editor = SenvEditor()
     macroServer = taurus.Device(args[0])

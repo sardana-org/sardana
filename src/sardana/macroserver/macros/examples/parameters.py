@@ -23,7 +23,7 @@
 
 """This module contains macros that demonstrate the usage of macro parameters"""
 
-from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Type
 
 __all__ = ["pt0", "pt1", "pt2", "pt3", "pt3d", "pt4", "pt5", "pt6", "pt7",
            "pt7d1", "pt7d2", "pt8", "pt9", "pt10", "pt11", "pt12", "pt13",
@@ -193,7 +193,8 @@ class pt7(Macro):
 
 
 class pt7d1(Macro):
-    """Macro with a list of pair Motor,Float. Default value for last ParamRepeat element.
+    """Macro with a list of pair Motor,Float. Default value for last
+    repeat parameter element.
     Usages from Spock, ex.:
     pt7d1 [[mot1 1] [mot2 3]]
     pt7d1 mot1 1 mot2 3
@@ -214,7 +215,8 @@ class pt7d1(Macro):
 
 
 class pt7d2(Macro):
-    """Macro with a list of pair Motor,Float. Default value for both ParamRepeat elements.
+    """Macro with a list of pair Motor,Float. Default value for both
+    repeat parameters elements.
     Usages from Spock, ex.:
     pt7d2 [[mot1 1] [mot2 3]]
     pt7d2 mot1 1 mot2 3
@@ -252,18 +254,17 @@ class pt8(Macro):
 
 
 class pt9(Macro):
-    """Same as macro pt7 but with old style ParamRepeat. If you are writing
-    a macro with variable number of parameters for the first time don't even
-    bother to look at this example since it is DEPRECATED.
+    """Same as macro pt7 but with min and max number of repetitions of the
+    repeat parameter.
     Usages from Spock, ex.:
     pt9 [[mot1 1][mot2 3]]
     pt9 mot1 1 mot2 3
     """
 
     param_def = [
-        ['m_p_pair',
-         ParamRepeat(['motor', Type.Motor, None, 'Motor to move'],
-                     ['pos',  Type.Float, None, 'Position to move to'], min=1, max=2),
+        ['m_p_pair', [['motor', Type.Motor, None, 'Motor to move'],
+                      ['pos',  Type.Float, None, 'Position to move to'],
+                      {'min': 1, 'max': 2}],
          None, 'List of motor/position pairs'],
     ]
 

@@ -33,6 +33,7 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
+from copy import deepcopy
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
     DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
@@ -593,6 +594,21 @@ class PoolElementDevice(PoolDevice):
         except ValueError:
             pass
 
+    def delete_device(self):
+        element = self.element
+        if not element.deleted:
+            pool_ctrl = self.ctrl
+            ctrl = pool_ctrl.ctrl
+            if ctrl is not None:
+                axis = element.axis
+                try:
+                    ctrl.DeleteDevice(axis)
+                except Exception:
+                    name = element.name
+                    self.error("Unable to delete %s(%s)", name, axis,
+                               exc_info=1)
+        PoolDevice.delete_device(self)
+
     def read_Instrument(self, attr):
         """Read the value of the ``Instrument`` tango attribute.
         Returns the instrument full name or empty string if this element doesn't
@@ -675,7 +691,9 @@ class PoolElementDevice(PoolDevice):
             attr_name_lower = attr_name.lower()
             if attr_name_lower in std_attrs_lower:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
-                tg_info = dev_class.standard_attr_list[attr_name]
+                # copy in order to leave the class attributes untouched
+                # the downstream code can append MaxDimSize to the attr. info
+                tg_info = deepcopy(dev_class.standard_attr_list[attr_name])
                 std_attrs[attr_name] = attr_name, tg_info, data_info
             else:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)

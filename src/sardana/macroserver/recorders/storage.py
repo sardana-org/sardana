@@ -508,7 +508,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
             self.info(
                 'Custom data "%s" will not be stored in SPEC file. Reason: uninitialized file', name)
             return
-        if numpy.rank(value) > 0:  # ignore non-scalars
+        if numpy.ndim(value) > 0:  # ignore non-scalars
             self.info(
                 'Custom data "%s" will not be stored in SPEC file. Reason: value is non-scalar', name)
             return

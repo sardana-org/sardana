@@ -206,5 +206,27 @@ The snapshot is saved only once during a scan, on the very beginning. The exact
 way the snapshot data is saved depends on the :ref:`recorder <sardana-writing-recorders>`
 and scan file format being used.
 
+Scan statistics
+---------------
+
+Sardana may automatically calculate some basic statistics over the scan
+results e.g., max, mean, FWHM, etc.
+
+In order to enable the statistics calculation you just need to attach
+the :class:`~sardana.macroserver.macros.scan.scanstats` macro to the
+``post-scan`` hook place (see :ref:`hook documentation <sardana-macros-hooks>`
+for more info).
+
+Apart from printing the statistics by the scanstats macro these are stored in
+the door's :ref:`scanstats` environment variable. This way some other macro
+can use them e.g.,
+
+* move the scanned motor to the position where a given channel
+  reached the maximum value (:class:`~sardana.macroserver.macros.standard.pic`)
+* move the scanned motor to center position of FWHM
+  (:class:`~sardana.macroserver.macros.standard.cen`)
+
+
+
 .. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org

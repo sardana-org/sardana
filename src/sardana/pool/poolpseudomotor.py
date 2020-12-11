@@ -45,7 +45,6 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
 
-from PyTango import AttributeProxy
 
 class Position(SardanaAttribute):
 
@@ -552,31 +551,23 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
 
         if items is None:
             items = {}
-        for new_position, element in zip(physical_positions.value, user_elements):
+        for new_position, element in zip(physical_positions.value,
+                                         user_elements):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
-            # TODO: get the configuration for an specific sardana class and
-            # get rid of AttributeProxy - see sardana-org/sardana#663
-            config = AttributeProxy(element.name + '/position').get_config()
+            # TODO: use Sardana attribute configuration and
+            #  get rid of accessing tango - see sardana-org/sardana#663
+            from sardana.tango.core.util import _check_attr_range
             try:
-                high = float(config.max_value)
-            except ValueError:
-                high = None
-            try:
-                low = float(config.min_value)
-            except ValueError:
-                low = None
-            if high is not None:
-                if float(new_position) > high:
-                    msg = "requested movement of %s is above its upper limit"\
-                        % element.name
-                    raise RuntimeError(msg)
-            if low is not None:
-                if float(new_position) < low:
-                    msg = "requested movement of %s is below its lower limit"\
-                        % element.name
-                    raise RuntimeError(msg)
+                _check_attr_range(element.name, "position", new_position)
+            except ValueError as e:
+                # TODO: don't concatenate exception message whenever
+                #  tango-controls/pytango#340 is fixed
+                msg = "requested move of {} is outside of limits ({})".format(
+                    element.name, str(e)
+                )
+                raise ValueError(msg) from e
 
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)

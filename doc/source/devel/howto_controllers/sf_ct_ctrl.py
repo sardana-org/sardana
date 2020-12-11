@@ -66,7 +66,7 @@ class SpringfieldBaseCounterTimerController(CounterTimerController):
         """acquire the specified counter"""
         self.springfield.StartChannel(axis)
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency):
         self.springfield.LoadChannel(axis, value)
 
     def StopOne(self, axis):
@@ -112,7 +112,7 @@ class SpringfieldCounterTimerController(CounterTimerController):
         value = self.springfield.getValue(axis)
         return value
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency):
         self.springfield.LoadChannel(axis, value)
 
     def StartOne(self, axis, position):

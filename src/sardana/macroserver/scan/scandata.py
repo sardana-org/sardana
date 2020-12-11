@@ -200,7 +200,7 @@ class Record(object):
                 raise KeyError(item)
 
         v = proxy.getNameValidator()
-        params = v.getParams(proxy.getFullName())
+        params = v.getUriGroups(proxy.getFullName())
         name = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
                                     params['port'],
                                     params['devname'])

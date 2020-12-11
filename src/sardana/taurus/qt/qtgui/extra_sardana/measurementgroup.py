@@ -124,8 +124,8 @@ def createChannelDict(channel, index=None, **kwargs):
         #           'timer': '', #should contain a channel name
         #           'monitor': '', #should contain a channel name
         #           'trigger': '', #should contain a channel name
-        'value_ref_enabled': False,  # bool
-        'value_ref_pattern': '',  # str
+        # 'value_ref_enabled': False,  # bool
+        # 'value_ref_pattern': '',  # str
         'conditioning': '',  # this is a python expresion to be evaluated for conditioning the data. The data for this channel can be referred as 'x' and data from other channels can be referred by channel name
         'normalization': Normalization.No,  # one of the Normalization enumeration members
         # string indicating the location of the data of this channel within
@@ -494,20 +494,18 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Channel:  # channel column is not editable
             return flags
-        elif taurus_role == ChannelView.Synchronization:
+        elif taurus_role in (ChannelView.Timer,
+                             ChannelView.Monitor,
+                             ChannelView.Synchronizer,
+                             ChannelView.Synchronization):
             ch_name, ch_data = index.internalPointer().itemData()
             if not ch_data['_controller_name'].startswith("__"):
                 ch_info = self.getAvailableChannels()[ch_name]
-                # only timer/monitor columns of counter timers are editable
-                if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
+                # only timerable channels accept these configurations
+                if ch_info['type'] in ('CTExpChannel',
+                                       'OneDExpChannel',
+                                       'TwoDExpChannel'):
                     flags |= Qt.Qt.ItemIsEditable
-        elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
-            ch_name, ch_data = index.internalPointer().itemData()
-            if not ch_data['_controller_name'].startswith("__"):
-                #ch_info = self.getAvailableChannels()[ch_name]
-                # if 'CTExpChannel' == ch_info['type']: #only timer/monitor columns of counter timers are editable
-                #    flags |= Qt.Qt.ItemIsEditable
-                flags |= Qt.Qt.ItemIsEditable
         else:
             flags |= Qt.Qt.ItemIsEditable
         return flags
@@ -526,18 +524,17 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Synchronization:
             ch_name, ch_data = index.internalPointer().itemData()
-            unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
+            ctrlname = ch_data['_controller_name']
+            if ctrlname.startswith("__"):
+                return None
+            ch_info = self.getAvailableChannels()[ch_name]
+            if ch_info['type'] not in ('CTExpChannel',
+                                       'OneDExpChannel',
+                                       'TwoDExpChannel'):
+                return None
+            unitdict = self.getPyData(ctrlname=ctrlname)
             key = self.data_keys_map[taurus_role]
-            try:
-                synchronization = unitdict[key]
-            except KeyError:
-                # backwards compatibility for configurations before SEP6
-                synchronization = unitdict.get('trigger_type', None)
-                if synchronization is not None:
-                    msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply"
-                           " configuration in order to upgrade.")
-                    self.warning(msg)
+            synchronization = unitdict[key]
             return AcqSynchType[synchronization]
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()

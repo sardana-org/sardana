@@ -27,7 +27,7 @@ import threading
 
 import numpy
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase, mock
 from taurus.test import insertTest
 
 from sardana.sardanautils import is_number, is_pure_str
@@ -84,7 +84,7 @@ class AcquisitionTestCase(BasePoolTestCase):
 
     def wait_finish(self):
         # waiting for acquisition and synchronization to finish
-        while (self.acquisition.is_running()
+        while (self.acquisition._is_busy()
                or self.synchronization.is_running()):
             time.sleep(.1)
 
@@ -160,16 +160,16 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         _, type_, index = args
         name = type_.name
         if name == "active":
-            if self.sw_acq_busy.is_set():
+            if self.sw_acq._is_busy():
                 # skipping acquisition cause the previous on is ongoing
                 return
             else:
-                self.sw_acq_busy.set()
+                self.sw_acq._set_busy()
                 args = self.sw_acq_args
                 kwargs = self.sw_acq_kwargs
                 kwargs['index'] = index
                 get_thread_pool().add(self.sw_acq.run,
-                                      None,
+                                      self.sw_acq._set_ready,
                                       *args,
                                       **kwargs)
 
@@ -209,18 +209,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         # creating acquisition actions
         self.hw_acq = self.create_action(PoolAcquisitionHardware, [ct_1_1])
         self.sw_acq = self.create_action(PoolAcquisitionSoftware, [ct_2_1])
-        # Since we deposit the software acquisition action on the PoolThread's
-        # queue we can not rely on the action's state - one may still wait
-        # in the queue (its state has not changed to running yet) and we would
-        # be depositing another one. This way we may be starting multiple
-        # times the same action (with the same elements involved), what results
-        # in "already involved in operation" errors.
-        # Use an external Event flag to mark if we have any software
-        # acquisition action pending.
-        self.sw_acq_busy = threading.Event()
-        self.sw_acq.add_finish_hook(self.sw_acq_busy.clear)
         self.sw_acq_args = (sw_ctrls, integ_time, sw_master)
-        self.sw_acq_kwargs = {}
+        self.sw_acq_kwargs = dict(synch=True)
 
         total_interval = active_interval + passive_interval
         group = {
@@ -229,14 +219,14 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
         self.hw_acq.run(hw_ctrls, integ_time, repetitions, 0)
-        self.synchronization.run(synch_ctrls, synchronization)
+        self.synchronization.run(synch_ctrls, synch_description)
         # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running()
-               or self.sw_acq.is_running()
+               or self.sw_acq._is_busy()
                or self.synchronization.is_running()):
             time.sleep(.1)
         self.do_asserts(repetitions, jobs_before)
@@ -260,17 +250,17 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
         _, type_, value = args
         name = type_.name
         if name == "active":
-            if self.acq_busy.is_set():
+            if self.acquisition._is_busy():
                 # skipping acquisition cause the previous on is ongoing
                 return
             else:
-                self.acq_busy.set()
+                self.acquisition._set_busy()
                 acq_args = list(self.acq_args)
                 acq_kwargs = self.acq_kwargs
                 index = value
                 acq_args[3] = index
                 get_thread_pool().add(self.acquisition.run,
-                                      None,
+                                      self.acquisition._set_ready,
                                       *acq_args,
                                       **acq_kwargs)
 
@@ -291,18 +281,8 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftware,
                                               [self.channel])
-        # Since we deposit the software acquisition action on the PoolThread's
-        # queue we can not rely on the action's state - one may still wait
-        # in the queue (its state has not changed to running yet) and we would
-        # be depositing another one. This way we may be starting multiple
-        # times the same action (with the same elements involved), what results
-        # in "already involved in operation" errors.
-        # Use an external Event flag to mark if we have any software
-        # acquisition action pending.
-        self.acq_busy = threading.Event()
-        self.acquisition.add_finish_hook(self.acq_busy.clear)
         self.acq_args = (ctrls, integ_time, master, None)
-        self.acq_kwargs = {}
+        self.acq_kwargs = dict(synch=True)
 
         total_interval = integ_time + latency_time
         group = {
@@ -311,10 +291,10 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.synchronization.run([], synchronization)
+        self.synchronization.run([], synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before, strict=False)
 
@@ -331,7 +311,6 @@ class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
-        TestCase.setUp(self)
         AcquisitionTestCase.setUp(self)
 
     def event_received(self, *args, **kwargs):
@@ -339,7 +318,9 @@ class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
         _, type_, value = args
         name = type_.name
         if name == "start":
-            get_thread_pool().add(self.acquisition.run, None,
+            self.acquisition._set_busy()
+            get_thread_pool().add(self.acquisition.run,
+                                  self.acquisition._set_ready,
                                   *self.acq_args,
                                   **self.acq_kwargs)
 
@@ -361,7 +342,7 @@ class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
                                               [self.channel])
         self.acq_args = (ctrls, integ_time, master, repetitions, latency_time)
-        self.acq_kwargs = {}
+        self.acq_kwargs = dict(synch=True)
 
         total_interval = integ_time + latency_time
         group = {
@@ -370,10 +351,10 @@ class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.synchronization.run([], synchronization)
+        self.synchronization.run([], synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before, strict=False)
 
@@ -415,13 +396,19 @@ class BaseAcquisitionHardwareTestCase(AcquisitionTestCase):
             SynchParam.Total: {SynchDomain.Time: total_interval},
             SynchParam.Repeats: repetitions
         }
-        synchronization = [group]
+        synch_description = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
         self.acquisition.run(ctrls, integ_time, repetitions, 0)
-        self.synchronization.run(synch_ctrls, synchronization)
+        self.synchronization.run(synch_ctrls, synch_description)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before)
+
+    def wait_finish(self):
+        # waiting for acquisition and synchronization to finish
+        while (self.acquisition.is_running()
+               or self.synchronization.is_running()):
+            time.sleep(.1)
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
@@ -452,7 +439,7 @@ class Acquisition2DSoftwareTriggerTestCase(BaseAcquisitionSoftwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionSoftwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
@@ -471,7 +458,7 @@ class Acquisition2DSoftwareTriggerRefTestCase(BaseAcquisitionSoftwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionSoftwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
 
@@ -494,7 +481,7 @@ class AcquisitionCTSoftwareStartTestCase(
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionSoftwareStartTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
@@ -512,7 +499,7 @@ class Acquisition2DSoftwareStartTestCase(
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionSoftwareStartTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
@@ -535,7 +522,7 @@ class Acquisition2DSoftwareStartRefTestCase(
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionSoftwareStartTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
 
@@ -576,9 +563,17 @@ class Acquisition2DHardwareStartTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -595,7 +590,7 @@ class Acquisition2DHardwareStartRefTestCase(
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.channel_ctrl.set_log_level(10)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
@@ -604,6 +599,14 @@ class Acquisition2DHardwareStartRefTestCase(
         self.channel.value_ref_enabled = True
         axis = self.channel.axis
         self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "RefOne",
+                               wraps=ctrl.RefOne) as mock_RefOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_RefOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -619,9 +622,17 @@ class AcquisitionCTHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -637,9 +648,17 @@ class Acquisition2DHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -656,7 +675,7 @@ class Acquisition2DHardwareTriggerRefTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
 
@@ -664,6 +683,14 @@ class Acquisition2DHardwareTriggerRefTestCase(BaseAcquisitionHardwareTestCase,
         self.channel.value_ref_enabled = True
         axis = self.channel.axis
         self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "RefOne",
+                               wraps=ctrl.RefOne) as mock_RefOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_RefOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -679,7 +706,7 @@ class AcquisitionCTHardwareGateTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
@@ -697,7 +724,7 @@ class Acquisition2DHardwareGateTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
@@ -716,7 +743,7 @@ class Acquisition2DHardwareGateRefTestCase(BaseAcquisitionHardwareTestCase,
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
+        BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
 

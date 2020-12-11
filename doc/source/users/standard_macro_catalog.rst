@@ -88,6 +88,7 @@ environment related macros
     :columns: 5
     
     * :class:`~sardana.macroserver.macros.env.lsenv`
+    * :class:`~sardana.macroserver.macros.env.genv`
     * :class:`~sardana.macroserver.macros.env.senv`
     * :class:`~sardana.macroserver.macros.env.usenv`
     * :class:`~sardana.macroserver.macros.env.dumpenv`
@@ -119,7 +120,7 @@ list related macros
     * :class:`~sardana.macroserver.macros.env.lsgh`
     * :class:`~sardana.macroserver.macros.env.lssnap`
 
-measurement configuration macros
+experiment configuration macros
 --------------------------------
 
 .. hlist::
@@ -127,9 +128,14 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
-    * :class:`~sardana.macroserver.macros.expert.defsnap`
-    * :class:`~sardana.macroserver.macros.expert.udefsnap`
-    * :class:`~sardana.macroserver.macros.expert.lssnap`
+    * :class:`~sardana.macroserver.macros.expconf.set_meas`
+    * :class:`~sardana.macroserver.macros.expconf.get_meas`
+    * :class:`~sardana.macroserver.macros.expconf.set_meas_conf`
+    * :class:`~sardana.macroserver.macros.expconf.get_meas_conf`
+    * :class:`~sardana.macroserver.macros.expconf.defsnap`
+    * :class:`~sardana.macroserver.macros.expconf.udefsnap`
+    * :class:`~sardana.macroserver.macros.expconf.lssnap`
+    * :class:`~sardana.macroserver.macros.standard.plotselect`
 
 general hooks macros
 --------------------
@@ -214,3 +220,7 @@ scan related macros
     :columns: 5
 
     * :class:`~sardana.macroserver.macros.standard.newfile`
+    * :class:`~sardana.macroserver.macros.scan.scanstats`
+    * :class:`~sardana.macroserver.macros.standard.where`
+    * :class:`~sardana.macroserver.macros.standard.pic`
+    * :class:`~sardana.macroserver.macros.standard.cen`

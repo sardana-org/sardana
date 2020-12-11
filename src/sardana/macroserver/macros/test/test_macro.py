@@ -25,7 +25,7 @@
 
 import os
 
-from taurus.external import unittest
+import unittest
 
 from sardana.macroserver.macros.test import RunMacroTestCase, testRun
 from sardana.tango.macroserver.test import BaseMacroServerTestCase

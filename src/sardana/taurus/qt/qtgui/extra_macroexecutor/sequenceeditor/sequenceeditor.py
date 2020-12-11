@@ -28,7 +28,7 @@ sequenceeditor.py:
 """
 import os
 import sys
-
+import pickle
 from lxml import etree
 
 import PyTango
@@ -324,6 +324,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
 class TaurusSequencerWidget(TaurusWidget):
 
+    doorChanged = Qt.pyqtSignal('QString')
     macroStarted = Qt.pyqtSignal('QString')
     plotablesFilterChanged = Qt.pyqtSignal(compat.PY_OBJECT)
     currentMacroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
@@ -350,13 +351,12 @@ class TaurusSequencerWidget(TaurusWidget):
         self.layout().addWidget(splitter)
         splitter.setOrientation(Qt.Qt.Vertical)
 
-        sequenceEditor = TaurusWidget()
-        splitter.addWidget(sequenceEditor)
-        sequenceEditor.setUseParentModel(True)
-        sequenceEditor.setLayout(Qt.QVBoxLayout())
-        sequenceEditor.layout().setContentsMargins(0, 0, 0, 0)
+        self.sequenceEditor = TaurusWidget()
+        splitter.addWidget(self.sequenceEditor)
+        self.sequenceEditor.setLayout(Qt.QVBoxLayout())
+        self.sequenceEditor.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.tree = MacroSequenceTree(sequenceEditor)
+        self.tree = MacroSequenceTree(self.sequenceEditor)
         self.sequenceProxyModel = MacroSequenceProxyModel()
         self.sequenceProxyModel.setSourceModel(self._sequenceModel)
         self.tree.setModel(self.sequenceProxyModel)
@@ -429,14 +429,13 @@ class TaurusSequencerWidget(TaurusWidget):
             0, 0, Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed)
         actionsLayout.addItem(spacerItem)
 
-        sequenceEditor.layout().addLayout(actionsLayout)
+        self.sequenceEditor.layout().addLayout(actionsLayout)
 
         macroLayout = Qt.QHBoxLayout()
         macroLayout.setContentsMargins(0, 0, 0, 0)
         macroLabel = Qt.QLabel("Macro:")
         macroLayout.addWidget(macroLabel)
         self.macroComboBox = MacroComboBox(self)
-        self.macroComboBox.setUseParentModel(True)
         self.macroComboBox.setModelColumn(0)
         self.macroComboBox.setSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
@@ -452,7 +451,7 @@ class TaurusSequencerWidget(TaurusWidget):
         addButton.setDefaultAction(self.addMacroAction)
         macroLayout.addWidget(addButton)
 
-        sequenceEditor.layout().addLayout(macroLayout)
+        self.sequenceEditor.layout().addLayout(macroLayout)
 
         sequenceLayout = Qt.QHBoxLayout()
         sequenceLayout.addWidget(self.tree)
@@ -482,7 +481,7 @@ class TaurusSequencerWidget(TaurusWidget):
             0, 40, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         layout.addItem(spacerItem)
         sequenceLayout.addLayout(layout)
-        sequenceEditor.layout().addLayout(sequenceLayout)
+        self.sequenceEditor.layout().addLayout(sequenceLayout)
 
         self.parametersProxyModel = MacroParametersProxyModel()
         self.parametersProxyModel.setSourceModel(self._sequenceModel)
@@ -905,6 +904,8 @@ class TaurusSequencerWidget(TaurusWidget):
         TaurusWidget.setModel(self, model)
         newModelObj = self.getModelObj()
         newModelObj.macrosUpdated.connect(self.macroComboBox.onMacrosUpdated)
+        self.sequenceEditor.setModel(model)
+        self.macroComboBox.setModel(model)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -921,10 +922,10 @@ class TaurusSequencer(MacroExecutionWindow):
         MacroExecutionWindow.__init__(self)
 
     def initComponents(self):
-        #@todo: take care about storing model
-        self.setModelInConfig(True)
         self.taurusSequencerWidget = TaurusSequencerWidget(self)
-        self.taurusSequencerWidget.setUseParentModel(True)
+        self.taurusSequencerWidget.setModelInConfig(True)
+        self.taurusSequencerWidget.doorChanged.connect(
+            self.taurusSequencerWidget.onDoorChanged)
         self.registerConfigDelegate(self.taurusSequencerWidget)
         self.setCentralWidget(self.taurusSequencerWidget)
         self.taurusSequencerWidget.shortMessageEmitted.connect(
@@ -955,6 +956,10 @@ class TaurusSequencer(MacroExecutionWindow):
             self.taurusSequencerWidget.onMacroStatusUpdated)
         self.taurusSequencerWidget.onDoorChanged(doorName)
 
+    def setModel(self, model):
+        MacroExecutionWindow.setModel(self, model)
+        self.taurusSequencerWidget.setModel(model)
+
     @classmethod
     def getQtDesignerPluginInfo(cls):
         return None
@@ -962,7 +967,6 @@ class TaurusSequencer(MacroExecutionWindow):
 
 def createSequencerWidget(args):
     sequencer = TaurusSequencerWidget()
-    sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
 
     if len(args) == 2:
@@ -973,12 +977,20 @@ def createSequencerWidget(args):
 
 def createSequencer(args, options):
     sequencer = TaurusSequencer()
-    sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
+    load_settings = True
     if len(args) == 2:
         sequencer.setModel(args[0])
         sequencer.doorChanged.emit(args[1])
-    sequencer.loadSettings()
+        settings = sequencer.getQSettings()
+        taurus_config_raw = settings.value("TaurusConfig")
+        if taurus_config_raw is not None:
+            taurus_config = pickle.loads(taurus_config_raw.data())
+            oldmodel = taurus_config['__itemConfigurations__']['model']
+            if args[0] == oldmodel:
+                load_settings = False
+    if load_settings:
+        sequencer.loadSettings()
     if options.file is not None:
         sequencer.taurusSequencerWidget.loadFile(options.file)
     return sequencer

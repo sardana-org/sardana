@@ -45,6 +45,8 @@ from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
 from taurus.qt.qtgui.util.ui import UILoadable
 
+from sardana.util.parser import ParamParser
+
 
 class DoorStateListener(Qt.QObject):
     '''A listener of Change and periodic events from a Door State attribute.
@@ -97,11 +99,6 @@ class MacroButton(TaurusWidget):
     # More detais in #293 and taurus-org/taurus#635
     def handleEvent(self, evt_src, evt_type, evt_value):
         pass
-
-    def toggleProgress(self, visible):
-        '''deprecated'''
-        self.warning('toggleProgress is deprecated. Use showProgress')
-        self.showProgress(visible)
 
     def showProgress(self, visible):
         '''Set whether the progress bar is shown
@@ -245,29 +242,6 @@ class MacroButton(TaurusWidget):
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
-    def updateMacroArgumentFromSignal(self, index, obj, signal):
-        '''deprecated'''
-        msg = 'updateMacroArgumentFromSignal is deprecated. connectArgEditors'
-        self.warning(msg)
-        self.connect(obj, signal,
-                     functools.partial(self.updateMacroArgument, index))
-
-    def connectArgEditors(self, signals):
-        """
-        Associate signals to argument changes.
-
-        :param signals: (seq<pyqtsignals>) An ordered sequence of signals
-        """
-
-        for i, signal in enumerate(signals):
-            if not self.__isSignal(signal):
-                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
-                sender, sig = signal
-                self.deprecated(dep='Passing (sender, signature) tuples',
-                                alt='pyqtSignal objects', rel='2.5.1')
-                signal = getattr(sender, sig.split('(')[0])
-            signal.connect(functools.partial(self.updateMacroArgument, i))
-
     @staticmethod
     def __isSignal(obj):
         if not hasattr(obj, 'emit'):
@@ -289,13 +263,12 @@ class MacroButton(TaurusWidget):
         '''execute the macro with the current arguments'''
         if self.door is None:
             return
-
-        # TODO: make macrobutton compatible with macros with advanced usage of
-        # repeat parameters e.g. multiple repeat parameters, nested repeat
-        # parameters, etc.
-        macro_args = shlex.split(' '.join(self.macro_args))
+        param_defs = self.door.macro_server.getMacroInfoObj(
+            self.macro_name).parameters
+        parser = ParamParser(param_defs)
+        parameters = parser.parse(" ".join(self.macro_args))
         try:
-            self.door.runMacro(self.macro_name, macro_args)
+            self.door.runMacro(self.macro_name, parameters)
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
@@ -381,7 +354,8 @@ if __name__ == '__main__':
     parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
-                            app_version=taurus.Release.version)
+                            app_version=taurus.Release.version,
+                            cmd_line_parser=parser)
 
     args = app.get_command_line_args()
 
@@ -414,7 +388,7 @@ if __name__ == '__main__':
 
         def toggle_progress(self, toggle):
             visible = self.show_progress.isChecked()
-            self.mb.toggleProgress(visible or toggle)
+            self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
 
@@ -494,9 +468,9 @@ if __name__ == '__main__':
             # Toggle progressbar
             self.show_progress.stateChanged.connect(self.toggle_progress)
             # connect the argument editors
-            # signals = [(e, 'textChanged(QString)') for e in _argEditors]
-            signals = [getattr(e, 'textChanged') for e in _argEditors]
-            self.mb.connectArgEditors(signals)
+            for i, editor in enumerate(_argEditors):
+                slot = functools.partial(self.mb.updateMacroArgument, i)
+                editor.textChanged.connect(slot)
 
             self.setLayout(Qt.QVBoxLayout())
             self.layout().addWidget(self.w_arg)

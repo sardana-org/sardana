@@ -245,19 +245,12 @@ class PoolMotor(PoolElement):
 
     def _from_ctrl_state_info(self, state_info):
         state_info, _ = state_info
-
-        try:
-            state_str = State.whatis(state_info)
-            return int(state_info), "{0} is in {1}".format(self.name, state_str), 0
-        except KeyError:
-            pass
-
         if len(state_info) > 2:
             state, status, ls = state_info[:3]
         else:
             state, other = state_info[:2]
             if is_number(other):
-                ls, status = other, ''
+                ls, status = other, None
             else:
                 ls, status = 0, other
         state, ls = int(state), tuple(map(bool, (ls & 1, ls & 2, ls & 4)))
@@ -274,7 +267,7 @@ class PoolMotor(PoolElement):
     # state information
     # -------------------------------------------------------------------------
 
-    _STD_STATUS = "{name} is {state}{limit_switches}{ctrl_status}"
+    _STD_STATUS = "{name} is {state}{limit_switches}"
 
     def calculate_state_info(self, state_info=None):
         if state_info is None:
@@ -307,11 +300,10 @@ class PoolMotor(PoolElement):
         if ls[2]:
             limit_switches += ". Hit lower switch"
 
-        if len(status) > 0:
-            status = "\n" + status
         new_status = self._STD_STATUS.format(name=self.name, state=state_str,
-                                             limit_switches=limit_switches,
-                                             ctrl_status=status)
+                                             limit_switches=limit_switches)
+        if status is not None and len(status) > 0:
+            new_status += "\n{}".format(status)  # append ctrl status
         return state, new_status, ls
 
     # -------------------------------------------------------------------------

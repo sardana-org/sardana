@@ -4,7 +4,7 @@
 """
 
 import os
-from taurus.external import unittest
+import unittest
 import poolunittest
 import HTMLTestRunner
 import time

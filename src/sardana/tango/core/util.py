@@ -61,7 +61,8 @@ from taurus.core.util.log import Logger
 
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
-    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
+    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode, \
+    AttrQuality
 from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
@@ -286,6 +287,33 @@ def __get_last_write_value(attribute):
     return lrv
 
 
+def _check_attr_range(dev_name, attr_name, attr_value):
+    util = PyTango.Util.instance()
+    dev = util.get_device_by_name(dev_name)
+    multi_attr = dev.get_device_attr()
+    attr = multi_attr.get_w_attr_by_name(attr_name)
+    try:
+        min_value = attr.get_min_value()
+    # not specified min value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value < min_value:
+            msg = "w_value {} of {}/{} is lower than min_value {}".format(
+                  attr_value, dev_name, attr_name, min_value)
+            raise ValueError(msg)
+    try:
+        max_value = attr.get_max_value()
+    # not specified max value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value > max_value:
+            msg = "w_value {} of {}/{} is greater than max_value {}".format(
+                  attr_value, dev_name, attr_name, max_value)
+            raise ValueError(msg)
+
+
 def memorize_write_attribute(write_attr_func):
     """The main purpose is to use this as a decorator for write_<attr_name>
        device methods.
@@ -399,14 +427,27 @@ TFORMAT_MAP = {
 }
 R_TFORMAT_MAP = dict((v, k) for k, v in list(TFORMAT_MAP.items()))
 
-#: dictionary dict<:class:`sardana.DataAccess`, :class:`PyTango.AttrWriteType`>
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
+TQUALITY_MAP = {
+    AttrQuality.Valid: PyTango.AttrQuality.ATTR_VALID,
+    AttrQuality.Invalid: PyTango.AttrQuality.ATTR_INVALID,
+    AttrQuality.Alarm: PyTango.AttrQuality.ATTR_ALARM,
+    AttrQuality.Changing: PyTango.AttrQuality.ATTR_CHANGING,
+    AttrQuality.Warning: PyTango.AttrQuality.ATTR_WARNING
+}
+
+
+R_TQUALITY_MAP = dict((v, k) for k, v in list(TQUALITY_MAP.items()))
+
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
 TACCESS_MAP = {
     DataAccess.ReadOnly: READ,
     DataAccess.ReadWrite: READ_WRITE,
 }
 
 R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
-
 
 def exception_str(etype=None, value=None, sep='\n'):
     if etype is None:
@@ -467,6 +508,16 @@ def from_tango_type_format(dtype, dformat=PyTango.SCALAR):
     :rtype: tuple< :obj:`~sardana.DataType`, :obj:`~sardana.DataFormat` >"""
     return R_TTYPE_MAP[dtype], R_TFORMAT_MAP[dformat]
 
+
+def to_tango_quality(quality):
+    """Transforms a :obj:`~sardana.AttrQuality` into a
+    :obj:`~PyTango.AttrQuality`
+
+    :param access: the quality to be transformed
+    :type access: :obj:`~sardana.AttrQuality`
+    :return: the tango attribute quality
+    :rtype: :obj:`PyTango.AttrQuality`"""
+    return TQUALITY_MAP[quality]
 
 def to_tango_attr_info(attr_name, attr_info):
     if isinstance(attr_info, DataInfo):
@@ -726,7 +777,7 @@ def prepare_server(args, tango_args):
     else:
         inst_name = tango_args[1].lower()
 
-    if "-nodb" in tango_args:
+    if nodb:
         return log_messages
 
     db = Database()

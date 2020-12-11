@@ -112,7 +112,7 @@ class Motion(BaseMotion):
         """ Sets the minimum velocity in ms^-1. A.k.a. base rate"""
         vi = float(vi)
         if vi < 0:
-            raise "Minimum velocity must be >= 0"
+            raise ValueError("Minimum velocity must be >= 0")
 
         self.min_vel = vi
 
@@ -132,7 +132,7 @@ class Motion(BaseMotion):
         """ Sets the maximum velocity in ms^-1."""
         vf = float(vf)
         if vf <= 0:
-            raise "Maximum velocity must be > 0"
+            raise ValueError("Maximum velocity must be > 0")
 
         self.max_vel = vf
 
@@ -148,11 +148,17 @@ class Motion(BaseMotion):
     def getMaxVelocity(self):
         return self.max_vel
 
+    def setMaxUserVelocity(self, vel):
+        self.setMaxVelocity(vel * self.step_per_unit)
+
+    def getMaxUserVelocity(self):
+        return self.getMaxVelocity() / self.step_per_unit
+
     def setAccelerationTime(self, at):
         """Sets the time to go from minimum velocity to maximum velocity in seconds"""
         at = float(at)
         if at <= 0:
-            raise "Acceleration time must be > 0"
+            raise ValueError("Acceleration time must be > 0")
 
         self.accel_time = at
         self.accel = (self.max_vel - self.min_vel) / at
@@ -166,7 +172,7 @@ class Motion(BaseMotion):
         """Sets the time to go from maximum velocity to minimum velocity in seconds"""
         dt = float(dt)
         if dt <= 0:
-            raise "Deceleration time must be > 0"
+            raise ValueError("Deceleration time must be > 0")
 
         self.decel_time = dt
         self.decel = (self.min_vel - self.max_vel) / dt
@@ -180,7 +186,7 @@ class Motion(BaseMotion):
         """Sets the acceleration in ms^-2"""
         a = float(a)
         if a < 0:
-            raise "Acceleration must be >= 0"
+            raise ValueError("Acceleration must be >= 0")
 
         self.accel = float(a)
 
@@ -195,7 +201,7 @@ class Motion(BaseMotion):
         """Sets the deceleration in ms^-2"""
         d = float(d)
         if d > 0:
-            raise "Deceleration must be <= 0"
+            raise ValueError("Deceleration must be <= 0")
 
         self.decel = d
 
@@ -528,7 +534,7 @@ class BasicDummyMotorController(MotorController):
         if self.m[idx] is None:
             m = Motion()
             m.setMinVelocity(0)
-            m.setMaxVelocity(100)
+            m.setMaxUserVelocity(100)
             m.setAccelerationTime(2)
             m.setDecelerationTime(2)
             m.setCurrentPosition(0)
@@ -690,7 +696,7 @@ class DiscreteDummyMotorController(BasicDummyMotorController):
         idx = axis - 1
         m = self.m[idx]
         m.setMinVelocity(0)
-        m.setMaxVelocity(1)
+        m.setMaxUserVelocity(1)
         m.setAccelerationTime(0.01)
         m.setDecelerationTime(0.01)
         m.setCurrentPosition(0)
@@ -764,7 +770,7 @@ class DummyMotorController(BasicDummyMotorController):
         elif name == "base_rate":
             m.setMinVelocity(value)
         elif name == "velocity":
-            m.setMaxVelocity(value)
+            m.setMaxUserVelocity(value)
         elif name == "step_per_unit":
             m.setStepPerUnit(value)
 
@@ -779,7 +785,7 @@ class DummyMotorController(BasicDummyMotorController):
         elif name == "base_rate":
             v = m.getMinVelocity()
         elif name == "velocity":
-            v = m.getMaxVelocity()
+            v = m.getMaxUserVelocity()
         elif name == "step_per_unit":
             v = m.getStepPerUnit()
         return v

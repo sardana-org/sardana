@@ -13,6 +13,6 @@ Developer's Guide
     Writing recorders <howto_recorders>
     howto_test/index
     API <api/api_sardana>
-    Migration guide <guide_migration>
+    Migration guide <guide_migration/index>
     Examples <examples/examples>
     Development guidelines <guide_coding>

@@ -12,7 +12,7 @@ __all__ = ['createScanDataEnvironment', 'DummyEventSource']
 
 
 import time
-from datetime import date
+import datetime
 import threading
 import numpy
 import os
@@ -47,7 +47,7 @@ class DummyEventSource(threading.Thread):
             if skip:
                 continue
             time.sleep(t)
-            _dict = dict(data=v, index=idx, label=self.name)
+            _dict = dict(value=v, index=idx, label=self.name)
             self.scan_data.addData(_dict)
 
     def get_obj(self):
@@ -69,7 +69,7 @@ def createScanDataEnvironment(columns, scanDir='/tmp/',
     env['ScanFile'] = scanFile
     env['total_scan_intervals'] = -1.0
 
-    today = date.today()
+    today = datetime.datetime.fromtimestamp(time.time())
     env['datetime'] = today
     env['starttime'] = today
     env['endtime'] = today

@@ -538,6 +538,31 @@ Example::
         except:
             pass
 
+.. _sardana-controller-accessing-tango:
+
+Accessing Tango from your controllers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is a very common pattern that when integrating a new hardware (or
+eventually a software component) in Sardana you start from a Tango Device
+Server (either already existing one or you develop one as an intermediate
+layer). In this case your controller will need to access Tango and there are
+two ways of doing that, either with Taurus_ (using `taurus.Device`) or
+with PyTango_ (using `tango.DeviceProxy`). Please consult a similar discussion
+:ref:`sardana-macro-accessing-tango` on which one to use.
+
+For accessing Sardana elements e.g.: motors, experimental channels, etc.
+currently there is no Sardana :term:`API` and you will need to use one of the
+above methods.
+
+.. note::
+  For a very simplified integration of Tango devices in Sardana you may
+  consider using
+  `sardana-tango controllers <https://github.com/ALBA-Synchrotron/sardana-tango>`_.
+
+
+
+
 .. rubric:: Footnotes
 
 .. [#f1] Pseudo controllers don't need to manage their individual axis. Therefore,

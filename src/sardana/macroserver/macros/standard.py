@@ -25,7 +25,9 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro", "newfile"]
+           "tw", "logmacro", "newfile", "plotselect", "pic", "cen",
+           "where"]
+
 
 __docformat__ = 'restructuredtext'
 
@@ -38,8 +40,8 @@ from taurus.console.table import Table
 import PyTango
 from PyTango import DevState
 
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro, Hookable
+from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
+    iMacro, Hookable
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
@@ -55,8 +57,7 @@ class _wm(Macro):
     """Show motor positions"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -98,6 +99,10 @@ class _wm(Macro):
                         value = attr.value
                         if value is None:
                             value = float('NaN')
+                            if attr.name == 'dialposition':
+                                value = motor.getDialPosition()
+                                if value is None:
+                                    value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)
                 except PyTango.AsynReplyNotArrived:
@@ -146,8 +151,7 @@ class _wum(Macro):
     """Show user motor positions"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -206,9 +210,8 @@ class wa(Macro):
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
-        ['filter',
-         ParamRepeat(['filter', Type.String, '.*',
-                      'a regular expression filter'], min=1),
+        ['filter', [['filter', Type.String, '.*',
+                     'a regular expression filter'], {'min': 1}],
          ['.*'], 'a regular expression filter'],
     ]
 
@@ -239,9 +242,8 @@ class pwa(Macro):
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
-        ['filter',
-         ParamRepeat(['filter', Type.String, '.*',
-                      'a regular expression filter'], min=1),
+        ['filter', [['filter', Type.String, '.*',
+                     'a regular expression filter'], {'min': 1}],
          ['.*'], 'a regular expression filter'],
     ]
 
@@ -309,7 +311,7 @@ class set_user_pos(Macro):
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
         offset_attr = motor.getAttribute('Offset')
-        old_offset = offset_attr.read().value
+        old_offset = offset_attr.read().rvalue.magnitude
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
         msg = "%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
@@ -321,9 +323,8 @@ class wm(Macro):
     """Show the position of the specified motors."""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None,
-                      'Motor to see where it is']),
+        ['motor_list', [['motor', Type.Moveable, None,
+                         'Motor to see where it is']],
          None, 'List of motor to show'],
     ]
 
@@ -368,8 +369,8 @@ class wm(Macro):
             except:
                 val1 = str_fmt % motor.getPosition(force=True)
 
-            val2 = str_fmt % posObj.getMaxValue()
-            val3 = str_fmt % posObj.getMinValue()
+            val2 = str_fmt % posObj.getMaxRange().magnitude
+            val3 = str_fmt % posObj.getMinRange().magnitude
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
@@ -383,12 +384,12 @@ class wm(Macro):
                 try:
                     val1 = fmt % motor.getDialPosition(force=True)
                     val1 = str_fmt % val1
-                except:
+                except Exception:
                     val1 = str_fmt % motor.getDialPosition(force=True)
 
                 dPosObj = motor.getDialPositionObj()
-                val2 = str_fmt % dPosObj.getMaxValue()
-                val3 = str_fmt % dPosObj.getMinValue()
+                val2 = str_fmt % dPosObj.getMaxRange().magnitude
+                val3 = str_fmt % dPosObj.getMinRange().magnitude
 
                 dpos = list(map(str, [val2, val1, val3]))
                 pos_data += [''] + dpos
@@ -413,9 +414,8 @@ class wum(Macro):
     """Show the user position of the specified motors."""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None,
-                      'Motor to see where it is']),
+        ['motor_list', [['motor', Type.Moveable, None,
+                         'Motor to see where it is']],
          None, 'List of motor to show'],
     ]
 
@@ -431,8 +431,9 @@ class wum(Macro):
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = list(map(str, [posObj.getMaxValue(), motor.getPosition(
-                force=True), posObj.getMinValue()]))
+            upos = list(map(str, [posObj.getMaxRange().magnitude,
+                                  motor.getPosition(force=True),
+                                  posObj.getMinRange().magnitude]))
             pos_data = [''] + upos
 
             motor_pos.append(pos_data)
@@ -450,8 +451,7 @@ class pwm(Macro):
     """Show the position of the specified motors in a pretty table"""
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Moveable, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -464,8 +464,8 @@ class mv(Macro):
 
     param_def = [
         ['motor_pos_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                     ['pos',   Type.Float, None, 'Position to move to']),
+         [['motor', Type.Moveable, None, 'Motor to move'],
+          ['pos',   Type.Float, None, 'Position to move to']],
          None, 'List of motor/position pairs'],
     ]
 
@@ -491,7 +491,7 @@ class mstate(Macro):
     param_def = [['motor', Type.Moveable, None, 'Motor to check state']]
 
     def run(self, motor):
-        self.info("Motor %s" % str(motor.getState()))
+        self.info("Motor %s" % str(motor.stateObj.read().rvalue))
 
 
 class umv(Macro):
@@ -548,8 +548,8 @@ class mvr(Macro):
 
     param_def = [
         ['motor_disp_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                     ['disp',  Type.Float, None, 'Relative displacement']),
+         [['motor', Type.Moveable, None, 'Motor to move'],
+          ['disp',  Type.Float, None, 'Relative displacement']],
          None, 'List of motor/displacement pairs'],
     ]
 
@@ -652,13 +652,22 @@ class tw(iMacro):
 def _value_to_repr(data):
     if data is None:
         return "<nodata>"
-    elif np.rank(data) > 0:
+    elif np.ndim(data) > 0:
         return list(np.shape(data))
     else:
         return data
 
 
-class ct(Macro, Hookable):
+class _ct:
+
+    def dump_information(self, elements):
+        msg = ["Elements ended acquisition with:"]
+        for element in elements:
+            msg.append(element.information())
+        self.info("\n".join(msg))
+
+
+class ct(Macro, Hookable, _ct):
     """Count for the specified time on the measurement group
        or experimental channel given as second argument
        (if not given the active measurement group is used)"""
@@ -700,7 +709,21 @@ class ct(Macro, Hookable):
         for preAcqHook in self.getHooks('pre-acq'):
             preAcqHook()
 
-        state, data = self.countable_elem.count(integ_time)
+        try:
+            state, data = self.countable_elem.count(integ_time)
+        except Exception:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+            raise
+        if state != DevState.ON:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
 
         for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
@@ -725,7 +748,7 @@ class ct(Macro, Hookable):
             self.output(line)
 
 
-class uct(Macro):
+class uct(Macro, _ct):
     """Count on the active measurement group and update"""
 
     param_def = [
@@ -784,14 +807,27 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            _, data = self.countable_elem.count(integ_time)
-            self.setData(Record(data))
+            state, data = self.countable_elem.count(integ_time)
+        except Exception:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+            raise
         finally:
             self.finish()
+        if state != DevState.ON:
+            if self.countable_elem.type == Type.MeasurementGroup:
+                names = self.countable_elem.ElementList
+                elements = [self.getObj(name) for name in names]
+                self.dump_information(elements)
+                raise ValueError("Acquisition ended with {}".format(
+                    state.name.capitalize()))
+        self.setData(Record(data))
+        self.printAllValues()
 
     def finish(self):
         self._clean()
-        self.printAllValues()
 
     def _clean(self):
         for channel in self.channels:
@@ -832,7 +868,7 @@ class settimer(Macro):
             return
 
         try:
-            mnt_grp.setTimer(timer.getName())
+            mnt_grp.getConfiguration().setTimer(timer.getName())
         except Exception as e:
             self.output(str(e))
             self.output(
@@ -840,8 +876,8 @@ class settimer(Macro):
                 % timer)
 
 
-@macro([['message', ParamRepeat(['message_item', Type.String, None,
-                                 'message item to be reported']), None,
+@macro([['message', [['message_item', Type.String, None,
+                      'message item to be reported']], None,
          'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
@@ -1019,3 +1055,124 @@ class newfile(Hookable, Macro):
 
         for postNewfileHook in self.getHooks('post-newfile'):
             postNewfileHook()
+
+
+class plotselect(Macro):
+    """select channels for plotting in the active measurement group"""
+
+    env = ("ActiveMntGrp", )
+    param_def = [
+          ['channel',
+           [['channel', Type.ExpChannel, 'None', ""], {'min': 0}],
+           None,
+           "List of channels to plot"],
+     ]
+
+    def run(self, channel):
+        active_meas_grp = self.getEnv('ActiveMntGrp')
+        meas_grp = self.getMeasurementGroup(active_meas_grp)
+        self.output("Active measurement group: {}".format(meas_grp.name))
+
+        plot_channels_ok = []
+        enabled_channels = meas_grp.getEnabled()
+        # check channels first
+        for chan in channel:
+            enabled = enabled_channels.get(chan.name)
+            if enabled is None:
+                self.warning("{} not in {}".format(chan.name, meas_grp.name))
+            else:
+                plot_channels_ok.append(chan.name)
+                if not enabled:
+                    self.warning("{} is disabled".format(chan.name))
+                else:
+                    self.output("{} selected for plotting".format(chan.name))
+        # set the plot type and plot axis in the meas_group
+        meas_grp.setPlotType("No", apply=False)
+        meas_grp.setPlotType("Spectrum", *plot_channels_ok, apply=False)
+        meas_grp.setPlotAxes(["<mov>"], *plot_channels_ok)
+
+
+class _movetostatspos(Macro):
+    """This macro does the logic for pic and cen"""
+
+    env = ("ScanStats", )
+
+    param_def = [
+        ['channel', Type.ExpChannel, Optional, 'name of channel'],
+        ['caller', Type.String, None, 'caller (pic or cen)']
+    ]
+
+    def run(self, channel, caller):
+        stats = self.getEnv('ScanStats', door_name=self.getDoorName())
+
+        if channel is None:
+            # use first channel in stats
+            channel = next(iter(stats['Stats']))
+        else:
+            if channel.name in stats['Stats']:
+                channel = channel.name
+            else:
+                raise Exception("channel {} not present in ScanStats".format(
+                                channel.name))
+
+        if caller == 'pic':
+            stats_value = 'maxpos'
+            stats_str = 'PIC'
+        elif caller == 'cen':
+            stats_value = 'cen'
+            stats_str = 'CEN'
+        else:
+            raise Exception("caller {} is unknown".format(caller))
+
+        motor_name = stats['Motor']
+        motor = self.getMotion([motor_name])
+        current_pos = motor.readPosition()[0]
+        pos = stats['Stats'][channel][stats_value]
+
+        self.info("move motor {:s} from current position\nat {:.4f}\n"
+                  "to {:s} of counter {:s}\nat {:.4f}".format(motor_name,
+                                                              current_pos,
+                                                              stats_str,
+                                                              channel,
+                                                              pos))
+        motor.move(pos)
+
+
+class pic(Macro):
+    """This macro moves the motor of the last scan to the PEAK position for a
+    given channel. If no channel is given, it selects the first channel from
+    the ScanStats env variable.
+    """
+
+    param_def = [
+        ['channel', Type.ExpChannel, Optional, 'name of channel']
+    ]
+
+    def run(self, channel):
+        self.execMacro('_movetostatspos', channel, 'pic')
+
+
+class cen(Macro):
+    """This macro moves the motor of the last scan to the CEN position for a
+    given channel. If no channel is given, it selects the first channel from
+    the ScanStats env variable.
+    """
+
+    param_def = [
+        ['channel', Type.ExpChannel, Optional, 'name of channel']
+    ]
+
+    def run(self, channel):
+        self.execMacro('_movetostatspos', channel, 'cen')
+
+
+class where(Macro):
+    """This macro shows the current position of the last scanned motor."""
+
+    env = ("ScanStats", )
+
+    def run(self):
+        motor_name = self.getEnv('ScanStats')['Motor']
+        motor = self.getMoveable(motor_name)
+        self.info("motor {:s} is\nat {:.4f}".format(motor_name,
+                                                    motor.getPosition()))
