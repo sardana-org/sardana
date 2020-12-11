@@ -639,11 +639,16 @@ class GScan(Logger):
             serialno = 1
         self.macro.setEnv("ScanID", serialno)
 
+        try:
+            user = self.macro.getEnv("ScanUser")
+        except UnknownEnv:
+            user = USER_NAME
+
         env = ScanDataEnvironment(
             {'serialno': serialno,
              # TODO: this should be got from
              # self.measurement_group.getChannelsInfo()
-             'user': USER_NAME,
+             'user': user,
              'title': self.macro.getCommand()})
 
         # Initialize the data_desc list (and add the point number column)
