@@ -727,7 +727,6 @@ class TaurusSequencerWidget(TaurusWidget):
             "range"], data["step"], data["id"]
         if id is None:
             return
-        id = int(id)
         if not id in self.macroIds():
             return
         macroName = macro.name
