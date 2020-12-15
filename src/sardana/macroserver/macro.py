@@ -387,13 +387,24 @@ class macro(object):
         def where_moveable(self, moveable):
             self.output("Moveable %s is at %s", moveable.getName(), moveable.getPosition())"""
 
+    param_def = []
+    result_def = []
+    env = ()
+    hints = {}
+    interactive = False
+
     def __init__(self, param_def=None, result_def=None, env=None, hints=None,
                  interactive=None):
-        self.param_def = param_def
-        self.result_def = result_def
-        self.env = env
-        self.hints = hints
-        self.interactive = interactive
+        if param_def is not None:
+            self.param_def = param_def
+        if result_def is not None:
+            self.result_def = result_def
+        if env is not None:
+            self.env = env
+        if hints is not None:
+            self.hints = hints
+        if interactive is not None:
+            self.interactive = interactive
 
     def __call__(self, fn):
         fn.macro_data = {}
