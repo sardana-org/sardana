@@ -965,6 +965,36 @@ simplified usage you should use Taurus. If you strive for very optimal access
 to Tango and don't need these benefits then most probably PyTango will work
 better for you.
 
+.. hint::
+    If you go for PyTango and wonder if creating a new `tango.DeviceProxy`
+    in frequent macro executions is inefficient from the I/O point of view you
+    should not worry about it cause Tango (more precisely CORBA) is taking
+    care about recycling the connection during a period of 120 s (default).
+
+    If you still would like to optimize your code in order to avoid creation
+    of a new `tango.DeviceProxy` you may consider using the
+    `functools.lru_cache` as a singleton cache mechanism::
+
+        import functools
+        import tango
+        from sardana.macroserver.macro import macro
+
+        Device = functools.lru_cache(maxsize=1024)(tango.DeviceProxy)
+
+        @macro()
+        def switch_states(self):
+            """Switch TangoTest device state"""
+            proxy = Device('sys/tg_test/1')
+            proxy.SwitchStates()
+
+    Here you don't need to worry about the opened connection to the
+    Tango device server in case you don't execute the macro for a while.
+    Again, Tango (more precisely CORBA) will take care about it.
+    See more details about the CORBA scavanger thread in:
+    `Tango client threading <https://tango-controls.readthedocs.io/en/latest/development/advanced/threading.html#client-process>`_
+    and `CORBA idle connection shutdown <http://omniorb.sourceforge.net/omni42/omniORB/omniORB006.html#sec%3AconnShutdown>`_.
+
+
 .. _sardana-macro-using-external-libraries:
 
 Using external python libraries
