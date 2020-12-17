@@ -29,6 +29,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * Recorders tests helpers (#1439)
 * Disable flake8 job in travis CI (#1455)
+* `createMacro()` and `prepareMacro()` docstring (#1460, #1444) 
 
 ## [3.0.3] 2020-09-18
 
