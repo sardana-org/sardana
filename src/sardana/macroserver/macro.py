@@ -1132,35 +1132,35 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.createMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.createMacro('mv', [[motor.getName(), '0']])
+            self.createMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.createMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.createMacro('mv', [[motor.getName(), 0]])
+            self.createMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.createMacro('ascan', th, 0, 100, 10, 1.0)
+            self.createMacro('mv', [[th, 0]])
+            self.createMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.createMacro(['mv', [[motor.getName(), '0']]])
+            self.createMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.createMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.createMacro(['mv', [[motor.getName(), 0]]])
+            self.createMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.createMacro(['mv', [[th, 0]]])
+            self.createMacro(['mv', th, 0]) # backwards compatibility - see note
 
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.createMacro('ascan th 0 100 10 1.0')
+            self.createMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
@@ -1203,34 +1203,34 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.prepareMacro('mv', [[motor.getName(), '0']])
+            self.prepareMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[motor.getName(), 0]])
+            self.prepareMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[th, 0]])
+            self.prepareMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0'])
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.prepareMacro(['mv', [[motor.getName(), '0']]])
+            self.prepareMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.prepareMacro(['mv', [[motor.getName(), 0]]])
+            self.prepareMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.prepareMacro(['mv', [[th, 0]]])
+            self.prepareMacro(['mv', th, 0]) # backwards compatibility - see note
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.prepareMacro('ascan th 0 100 10 1.0')
+            self.prepareMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
