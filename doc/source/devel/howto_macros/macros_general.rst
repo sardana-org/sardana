@@ -13,6 +13,10 @@ Writing macros
 This chapter provides the necessary information to write macros in sardana. The
 complete macro :term:`API` can be found :ref:`here <sardana-macro-api>`.
 
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
 What is a macro
 ---------------
 
