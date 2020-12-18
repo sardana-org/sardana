@@ -15,6 +15,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Document how to properly deal with exceptions in macros in order to not interfer 
+  with macro stopping/aborting (#1461)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
 
