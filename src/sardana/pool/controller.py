@@ -912,6 +912,18 @@ class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
+    # TODO: Implement a Preparable interface and move this method
+    #  and the Loadable.PrepareOne() there.
+    def PrepareOne(self, nb_starts):
+        """**Controller API**. Override if necessary.
+        Called to prepare the trigger/gate axis with the measurement
+        parameters.
+        Default implementation does nothing.
+
+        :param int nb_starts: number of starts
+        """
+        pass
+
 
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to

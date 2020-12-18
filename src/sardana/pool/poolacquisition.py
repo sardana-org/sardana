@@ -499,6 +499,9 @@ class PoolAcquisition(PoolAction):
 
         config.changed = False
 
+        # Call synchronizer controllers prepare method
+        self._prepare_synch_ctrls(ctrls_synch, nb_starts)
+
         # Call hardware and software start controllers prepare method
         ctrls = ctrls_hw + ctrls_sw_start
         self._prepare_ctrls(ctrls, value, repetitions, latency,
@@ -510,6 +513,7 @@ class PoolAcquisition(PoolAction):
         self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
                             nb_starts)
 
+
     @staticmethod
     def _prepare_ctrls(ctrls, value, repetitions, latency, nb_starts):
         for ctrl in ctrls:
@@ -517,6 +521,14 @@ class PoolAcquisition(PoolAction):
             pool_ctrl = ctrl.element
             pool_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
                                       nb_starts)
+
+    @staticmethod
+    def _prepare_synch_ctrls(ctrls, nb_starts):
+        for ctrl in ctrls:
+            for chn in ctrl.get_channels():
+                axis = chn.axis
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.PrepareOne(axis, nb_starts)
 
     def is_running(self):
         """Checks if acquisition is running.
