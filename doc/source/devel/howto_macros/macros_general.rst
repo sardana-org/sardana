@@ -13,6 +13,10 @@ Writing macros
 This chapter provides the necessary information to write macros in sardana. The
 complete macro :term:`API` can be found :ref:`here <sardana-macro-api>`.
 
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
 What is a macro
 ---------------
 
@@ -865,6 +869,55 @@ of user's interruption you must override the
 .. note:: Currently it is not possible to use any of the *Macro API* calls
     withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
     :meth:`~sardana.macroserver.macro.Macro.on_abort`.
+
+.. _sardana-macro-exception-handling:
+
+Handling exceptions
+-------------------
+
+Please refer to the
+`Python Errors and Exceptions <https://docs.python.org/3/tutorial/errors.html>`_
+documentation on how to deal with exceptions in your macro code.
+
+.. important::
+    :ref:`sardana-macro-handling-macro-stop-and-abort` is internally implemented
+    using Python exceptions. So, your ``except`` clause can not simply catch any
+    exception type without re-raising it - this would ignore the macro stop/abort
+    request done in the ``try ... except`` block. If you still would like to
+    use the broad catching, you need to catch and raise the stop/abort exception
+    first:
+
+    .. code-block:: python
+        :emphasize-lines: 7
+
+        import time
+
+        from sardana.macroserver.macro import macro, StopException
+
+        @macro()
+        def exception_macro(self):
+            self.output("Starting stoppable process")
+            try:
+                for i in range(10):
+                    self.output("In iteration: {}".format(i))
+                    time.sleep(1)
+            except StopException:
+                raise
+            except Exception:
+                self.warning("Exception, but we continue")
+            self.output("After 'try ... except' block")
+
+    If you do not program lines 12-13 and you stop your macro within
+    the ``try ... except`` block then the macro will continue and print the
+    output from line 16.
+
+    You may choose to catch and re-raise:
+    `~sardana.macroserver.macro.StopException`,
+    `~sardana.macroserver.macro.AbortException` or
+    `~sardana.macroserver.macro.InterruptException`. The last one will
+    take care of stopping and aborting at the same time.
+
+
 
 .. _sardana-macro-adding-hooks-support:
 
