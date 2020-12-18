@@ -33,7 +33,8 @@ import numbers
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
            "MacroFunc", "Type", "Table", "List", "ViewOption",
-           "LibraryError", "Optional"]
+           "LibraryError", "Optional", "StopException", "AbortException",
+           "InterruptException"]
 
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +61,7 @@ from sardana.util.thread import _asyncexc
 from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
     ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
-    LibraryError
+    LibraryError, InterruptException
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
