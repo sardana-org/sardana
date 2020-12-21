@@ -397,10 +397,11 @@ class BasicDummyTwoDController(TwoDController):
             raise ValueError("RoI is not a list of four elements")
         if any(not isinstance(v, int) for v in value):
             raise ValueError("RoI is not a list of integers")
-        if value[1] <= value[0]:
-            raise ValueError("RoI[1] is lower or equal than RoI[0]")
-        if value[3] <= value[2]:
-            raise ValueError("RoI[3] is lower or equal than RoI[2]")
+        if value != [0, 0, 0, 0]:
+            if value[1] <= value[0]:
+                raise ValueError("RoI[1] is lower or equal than RoI[0]")
+            if value[3] <= value[2]:
+                raise ValueError("RoI[3] is lower or equal than RoI[2]")
         x_dim = self.BufferSize[0]
         if value[0] > (x_dim - 1):
             raise ValueError(
