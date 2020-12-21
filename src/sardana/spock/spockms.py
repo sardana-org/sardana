@@ -38,19 +38,21 @@ from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
 from sardana.util.parser import ParamParser
-from sardana.spock.inputhandler import SpockInputHandler, InputHandler
 from sardana import sardanacustomsettings
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 
 if genutils.get_gui_mode() == 'qt':
+    from taurus.external.qt import Qt
     from sardana.taurus.qt.qtcore.tango.sardana.macroserver import QDoor, QMacroServer
+    from sardana.spock.qtinputhandler import InputHandler
     BaseDoor = QDoor
     BaseMacroServer = QMacroServer
     BaseGUIViewer = object
 else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
+    from sardana.spock.inputhandler import SpockInputHandler
     BaseGUIViewer = object
 
 
@@ -290,7 +292,7 @@ class SpockBaseDoor(BaseDoor):
         self.call__init__(BaseDoor, name, **kw)
 
     def create_input_handler(self):
-        return SpockInputHandler(self)
+        return SpockInputHandler()
 
     def get_color_mode(self):
         return genutils.get_color_mode()
@@ -552,9 +554,6 @@ class SpockBaseDoor(BaseDoor):
             self.logReceived(self.Info, ['Received long data record (%d Kb)' % sizekb,
                                          'It may take some time to process. Please wait...'])
         return BaseDoor._processRecordData(self, data)
-
-
-from taurus.external.qt import Qt
 
 
 class QSpockDoor(SpockBaseDoor):
