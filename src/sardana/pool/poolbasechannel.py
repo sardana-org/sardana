@@ -666,7 +666,7 @@ class PoolBaseChannel(PoolElement):
     def read_shape(self):
         try:
             shape = self.controller.get_axis_par(self.axis, "shape")
-        except:
+        except Exception:
             shape = None
         if shape is None:
             # backwards compatibility for controllers not implementing

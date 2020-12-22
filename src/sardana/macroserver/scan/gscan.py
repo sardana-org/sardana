@@ -88,7 +88,7 @@ def _get_shape(channel):
     if isinstance(channel, PyTango.DeviceProxy):
         try:
             shape = channel.shape
-        except:
+        except Exception:
             return None
         if shape is None:  # in PyTango empty spectrum is None
             return []
@@ -97,13 +97,13 @@ def _get_shape(channel):
     elif isinstance(channel, PyTango.AttributeProxy):
         try:
             attr_conf = channel.get_config()
-        except:
+        except Exception:
             return None
         if attr_conf.data_format == PyTango.AttrDataFormat.SCALAR:
             return []
         try:
             value = channel.read().value
-        except:
+        except Exception:
             return [n for n in (attr_conf.max_dim_x,
                                 attr_conf.max_dim_y) if n > 0]
         return list(np.shape(value))
@@ -708,16 +708,16 @@ class GScan(Logger):
                 # See: tango-controls/pytango#292
                 # channel = taurus.Device(full_name)
                 channel = PyTango.DeviceProxy(full_name)
-            except:
+            except Exception:
                 try:
                     channel = PyTango.AttributeProxy(full_name)
-                except:
+                except Exception:
                     channel = None
             if channel:
                 shape = _get_shape(channel)
                 try:
                     instrument = channel.instrument
-                except:
+                except Exception:
                     instrument = ''
             try:
                 instrumentFullName = self.macro.findObjs(
