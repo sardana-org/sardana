@@ -317,3 +317,12 @@ class DummyOneDController(OneDController):
             raise ValueError(
                 "RoI[1] exceeds detector dimension ({})".format(dim))
         channel.roi = value
+
+    def GetAxisPar(self, axis, par):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if par == "shape":
+            roi = channel.roi
+            if roi == [0, 0]:
+                return self.BufferSize
+            return [roi[1] - roi[0]]

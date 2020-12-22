@@ -430,6 +430,15 @@ class BasicDummyTwoDController(TwoDController):
         if par == "synchronization":
             self._synchronization = value
 
+    def GetAxisPar(self, axis, par):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if par == "shape":
+            roi = channel.roi
+            if roi == [0, 0, 0, 0]:
+                return self.BufferSize
+            return [roi[1] - roi[0], roi[3] - roi[2]]
+
     def getSynchronizer(self):
         if self._synchronizer is None:
             return "None"
