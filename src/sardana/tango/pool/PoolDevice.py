@@ -902,7 +902,7 @@ class PoolExpChannelDevice(PoolElementDevice):
     def initialize_dynamic_attributes(self):
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
-        non_detect_evts = "integrationtime",
+        non_detect_evts = "integrationtime", "shape"
 
         for attr_name in non_detect_evts:
             if attr_name in attrs:
@@ -941,6 +941,13 @@ class PoolExpChannelDevice(PoolElementDevice):
         :type attr: :class:`~PyTango.Attribute`"""
         self.element.integration_time = attr.get_write_value()
 
+    def read_Shape(self, attr):
+        """Reads the shape.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.shape)
+
 
 class PoolExpChannelDeviceClass(PoolElementDeviceClass):
 
@@ -955,7 +962,14 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'ValueBuffer': [[DevEncoded, SCALAR, READ]]
+        'ValueBuffer': [[DevEncoded, SCALAR, READ]],
+        'Shape': [[DevLong64, SPECTRUM, READ, 2],
+                  {'label': "Shape (X,Y)",
+                   'description': "Shape of the value. It is an array with \n"
+                                  "at most 2 elements: X and Y dimensions. \n"
+                                  "0-element array - scalar\n"
+                                  "1-element array (X) - spectrum\n"
+                                  "2-element array (X, Y) - image"}],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 
