@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ##############################################################################
 ##
@@ -7,7 +6,7 @@
 ##
 # http://www.sardana-controls.org/
 ##
-# Copyright 2020 DESY
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
 # Sardana is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
