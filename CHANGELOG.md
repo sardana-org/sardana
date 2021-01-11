@@ -10,6 +10,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 * *scan information* and *scan point* forms to the *showscan online* widget (#1386)
 * `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
   widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
+* Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
+  * Add `PrepareOne()` to TriggerGate controller.
+  * Call TriggerGate controller preparation methods in the _acquision action_
 * Add `ScanUser` environment variable (#1355)
 * Allow to programmatically disable *deterministic scan* optimization (#1426, #1427)
 * Initial delay in position domain to the synchronization description
