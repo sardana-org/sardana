@@ -56,7 +56,10 @@ from taurus.core.util.containers import ArrayBuffer, LoopList
 from sardana.taurus.core.tango.sardana import PlotType
 
 
-__all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
+__all__ = [
+    'MultiPlotWidget',  'MacroBroker', 'PlotManager', 'DynamicPlotManager',
+    'assertPlotAvailability'
+]
 
 __docformat__ = 'restructuredtext'
 
@@ -91,6 +94,7 @@ class MultiPlotWidget(Qt.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = Qt.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.win = pyqtgraph.GraphicsLayoutWidget()
         layout.addWidget(self.win)
         self._plots = {}
@@ -177,16 +181,15 @@ class MultiPlotWidget(Qt.QWidget):
         self._timer = None
 
 
-class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
-    '''This is a manager of plots related to the execution of macros.
+class PlotManager(Qt.QObject, TaurusBaseComponent):
+    '''
+    This is a manager of plots related to the execution of macros.
     It dynamically creates/removes plots according to the configuration made by
     an ExperimentConfiguration widget.
 
     Currently it supports only 1D scan trends (2D scans are only half-baked)
 
-    To use it simply instantiate it and pass it a door name as a model. You may
-    want to call :meth:`onExpConfChanged` to update the configuration being
-    used.
+    To use it simply instantiate it and pass it a door name as a model.
     '''
 
     plots_available = pyqtgraph is not None
@@ -196,16 +199,13 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
     Single = 'single'  # each curve has its own plot
     XAxis = 'x-axis'   # group curves with same X-Axis
 
-    def __init__(self, parent=None):
+    def __init__(self, plot=None, parent=None):
         Qt.QObject.__init__(self, parent)
         TaurusBaseComponent.__init__(self, self.__class__.__name__)
 
         self._group_mode = self.XAxis
-        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
-        self._plot = MultiPlotWidget()
-        self.createPanel(
-            self._plot, 'Scan plot', registerconfig=False, permanent=False)
+        self.plot = plot or MultiPlotWidget()
 
     def setGroupMode(self, group):
         assert group in (self.Single, self.XAxis)
@@ -329,7 +329,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             raise NotImplementedError
 
         nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
-        self._plot.prepare(plots, nb_points=nb_points)
+        self.plot.prepare(plots, nb_points=nb_points)
 
         # build status message
         serialno = 'Scan #{}'.format(data.get('serialno', '?'))
@@ -350,17 +350,34 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
     def newPoint(self, point):
         data = point['data']
-        self._plot.onNewPoint(data)
+        self.plot.onNewPoint(data)
         point_nb = 'Point #{}'.format(data['point_nb'])
         msg = self.message_template.format(progress=point_nb)
         self.newShortMessage.emit(msg)
 
     def end(self, end_data):
         data = end_data['data']
-        self._plot.onEnd(data)
+        self.plot.onEnd(data)
         progress = 'Ended {}'.format(data['endtime'])
         msg = self.message_template.format(progress=progress)
         self.newShortMessage.emit(msg)
+
+
+class DynamicPlotManager(PlotManager):
+    '''This is a manager of plots related to the execution of macros.
+    It dynamically creates/removes plots according to the configuration made by
+    an ExperimentConfiguration widget.
+
+    Currently it supports only 1D scan trends (2D scans are only half-baked)
+
+    To use it simply instantiate it and pass it a door name as a model.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        PlotManager.__init__(self, *args, **kwargs)
+        self.__panels = {}
+        self.createPanel(
+            self.plot, 'Scan plot', registerconfig=False, permanent=False)
 
     def createPanel(self, widget, name, **kwargs):
         '''Creates a "panel" from a widget. In this basic implementation this
@@ -414,12 +431,13 @@ class MacroBroker(DynamicPlotManager):
 
     def __init__(self, parent):
         '''Passing the parent object (the main window) is mandatory'''
-        DynamicPlotManager.__init__(self, parent)
+        DynamicPlotManager.__init__(self, parent=parent)
 
         self._createPermanentPanels()
 
         # connect the broker to shared data
         Qt.qApp.SDM.connectReader("doorName", self.setModel)
+        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def setModel(self, doorname):
         ''' Reimplemented from :class:`DynamicPlotManager`.'''

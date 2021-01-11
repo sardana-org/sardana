@@ -27,7 +27,7 @@ import threading
 
 import numpy
 
-from unittest import TestCase
+from unittest import TestCase, mock
 from taurus.test import insertTest
 
 from sardana.sardanautils import is_number, is_pure_str
@@ -567,6 +567,14 @@ class Acquisition2DHardwareStartTestCase(BaseAcquisitionHardwareTestCase,
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
+
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
@@ -592,6 +600,14 @@ class Acquisition2DHardwareStartRefTestCase(
         axis = self.channel.axis
         self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
 
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "RefOne",
+                               wraps=ctrl.RefOne) as mock_RefOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_RefOne.call_count > 1
+
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
@@ -610,6 +626,14 @@ class AcquisitionCTHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
 
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
+
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
@@ -627,6 +651,14 @@ class Acquisition2DHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
         BaseAcquisitionHardwareTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuebuffer")
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "ReadOne",
+                               wraps=ctrl.ReadOne) as mock_ReadOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_ReadOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -651,6 +683,14 @@ class Acquisition2DHardwareTriggerRefTestCase(BaseAcquisitionHardwareTestCase,
         self.channel.value_ref_enabled = True
         axis = self.channel.axis
         self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        ctrl = self.channel_ctrl.ctrl
+        with mock.patch.object(ctrl, "RefOne",
+                               wraps=ctrl.RefOne) as mock_RefOne:
+            BaseAcquisitionHardwareTestCase.acquire(self, integ_time,
+                                                    repetitions, latency_time)
+            assert mock_RefOne.call_count > 1
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,

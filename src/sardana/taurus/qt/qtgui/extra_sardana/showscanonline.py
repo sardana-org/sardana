@@ -23,21 +23,228 @@
 ##
 ##############################################################################
 
-"""This module contains a taurus ShowScanOnline widget."""
+"""
+This module contains a taurus ShowScanWidget, ShowScanWindow and ShowScanOnline
+widgets.
+"""
 
-__all__ = ["ShowScanOnline"]
+__all__ = [
+    "ScanInfoForm", "ScanPointForm", "ScanPlotWidget",
+    "ScanPlotWindow", "ScanWindow", "ShowScanOnline"
+]
 
 import click
+import pkg_resources
 
+from taurus.external.qt import Qt, uic
+from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.taurusgui import TaurusGui
-from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
-                                                   assertPlotAvailability)
+from sardana.taurus.qt.qtgui.macrolistener import (
+    MultiPlotWidget, PlotManager, DynamicPlotManager, assertPlotAvailability
+)
+
+
+def set_text(label, field=None, data=None, default='---'):
+    if field is None and data is None:
+        value = default
+    elif field is None:
+        value = data
+    elif data is None:
+        value = field
+    else:
+        value = data.get(field, default)
+    if isinstance(value, (tuple, list)):
+        value = ', '.join(value)
+    elif isinstance(value, float):
+        value = '{:8.4f}'.format(value)
+    else:
+        value = str(value)
+    if len(value) > 60:
+        value = '...{}'.format(value[-57:])
+    label.setText(value)
+
+
+def resize_form(form, new_size):
+    layout = form.layout()
+    curr_size = layout.rowCount()
+    nb = new_size - curr_size
+    while nb > 0:
+        layout.addRow(Qt.QLabel(), Qt.QLabel())
+        nb -= 1
+    while nb < 0:
+        layout.removeRow(layout.rowCount() - 1)
+        nb += 1
+
+
+def fill_form(form, fields, offset=0):
+    resize_form(form, len(fields) + offset)
+    layout = form.layout()
+    result = []
+    for row, field in enumerate(fields):
+        label, value = field
+        w_item = layout.itemAt(row + offset, Qt.QFormLayout.LabelRole)
+        w_label = w_item.widget()
+        set_text(w_label, label)
+        w_item = layout.itemAt(row + offset, Qt.QFormLayout.FieldRole)
+        w_field = w_item.widget()
+        set_text(w_field, value)
+        result.append((w_label, w_field))
+    return result
+
+
+def load_scan_info_form(widget):
+    ui_name = pkg_resources.resource_filename(__package__ + '.ui',
+                                              'ScanInfoForm.ui')
+    uic.loadUi(ui_name, baseinstance=widget)
+    return widget
+
+
+class ScanInfoForm(Qt.QWidget, TaurusBaseWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        load_scan_info_form(self)
+
+    def setModel(self, doorname):
+        super().setModel(doorname)
+        if not doorname:
+            return
+        door = self.getModelObj()
+        door.recordDataUpdated.connect(self.onRecordDataUpdated)
+
+    def onRecordDataUpdated(self, record_data):
+        data = record_data[1]
+        handler = self.event_handler.get(data.get("type"))
+        handler and handler(self, data['data'])
+
+    def onStart(self, meta):
+        set_text(self.title_value, 'title', meta)
+        set_text(self.scan_nb_value, 'serialno', meta)
+        set_text(self.start_value, 'starttime', meta)
+        set_text(self.end_value, 'endtime', meta)
+        set_text(self.status_value, 'Running')
+
+        directory = meta.get('scandir', '')
+        self.directory_groupbox.setEnabled(True if directory else False)
+        self.directory_groupbox.setTitle('Directory: {}'.format(directory))
+        files = meta.get('scanfile', ())
+        if isinstance(files, str):
+            files = files,
+        elif files is None:
+            files = ()
+        files = [('File:', filename) for filename in files]
+        fill_form(self.directory_groupbox, files)
+
+    def onEnd(self, meta):
+        set_text(self.end_value, 'endtime', meta)
+        set_text(self.status_value, 'Finished')
+
+    event_handler = {
+        "data_desc": onStart,
+        "record_end": onEnd
+    }
+
+
+def load_scan_point_form(widget):
+    ui_name = pkg_resources.resource_filename(__package__ + '.ui',
+                                              'ScanPointForm.ui')
+    uic.loadUi(ui_name, baseinstance=widget)
+    return widget
+
+
+class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        load_scan_point_form(self)
+        self._in_scan = False
+
+    def setModel(self, doorname):
+        super().setModel(doorname)
+        if not doorname:
+            return
+        door = self.getModelObj()
+        door.recordDataUpdated.connect(self.onRecordDataUpdated)
+
+    def onRecordDataUpdated(self, record_data):
+        data = record_data[1]
+        handler = self.event_handler.get(data.get("type"))
+        handler and handler(self, data['data'])
+
+    def onStart(self, meta):
+        set_text(self.scan_nb_value, 'serialno', meta)
+        cols = meta['column_desc']
+        col_labels = [(c['label']+':', '') for c in cols]
+        fields = fill_form(self, col_labels, 1)
+        self.fields = {col['name']: field for col, field in zip(cols, fields)}
+        self._in_scan = True
+
+    def onPoint(self, point):
+        if self._in_scan:
+            for name, value in point.items():
+                set_text(self.fields[name][1], value)
+
+    def onEnd(self, meta):
+        self._in_scan = False
+
+    event_handler = {
+        "data_desc": onStart,
+        "record_data": onPoint,
+        "record_end": onEnd
+    }
+
+
+class ScanPlotWidget(MultiPlotWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.manager = PlotManager(self)
+        self.setModel = self.manager.setModel
+        self.setGroupMode = self.manager.setGroupMode
+
+
+class ScanPlotWindow(Qt.QMainWindow):
+
+    def __init__(self, parent=None):
+        super().__init__()
+        plot_widget = ScanPlotWidget(parent=self)
+        self.setCentralWidget(plot_widget)
+        self.plotWidget = self.centralWidget
+        self.setModel = plot_widget.setModel
+        self.setGroupMode = plot_widget.setGroupMode
+        sbar = self.statusBar()
+        sbar.showMessage("Ready!")
+        plot_widget.manager.newShortMessage.connect(sbar.showMessage)
+
+
+def load_scan_window(widget):
+    ui_name = pkg_resources.resource_filename(__package__ + '.ui',
+                                              'ScanWindow.ui')
+    uic.loadUi(ui_name, baseinstance=widget)
+    return widget
+
+
+class ScanWindow(Qt.QMainWindow):
+
+    def __init__(self, parent=None):
+        super().__init__()
+        load_scan_window(self)
+        sbar = self.statusBar()
+        sbar.showMessage("Ready!")
+        self.plot_widget.manager.newShortMessage.connect(sbar.showMessage)
+
+    def setModel(self, model):
+        self.plot_widget.setModel(model)
+        self.info_form.setModel(model)
+        self.point_form.setModel(model)
+
 
 
 class ShowScanOnline(DynamicPlotManager):
 
     def __init__(self, parent):
-        DynamicPlotManager.__init__(self, parent)
+        DynamicPlotManager.__init__(self, parent=parent)
+        Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def onExpConfChanged(self, expconf):
         DynamicPlotManager.onExpConfChanged(self, expconf)
@@ -106,12 +313,10 @@ def main(group, taurus_log_level, door):
 
     assertPlotAvailability()
 
-    gui = TaurusGuiLite()
-
-    widget = ShowScanOnline(gui)
+    widget = ScanWindow()
+    widget.plot_widget.setGroupMode(group)
     widget.setModel(door)
-    widget.setGroupMode(group)
-    gui.show()
+    widget.show()
     return app.exec_()
 
 
