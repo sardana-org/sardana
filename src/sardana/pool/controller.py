@@ -914,12 +914,13 @@ class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
 
     # TODO: Implement a Preparable interface and move this method
     #  and the Loadable.PrepareOne() there.
-    def PrepareOne(self, nb_starts):
+    def PrepareOne(self, axis, nb_starts):
         """**Controller API**. Override if necessary.
         Called to prepare the trigger/gate axis with the measurement
         parameters.
         Default implementation does nothing.
 
+        :param int axis: axis
         :param int nb_starts: number of starts
         """
         pass
