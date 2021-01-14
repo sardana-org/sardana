@@ -20,6 +20,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
+* Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
 
@@ -35,6 +36,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Recorders tests helpers (#1439)
 * Disable flake8 job in travis CI (#1455)
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444) 
+* String formatting when rising exceptions in pseudomotors (#1469)
 
 ## [3.0.3] 2020-09-18
 
