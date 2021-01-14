@@ -135,7 +135,7 @@ class Position(SardanaAttribute):
                     # because of a cold start
                     pos_attr.update(propagate=0)
                 if pos_attr.in_error():
-                    raise PoolException("Cannot get '%' position" % pos_attr.obj.name,
+                    raise PoolException("Cannot get '%s' position" % pos_attr.obj.name,
                                         exc_info=pos_attr.exc_info)
                 value = pos_attr.value
             ret.append(value)
@@ -149,7 +149,7 @@ class Position(SardanaAttribute):
             if not pos_attr.has_value():
                 pos_attr.update(propagate=0)
             if pos_attr.in_error():
-                raise PoolException("Cannot get '%' position" % pos_attr.obj.name,
+                raise PoolException("Cannot get '%s' position" % pos_attr.obj.name,
                                     exc_info=pos_attr.exc_info)
             ret.append(pos_attr.value)
         return ret
