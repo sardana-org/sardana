@@ -13,6 +13,10 @@ Writing macros
 This chapter provides the necessary information to write macros in sardana. The
 complete macro :term:`API` can be found :ref:`here <sardana-macro-api>`.
 
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
 What is a macro
 ---------------
 
@@ -866,6 +870,55 @@ of user's interruption you must override the
     withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
     :meth:`~sardana.macroserver.macro.Macro.on_abort`.
 
+.. _sardana-macro-exception-handling:
+
+Handling exceptions
+-------------------
+
+Please refer to the
+`Python Errors and Exceptions <https://docs.python.org/3/tutorial/errors.html>`_
+documentation on how to deal with exceptions in your macro code.
+
+.. important::
+    :ref:`sardana-macro-handling-macro-stop-and-abort` is internally implemented
+    using Python exceptions. So, your ``except`` clause can not simply catch any
+    exception type without re-raising it - this would ignore the macro stop/abort
+    request done in the ``try ... except`` block. If you still would like to
+    use the broad catching, you need to catch and raise the stop/abort exception
+    first:
+
+    .. code-block:: python
+        :emphasize-lines: 7
+
+        import time
+
+        from sardana.macroserver.macro import macro, StopException
+
+        @macro()
+        def exception_macro(self):
+            self.output("Starting stoppable process")
+            try:
+                for i in range(10):
+                    self.output("In iteration: {}".format(i))
+                    time.sleep(1)
+            except StopException:
+                raise
+            except Exception:
+                self.warning("Exception, but we continue")
+            self.output("After 'try ... except' block")
+
+    If you do not program lines 12-13 and you stop your macro within
+    the ``try ... except`` block then the macro will continue and print the
+    output from line 16.
+
+    You may choose to catch and re-raise:
+    `~sardana.macroserver.macro.StopException`,
+    `~sardana.macroserver.macro.AbortException` or
+    `~sardana.macroserver.macro.InterruptException`. The last one will
+    take care of stopping and aborting at the same time.
+
+
+
 .. _sardana-macro-adding-hooks-support:
 
 Adding hooks support
@@ -964,6 +1017,36 @@ As a rule of thumb, if you you don't mind the extra overhead and value the
 simplified usage you should use Taurus. If you strive for very optimal access
 to Tango and don't need these benefits then most probably PyTango will work
 better for you.
+
+.. hint::
+    If you go for PyTango and wonder if creating a new `tango.DeviceProxy`
+    in frequent macro executions is inefficient from the I/O point of view you
+    should not worry about it cause Tango (more precisely CORBA) is taking
+    care about recycling the connection during a period of 120 s (default).
+
+    If you still would like to optimize your code in order to avoid creation
+    of a new `tango.DeviceProxy` you may consider using the
+    `functools.lru_cache` as a singleton cache mechanism::
+
+        import functools
+        import tango
+        from sardana.macroserver.macro import macro
+
+        Device = functools.lru_cache(maxsize=1024)(tango.DeviceProxy)
+
+        @macro()
+        def switch_states(self):
+            """Switch TangoTest device state"""
+            proxy = Device('sys/tg_test/1')
+            proxy.SwitchStates()
+
+    Here you don't need to worry about the opened connection to the
+    Tango device server in case you don't execute the macro for a while.
+    Again, Tango (more precisely CORBA) will take care about it.
+    See more details about the CORBA scavanger thread in:
+    `Tango client threading <https://tango-controls.readthedocs.io/en/latest/development/advanced/threading.html#client-process>`_
+    and `CORBA idle connection shutdown <http://omniorb.sourceforge.net/omni42/omniORB/omniORB006.html#sec%3AconnShutdown>`_.
+
 
 .. _sardana-macro-using-external-libraries:
 
