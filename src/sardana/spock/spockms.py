@@ -46,13 +46,11 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 if genutils.get_gui_mode() == 'qt':
     from taurus.external.qt import Qt
     from sardana.taurus.qt.qtcore.tango.sardana.macroserver import QDoor, QMacroServer
-    from sardana.spock.qtinputhandler import InputHandler
     BaseDoor = QDoor
     BaseMacroServer = QMacroServer
     BaseGUIViewer = object
 else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
-    from sardana.spock.inputhandler import SpockInputHandler
     BaseGUIViewer = object
 
 
@@ -292,6 +290,8 @@ class SpockBaseDoor(BaseDoor):
         self.call__init__(BaseDoor, name, **kw)
 
     def create_input_handler(self):
+        from sardana.spock.inputhandler import SpockInputHandler
+
         return SpockInputHandler()
 
     def get_color_mode(self):
@@ -574,6 +574,9 @@ class QSpockDoor(SpockBaseDoor):
         return res
 
     def create_input_handler(self):
+        from sardana.spock.inputhandler import SpockInputHandler
+        from sardana.spock.qtinputhandler import InputHandler
+
         inputhandler = getattr(sardanacustomsettings, 'SPOCK_INPUT_HANDLER',
                                "CLI")
 
