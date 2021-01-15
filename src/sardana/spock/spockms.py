@@ -44,7 +44,6 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 
 if genutils.get_gui_mode() == 'qt':
-    from taurus.external.qt import Qt
     from sardana.taurus.qt.qtcore.tango.sardana.macroserver import QDoor, QMacroServer
     BaseDoor = QDoor
     BaseMacroServer = QMacroServer
