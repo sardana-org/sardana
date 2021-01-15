@@ -42,7 +42,7 @@ def expconf(self, parameter_s=''):
     for the experiments (scans)"""
 
     try:
-        from taurus.external.qt import qt
+        from taurus.external.qt import Qt
     except ImportError:
         print("Qt binding is not available. ExpConf cannot work without it."
               "(hint: maybe you want to use experiment configuration macros? "
@@ -92,7 +92,7 @@ def showscan(self, parameter_s=''):
     """
 
     try:
-        from taurus.external.qt import qt
+        from taurus.external.qt import Qt
     except ImportError:
         print("Qt binding is not available. Showscan cannot work without it.")
         return
@@ -138,7 +138,7 @@ def showscan(self, parameter_s=''):
 
 def spsplot(self, parameter_s=''):
     try:
-        from taurus.external.qt import qt
+        from taurus.external.qt import Qt
     except ImportError:
         print("Qt binding is not available. SPSplot cannot work without it.")
         return
