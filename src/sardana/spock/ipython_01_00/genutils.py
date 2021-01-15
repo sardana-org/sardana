@@ -1291,7 +1291,7 @@ def prepare_input_handler():
 
     from sardana import sardanacustomsettings
 
-    if sardanacustomsettings.SPOCK_INPUT_HANDLER == "Qt":
+    if getattr(sardanacustomsettings, "SPOCK_INPUT_HANDLER", "CLI") == "Qt":
 
         try:
             import sardana.spock.qtinputhandler
