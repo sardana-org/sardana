@@ -358,6 +358,8 @@ class PoolBaseGroup(PoolContainer):
             self.debug("Stopping %s %s", ctrl.name,
                        [e.name for e in elements])
             try:
+                for el in elements:
+                    el.stop()
                 error_elements = ctrl.stop_elements(elements=elements)
                 if len(error_elements) > 0:
                     element_names = [elem.name for elem in error_elements]
