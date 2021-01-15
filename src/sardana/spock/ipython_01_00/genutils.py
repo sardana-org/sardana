@@ -1289,12 +1289,15 @@ def mainloop(app=None, user_ns=None):
 def prepare_input_handler():
     # initialize input handler as soon as possible
 
-    try:
-        import sardana.spock.qtinputhandler
-        _ = sardana.spock.inputhandler.InputHandler()
-    except ImportError:
-        import sardana.spock.inputhandler
-        _ = sardana.spock.inputhandler.SpockInputHandler()
+    from sardana import sardanacustomsettings
+
+    if sardanacustomsettings.SPOCK_INPUT_HANDLER == "Qt":
+
+        try:
+            import sardana.spock.qtinputhandler
+            _ = sardana.spock.qtinputhandler.InputHandler()
+        except ImportError:
+            raise Exception("Cannot use Spock Qt input handler!")
 
 
 def prepare_cmdline(argv=None):
