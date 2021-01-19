@@ -514,6 +514,11 @@ class SpockBaseDoor(BaseDoor):
                 and data['type'] == 'function'):
             func_name = data['func_name']
             if func_name.startswith("pyplot."):
+                try:
+                    from taurus.external.qt import Qt
+                except ImportError:
+                    print("Qt binding is not available. Macro plotting cannot work without it.")
+                    return
                 func_name = self.MathFrontend + "." + func_name
             args = data['args']
             kwargs = data['kwargs']
