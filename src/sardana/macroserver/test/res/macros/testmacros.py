@@ -88,7 +88,6 @@ class createMacro(Macro):
 
         params = (99, 1., 2.)
         expected_params = (99, [1., 2.])
-        self.runMacro(macro)
         macro, pars = self.createMacro('pt6_base', *params)
         self.runMacro(macro)
         result = macro.data
