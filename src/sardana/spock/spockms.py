@@ -38,7 +38,6 @@ from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
 from sardana.util.parser import ParamParser
-from sardana.spock.inputhandler import SpockInputHandler, InputHandler
 from sardana import sardanacustomsettings
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
@@ -290,7 +289,9 @@ class SpockBaseDoor(BaseDoor):
         self.call__init__(BaseDoor, name, **kw)
 
     def create_input_handler(self):
-        return SpockInputHandler(self)
+        from sardana.spock.inputhandler import SpockInputHandler
+
+        return SpockInputHandler()
 
     def get_color_mode(self):
         return genutils.get_color_mode()
@@ -513,6 +514,11 @@ class SpockBaseDoor(BaseDoor):
                 and data['type'] == 'function'):
             func_name = data['func_name']
             if func_name.startswith("pyplot."):
+                try:
+                    from taurus.external.qt import Qt
+                except ImportError:
+                    print("Qt binding is not available. Macro plotting cannot work without it.")
+                    return
                 func_name = self.MathFrontend + "." + func_name
             args = data['args']
             kwargs = data['kwargs']
@@ -554,9 +560,6 @@ class SpockBaseDoor(BaseDoor):
         return BaseDoor._processRecordData(self, data)
 
 
-from taurus.external.qt import Qt
-
-
 class QSpockDoor(SpockBaseDoor):
 
     def __init__(self, name, **kw):
@@ -575,6 +578,9 @@ class QSpockDoor(SpockBaseDoor):
         return res
 
     def create_input_handler(self):
+        from sardana.spock.inputhandler import SpockInputHandler
+        from sardana.spock.qtinputhandler import InputHandler
+
         inputhandler = getattr(sardanacustomsettings, 'SPOCK_INPUT_HANDLER',
                                "CLI")
 
