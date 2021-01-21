@@ -92,7 +92,7 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 #: - "dumb" - worst performance but directly available with Python 3.
 MS_ENV_SHELVE_BACKEND = None
 
-#: macroexecutor maximum number of macros stored in the history. 
+#: macroexecutor maximum number of macros stored in the history.
 #: Available options:
 #:
 #: - None (or no setting) - unlimited history (may slow down the GUI operation
@@ -101,11 +101,12 @@ MS_ENV_SHELVE_BACKEND = None
 #: - <int> - max number of macros stored in the history
 MACROEXECUTOR_MAX_HISTORY = 100
 
-#: pre-move and post-move hooks applied in simple mv-based macros 
+#: pre-move and post-move hooks applied in simple mv-based macros
 #: Available options:
 #:
-#: - False (or no setting) - macros which are hooked to the pre-move and post-move
-#:   hook places are not called in simple mv-based macros but only in scan-based macros
+#: - False (or no setting) - macros which are hooked to the pre-move and
+#:   post-move hook places are not called in simple mv-based macros but
+#:   only in scan-based macros
 #: - True - macros which are hooked to the pre-move and post-move
 #:   hook places are called before and/or after any move a motor
 PRE_POST_MOVE_HOOK_IN_MV = False
