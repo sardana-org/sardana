@@ -42,6 +42,10 @@ Sardana provides the following standard recorders (grouped by types):
     * JsonRecorder [*]
     * OutputRecorder
 
+* generic [*]
+.. TODO Need to document the implementation and configuration
+
+
 [*] Scan Framework provides mechanisms to enable and select this recorders using
 the environment variables.
 
