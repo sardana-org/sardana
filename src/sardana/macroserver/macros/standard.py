@@ -45,6 +45,7 @@ from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
+from sardana import sardanacustomsettings
 
 ##########################################################################
 #
@@ -470,9 +471,15 @@ class mv(Macro, Hookable):
          None, 'List of motor/position pairs'],
     ]
 
+    def prepare(self):
+        selsardanacustomsettings
+
     def run(self, motor_pos_list):
-        for preAcqHook in self.getHooks('pre-move'):
-            preAcqHook()
+        enable_hooks = getattr(sardanacustomsettings, 'PRE_POST_MOVE_HOOK_IN_MV')
+
+        if enable_hooks:
+            for preAcqHook in self.getHooks('pre-move'):
+                preAcqHook()
 
         motors, positions = [], []
         for m, p in motor_pos_list:
@@ -488,8 +495,9 @@ class mv(Macro, Hookable):
                 msg.append(motor.information())
             self.info("\n".join(msg))
 
-        for postAcqHook in self.getHooks('post-move'):
-            postAcqHook()
+        if enable_hooks:
+            for postAcqHook in self.getHooks('post-move'):
+                postAcqHook()
 
 
 class mstate(Macro):
