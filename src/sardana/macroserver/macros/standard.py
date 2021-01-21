@@ -459,9 +459,10 @@ class pwm(Macro):
         self.execMacro('wm', motor_list, **Table.PrettyOpts)
 
 
-class mv(Macro):
+class mv(Macro, Hookable):
     """Move motor(s) to the specified position(s)"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_pos_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -470,6 +471,9 @@ class mv(Macro):
     ]
 
     def run(self, motor_pos_list):
+        for preAcqHook in self.getHooks('pre-move'):
+            preAcqHook()
+
         motors, positions = [], []
         for m, p in motor_pos_list:
             motors.append(m)
@@ -483,6 +487,9 @@ class mv(Macro):
             for motor in motors:
                 msg.append(motor.information())
             self.info("\n".join(msg))
+
+        for postAcqHook in self.getHooks('post-move'):
+            postAcqHook()
 
 
 class mstate(Macro):
