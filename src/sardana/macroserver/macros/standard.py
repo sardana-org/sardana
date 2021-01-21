@@ -471,9 +471,6 @@ class mv(Macro, Hookable):
          None, 'List of motor/position pairs'],
     ]
 
-    def prepare(self):
-        selsardanacustomsettings
-
     def run(self, motor_pos_list):
         enable_hooks = getattr(sardanacustomsettings, 'PRE_POST_MOVE_HOOK_IN_MV')
 
