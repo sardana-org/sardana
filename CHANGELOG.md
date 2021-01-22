@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* *scan information* and *scan point* forms to the *showscan online* widget (#1386)
+* *scan information* and *scan point* forms to the *showscan online* widget (#1386, #1477, #1479)
 * `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
   widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
 * Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
