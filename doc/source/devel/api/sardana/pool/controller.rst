@@ -44,6 +44,7 @@
     * :class:`OneDController`    
     * :class:`TwoDController`
     * :class:`PseudoCounterController`
+    * :class:`TriggerGateController`
     * :class:`IORegisterController`
 
 
@@ -215,6 +216,17 @@ Pseudo Counter Controller API
     :members:
     :undoc-members:
 
+
+Trigger/Gate Controller API
+---------------------------
+
+.. inheritance-diagram:: TriggerGateController
+    :parts: 1
+
+.. autoclass:: TriggerGateController
+    :show-inheritance:
+    :members:
+    :undoc-members:
 
 IO Register Controller API
 ----------------------------

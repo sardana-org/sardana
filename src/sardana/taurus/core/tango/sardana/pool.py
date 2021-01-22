@@ -2460,8 +2460,8 @@ class MeasurementGroup(PoolElement):
     def putIntegrationTime(self, ctime):
         if self._last_integ_time == ctime:
             return
-        self._last_integ_time = ctime
         self.getIntegrationTimeObj().write(ctime)
+        self._last_integ_time = ctime
 
     def getAcquisitionModeObj(self):
         return self._getAttrEG('AcquisitionMode')
