@@ -146,8 +146,9 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         from taurus.external.qt import Qt
         from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget
         app = Qt.QApplication([])
-        widget = QtSpockWidget()
+        widget = QtSpockWidget(use_model_from_profile=True)
         widget.show()
+        widget.start_kernel()
         app.aboutToQuit.connect(widget.shutdown_kernel)
         app.exec_()
     """
