@@ -946,7 +946,7 @@ class PoolExpChannelDevice(PoolElementDevice):
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
-        attr.set_value(self.element.shape)
+        attr.set_value(self.element.get_shape(cache=False))
 
 
 class PoolExpChannelDeviceClass(PoolElementDeviceClass):
