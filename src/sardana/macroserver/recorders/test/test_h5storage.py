@@ -257,6 +257,8 @@ def test_swmr(tmpdir):
         reader.start()
         event.wait()
         event.clear()
-        scan(path, serialno=1)
-        event.set()
-        reader.join()
+        try:
+            scan(path, serialno=1)
+        finally:
+            event.set()
+            reader.join()
