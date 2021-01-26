@@ -578,7 +578,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if numpy.isscalar(value):
                 dtype = numpy.dtype(type(value)).name
                 if numpy.issubdtype(dtype, str):
-                    dtype = 'char'
+                    dtype = NXscanH5_FileRecorder.str_dt
                 if dtype == 'bool':
                     value, dtype = int(value), 'int8'
             else:
