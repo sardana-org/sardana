@@ -26,8 +26,8 @@ GScan
     :show-inheritance:
     :members:
 
-GScan
------
+Scan
+----
 
 .. inheritance-diagram:: SScan
     :parts: 1

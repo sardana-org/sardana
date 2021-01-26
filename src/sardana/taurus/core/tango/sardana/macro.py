@@ -32,6 +32,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import copy
+import uuid
 import types
 import tempfile
 
@@ -833,7 +834,6 @@ class RepeatNode(BranchNode):
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
-    count = 0
 
     def __init__(self, parent=None, name=None, params_def=None,
                  macro_info=None):
@@ -867,7 +867,7 @@ class MacroNode(BranchNode):
         """
         Getter of macro's id property
 
-        :return: (int)
+        :return: (str)
 
         .. seealso: :meth:`MacroNode.setId`, assignId
         """
@@ -878,7 +878,7 @@ class MacroNode(BranchNode):
         """
         Setter of macro's id property
 
-        :param id: (int) new macro's id
+        :param id: (str) new macro's id
 
         See Also: id, assignId
         """
@@ -890,16 +890,13 @@ class MacroNode(BranchNode):
         If macro didn't have an assigned id it assigns it
         and return macro's id.
 
-        :return: (int)
+        :return: (str)
 
         See Also: id, setId
         """
-        id = self.id()
-        if id is not None:
-            return id
-        MacroNode.count += 1
-        self.setId(MacroNode.count)
-        return MacroNode.count
+        id_ = str(uuid.uuid1())
+        self.setId(id_)
+        return id_
 
     def name(self):
         return self._name
@@ -1160,7 +1157,7 @@ class MacroNode(BranchNode):
         if withId:
             id_ = self.id()
             if id_ is not None:
-                macroElement.set("id", str(self.id()))
+                macroElement.set("id", self.id())
         for hookPlace in self.hookPlaces():
             hookElement = etree.SubElement(macroElement, "hookPlace")
             hookElement.text = hookPlace

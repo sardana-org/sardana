@@ -937,7 +937,6 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             "range"], data["step"], data["id"]
         if id is None:
             return
-        id = int(id)
         if id != self.macroId():
             return
         macroName = macro.name
