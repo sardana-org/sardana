@@ -31,6 +31,7 @@ from datetime import datetime
 
 import h5py
 import numpy
+import pytest
 from unittest import TestCase
 
 from sardana.macroserver.scan import ColumnDesc
