@@ -181,6 +181,8 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         self._door_name = None
         self._door_alias = None
 
+        self.append_stream("Waiting for kernel to start")
+
         self.kernel_manager = SpockKernelManager(kernel_name=kernel)
         self.kernel_manager.kernel_about_to_launch.connect(
             self._handle_kernel_lauched)
