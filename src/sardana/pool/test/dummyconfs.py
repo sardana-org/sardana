@@ -31,7 +31,7 @@ __all__ = ['dummyMeasurementGroupConf01',
            'dummyCounterTimerConf03', 'dummyCounterTimerConf04',
            'dummyTriggerGateConf01', 'dummyTriggerGateConf02',
            'dummyTriggerGateConf03', 'dummyTriggerGateConf04',
-           'dummyPoolMotorCtrlConf01', 'dummyMotorConf01', 'dummyMotorConf02']
+           'dummyPoolMotorCtrlConf01', 'dummyMotorConf01', 'dummyMotorConf02', 'dummyMotorGroupConf01']
 
 
 # Pool Measurement Group
@@ -42,7 +42,12 @@ dummyMeasurementGroupConf01 = {'full_name': 'mntgrp01',
                                'pool': None,
                                'user_elements': [2]}
 
-
+'''Minimum configuration to create a Pool MotorGroup'''
+dummyMotorGroupConf01 = {'full_name': 'motgrp01',
+                         'id': None,
+                         'name': 'motgrp01',
+                         'pool': None,
+                         'user_elements': [2, 3]}
 # Pool Ctrls
 '''Minimum configuration to create a Pool CounterTimer controller'''
 dummyPoolCTCtrlConf01 = {'class_info': None,
@@ -208,7 +213,7 @@ dummyTriggerGateConf04 = {'axis': 4,
 dummyMotorConf01 = {'axis': 1,
                     'ctrl': None,
                     'full_name': 'dmot01',
-                    'id': 1,
+                    'id': 2,
                     'name': '',
                     'pool': None}
 
@@ -216,6 +221,6 @@ dummyMotorConf01 = {'axis': 1,
 dummyMotorConf02 = {'axis': 2,
                     'ctrl': None,
                     'full_name': 'dmot02',
-                    'id': 1,
+                    'id': 3,
                     'name': '',
                     'pool': None}

@@ -28,6 +28,7 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate',
            'createPoolMotor', 'createPoolPseudoCounter',
            'createPoolPseudoMotor', 'createPoolMeasurementGroup',
+           'createPoolMotorGroup',
            'createControllerConfiguration',
            'createTimerableControllerConfiguration',
            'createCTAcquisitionConfiguration',
@@ -45,6 +46,7 @@ from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
 from sardana.pool.poolpseudomotor import PoolPseudoMotor
+from sardana.pool.poolmotorgroup import PoolMotorGroup
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup, \
     MeasurementConfiguration, ControllerConfiguration, ChannelConfiguration
 
@@ -154,6 +156,13 @@ def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
     kwargs['user_elements'] = elements
     return PoolPseudoMotor(**kwargs)
 
+def createPoolMotorGroup(pool, conf, elements=()):
+    '''Method to create a PoolPseudoMotor using a configuration dictionary
+    '''
+    kwargs = copy.deepcopy(conf)
+    kwargs['pool'] = pool
+    kwargs['user_elements'] = elements
+    return PoolMotorGroup(**kwargs)
 
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
@@ -341,6 +350,14 @@ def createElemConf(pool, axis, name):
     cfg['name'] = cfg['full_name'] = name
     return cfg
 
+
+def createMotorGroupConf(pool, name):
+    cfg = dict({'id': None,
+                'name': name,
+                'pool': None})
+    cfg['id'] = pool.get_free_id()
+    cfg['name'] = cfg['full_name'] = name
+    return cfg
 
 def createConfFromObj(obj):
     cfg = dict({
