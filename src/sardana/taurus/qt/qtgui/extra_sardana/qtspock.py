@@ -145,9 +145,10 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
         from taurus.external.qt import Qt
         from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget
-        app = Qt.QApplication([])
-        widget = QtSpockWidget()
+        app = Qt.QApplication(["qtspock"])
+        widget = QtSpockWidget(use_model_from_profile=True)
         widget.show()
+        widget.start_kernel()
         app.aboutToQuit.connect(widget.shutdown_kernel)
         app.exec_()
     """
@@ -179,6 +180,8 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         self._macro_server_alias = None
         self._door_name = None
         self._door_alias = None
+
+        self.append_stream("Waiting for kernel to start")
 
         self.kernel_manager = SpockKernelManager(kernel_name=kernel)
         self.kernel_manager.kernel_about_to_launch.connect(
