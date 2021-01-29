@@ -479,17 +479,17 @@ class mv(Macro, Hookable):
             for preAcqHook in self.getHooks('pre-move'):
                 preAcqHook()
 
-        motors, positions = [], []
+        self.motors, positions = [], []
         for m, p in motor_pos_list:
-            motors.append(m)
+            self.motors.append(m)
             positions.append(p)
             self.debug("Starting %s movement to %s", m.getName(), p)
-        motion = self.getMotion(motors)
+        motion = self.getMotion(self.motors)
         state, pos = motion.move(positions)
         if state != DevState.ON:
             self.warning("Motion ended in %s", state.name)
             msg = []
-            for motor in motors:
+            for motor in self.motors:
                 msg.append(motor.information())
             self.info("\n".join(msg))
 
@@ -521,6 +521,7 @@ class umv(Macro):
             pos, posObj = motor.getPosition(force=True), motor.getPositionObj()
             self.all_pos.append([pos])
             posObj.subscribeEvent(self.positionChanged, motor)
+        self.motors = self.all_names
 
     def run(self, motor_pos_list):
         self.print_pos = True
