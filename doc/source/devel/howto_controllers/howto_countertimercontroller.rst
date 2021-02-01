@@ -6,12 +6,6 @@
 How to write a counter/timer controller
 =======================================
 
-.. important::
-    Counter/timer controller :term:`API` was extended in SEP18_ but this is
-    still not documented in this chapter. Please check the said SEP for more
-    information about the additional :term:`API` or eventual changes.
-
-
 The basics
 ----------
 
