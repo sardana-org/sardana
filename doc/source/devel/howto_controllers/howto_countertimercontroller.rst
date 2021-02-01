@@ -467,7 +467,7 @@ Multiple acquisitions
 It is a very common scenario to execute multiple hardware synchronized
 acquisitions in a row. One example of this type of measurements are the
 :ref:`sardana-users-scan-continuous`. The controller receives the number of
-acquisitions via the third argument of the
+acquisitions via the ``repetitions`` argument of the
 :meth:`~sardana.pool.controller.Loadable.LoadOne` method.
 
 Here is an example of the possible implementation of
