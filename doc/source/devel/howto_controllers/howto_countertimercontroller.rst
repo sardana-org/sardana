@@ -410,8 +410,8 @@ We can modify our counter controller to take profit of this hardware feature:
         def StartAll(self):
             self.springfield.startCounters(self._counters_info)
 
-Hardware synchronization
-~~~~~~~~~~~~~~~~~~~~~~~~
+External (hardware) synchronization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The synchronization achieved in :ref:`sardana-countertimercontroller-howto-mutliple-acquisition`
 may not be enough when it comes to acquiring with multiple controllers at the
@@ -448,8 +448,10 @@ Here is an example of the possible implementation of
         SynchMap = {
             AcqSynch.SoftwareTrigger : 1,
             AcqSynch.SoftwareGate : 2,
-            AcqSynch.HardwareTrigger: 3,
-            AcqSynch.HardwareGate: 4
+            AcqSynch.SoftwareStart : 3,
+            AcqSynch.HardwareTrigger: 4,
+            AcqSynch.HardwareGate: 5,
+            AcqSynch.HardwareStart: 6
         }
 
         def SetCtrlPar(self, name, value):
@@ -503,8 +505,11 @@ can be:
        :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` synchronization
 
      - a sequence of counter values: either :class:`float` or :obj:`~sardana.sardanavalue.SardanaValue`
-       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger` or
-       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate` synchronization
+       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger`,
+       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate`,
+       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareStart` or
+       :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart`
+       synchronization
 
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
