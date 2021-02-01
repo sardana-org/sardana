@@ -6,6 +6,13 @@
 How to write a counter/timer controller
 =======================================
 
+This chapter provides the necessary information to write a counter/timer
+controller in Sardana.
+
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
 The basics
 ----------
 
