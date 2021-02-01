@@ -217,10 +217,14 @@ Here is an example of the possible implementation of
         def AbortOne(self, axis):
             self.springfield.AbortChannel(axis)
 
+
+Advanced topics
+---------------
+
 .. _sardana-countertimercontroller-howto-timermonitor:
 
 Timer and monitor roles
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Usually counters can work in either of two modes: timer or monitor. In both of
 them, one counter in a group is assigned a special role to control when
@@ -236,9 +240,6 @@ Controller may announce its default timer axis with the
 :obj:`~sardana.pool.controller.Loadable.default_timer` class attribute.
 
 .. _sardana-countertimercontroller-howto-advanced:
-
-Advanced topics
----------------
 
 .. _sardana-countertimercontroller-howto-timestamp-value:
 
