@@ -568,7 +568,31 @@ can be:
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
 
-.. todo:: document how to skip the readouts while acquiring
+Per measurement preparation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since SEP18_ counter/timer controllers may take a profit from the per measurement
+preparation and reserve resources for a sequence of
+:attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`
+or :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` acquisitions
+already in the :meth:`~sardana.pool.controller.Loadable.PrepareOne` method.
+This method is called only once at the beginning of the measurement e.g.
+:ref:`Deterministic step scans <sardana-macros-scanframework-determscan>`
+or :ref:`sardana-users-scan-continuous`.
+It enables an opportunity for significant dead time optimization thanks to the
+single per measurement configuration instead of the multiple per acquisition
+preparation using the :meth:`~sardana.pool.controller.Loadable.LoadOne`.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Loadable.PrepareOne`:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def PrepareOne(self, value, repetitions, latency, nb_starts):
+            return self.springfield.SetNbStarts()
 
 
 .. _ALBA: http://www.cells.es/
