@@ -18,6 +18,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
