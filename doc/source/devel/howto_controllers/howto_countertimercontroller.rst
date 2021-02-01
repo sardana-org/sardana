@@ -483,6 +483,60 @@ Here is an example of the possible implementation of
             self.springfield.SetRepetitions(repetitions)
             return value
 
+In order to make the acquisition flow smoothly the synchronizer and
+the counter/timer controllers needs to agree on the synchronization pace.
+The counter/timer controller manifest what is the maximum allowed pace for him
+by means of the ``latency_time`` controller parameter (in seconds). This parameter
+corresponds to the minimum time necessary by the hardware controller to re-arm
+for the next acquisition.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetCtrlPar`:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def GetCtrlPar(self, name):
+            if name == "latency_time":
+                return self.springfield.GetLatencyTime()
+
+.. warning::
+    By default, the `~sardana.pool.controller.CounterTimerController`
+    base classes returns zero latency time controller parameter.
+    If in your controller you override
+    the :meth:`~sardana.pool.controller.Controller.GetCtrlPar` method
+    remember to always call the super class method as fallback:
+
+    .. code-block:: python
+        :emphasize-lines: 5
+
+        def GetCtrlPar(self, name):
+            if name == "some_par":
+                return "some_val"
+            else:
+                return super().GetCtrlPar(name)
+
+
+In the case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareStart` or
+:attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart` synchronizations
+the counter/timer hardware *auto* triggers itself during the measurement process.
+In order to fully configure the hardware and set the re-trigger pace you can
+use the ``latency`` argument (in seconds)
+of the :meth:`~sardana.pool.controller.Loadable.LoadOne` method:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def LoadOne(self, axis, value, repetitions, latency):
+            self.springfield.LoadChannel(axis, value)
+            self.springfield.SetRepetitions(repetitions)
+            self.springfield.SetLatency(latency)
+            return value
+
 Get counter values
 """"""""""""""""""
 
