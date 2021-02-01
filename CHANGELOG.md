@@ -23,6 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* LICENSE file to python source distribution (#1490)
 
 ### Fixed
 
