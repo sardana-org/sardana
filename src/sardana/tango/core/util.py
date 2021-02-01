@@ -1206,7 +1206,7 @@ def prepare_logging(options, args, tango_args, start_time=None,
 
 def prepare_rconsole(options, args, tango_args):
     port = options.rconsole_port
-    if port is None or port is 0:
+    if port is None or port == 0:
         return
     taurus.debug("Setting up rconsole on port %d...", port)
     try:

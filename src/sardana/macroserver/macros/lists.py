@@ -143,7 +143,7 @@ class _lsobj(_ls):
     def run(self, filter):
         objs = self.objs(filter)
         nb = len(objs)
-        if nb is 0:
+        if nb == 0:
             if self.subtype is Macro.All:
                 if isinstance(self.type, str):
                     t = self.type.lower()
