@@ -504,7 +504,7 @@ Here is an example of the possible implementation of
 
 .. warning::
     By default, the `~sardana.pool.controller.CounterTimerController`
-    base classes returns zero latency time controller parameter.
+    base classes return zero latency time controller parameter.
     If in your controller you override
     the :meth:`~sardana.pool.controller.Controller.GetCtrlPar` method
     remember to always call the super class method as fallback:
