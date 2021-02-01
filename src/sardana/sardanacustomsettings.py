@@ -109,4 +109,4 @@ MACROEXECUTOR_MAX_HISTORY = 100
 #:   only in scan-based macros
 #: - True - macros which are hooked to the pre-move and post-move
 #:   hook places are called before and/or after any move a motor
-PRE_POST_MOVE_HOOK_IN_MV = False
+PRE_POST_MOVE_HOOK_IN_MV = True
