@@ -1,6 +1,6 @@
 .. currentmodule:: sardana.pool.controller
 
-.. _sardana-countertimercontroller-howto-basics:
+.. _sardana-countertimercontroller:
 
 =======================================
 How to write a counter/timer controller
@@ -12,6 +12,8 @@ controller in Sardana.
 .. contents:: Table of contents
     :depth: 3
     :backlinks: entry
+
+.. _sardana-countertimercontroller-howto-basics:
 
 The basics
 ----------
@@ -217,6 +219,7 @@ Here is an example of the possible implementation of
         def AbortOne(self, axis):
             self.springfield.AbortChannel(axis)
 
+.. _sardana-countertimercontroller-howto-advanced:
 
 Advanced topics
 ---------------
@@ -238,8 +241,6 @@ parameter ``acquisition_mode``.
 
 Controller may announce its default timer axis with the
 :obj:`~sardana.pool.controller.Loadable.default_timer` class attribute.
-
-.. _sardana-countertimercontroller-howto-advanced:
 
 .. _sardana-countertimercontroller-howto-timestamp-value:
 
@@ -410,6 +411,8 @@ We can modify our counter controller to take profit of this hardware feature:
         def StartAll(self):
             self.springfield.startCounters(self._counters_info)
 
+.. _sardana-countertimercontroller-howto-external-synchronization:
+
 External (hardware) synchronization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -537,6 +540,8 @@ of the :meth:`~sardana.pool.controller.Loadable.LoadOne` method:
             self.springfield.SetLatency(latency)
             return value
 
+.. _sardana-countertimercontroller-howto-external-synchronization-get-values:
+
 Get counter values
 """"""""""""""""""
 
@@ -567,6 +572,8 @@ can be:
 
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
+
+.. _sardana-countertimercontroller-per-measurement-preparation:
 
 Per measurement preparation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
