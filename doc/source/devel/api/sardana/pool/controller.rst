@@ -25,6 +25,7 @@
     :columns: 3
 
     * :class:`Readable`
+    * :class:`Referable`
     * :class:`Startable`
     * :class:`Stopable`
     * :class:`Loadable`
@@ -55,6 +56,17 @@ Readable interface
     :parts: 1
     
 .. autoclass:: Readable
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+Referable interface
+-------------------
+
+.. inheritance-diagram:: Referable
+    :parts: 1
+
+.. autoclass:: Referable
     :show-inheritance:
     :members:
     :undoc-members:
