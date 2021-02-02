@@ -477,8 +477,8 @@ class mv(Macro, Hookable):
                                True)
 
         if enable_hooks:
-            for preAcqHook in self.getHooks('pre-move'):
-                preAcqHook()
+            for preMoveHook in self.getHooks('pre-move'):
+                preMoveHook()
 
         self.motors, positions = [], []
         for m, p in motor_pos_list:
@@ -495,8 +495,8 @@ class mv(Macro, Hookable):
             self.info("\n".join(msg))
 
         if enable_hooks:
-            for postAcqHook in self.getHooks('post-move'):
-                postAcqHook()
+            for postMoveHook in self.getHooks('post-move'):
+                postMoveHook()
 
 
 class mstate(Macro):
