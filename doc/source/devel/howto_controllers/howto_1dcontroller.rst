@@ -121,7 +121,7 @@ leaving the data storage at the responsibility of the detector
 just deals with the reference to the data.
 
 Please refer to :ref:`sardana-2dcontroller-valuereferencing` chapter from
-:ref:`sardana-2dcontroller-howto` in order to implement this feature for 1D
+:ref:`sardana-2dcontroller-howto` guide in order to implement this feature for 1D
 controller.
 
 .. _ALBA: http://www.cells.es/
