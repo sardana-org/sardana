@@ -173,7 +173,7 @@ Configure 2D value reference
 Two axis parameters: ``value_ref_pattern`` (`str`)
 and ``value_ref_enabled`` (`bool`) are foreseen for configuring where to store
 the values and whether to use the value referencing. Here you need to implement
-the :meth:`~sardana.pool.controller.Controller.SetAxiPar` method.
+the :meth:`~sardana.pool.controller.Controller.SetAxisPar` method.
 
 Here is an example of the possible implementation of
 :meth:`~sardana.pool.controller.Controller.SetAxisPar`:
