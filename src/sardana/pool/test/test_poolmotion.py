@@ -23,15 +23,17 @@
 ##
 ##############################################################################
 
+import threading
 import time
 import unittest
-import threading
 
 from sardana.pool.poolmotion import PoolMotion
+from sardana.pool.test import (FakePool, createPoolController, createPoolMotor,
+                               dummyMotorConf01, dummyMotorConf02,
+                               dummyPoolMotorCtrlConf01)
+from sardana.pool.test.test_poolmotor import motor
+from sardana.pool.test.test_poolmotorgroup import motor_group
 from sardana.sardanadefs import State
-from sardana.pool.test import (
-    FakePool, createPoolController, createPoolMotor, dummyPoolMotorCtrlConf01,
-    dummyMotorConf01, dummyMotorConf02)
 
 
 class PoolMotionTestCase(unittest.TestCase):
