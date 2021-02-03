@@ -288,7 +288,10 @@ def __get_last_write_value(attribute):
 
 
 def _check_attr_range(dev_name, attr_name, attr_value):
-    util = PyTango.Util.instance()
+    try:
+        util = PyTango.Util.instance(False)
+    except PyTango.DevFailed:
+        return  # not in device server; probably doing testing
     dev = util.get_device_by_name(dev_name)
     multi_attr = dev.get_device_attr()
     attr = multi_attr.get_w_attr_by_name(attr_name)
