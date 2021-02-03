@@ -97,6 +97,26 @@ and specify its maximum dimension of 1024 x 1024 pixels:
         axis_attrs['Value'][MaxDimSize] = (1024, 1024)
         return axis_attrs
 
+Get pseudo counter shape
+------------------------
+
+If you change the pseudo counter format to spectrum or image then you
+controller must provide the shape of the calculation result in either
+of the formats:
+
+- one-element sequence with the length of the spectrum
+- two-element sequence with the horizonatal and vertical dimensions of the image
+
+using the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetAxisPar`:
+
+.. code-block:: python
+
+    def GetAxisPar(self, axis, par):
+        if par == "shape":
+            return [1024, 1024]
 
 Including external variables in the calculation
 -----------------------------------------------
