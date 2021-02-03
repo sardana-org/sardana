@@ -90,7 +90,7 @@ and specify its maximum dimension of 1024 x 1024 pixels:
 
 .. code-block:: python
 
-        def GetAxisAttributes(self, axis):
+    def GetAxisAttributes(self, axis):
         axis_attrs = PseudoCounterController.GetAxisAttributes(self, axis)
         axis_attrs = dict(axis_attrs)
         axis_attrs['Value'][Type] = ((float, ), )
