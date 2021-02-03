@@ -29,6 +29,22 @@ from sardana.pool.test import (FakePool, createPoolController,
 from sardana.pool.poolcontroller import PoolController
 
 
+def controller(pool=None, conf=None):
+    if pool is None:
+        from sardana.pool.test.test_pool import pool
+        pool = pool()
+    if conf is None:
+        conf = {
+            'full_name': 'dmotctrl01',
+            'name': 'dmotctrl01',
+            'klass': 'DummyMotorController',
+            'library': 'DummyMotorController.py',
+            'type': 'Motor',
+            'properties': {}
+        }
+    return pool.create_controller(**conf)
+
+
 class PoolControllerTestCase(unittest.TestCase):
     """Unittest of PoolController Class"""
 

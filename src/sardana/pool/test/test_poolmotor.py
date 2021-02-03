@@ -30,6 +30,33 @@ from sardana.pool.test import (FakePool, createPoolController, createPoolMotor,
 from sardana.pool.test.test_poolcontroller import controller
 
 
+def _motor(ctrl=None):
+    if ctrl is None:
+        ctrl = controller()
+    pool = ctrl.pool
+    pool_motors = pool.get_elements_by_type(ElementType.Motor)
+    axes = []
+    for motor in pool_motors:
+        if motor.controller == ctrl:
+            axes.append(motor.axis)
+    max_axis = max(axes) if len(axes) > 0 else 0
+    axis = max_axis + 1
+    kwargs = {
+        'type': "Motor",
+        'ctrl_id': ctrl.id,
+        'axis': axis,
+        'full_name': "mot{}".format(axis),
+        'name': "mot{}".format(axis)
+    }
+    motor = pool.create_element(**kwargs)
+    return motor
+
+
+@pytest.fixture
+def motor():
+    return _motor()
+
+
 def StateOne_state(self, axis):
     return State.On
 
