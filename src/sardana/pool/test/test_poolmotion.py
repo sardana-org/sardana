@@ -29,11 +29,9 @@ import threading
 
 from sardana.pool.poolmotion import PoolMotion
 from sardana.sardanadefs import State
-from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolMotor, createPoolMotorGroup,
-                               dummyPoolMotorCtrlConf01,
-                               dummyMotorConf01, dummyMotorConf02,
-                               dummyMotorGroupConf01)
+from sardana.pool.test import (
+    FakePool, createPoolController, createPoolMotor, dummyPoolMotorCtrlConf01,
+    dummyMotorConf01, dummyMotorConf02)
 
 
 class PoolMotionTestCase(unittest.TestCase):
@@ -126,7 +124,28 @@ class PoolMotionTestCase(unittest.TestCase):
         self.dummy_mot = None
         unittest.TestCase.tearDown(self)
 
-def test_stop_motion_with_backlash():
+
+def test_stop_motor_with_backlash(motor):
+
+    motion_done = threading.Event()
+
+    def on_motor_changed(event_source, event_type, event_value):
+        name = event_type.name.lower()
+        if name == "state":
+            if event_value == State.On:
+                motion_done.set()
+
+    motor.backlash = -1
+    target_position = 100
+    motor.position = target_position
+    motor.add_listener(on_motor_changed)
+    time.sleep(0.5)
+    motor.stop()
+    motion_done.wait()
+    assert motor.position.value != target_position
+
+
+def test_stop_motorgroup_with_backlash(motor_group):
 
     motion_done = threading.Event()
 
@@ -135,22 +154,10 @@ def test_stop_motion_with_backlash():
         if name == "state":
             if event_value == State.On:
                 motion_done.set()
- 
-    pool = FakePool()
-    dummy_mot_ctrl = createPoolController(pool, dummyPoolMotorCtrlConf01)
-    dummy_mot1 = createPoolMotor(pool, dummy_mot_ctrl,
-                                dummyMotorConf01)
-    dummy_mot2 = createPoolMotor(pool, dummy_mot_ctrl,
-                                 dummyMotorConf02)
-    dummy_mot_ctrl.add_element(dummy_mot1)
-    dummy_mot_ctrl.add_element(dummy_mot2)
-    pool.add_element(dummy_mot_ctrl)
-    pool.add_element(dummy_mot1)
-    pool.add_element(dummy_mot2)
-    dummy_mot1.backlash = -1
-    dummy_mot2.backlash = -1
-    motor_group = createPoolMotorGroup(pool, dummyMotorGroupConf01, [2, 3])
-    init_positions = motor_group.position.value
+
+    for motor in motor_group._physical_elements:
+        motor.backlash = -1
+
     target_position = [100, 100]
     motor_group.position = target_position
     motor_group.add_listener(on_motor_group_changed)
