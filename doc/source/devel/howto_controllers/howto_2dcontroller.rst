@@ -27,6 +27,31 @@ To write a 2D controller class you can follow
 the :ref:`sardana-countertimercontroller` guide keeping in mind
 differences explained in continuation.
 
+.. _sardana-2dcontroller-general-guide-shape:
+
+Get 2D shape
+~~~~~~~~~~~~
+
+2D controller must provide a shape of the image which will be produced by
+acquisition. The shape can be either static e.g. defined by the detector's
+sensor size or dynamic e.g. depending on the detector's (or an intermediate
+control software layer e.g. `LImA`_) configuration like :term:`RoI` or binning.
+
+In any case you must provide the shape in the format of a two-element sequence
+with horizonatal and vertical dimensions using
+the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetAxisPar`:
+
+.. code-block:: python
+
+    class SpringfieldTwoDController(TwoDController):
+
+        def GetAxisPar(self, axis, par):
+            if par == "shape":
+                return self.springfield.getShape(axis)
+
 .. _sardana-2dcontroller-differences-countertimer:
 
 Differences with counter/timer controller
