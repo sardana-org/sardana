@@ -49,7 +49,6 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
-from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -1171,6 +1170,7 @@ class SScan(GScan):
         # allow scan to be stopped between motion and data acquisition
         self.macro.checkPoint()
 
+        from sardana.taurus.core.tango.sardana.pool import Ready
         if state != Ready:
             self.dump_information(n, step, self.motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
@@ -2080,6 +2080,7 @@ class CAcquisition(object):
         .. todo:: add validation for psuedo counters
         """
         non_compatible_channels = []
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
         validator = TangoDeviceNameValidator()
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
