@@ -38,7 +38,7 @@ sensor size or dynamic e.g. depending on the detector's (or an intermediate
 control software layer e.g. `LImA`_) configuration like :term:`RoI` or binning.
 
 In any case you must provide the shape in the format of a two-element sequence
-with horizonatal and vertical dimensions using
+with horizontal and vertical dimensions using
 the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
 
 Here is an example of the possible implementation of
