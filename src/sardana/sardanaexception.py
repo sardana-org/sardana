@@ -29,7 +29,7 @@ for sardana exceptions"""
 
 
 __all__ = ["AbortException", "InterruptException", "SardanaException",
-           "SardanaExceptionList", "StopException",
+           "SardanaExceptionList", "StopException", "ReleaseException",
            "UnknownCode", "UnknownLibrary", "LibraryError",
            "format_exception_only", "format_exception_only_str"]
 
@@ -114,3 +114,8 @@ class StopException(InterruptException):
 
 class AbortException(InterruptException):
     pass
+
+
+class ReleaseException(InterruptException):
+    pass
+

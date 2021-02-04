@@ -53,8 +53,7 @@ class FIO_FileRecorder(BaseFileRecorder):
     def __init__(self, filename=None, macro=None, **pars):
         BaseFileRecorder.__init__(self)
         self.base_filename = filename
-        if macro:
-            self.macro = weakref.ref(macro) if macro else None
+        self.macro = weakref.ref(macro) if macro else None
         import PyTango
         self.db = PyTango.Database()
         if filename:
