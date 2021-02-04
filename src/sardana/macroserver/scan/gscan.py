@@ -64,7 +64,6 @@ from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
 from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
-# from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
 
 
 # ScanEndStatus enumeration indicates the reason of the scan end.
@@ -2688,6 +2687,7 @@ class HScan(SScan):
 
         m_state, m_positions = motion.readState(), motion.readPosition()
 
+        from sardana.taurus.core.tango.sardana.pool import Ready
         if m_state != Ready:
             self.dump_information(n, step, motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
