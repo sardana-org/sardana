@@ -105,7 +105,7 @@ controller must provide the shape of the calculation result in either
 of the formats:
 
 - one-element sequence with the length of the spectrum
-- two-element sequence with the horizonatal and vertical dimensions of the image
+- two-element sequence with the horizontal and vertical dimensions of the image
 
 using the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
 
