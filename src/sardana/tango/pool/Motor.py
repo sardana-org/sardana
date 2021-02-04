@@ -349,7 +349,7 @@ with this value is sent to clients using events.
                     pass
 
         if self.Sleep_bef_last_read > 0:
-            motor.set_instability_time(self.Sleep_bef_last_read / 1000.0)
+            motor.set_instability_time(self.Sleep_bef_last_read / 1000)
         motor.add_listener(self.on_motor_changed)
         self.set_state(DevState.ON)
 
@@ -475,7 +475,7 @@ with this value is sent to clients using events.
                 raise Exception("Cannot move: already in motion")
             try:
                 self.motor.position = position
-            except PoolException, pe:
+            except PoolException as pe:
                 throw_sardana_exception(pe)
 
             # manually store write dial position in the database

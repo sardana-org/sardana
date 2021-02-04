@@ -96,8 +96,8 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         # obtain preferred nexus file mode for writing from the filename
         # extension (defaults to hdf5)
         extension = os.path.splitext(filename)[1]
-        inv_formats = dict(itertools.izip(
-            self.formats.itervalues(), self.formats.iterkeys()))
+        inv_formats = dict(list(zip(
+            iter(self.formats.values()), iter(self.formats.keys()))))
         self.nxfilemode = inv_formats.get(extension.lower(), 'w5')
         self.currentlist = None
 
@@ -215,7 +215,7 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         self.fd.opendata(name)
         self.fd.putdata(data)
         if attrs is not None:
-            for k, v in attrs.items():
+            for k, v in list(attrs.items()):
                 self.fd.putattr(k, v)
         nid = self.fd.getdataID()
         self.fd.closedata()
@@ -296,21 +296,14 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
 def FileRecorder(filename, macro, **pars):
     ext = os.path.splitext(filename)[1].lower() or '.spec'
     rec_manager = macro.getMacroServer().recorder_manager
-
-    hinted_recorder = getattr(macro, 'hints', {}).get('FileRecorder', None)
-    if hinted_recorder is not None:
-        macro.deprecated("FileRecorder macro hints are deprecated. "
-                         "Use ScanRecorder variable instead.")
-        klass = rec_manager.getRecorderClass(hinted_recorder)
+    klasses = rec_manager.getRecorderClasses(
+        filter=BaseFileRecorder, extension=ext)
+    len_klasses = len(klasses)
+    if len_klasses == 0:
+        klass = rec_manager.getRecorderClass('SPEC_FileRecorder')
+    elif len_klasses == 1:
+        klass = list(klasses.values())[0]
     else:
-        klasses = rec_manager.getRecorderClasses(
-            filter=BaseFileRecorder, extension=ext)
-        len_klasses = len(klasses)
-        if len_klasses == 0:
-            klass = rec_manager.getRecorderClass('SPEC_FileRecorder')
-        elif len_klasses == 1:
-            klass = klasses.values()[0]
-        else:
-            raise AmbiguousRecorderError('Choice of recorder for %s '
-                                         'extension is ambiguous' % ext)
+        raise AmbiguousRecorderError('Choice of recorder for %s '
+                                     'extension is ambiguous' % ext)
     return klass(filename=filename, macro=macro, **pars)

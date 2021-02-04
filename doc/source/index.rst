@@ -36,10 +36,12 @@ Projects related to Sardana
 .. toctree::
     :hidden:
 
-    Home Page <http://sardana-controls.org>
+    Home Page <http://www.sardana-controls.org>
     Project Page <https://github.com/sardana-org/sardana>
     Download from PyPI <http://pypi.python.org/pypi/sardana>
-    docs
+    Documentation <docs>
+    Plugins Catalogue <http://github.com/sardana-org/sardana-plugins>
+    Wiki <http://github.com/sardana-org/sardana/wiki>
 
 .. _ALBA: http://www.albasynchrotron.es
 .. _DESY: http://www.desy.de
@@ -48,7 +50,7 @@ Projects related to Sardana
 .. _ESRF: http://esrf.eu
 .. _LGPL: http://www.gnu.org/licenses/lgpl.html
 .. _PyPi: http://pypi.python.org/pypi/sardana 
-.. _Documentation: http://sardana.readthedocs.org
+.. _Documentation: https://sardana-controls.org
 .. _Tango: http://www.tango-controls.org/
 .. _Taurus: http://taurus-scada.org/
 .. _IPython: http://ipython.org/

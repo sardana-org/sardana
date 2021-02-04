@@ -43,21 +43,20 @@ import sys
 import time
 import traceback
 import weakref
+import json
+from datetime import datetime
 import numpy
-
+import threading
 import PyTango
+import collections
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
-    DeviceProxy
-from taurus import Factory, Device, Attribute
+    DeviceProxy, AttributeProxy
+from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as \
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator, \
+    TangoDeviceNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessDict
@@ -65,10 +64,14 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
-from sardana.sardanaexception import AbortException, StopException
+from sardana.sardanaexception import AbortException, StopException, \
+    ReleaseException
 
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
+
+from sardana.pool import AcqSynchType
+from sardana.taurus.core.tango.sardana import PlotType
 
 Ready = Standby = DevState.ON
 Counting = Acquiring = Moving = DevState.MOVING
@@ -87,6 +90,15 @@ QUALITY = {
     AttrQuality.ATTR_ALARM: 'ALARM',
     None: 'UNKNOWN'
 }
+
+
+def _is_referable(channel):
+    # Equivalent to ExpChannel.isReferable.
+    # Use DeviceProxy instead of taurus to avoid crashes in Py3
+    # See: tango-controls/pytango#292
+    if isinstance(channel, str):
+        channel = DeviceProxy(channel)
+    return "valueref" in list(map(str.lower, channel.get_attribute_list()))
 
 
 class BaseElement(object):

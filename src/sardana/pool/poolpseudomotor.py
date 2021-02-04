@@ -45,7 +45,6 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
 
-from PyTango import AttributeProxy
 
 class Position(SardanaAttribute):
 
@@ -136,7 +135,7 @@ class Position(SardanaAttribute):
                     # because of a cold start
                     pos_attr.update(propagate=0)
                 if pos_attr.in_error():
-                    raise PoolException("Cannot get '%' position" % pos_attr.obj.name,
+                    raise PoolException("Cannot get '%s' position" % pos_attr.obj.name,
                                         exc_info=pos_attr.exc_info)
                 value = pos_attr.value
             ret.append(value)
@@ -150,7 +149,7 @@ class Position(SardanaAttribute):
             if not pos_attr.has_value():
                 pos_attr.update(propagate=0)
             if pos_attr.in_error():
-                raise PoolException("Cannot get '%' position" % pos_attr.obj.name,
+                raise PoolException("Cannot get '%s' position" % pos_attr.obj.name,
                                     exc_info=pos_attr.exc_info)
             ret.append(pos_attr.value)
         return ret
@@ -202,7 +201,7 @@ class Position(SardanaAttribute):
                 positions = obj.get_siblings_positions()
                 positions[obj] = new_position
                 new_positions = len(positions) * [None]
-                for pseudo, position in positions.items():
+                for pseudo, position in list(positions.items()):
                     new_positions[pseudo.axis - 1] = position
 
             result = obj.controller.calc_all_physical(new_positions,
@@ -227,7 +226,8 @@ class Position(SardanaAttribute):
                 serial=True)
             if not len(dial_position_values):
                 self._local_timestamp = time.time()
-            for motion_obj, position_value in dial_position_values.items():
+            for motion_obj, position_value in \
+                    list(dial_position_values.items()):
                 motion_obj.put_dial_position(
                     position_value, propagate=propagate)
 
@@ -258,7 +258,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         kwargs = PoolElement.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
-        for elem_list in self.get_physical_elements().values():
+        for elem_list in list(self.get_physical_elements().values()):
             for elem in elem_list:
                 physical_elements.append(elem.name)
         cl_name = self.__class__.__name__
@@ -293,7 +293,8 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     def get_siblings(self):
         if self._siblings is None:
             self._siblings = siblings = set()
-            for axis, sibling in self.controller.get_element_axis().items():
+            for axis, sibling in \
+                    list(self.controller.get_element_axis().items()):
                 if axis == self.axis:
                     continue
                 siblings.add(sibling)
@@ -486,7 +487,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             state_info = {}
             action_cache = self.get_action_cache()
             ctrl_state_infos = action_cache.read_state_info(serial=True)
-            for motion_obj, ctrl_state_info in ctrl_state_infos.items():
+            for motion_obj, ctrl_state_info in list(ctrl_state_infos.items()):
                 state_info[motion_obj] = motion_state_info = \
                     motion_obj._from_ctrl_state_info(ctrl_state_info)
                 motion_obj.put_state_info(motion_state_info)
@@ -534,7 +535,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                                                 write_pos=self.drift_correction)
         positions[self] = new_position
         pseudo_positions = len(positions) * [None]
-        for pseudo, position in positions.items():
+        for pseudo, position in list(positions.items()):
             pseudo_positions[pseudo.axis - 1] = position
         curr_physical_positions = self._position.get_physical_positions()
         physical_positions = self.controller.calc_all_physical(pseudo_positions,
@@ -550,31 +551,23 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
 
         if items is None:
             items = {}
-        for new_position, element in zip(physical_positions.value, user_elements):
+        for new_position, element in zip(physical_positions.value,
+                                         user_elements):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
-            # TODO: get the configuration for an specific sardana class and
-            # get rid of AttributeProxy - see sardana-org/sardana#663
-            config = AttributeProxy(element.name + '/position').get_config()
+            # TODO: use Sardana attribute configuration and
+            #  get rid of accessing tango - see sardana-org/sardana#663
+            from sardana.tango.core.util import _check_attr_range
             try:
-                high = float(config.max_value)
-            except ValueError:
-                high = None
-            try:
-                low = float(config.min_value)
-            except ValueError:
-                low = None
-            if high is not None:
-                if float(new_position) > high:
-                    msg = "requested movement of %s is above its upper limit"\
-                        % element.name
-                    raise RuntimeError(msg)
-            if low is not None:
-                if float(new_position) < low:
-                    msg = "requested movement of %s is below its lower limit"\
-                        % element.name
-                    raise RuntimeError(msg)
+                _check_attr_range(element.name, "position", new_position)
+            except ValueError as e:
+                # TODO: don't concatenate exception message whenever
+                #  tango-controls/pytango#340 is fixed
+                msg = "requested move of {} is outside of limits ({})".format(
+                    element.name, str(e)
+                )
+                raise ValueError(msg) from e
 
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
@@ -592,7 +585,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         self._stopped = False
         items = self.calculate_motion(new_position)
         timestamp = time.time()
-        for item, position_info in items.items():
+        for item, position_info in list(items.items()):
             item.set_write_position(position_info[0], timestamp=timestamp,
                                     propagate=1)
         if not self._simulation_mode:

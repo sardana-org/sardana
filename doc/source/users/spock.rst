@@ -57,7 +57,9 @@ Afterward, spock :term:`CLI` will start normally:
 
     Spock's sardana extension 1.0 loaded with profile: spockdoor (linked to door 'LAB-01-D01')
 
-    LAB-01-D01 [1]: 
+    LAB-01-D01 [1]:
+.. note::
+    If you want to connect to another gate you need to create a new spock profile.
 
 Starting spock with a custom profile
 ------------------------------------
@@ -85,6 +87,11 @@ Example::
 
 The first time a certain profile is used you will be asked to which door you
 want to connect to (see previous chapter).
+
+.. note::
+  Spock profiles are stored by default in ``~/.ipython/profile_<profile_name>``
+  directory. For more information please refer to the
+  `IPython documentation <http://ipython.readthedocs.io/en/stable/config/intro.html#profiles>`_.
 
 Spock IPython_ Primer
 ---------------------
@@ -177,14 +184,47 @@ Miscellaneous
     - :class:`~sardana.macroserver.macros.expert.sar_info` *object*
       displays detailed information about an element
 
+.. _sardana-spock-stopping:
+
 Stopping macros
 ---------------
 
 Some macros may take a long time to execute. To stop a macro in the middle of
-its execution type :kbd:`Control+c`.
+its execution type :kbd:`Control+c`. If the stopping process last too long,
+you may trigger the aborting process with a second :kbd:`Control+c`.
+Here be patient, further issuing of :kbd:`Control+c` may leave your macro
+in an uncontrolled way. Use them only if you are sure that the aborting
+process will not bring your system to a safe state.
 
 Macros that move motors or acquire data from sensors will automatically stop all
 motion and/or all acquisition.
+
+While stopping and aborting macros Spock reports you what happens behind the
+scene with informative messages:
+
+.. sourcecode:: spock
+
+    LAB-01-D01 [1]: ascan mot01 0 10 100 0.1
+    Operation will be saved in /tmp/test.h5 (HDF5::NXscan from NXscanH5_FileRecorder)
+    Scan #342 started at Wed Sep  9 23:01:14 2020. It will take at least 0:00:10.174246
+                                           tg_test
+     #Pt No    mot01      ct01     gct01    double_scalar     dt
+       0         0        0.1     2.98023e-08      243.47     0.0967791
+       1        0.1       0.1     5.91929e-08      243.47     0.239136
+       2        0.2       0.1     1.1595e-07      243.47     0.384191
+    ^C
+    Ctrl-C received: Stopping...
+    Stopping Motion(['mot01']) reserved by ascan
+    Motion(['mot01']) stopped
+    Stopping mntgrp_expconf reserved by ascan
+    mntgrp_expconf stopped
+    Stopping /monitor reserved by ascan
+    Stopping /mirror reserved by ascan
+    Stopping /slit reserved by ascan
+    Operation saved in /tmp/test.h5 (HDF5::NXscan)
+    Scan #342 ended at Wed Sep  9 23:01:15 2020, taking 0:00:01.055814. Dead time 33.7% (motion dead time 12.8%)
+    Executing ascan.on_stop method...
+    Stopping done!
 
 Exiting spock
 -------------
@@ -285,7 +325,7 @@ to switch active measurement groups type
 :class:`~sardana.macroserver.macros.env.senv` **ActiveMntGrp** *mg_name*.
 
 You can also create, modify and select measurement groups using the
-:class:`~sardana.spock.magic.expconf` command
+:ref:`expconf <expconf_ui>` command
 
 Scanning
 --------
@@ -376,20 +416,18 @@ of files:
     LAB-01-D01 [2]: senv ScanFile "['scans.h5', 'scans.dat']"
     ScanFile = ['scans.h5', 'scans.dat']
 
+.. _sardana-spock-showscan:
+
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
-Sardana provides a scan data viewer for scans which were stored in a `NeXus`_
-file. Without arguments, :class:`~sardana.macroserver.macros.scan.showscan`
-will show you the result of the last scan in a :term:`GUI`:
+You can show plots for the current scan (i.e. plotting the scan *online*) by
+launching the :func:`showscan online <sardana.spock.magic.showscan>` command.
 
-.. figure:: /_static/spock_snapshot02.png
-    :height: 600
-    
-    Scan data viewer in action
-
-:class:`~sardana.macroserver.macros.scan.showscan` *scan_number* will display
-data for the given scan number.
+Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
+file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`
+spock command. It accepts scan number as an argument, and will show the last scan
+when invoked without arguments.
 
 The history of scans is available through the
 :class:`~sardana.macroserver.macros.scan.scanhist` macro:
@@ -403,6 +441,218 @@ The history of scans is available through the
        3    dscan mot01 20.0 30.0 10 0.1   2012-07-03 10:36:38   2012-07-03 10:36:43   Not stored!
        4   ascan gap01 10.0 100.0 20 1.0              12:56:47              12:57:18   Not stored!
        5     ascan gap01 1.0 10.0 20 0.1              13:19:05              13:19:13      scans.h5
+
+Accessing macro data
+--------------------
+
+The command :class:`~sardana.spock.magic.macrodata`  allows to retrieve the data of the last macro run in spock.
+If this macro does not provide any data an error message is thrown.
+Example accesing scan data:
+
+.. sourcecode:: spock
+
+   Door_1 [9]: ascan mot17 1 10 2 1
+   ScanDir is not defined. This operation will not be stored persistently. Use "expconf" (or "senv ScanDir <abs directory>") to enable it
+   Scan #2 started at Tue Feb 13 11:16:18 2018. It will take at least 0:00:05.048528
+   #Pt No    mot17      ct17      ct19      ct20       dt
+   0         1         1         3         4      0.865325
+   1        5.5        1         3         4      2.51148    
+   2         10        1         3         4      4.16662   
+   Scan #2 ended at Tue Feb 13 11:16:24 2018, taking 0:00:05.201949. Dead time 42.3% (motion dead time 40.5%)         
+   Door_1 [10]: r = %macrodata  
+   Door_1 [11]: r[0].data.keys()   
+   Result [11]:            
+   ['point_nb',                     
+   'timestamp',                
+   'mot17',                       
+   'haso111n:10000/expchan/ctctrl05/4', 
+   'haso111n:10000/expchan/ctctrl05/1',  
+   'haso111n:10000/expchan/ctctrl05/3'] 
+   Door_1 [12]: r[0].data['point_nb']   
+   Result [12]: 0  
+   Door_1 [13]: r[0].data['mot17'] 
+   Result [13]: 1.0  
+   Door_1 [16]: r[0].data['haso111n:10000/expchan/ctctrl05/1']
+   Result [16]: 1.0
+
+.. |br| raw:: html
+
+    <br>
+
+Changing appearance with View Options
+-------------------------------------
+
+The *View Options* allow the users to customize the output displayed by certain
+macros. They are set by the macro :class:`~sardana.macroserver.macros.env.setvo`.
+The macro :class:`~sardana.macroserver.macros.env.usetvo` returns the
+*View Options* to the default value. And the macro
+:class:`~sardana.macroserver.macros.env.lsvo` lists the current values.
+       
+Available *View Options*:
+
+- **ShowDial**: Select if the :term:`dial` information of the motor should be
+  displayed. |br| Default value ``False`` (no :term:`dial` but only
+  :term:`user` information).
+- **ShowCtrlAxis**: Select if the name of the controller the motor belongs to
+  should be displayed. Default value ``False`` (no controller name).
+- **PosFormat**: Set the number of decimal digits displayed in the motor
+  position/limits. |br| Default value ``-1`` (all digits).
+- **OutputBlock**: Set if the line information during scans is appended to the
+  output or updated. |br| Default value ``False`` (lines are appended to the
+  displayed output during the scan).
+- **DescriptionLength**: Length (number of characters) of the macro
+  description printed by ``lsdef`` macro. |br| Default value ``60``.
+
+  
+Editing macros
+--------------
+
+The command :class:`~sardana.spock.magic.edmac` allows to edit the macros
+directly from spock. See :ref:`sardana-macros-howto` section.
+
+
+Debugging problems
+------------------
+
+Spock provides some commands that help to debug or recognize the errors in
+case a macro fails when being executed.
+
+    - :class:`~sardana.spock.magic.www` prints the error message from the
+      last macro execution
+
+    - :class:`~sardana.spock.magic.debug` used with ``on`` as parameter
+      activates the print out of the debug messages during macro execution.
+      Set it to ``off`` to deactivate it.
+
+    - :class:`~sardana.spock.magic.post_mortem` prints the current logger
+      messages. If no argument is specified it reads the ``debug`` stream.
+      Valid values are ``output``, ``critical``, ``error``, ``warning``,
+      ``info``, ``debug`` and ``result``.
+
+.. _sardana-spock-syntax:
+
+Spock syntax
+------------
+
+*Spock syntax* is used to execute macros. It is based on space
+separated list of parameter values. If the string parameter values contain
+spaces itself these **must** be enclosed in quotes, either single quotes
+``''`` or double quotes ``""``.
+
+The spock syntax was extended with the use of square brackets ``[]`` for
+macros which define
+:ref:`repeat parameters <sardana-macro-repeat-parameters>` as arguments.
+Repeat parameter values must be enclosed in square brackets. If the repeat
+parameter is composed from more than one internal parameter its every
+repetition must be enclosed in another square brackets as well.
+
+For example, the ``move_with_timeout`` macro::
+
+    class move_with_timeout(Macro):
+        """Execute move with a timeout"""
+
+        param_def = [
+            ['m_p_pair',
+             [['motor', Type.Motor, None, 'Motor to move'],
+              ['pos',  Type.Float, None, 'Position to move to']],
+             None, 'List of motor/position pairs'],
+            ['timeout', Type.Float, None, 'Timeout value']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+Must use the square brackets for the ``m_p_pair`` parameter and its
+repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move_with_timeout [[th 8.4] [tth 16.8]] 50
+
+However for the commodity reasons the square brackets may be skipped. The
+following examples explain in which cases.
+
+Repeat parameter is the last one
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter is the last one in the parameters definition
+both square brackets (for the repeat parameter and for the repetition) may
+be skipped.
+
+For example, the ``move`` macro::
+
+    class move(Macro):
+        """Execute move"""
+
+        param_def = [
+            ['m_p_pair',
+             [['motor', Type.Motor, None, 'Motor to move'],
+              ['pos',  Type.Float, None, 'Position to move to']],
+             None, 'List of motor/position pairs']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+May skip the square brackets for the ``m_p_pair`` parameter and its
+repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move th 8.4 tth 16.8
+
+This is equivalent to:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: move [[th 8.4] [tth 16.8]]
+
+Repeat parameter has only one internal parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter contains only one internal parameter the square
+brackets for the repetition **must** be skipped.
+
+For example, the ``power_motor`` macro::
+
+    class power_motor(Macro):
+        """Power on/off motor(s)"""
+
+        param_def = [
+            ['motor_list', [['motor', Type.Motor, None, 'motor name']],
+                None, 'List of motors'],
+            ['power_on', Type.Boolean, None, 'motor power state']
+        ]
+
+        def run(self, *args, **kwargs):
+            pass
+
+Must use the square brackets for the ``motor_list`` parameter but not for
+its repeats:
+
+.. sourcecode:: spock
+
+   Door_1 [1]: power_motor [th tth] True
+
+Repeat parameter has only one internal parameter and only one repetition value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the repeat parameter contains only one internal parameter and you
+would like to pass only one repetition value then the square brackets for
+the repeat parameter may be skipped as well resulting in no square brackets
+being used.
+
+This assumes the ``power_motor`` macro from the previous example.
+The following two macro executions are equivalent:
+
+.. sourcecode:: spock
+
+    Door_1 [1]: power_motor th True
+    Door_1 [2]: power_motor [th] True
+
+A set of macro examples defining complex repeat parameters can be found in
+:ref:`sardana-devel-macro-parameter-examples`.
+You can see the invocation example for each of these macros in its docstring.
 
 
 Using spock as a Python_ console
@@ -426,22 +676,22 @@ spock console:
 Using spock as a Tango_ console
 -------------------------------
 
-As metioned in the beggining of this chapter, the sardana spock automatically
-activates the PyTango_ 's ipython console extension. Therefore all Tango_
+As mentioned in the beginning of this chapter, the sardana spock automatically
+activates the PyTango_ 's ipython console extension [#]_. Therefore all Tango_
 features are automatically available on the sardana spock console. For example,
-creating a :class:`~PyTango.DeviceProxy` will work inside the sardana spock
+creating a :class:`tango.DeviceProxy` will work inside the sardana spock
 console:
 
 .. sourcecode:: spock
 
-    LAB-01-D01 [1]: tgtest = PyTango.DeviceProxy("sys/tg_test/1")
+    LAB-01-D01 [1]: tgtest = Device("sys/tg_test/1")
     
-    LAB-01-D01 [2]: print( tgtest.state() )
+    LAB-01-D01 [2]: print(tgtest.state())
     RUNNING
 
 .. rubric:: Footnotes
 
-.. [#] The PyTango_ ipython documentation can be found :ref:`here <itango>`
+.. [#] The PyTango_ ipython documentation can be found here: ITango_
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
@@ -455,6 +705,7 @@ console:
 
 .. _Tango: http://www.tango-controls.org/
 .. _PyTango: http://packages.python.org/PyTango/
+.. _ITango: https://pythonhosted.org/itango/
 .. _Taurus: http://packages.python.org/taurus/
 .. _QTango: http://www.tango-controls.org/download/index_html#qtango3
 .. _`PyTango installation steps`: http://packages.python.org/PyTango/start.html#getting-started

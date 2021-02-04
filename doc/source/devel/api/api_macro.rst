@@ -14,6 +14,13 @@ Macro class
     :members:
     :undoc-members:
 
+Hookable class
+--------------
+
+.. autoclass:: Hookable
+    :members:
+    :undoc-members:
+
 iMacro class
 ------------
 
@@ -35,3 +42,23 @@ imacro decorator
     :members:
     :undoc-members:
 
+StopException
+-------------
+
+.. autoclass:: StopException
+    :members:
+    :undoc-members:
+
+AbortException
+--------------
+
+.. autoclass:: AbortException
+    :members:
+    :undoc-members:
+
+InterruptException
+------------------
+
+.. autoclass:: InterruptException
+    :members:
+    :undoc-members:

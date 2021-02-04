@@ -40,10 +40,11 @@ PoolElementType = Enumeration("PoolElementType",
                                "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
-                          ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-                           "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
-                           "Shape", "DataType",
-                           "Unknown", "Synchronizer"))
+                          ("Channel", "Enabled", "Output", "PlotType",
+                           "PlotAxes", "Timer", "Monitor", "Synchronization",
+                           "ValueRefPattern", "ValueRefEnabled",
+                           "Conditioning", "Normalization", "NXPath",
+                           "Shape", "DataType", "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
@@ -81,8 +82,8 @@ class BaseSardanaElement(object):
     def __getattr__(self, name):
         return getattr(self.getObj(), name)
 
-    def __cmp__(self, elem):
-        return cmp(self.name, elem.name)
+    def __lt__(self, elem):
+        return self.name < elem.name
 
     def getData(self):
         return self._data
@@ -98,7 +99,7 @@ class BaseSardanaElement(object):
 
     def getTypes(self):
         elem_types = self.type
-        if isinstance(elem_types, (str, unicode)):
+        if isinstance(elem_types, str):
             return [elem_types]
         return elem_types
 
@@ -170,7 +171,7 @@ class BaseSardanaElementContainer:
         return elems
 
     def getElementNamesOfType(self, t):
-        return [e.name for e in self.getElementsOfType(t).values()]
+        return [e.name for e in list(self.getElementsOfType(t).values())]
 
     def getElementsWithInterface(self, interface):
         elems = self._interfaces_dict.get(interface, {})
@@ -183,18 +184,19 @@ class BaseSardanaElementContainer:
         return ret
 
     def getElementNamesWithInterface(self, interface):
-        return [e.name for e in self.getElementsWithInterface(interface).values()]
+        return [e.name for e in
+                list(self.getElementsWithInterface(interface).values())]
 
     def hasElementName(self, elem_name):
         return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
         elem_name = elem_name.lower()
-        for elems in self._type_elems_dict.values():
+        for elems in list(self._type_elems_dict.values()):
             elem = elems.get(elem_name)  # full_name?
             if elem is not None:
                 return elem
-            for elem in elems.values():
+            for elem in list(elems.values()):
                 if elem.name.lower() == elem_name:
                     return elem
 
@@ -203,14 +205,14 @@ class BaseSardanaElementContainer:
         elems = self._interfaces_dict.get(interface, {})
         if elem_name in elems:
             return elems[elem_name]
-        for elem in elems.values():
+        for elem in list(elems.values()):
             if elem.name.lower() == elem_name:
                 return elem
 
     def getElements(self):
         ret = set()
-        for elems in self._type_elems_dict.values():
-            ret.update(elems.values())
+        for elems in list(self._type_elems_dict.values()):
+            ret.update(list(elems.values()))
         return ret
 
     def getInterfaces(self):

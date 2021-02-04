@@ -31,6 +31,7 @@ import taurus.core
 from taurus.external.qt import Qt
 
 
+
 class DoorOutput(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's attributes: Output, Info, Warning and Error."""
 
@@ -42,6 +43,10 @@ class DoorOutput(Qt.QPlainTextEdit):
         self.stopAction.setCheckable(True)
         self.stopAction.setChecked(False)
         self._isStopped = False
+        self.showDebug = Qt.QAction("Show debug details", self)
+        self.showDebug.setCheckable(True)
+        self.showDebug.setChecked(False)
+        self._isDebugging = False
 
     def onDoorOutputChanged(self, output):
         """call on output attribute changed"""
@@ -91,6 +96,21 @@ class DoorOutput(Qt.QPlainTextEdit):
         txt += "</font>"
         self.appendHtmlText(txt)
 
+    def onDoorDebugChanged(self, debug):
+        """call on debug attribute changed"""
+        txt = "<font color=\"Grey\">"
+        if self._isDebugging:
+            if debug is None:
+                return
+            for i, line in enumerate(debug):
+                if i > 0:
+                    txt += "<br/>"
+                txt += line.replace(' ', '&nbsp;')
+            txt += "</font>"
+            self.appendHtmlText(txt)
+            if not self._isStopped:
+                self.moveCursor(Qt.QTextCursor.End)
+
     def appendHtmlText(self, text):
         self.appendHtml(text)
         if not self._isStopped:
@@ -101,19 +121,25 @@ class DoorOutput(Qt.QPlainTextEdit):
         clearAction = Qt.QAction("Clear", menu)
         menu.addAction(clearAction)
         menu.addAction(self.stopAction)
+        menu.addAction(self.showDebug)
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
+        self.showDebug.toggled.connect(self.showDebugDetails)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
         self._isStopped = stop
 
+    def showDebugDetails(self, debug):
+        self._isDebugging = debug
+
 
 class DoorDebug(Qt.QPlainTextEdit):
+    """Deprecated. Do not use"""
+
     """Widget used for displaying changes of door's Debug attribute."""
 
     def __init__(self, parent=None):
@@ -124,6 +150,12 @@ class DoorDebug(Qt.QPlainTextEdit):
         self.stopAction.setCheckable(True)
         self.stopAction.setChecked(False)
         self._isStopped = False
+
+        from taurus.core.util.log import warning
+
+        msg = ("DoorDebug is deprecated since version 3.0.3. "
+               "Use DoorOutput 'Show debug details' feature instead.")
+        warning(msg)
 
     def onDoorDebugChanged(self, debug):
         """call on debug attribute changed"""
@@ -143,9 +175,8 @@ class DoorDebug(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
@@ -175,51 +206,28 @@ class DoorResult(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
+        clearAction.triggered.connect(self.clear)
         menu.exec_(event.globalPos())
 
-
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-# Door attributes listeners
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-
-class DoorAttrListener(Qt.QObject):
-
-    def __init__(self, attrName):
-        Qt.QObject.__init__(self)
-        self.attrName = attrName
-        self.attrObj = None
-
-    def setDoorName(self, doorName):
-        if not self.attrObj is None:
-            self.attrObj.removeListener(self)
-        self.attrObj = taurus.Attribute(doorName, self.attrName)
-        self.attrObj.addListener(self)
-
-    def eventReceived(self, src, type, value):
-        if (type == taurus.core.taurusbasetypes.TaurusEventType.Error or
-                type == taurus.core.taurusbasetypes.TaurusEventType.Config):
-            return
-        self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
 
 if __name__ == "__main__":
     import sys
     import taurus
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
     args = app.get_command_line_args()
 
     doorOutput = DoorOutput()
     if len(args) == 1:
         door = taurus.Device(args[0])
-        Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"),
-                           doorOutput.onDoorOutputChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"),
-                           doorOutput.onDoorInfoChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("warningUpdated"),
-                           doorOutput.onDoorWarningChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("errorUpdated"),
-                           doorOutput.onDoorErrorChanged)
+        door.outputUpdated.connect(doorOutput.onDoorOutputChanged)
+        door.infoUpdated.connect(doorOutput.onDoorInfoChanged)
+        door.warningUpdated.connect(doorOutput.onDoorWarningChanged)
+        door.errorUpdated.connect(doorOutput.onDoorErrorChanged)
+        door.debugUpdated.connect(doorOutput.onDoorDebugChanged)
+
     doorOutput.show()
     sys.exit(app.exec_())

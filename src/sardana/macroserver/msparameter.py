@@ -29,20 +29,43 @@ macros"""
 __all__ = ["WrongParam", "MissingParam", "SupernumeraryParam",
            "UnknownParamObj", "WrongParamType", "MissingRepeat",
            "SupernumeraryRepeat", "TypeNames", "Type", "ParamType",
-           "ParamRepeat", "ElementParamType", "ElementParamInterface",
+           "ElementParamType", "ElementParamInterface",
            "AttrParamType", "AbstractParamTypes", "ParamDecoder"]
 
 __docformat__ = 'restructuredtext'
 
 from copy import deepcopy
 from lxml import etree
-
 from taurus.core.util.containers import CaselessDict
 
 from sardana import ElementType, INTERFACES_EXPANDED
+from sardana.sardanautils import is_non_str_seq
 from sardana.macroserver.msbase import MSBaseObject
 from sardana.macroserver.msexception import MacroServerException, \
     UnknownMacro, UnknownMacroLibrary
+
+
+class OptionalParamClass(dict):
+    def __init__(self, obj):
+        super(OptionalParamClass, self).__init__(obj)
+        attributes = dir(self)
+
+        for attr in attributes:
+            # items is necessary fo python 3.5 implementation of json
+            if attr in ['__setattr__', 'raise_error', '__class__',
+                        '__dict__', '__weakref__', 'items']:
+                continue
+            self.__setattr__(attr, self.raise_error)
+        self.__setattr__ = self.raise_error
+
+    def __repr__(self):
+        return 'Optional'
+
+    def raise_error(*args, **kwargs):
+        raise RuntimeError('can not be accessed')
+
+
+Optional = OptionalParamClass({'___optional_parameter__': True})
 
 
 class WrongParam(MacroServerException):
@@ -117,7 +140,7 @@ class TypeNames:
             pass
 
     def __str__(self):
-        return str(self._type_names.keys())
+        return str(list(self._type_names.keys()))
 
 #    def __getattr__(self, name):
 #        if name not in self._pending_type_names:
@@ -161,26 +184,6 @@ class ParamType(MSBaseObject):
         kwargs = MSBaseObject.serialize(self, *args, **kwargs)
         kwargs['composed'] = False
         return kwargs
-
-
-class ParamRepeat(object):
-    # opts: min, max
-
-    def __init__(self, *param_def, **opts):
-        self.param_def = param_def
-        self.opts = {'min': 1, 'max': None}
-        self.opts.update(opts)
-        self._obj = list(param_def)
-        self._obj.append(self.opts)
-
-    def items(self):
-        return self.opts.items()
-
-    def __getattr__(self, name):
-        return self.opts[name]
-
-    def obj(self):
-        return self._obj
 
 
 class ElementParamType(ParamType):
@@ -229,10 +232,11 @@ class ElementParamType(ParamType):
             for elem_info in pool.getElements():
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
-        for macro_lib_name, macro_lib in macro_server.get_macros().items():
+        macros = macro_server.get_macros()
+        for macro_lib_name, macro_lib in list(macros.items()):
             if self.accepts(macro_lib):
                 objs[macro_lib_name] = macro_lib
-        for macro_name, macro in macro_server.get_macros().items():
+        for macro_name, macro in list(macro_server.get_macros().items()):
             if self.accepts(macro):
                 objs[macro_name] = macro
 
@@ -240,11 +244,11 @@ class ElementParamType(ParamType):
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.keys()
+        return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.values()
+        return list(obj_dict.values())
 
     def serialize(self, *args, **kwargs):
         kwargs = ParamType.serialize(self, *args, **kwargs)
@@ -302,18 +306,19 @@ class ElementParamInterface(ElementParamType):
         else:
             pools = macro_server.get_pool(pool),
         for pool in pools:
-            for elem_info in pool.getElementsWithInterface(self._name).values():
+            elements = pool.getElementsWithInterface(self._name)
+            for elem_info in list(elements.values()):
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
         return objs
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.keys()
+        return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.values()
+        return list(obj_dict.values())
 
 
 class AttrParamType(ParamType):
@@ -362,7 +367,7 @@ class ParamDecoder:
         if len(raw_params) > len_params_def:
             msg = ("%r are supernumerary with respect to definition" %
                    raw_params[len_params_def:])
-            raise SupernumeraryParam, msg
+            raise SupernumeraryParam(msg)
         # iterate over definition since missing values may just mean using
         # the default values
         for i, param_def in enumerate(params_def):
@@ -386,6 +391,7 @@ class ParamDecoder:
         """
         param_type = param_def["type"]
         name = param_def["name"]
+        optional_param = False
         if isinstance(param_type, list):
             param = self.decodeRepeat(raw_param, param_def)
         else:
@@ -397,22 +403,26 @@ class ParamDecoder:
                 else:
                     value = raw_param
                 # None or [] indicates default value
-                if value is None or (isinstance(value, list) and len(value) == 0):
+                if value is None or (isinstance(value, list) and
+                                     len(value) == 0):
                     value = param_def['default_value']
                 if value is None:
-                    raise MissingParam, "'%s' not specified" % name
+                    raise MissingParam("'%s' not specified" % name)
+                elif value is Optional:
+                    param = None
+                    optional_param = True
                 else:
                     # cast to sting to fulfill with ParamType API
-                    value = str(value)
-                param = param_type.getObj(value)
-            except ValueError, e:
-                raise WrongParamType, e.message
-            except UnknownParamObj, e:
-                raise WrongParam, e.message
-            if param is None:
+                    param = param_type.getObj(str(value))
+
+            except ValueError as e:
+                raise WrongParamType(str(e)) from e
+            except UnknownParamObj as e:
+                raise WrongParam(str(e)) from e
+            if param is None and not optional_param:
                 msg = 'Could not create %s parameter "%s" for "%s"' % \
                       (param_type.getName(), name, raw_param)
-                raise WrongParam, msg
+                raise WrongParam(msg)
         return param
 
     def decodeRepeat(self, raw_param_repeat, param_repeat_def):
@@ -438,11 +448,18 @@ class ParamDecoder:
         if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (len_rep, name, min_rep)
-            raise MissingRepeat, msg
+            raise MissingRepeat(msg)
         if max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
-            raise SupernumeraryRepeat, msg
+            raise SupernumeraryRepeat(msg)
+        # repeat params with only one member and only one repetition value are
+        # allowed - encapsulate it in list and try to decode anyway;
+        # for the moment this only works for non XML decoding but could be
+        # extended in the future to support XML as well
+        if not is_non_str_seq(raw_param_repeat)\
+                and not isinstance(raw_param_repeat, etree._Element):
+            raw_param_repeat = [raw_param_repeat]
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
                 repeat = []
@@ -463,13 +480,16 @@ class ParamDecoder:
                 # to indicate default value
                 elif isinstance(raw_repeat, list) and len(raw_repeat) > 0:
                     msg = 'Repetitions of just one member must not be lists'
-                    raise WrongParam, msg
+                    raise WrongParam(msg)
                 repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
 
     def getParamList(self):
         return self.params
+
+    def __iter__(self):
+        return iter(self.params)
 
     def __getattr__(self, name):
         return getattr(self.params, name)
@@ -489,7 +509,7 @@ class FlatParamDecoder:
         if not self.isPossible(params_def):
             msg = ("%s parameter definition is not compatible with"
                    " FlatParamDecoder" % params_def)
-            raise AttributeError, msg
+            raise AttributeError(msg)
         self.decode()
 
     @staticmethod
@@ -526,13 +546,13 @@ class FlatParamDecoder:
             if str_idx == str_len:
                 if def_val is None:
                     if not isinstance(type_class, list):
-                        raise MissingParam, "'%s' not specified" % name
+                        raise MissingParam("'%s' not specified" % name)
                     elif isinstance(type_class, list):
                         min_rep = par_def['min']
                         if min_rep > 0:
                             msg = "'%s' demands at least %d values" %\
                                   (name, min_rep)
-                            raise WrongParam, msg
+                            raise WrongParam(msg)
                 if not def_val is None:
                     new_obj = def_val
             else:
@@ -547,14 +567,14 @@ class FlatParamDecoder:
                     par_str = raw_params[str_idx]
                     try:
                         val = par_type.getObj(par_str)
-                    except ValueError, e:
-                        raise WrongParamType, e.message
-                    except UnknownParamObj, e:
-                        raise WrongParam, e.message
+                    except ValueError as e:
+                        raise WrongParamType(str(e)) from e
+                    except UnknownParamObj as e:
+                        raise WrongParam(str(e)) from e
                     if val is None:
                         msg = 'Could not create %s parameter "%s" for "%s"' % \
                               (par_type.getName(), name, par_str)
-                        raise WrongParam, msg
+                        raise WrongParam(msg)
                     dec_token = 1
                     new_obj = val
                 str_idx += dec_token
@@ -583,11 +603,14 @@ class FlatParamDecoder:
         if rep_nr < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (rep_nr, name, min_rep)
-            raise MissingRepeat, msg
+            raise MissingRepeat(msg)
         return dec_token, obj_list
 
     def getParamList(self):
         return self.params
+
+    def __iter__(self):
+        return iter(self.params)
 
     def __getattr__(self, name):
         return getattr(self.params, name)

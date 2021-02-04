@@ -251,27 +251,27 @@ class MotionPath(object):
         self.duration = duration
 
     def info(self):
-        print "Small movement =", self.small_motion
-        print "length =", self.displacement
-        print "position where maximum velocity will be reached =", \
-            self.max_vel_pos
-        print "necessary displacement to reach maximum velocity =", \
-            self.displacement_reach_max_vel
-        print "necessary displacement to stop from maximum velocity =", \
-            self.displacement_reach_min_vel
-        print "maximum velocity possible =", self.max_vel
-        print "time at top velocity =", self.at_max_vel_time
-        print "displacement at top velocity =", self.at_max_vel_displacement
-        print "time to reach maximum velocity =", self.max_vel_time
-        print "time to reach minimum velocity =", self.min_vel_time
-        print "time the motion will take =", self.duration
-        print ""
-        print "For long movements (where top vel is possible), necessary " \
+        print("Small movement =", self.small_motion)
+        print("length =", self.displacement)
+        print("position where maximum velocity will be reached =",
+              self.max_vel_pos)
+        print("necessary displacement to reach maximum velocity =",
+              self.displacement_reach_max_vel)
+        print("necessary displacement to stop from maximum velocity =",
+              self.displacement_reach_min_vel)
+        print("maximum velocity possible =", self.max_vel)
+        print("time at top velocity =", self.at_max_vel_time)
+        print("displacement at top velocity =", self.at_max_vel_displacement)
+        print("time to reach maximum velocity =", self.max_vel_time)
+        print("time to reach minimum velocity =", self.min_vel_time)
+        print("time the motion will take =", self.duration)
+        print("")
+        print("For long movements (where top vel is possible), necessary "
               "displacement to reach maximum velocity =", \
-            self.displacement_reach_max_vel
-        print "For long movements (where top vel is possible), necessary " \
-              "displacement to stop from maximum velocity =", \
-            self.displacement_reach_min_vel
+              self.displacement_reach_max_vel)
+        print("For long movements (where top vel is possible), necessary "
+              "displacement to stop from maximum velocity =",
+              self.displacement_reach_min_vel)
 
 
 class Motion(object):
@@ -536,7 +536,7 @@ class BaseMotor(object):
 
     def info(self):
         if self.current_motion is not None:
-            print self.current_motion.info()
+            print(self.current_motion.info())
 
 
 class Motor(BaseMotor):
@@ -698,8 +698,8 @@ class Motor(BaseMotor):
                 decel_time = motor.getDeceleration()
                 return Motor(min_vel=min_vel, max_vel=max_vel,
                              accel_time=accel_time, decel_time=decel_time)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         return Motor._fromTangoMotor(motor)
 
     @staticmethod

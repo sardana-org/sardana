@@ -45,7 +45,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
     def paint(self, painter, option, index):
         if index.column() == 2:
             macroNode = index.model().nodeFromIndex(index)
-            opts = Qt.QStyleOptionProgressBarV2()
+            opts = Qt.QStyleOptionProgressBar()
             opts.rect = option.rect
             range = macroNode.range()
             opts.minimum = range[0]
@@ -54,7 +54,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
             percent = macroNode.progress()
             opts.progress = percent
 #            opts.text = Qt.QString('Unavailable' if percent == 0 else '%d%%'%percent)
-            opts.text = Qt.QString('%d%%' % percent)
+            opts.text = str('%d%%' % percent)
 #            opts.text = Qt.QString(percent)
             Qt.QApplication.style().drawControl(Qt.QStyle.CE_ProgressBar, opts, painter)
         else:
@@ -75,7 +75,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == 3:
-            model.setData(index, Qt.QVariant(editor.isChecked()))
+            model.setData(index, editor.isChecked())
 
 
 class MacroParametersProxyDelegate(Qt.QItemDelegate):
@@ -90,7 +90,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
                 paramType = node.type()
                 if paramType in globals.EDITOR_COMBOBOX_PARAMS:
                     comboBox = AttrListComboBoxParam(parent, node)
-                    comboBox.setUseParentModel(True)
+                    comboBox.setModel(index.model())
                     return comboBox
                 elif paramType in globals.EDITOR_SPINBOX_PARAMS:
                     return SpinBoxParam(parent, node)
@@ -104,8 +104,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1:
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             if text in ["None", "", None]:
                 Qt.QItemDelegate.setEditorData(self, editor, index)
             else:
@@ -131,13 +130,12 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == 1:
-            model.setData(index, Qt.QVariant(editor.getValue()))
+            model.setData(index, editor.getValue())
 
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)

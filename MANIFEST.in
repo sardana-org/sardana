@@ -12,3 +12,4 @@ exclude .ropeproject
 exclude build_*
 
 include CHANGELOG.md
+include LICENSE

@@ -9,8 +9,8 @@ Experiment Configuration user interface
 
 .. contents::
 
-Experiment Configuration widget a.k.a. expconf is a complete interface to
-define all the experiment configuration. It consists of three main groups of
+Experiment Configuration widget a.k.a. ``expconf`` is a complete interface to
+define the experiment configuration. It consists of three main groups of
 parameters organized in tabs:
 
 * Measurement group
@@ -20,6 +20,24 @@ parameters organized in tabs:
 The parameters may be modified in an arbitrary order, at any of the tabs, and
 will be maintained as pending to apply until either applied or reset by the
 user.
+
+.. important::
+  While editing configuration in the ``expconf`` widget, the experiment
+  configuration on the server may have changed, for example, another
+  ``expconf`` instance applied changes or a running macro changed it
+  programmatically. This is notified to the user with a pop-up dialog
+  offering the user to either keep the local version of the experiment
+  configuration or to load the new configuration from the server. Be aware that
+  the second option will **override all your local changes**. It is also
+  possible to use the ``expconf`` widget in *slave* mode and automatically
+  update on the server changes. You can enable/disable the "Auto update" mode
+  from the context menu.
+
+
+This widget is usually present in sardana-aware Taurus GUIs and is also invoked
+by the ``expconf`` command in :ref:`Spock<sardana-spock>`.
+
+
 
 .. _expconf_ui_measurementgroup:
 
@@ -34,6 +52,7 @@ In the measurement group tab the user can:
 * reorganize the order of the channels in the measurement group
 * change configuration of a particular channel (or its controller) in the
   selected measurement group
+* show/hide online plots for the current scan.
 
 .. figure:: /_static/expconf01.png
    :width: 100%
@@ -41,6 +60,8 @@ In the measurement group tab the user can:
    :align: center
 
    Measurement group tab of the expconf widget with the `mntgrp` configuration.
+
+
 
 .. _expconf_ui_measurementgroup_channel:
 
@@ -78,3 +99,62 @@ a given channel or its controller:
 * conditioning - expression to evaluate on the data before displaying it
 * normalization - normalization mode for the data
 * nexus path - location of the data of this channel withing the NeXus tree
+
+.. _expconf_ui_showplots:
+
+View current scan plot(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Plots need to be configured previously as explained in the
+:ref:`channel configuration <expconf_ui_measurementgroup_channel>`
+(plot type and plot axes).
+Running a scan will spawn a panel on taurusgui with the plot. The number of
+panels that will spawn is defined in the
+:ref:`channel configuration <expconf_ui_measurementgroup_channel>`.
+
+If the configuration hasn't been changed, a new scan will overwrite the previous plots.
+
+Plots can also be seen with spock's command ``showscan online``.
+
+.. _expconf_ui_snapshot_group:
+
+Snapshot group
+~~~~~~~~~~~~~~
+
+You can configure the snapshot group with the Experiment Configuration widget.
+To do so, go to the **Snapshot Group** tab.
+
+.. figure:: /_static/expconf-snapshot-group.png
+   :width: 100%
+   :figwidth: 100%
+   :align: center
+
+   Snapshot Group tab.
+
+This tab provides the device tree browser for both Sardana elements and external
+devices (currently only Tango is supported as an external source).
+You can add elements to the snapshot group by just dragging them from the tree
+browser and dropping them onto the list below.
+
+.. note:: Settings in this tab alter :ref:`prescansnapshot` environment variable.
+
+.. _expconf_ui_storage:
+
+Storage
+~~~~~~~
+
+The ``expconf`` widget provides a way to configure the scan storage paths.
+These settings are in the **Storage** tab.
+
+.. figure:: /_static/expconf-storage.png
+   :width: 100%
+   :figwidth: 100%
+   :align: center
+
+   Storage configuration tab.
+
+You can specify multiple files as a comma-separated list. Remeber that the path
+you set is a path on Sardana server machine.
+
+.. note:: Settings in this tab alter :ref:`scanfile`, :ref:`scandir` and :ref:`datacompressionrank`
+  environment variables.

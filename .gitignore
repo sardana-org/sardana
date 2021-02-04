@@ -2,5 +2,6 @@
 /dist
 /build
 /setup.cfg
+/src/sardana.egg-info
 *.pyc
 .idea/

@@ -22,14 +22,12 @@
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-__all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
-           'PositionGenerator', 'TriggerGateReceiver']
 
 import time
 import threading
 import numpy
 
-from taurus.external import unittest
+import unittest
 
 from sardana import State
 from sardana.pool.poolcontrollers.DummyMotorController import Motion
@@ -37,6 +35,8 @@ from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute
 from taurus.core.util.log import Logger
 
+__all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
+           'PositionGenerator', 'TriggerGateReceiver']
 
 class BaseControllerTestCase(object):
     """ Base test case for unit testing arbitrary controllers.
@@ -90,7 +90,7 @@ class BaseControllerTestCase(object):
     def start_action(self, configuration):
         """ This method set the axis parameters and pre start the axis.
         """
-        for key, value in configuration.items():
+        for key, value in list(configuration.items()):
             self.axisPar(key, value)
         self.ctrl.SynchOne(configuration)
 
@@ -240,7 +240,7 @@ class TriggerGateReceiver(object):
         self.passive_events = {}
 
     def getCount(self):
-        count = len(self.passive_events.keys())
+        count = len(list(self.passive_events.keys()))
         return count
 
     count = property(getCount)
@@ -298,7 +298,7 @@ class TriggerGateReceiver(object):
             i += 1
         if len(periods) > 0:
             periods_array = numpy.array(periods)
-            print periods_array
+            print(periods_array)
             c2c = numpy.diff(periods_array)
             mean_c2c = c2c.mean()
             std_c2c = c2c.std()

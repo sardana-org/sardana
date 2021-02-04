@@ -12,7 +12,7 @@ __all__ = ['createScanDataEnvironment', 'DummyEventSource']
 
 
 import time
-from datetime import date
+import datetime
 import threading
 import numpy
 import os
@@ -36,7 +36,7 @@ class DummyEventSource(threading.Thread):
         i = 0
         for v, t in zip(self.values, self.intervals):
             try:
-                idx = range(i, i + len(v))
+                idx = list(range(i, i + len(v)))
                 i += len(v)
                 skip = float('NaN') in v
             except TypeError:  # if v is not a list
@@ -47,7 +47,7 @@ class DummyEventSource(threading.Thread):
             if skip:
                 continue
             time.sleep(t)
-            _dict = dict(data=v, index=idx, label=self.name)
+            _dict = dict(value=v, index=idx, label=self.name)
             self.scan_data.addData(_dict)
 
     def get_obj(self):
@@ -69,7 +69,7 @@ def createScanDataEnvironment(columns, scanDir='/tmp/',
     env['ScanFile'] = scanFile
     env['total_scan_intervals'] = -1.0
 
-    today = date.today()
+    today = datetime.datetime.fromtimestamp(time.time())
     env['datetime'] = today
     env['starttime'] = today
     env['endtime'] = today
@@ -119,7 +119,7 @@ def main():
     f = nxs.load(file_name)
     m = f['entry1']['measurement']
     ch1 = m['ch1']
-    print ch1.nxdata
+    print(ch1.nxdata)
 
 if __name__ == "__main__":
     main()

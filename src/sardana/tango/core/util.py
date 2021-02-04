@@ -33,12 +33,12 @@ __all__ = ["get_tango_version_str", "get_tango_version_number",
            "GenericScalarAttr", "GenericSpectrumAttr", "GenericImageAttr",
            "memorize_write_attribute",
            "tango_protect", "to_tango_state", "to_tango_type_format",
-           "to_tango_type", "to_tango_access", "to_tango_attr_info",
+           "to_tango_access", "to_tango_attr_info",
            "from_tango_access", "from_tango_type_format",
            "from_tango_state_to_state",
            "from_deviceattribute_value", "from_deviceattribute",
            "throw_sardana_exception",
-           "prepare_tango_logging", "prepare_rconsole", "run_tango_server",
+           "prepare_logging", "prepare_rconsole", "run_tango_server",
            "run"]
 
 import sys
@@ -51,7 +51,7 @@ import itertools
 
 import PyTango
 from PyTango import Util, Database, WAttribute, DbDevInfo, DevFailed, \
-    DevVoid, DevLong, DevBoolean, DevString, DevDouble, \
+    DevVoid, DevLong64, DevBoolean, DevString, DevDouble, \
     DevState, SCALAR, SPECTRUM, IMAGE, FMT_UNKNOWN, \
     READ_WRITE, READ, Attr, SpectrumAttr, ImageAttr, \
     DeviceClass, Except
@@ -61,7 +61,8 @@ from taurus.core.util.log import Logger
 
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
-    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
+    DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode, \
+    AttrQuality
 from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
@@ -94,65 +95,90 @@ NO_DB_MAP = {
     ),
     "Motor": (
         ("slt", "motor/motctrl/1", dict(Id=101, Axis=1, Ctrl_id=1,
-                                        Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                        Instrument_id=InvalidId,
+                                        Sleep_bef_last_read=0),),
         ("slb", "motor/motctrl/2", dict(Id=102, Axis=2, Ctrl_id=1,
-                                        Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                        Instrument_id=InvalidId,
+                                        Sleep_bef_last_read=0),),
         ("mot1", "motor/motctrl/3", dict(Id=103, Axis=3, Ctrl_id=1,
-                                         Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                         Instrument_id=InvalidId,
+                                         Sleep_bef_last_read=0),),
         ("mot2", "motor/motctrl/4", dict(Id=104, Axis=4, Ctrl_id=1,
-                                         Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                         Instrument_id=InvalidId,
+                                         Sleep_bef_last_read=0),),
         ("mot3", "motor/motctrl/5", dict(Id=105, Axis=5, Ctrl_id=1,
-                                         Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                         Instrument_id=InvalidId,
+                                         Sleep_bef_last_read=0),),
         ("mot4", "motor/motctrl/6", dict(Id=106, Axis=6, Ctrl_id=1,
-                                         Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                         Instrument_id=InvalidId,
+                                         Sleep_bef_last_read=0),),
         ("th", "motor/motctrl/7", dict(Id=107, Axis=7, Ctrl_id=1,
-                                       Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                       Instrument_id=InvalidId,
+                                       Sleep_bef_last_read=0),),
         ("tth", "motor/motctrl/8", dict(Id=108, Axis=8, Ctrl_id=1,
-                                        Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                        Instrument_id=InvalidId,
+                                        Sleep_bef_last_read=0),),
         ("chi", "motor/motctrl/9", dict(Id=109, Axis=9, Ctrl_id=1,
-                                        Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                        Instrument_id=InvalidId,
+                                        Sleep_bef_last_read=0),),
         ("phi", "motor/motctrl/10", dict(Id=110, Axis=10, Ctrl_id=1,
-                                         Instrument_id=InvalidId, Sleep_bef_last_read=0),),
+                                         Instrument_id=InvalidId,
+                                         Sleep_bef_last_read=0),),
     ),
     "IORegister": (
         ("ior1", "ioregister/iorctrl/1", dict(Id=201,
-                                              Axis=1, Ctrl_id=2, Instrument_id=InvalidId),),
+                                              Axis=1, Ctrl_id=2,
+                                              Instrument_id=InvalidId),),
         ("ior2", "ioregister/iorctrl/2", dict(Id=202,
-                                              Axis=2, Ctrl_id=2, Instrument_id=InvalidId),),
+                                              Axis=2, Ctrl_id=2,
+                                              Instrument_id=InvalidId),),
         ("ior3", "ioregister/iorctrl/3", dict(Id=203,
-                                              Axis=3, Ctrl_id=2, Instrument_id=InvalidId),),
+                                              Axis=3, Ctrl_id=2,
+                                              Instrument_id=InvalidId),),
         ("ior4", "ioregister/iorctrl/4", dict(Id=204,
-                                              Axis=4, Ctrl_id=2, Instrument_id=InvalidId),),
+                                              Axis=4, Ctrl_id=2,
+                                              Instrument_id=InvalidId),),
     ),
     "CTExpChannel": (
         ("ct1", "expchan/ctctrl/1", dict(Id=301,
-                                         Axis=1, Ctrl_id=3, Instrument_id=InvalidId),),
+                                         Axis=1, Ctrl_id=3,
+                                         Instrument_id=InvalidId),),
         ("ct2", "expchan/ctctrl/2", dict(Id=302,
-                                         Axis=2, Ctrl_id=3, Instrument_id=InvalidId),),
+                                         Axis=2, Ctrl_id=3,
+                                         Instrument_id=InvalidId),),
         ("ct3", "expchan/ctctrl/3", dict(Id=303,
-                                         Axis=3, Ctrl_id=3, Instrument_id=InvalidId),),
+                                         Axis=3, Ctrl_id=3,
+                                         Instrument_id=InvalidId),),
         ("ct4", "expchan/ctctrl/4", dict(Id=304,
-                                         Axis=4, Ctrl_id=3, Instrument_id=InvalidId),),
+                                         Axis=4, Ctrl_id=3,
+                                         Instrument_id=InvalidId),),
     ),
     "ZeroDExpChannel": (
         ("zerod1", "expchan/zerodctrl/1", dict(Id=401,
-                                               Axis=1, Ctrl_id=4, Instrument_id=InvalidId),),
+                                               Axis=1, Ctrl_id=4,
+                                               Instrument_id=InvalidId),),
         ("zerod2", "expchan/zerodctrl/2", dict(Id=402,
-                                               Axis=2, Ctrl_id=4, Instrument_id=InvalidId),),
+                                               Axis=2, Ctrl_id=4,
+                                               Instrument_id=InvalidId),),
         ("zerod3", "expchan/zerodctrl/3", dict(Id=403,
-                                               Axis=3, Ctrl_id=4, Instrument_id=InvalidId),),
+                                               Axis=3, Ctrl_id=4,
+                                               Instrument_id=InvalidId),),
         ("zerod4", "expchan/zerodctrl/4", dict(Id=404,
-                                               Axis=4, Ctrl_id=4, Instrument_id=InvalidId),),
+                                               Axis=4, Ctrl_id=4,
+                                               Instrument_id=InvalidId),),
     ),
     "PseudoMotor": (
         ("gap", "pm/slitctrl/1", dict(Id=501, Axis=1, Ctrl_id=5,
-                                      Instrument_id=InvalidId, Elements=("101", "102",)),),
+                                      Instrument_id=InvalidId,
+                                      Elements=("101", "102",)),),
         ("offset", "pm/slitctrl/2", dict(Id=502, Axis=2, Ctrl_id=5,
-                                         Instrument_id=InvalidId, Elements=("101", "102",)),),
+                                         Instrument_id=InvalidId,
+                                         Elements=("101", "102",)),),
     ),
     "PseudoCounter": (
         ("inorm", "pc/ioi0ctrl/1", dict(Id=601, Axis=1, Ctrl_id=6,
-                                        Instrument_id=InvalidId, Elements=("301", "302",)),),
+                                        Instrument_id=InvalidId,
+                                        Elements=("301", "302",)),),
     ),
     "MotorGroup": (
         ("motgrp1", "mg/pool_demo/motgrp1",
@@ -167,13 +193,14 @@ NO_DB_MAP = {
     ),
     "Door": (
         ("Door_demo", "sardana/door/demo",
-         dict(Id=1001, MacroServerName="sardana/ms/demo", MaxMsgBufferSize=512),),
+         dict(Id=1001, MacroServerName="sardana/ms/demo",
+              MaxMsgBufferSize=512),),
     ),
 }
 
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+# -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
 # PyTango utilities
-#-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+# -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
 
 
 def get_pytango_version_str():
@@ -260,6 +287,33 @@ def __get_last_write_value(attribute):
     return lrv
 
 
+def _check_attr_range(dev_name, attr_name, attr_value):
+    util = PyTango.Util.instance()
+    dev = util.get_device_by_name(dev_name)
+    multi_attr = dev.get_device_attr()
+    attr = multi_attr.get_w_attr_by_name(attr_name)
+    try:
+        min_value = attr.get_min_value()
+    # not specified min value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value < min_value:
+            msg = "w_value {} of {}/{} is lower than min_value {}".format(
+                  attr_value, dev_name, attr_name, min_value)
+            raise ValueError(msg)
+    try:
+        max_value = attr.get_max_value()
+    # not specified max value raises DevFailed
+    except PyTango.DevFailed:
+        pass
+    else:
+        if attr_value > max_value:
+            msg = "w_value {} of {}/{} is greater than max_value {}".format(
+                  attr_value, dev_name, attr_name, max_value)
+            raise ValueError(msg)
+
+
 def memorize_write_attribute(write_attr_func):
     """The main purpose is to use this as a decorator for write_<attr_name>
        device methods.
@@ -343,7 +397,8 @@ def from_deviceattribute(da):
     dtype, dformat = from_tango_type_format(da.type, da.data_format)
 
     ret = SardanaValue(value=value, exc_info=exc_info,
-                       timestamp=da.time.totime(), dtype=dtype, dformat=dformat)
+                       timestamp=da.time.totime(), dtype=dtype,
+                       dformat=dformat)
     return ret
 
 
@@ -354,14 +409,15 @@ def to_tango_state(state):
 def from_tango_state_to_state(state):
     return int(state)
 
+
 #: dictionary dict<:class:`sardana.DataType`, :class:`PyTango.CmdArgType`>
 TTYPE_MAP = {
-    DataType.Integer: DevLong,
+    DataType.Integer: DevLong64,
     DataType.Double: DevDouble,
     DataType.String: DevString,
     DataType.Boolean: DevBoolean,
 }
-R_TTYPE_MAP = dict((v, k) for k, v in TTYPE_MAP.items())
+R_TTYPE_MAP = dict((v, k) for k, v in list(TTYPE_MAP.items()))
 
 #: dictionary dict<:class:`sardana.DataFormat`, :class:`PyTango.AttrFormat`>
 TFORMAT_MAP = {
@@ -369,16 +425,29 @@ TFORMAT_MAP = {
     DataFormat.OneD: SPECTRUM,
     DataFormat.TwoD: IMAGE,
 }
-R_TFORMAT_MAP = dict((v, k) for k, v in TFORMAT_MAP.items())
+R_TFORMAT_MAP = dict((v, k) for k, v in list(TFORMAT_MAP.items()))
 
-#: dictionary dict<:class:`sardana.DataAccess`, :class:`PyTango.AttrWriteType`>
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
+TQUALITY_MAP = {
+    AttrQuality.Valid: PyTango.AttrQuality.ATTR_VALID,
+    AttrQuality.Invalid: PyTango.AttrQuality.ATTR_INVALID,
+    AttrQuality.Alarm: PyTango.AttrQuality.ATTR_ALARM,
+    AttrQuality.Changing: PyTango.AttrQuality.ATTR_CHANGING,
+    AttrQuality.Warning: PyTango.AttrQuality.ATTR_WARNING
+}
+
+
+R_TQUALITY_MAP = dict((v, k) for k, v in list(TQUALITY_MAP.items()))
+
+
+#: dictionary dict<:class:`sardana.AttrQuality`, :class:`PyTango.AttrQuality`>
 TACCESS_MAP = {
     DataAccess.ReadOnly: READ,
     DataAccess.ReadWrite: READ_WRITE,
 }
 
-R_TACCESS_MAP = dict((v, k) for k, v in TACCESS_MAP.items())
-
+R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
 
 def exception_str(etype=None, value=None, sep='\n'):
     if etype is None:
@@ -417,8 +486,9 @@ def to_tango_type_format(dtype_or_info, dformat=None):
     :param dformat: the format to be transformed
     :type dformat: :obj:`~sardana.DataFormat`
 
-    :return: a tuple of two elements: the tango attribute write type, tango data format
-    :rtype: tuple< :obj:`PyTango.CmdArgType`, :obj:`PyTango.AttrDataFormat` >"""
+    :return: a tuple of two elements: the tango attribute write type,
+    tango data format
+    :rtype: tuple< :obj:`PyTango.CmdArgType`, :obj:`PyTango.AttrDataFormat`>"""
     dtype = dtype_or_info
     if dformat is None:
         dtype, dformat = to_dtype_dformat(dtype)
@@ -438,6 +508,16 @@ def from_tango_type_format(dtype, dformat=PyTango.SCALAR):
     :rtype: tuple< :obj:`~sardana.DataType`, :obj:`~sardana.DataFormat` >"""
     return R_TTYPE_MAP[dtype], R_TFORMAT_MAP[dformat]
 
+
+def to_tango_quality(quality):
+    """Transforms a :obj:`~sardana.AttrQuality` into a
+    :obj:`~PyTango.AttrQuality`
+
+    :param access: the quality to be transformed
+    :type access: :obj:`~sardana.AttrQuality`
+    :return: the tango attribute quality
+    :rtype: :obj:`PyTango.AttrQuality`"""
+    return TQUALITY_MAP[quality]
 
 def to_tango_attr_info(attr_name, attr_info):
     if isinstance(attr_info, DataInfo):
@@ -467,7 +547,7 @@ def to_tango_attr_info(attr_name, attr_info):
 def throw_sardana_exception(exc):
     """Throws an exception as a tango exception"""
     if isinstance(exc, SardanaException):
-        if exc.exc_info and not None in exc.exc_info:
+        if exc.exc_info and None not in exc.exc_info:
             Except.throw_python_exception(*exc.exc_info)
         else:
             tb = "<Unknown>"
@@ -499,17 +579,17 @@ def ask_yes_no(prompt, default=None):
         elif d_l in ('n', 'no'):
             prompt += " (N/y) ?"
 
-    while ans not in answers.keys():
+    while ans not in list(answers.keys()):
         try:
-            ans = raw_input(prompt + ' ').lower()
+            ans = input(prompt + ' ').lower()
             if not ans:  # response was an empty string
                 ans = default
         except KeyboardInterrupt:
-            print
+            print()
         except EOFError:
-            if default in answers.keys():
+            if default in list(answers.keys()):
                 ans = default
-                print
+                print()
             else:
                 raise
 
@@ -574,8 +654,8 @@ def prepare_cmdline(parser=None, args=None):
         parser = optparse.OptionParser(version=version)
 
     parser.usage = "usage: %prog instance_name [options]"
-    log_level_choices = "critical", "error", "warning", "info", "debug", "trace", \
-                        "0", "1", "2", "3", "4", "5"
+    log_level_choices = "critical", "error", "warning", "info", "debug", \
+                        "trace", "0", "1", "2", "3", "4", "5"
     help_olog = "log output level. Possible values are (case sensitive): " \
                 "critical (or 0), error (1), warning (2), info (3) " \
                 "debug (4), trace (5) [default: %default]"
@@ -584,21 +664,27 @@ def prepare_cmdline(parser=None, args=None):
                 "debug (4), trace (5) [default: %default]. " \
                 "Ignored if --without-log-file is True"
     help_fnlog = "log file name. When given, MUST be absolute file name. " \
-        "[default: /tmp/tango/<DS name>/<DS instance name lower case>/log.txt]. " \
-        "Ignored if --without-log-file is True"
-    help_wflog = "When set to True disables logging into a file [default: %default]"
-    help_rfoo = "rconsole port number. [default: %default meaning rconsole NOT active]"
+        "[default: /tmp/tango/<DS name>/<DS instance name lower " \
+                 "case>/log.txt]. Ignored if --without-log-file is True"
+    help_wflog = "When set to True disables logging into a file [default: " \
+                 "%default]"
+    help_rfoo = "rconsole port number. [default: %default meaning rconsole " \
+                "NOT active]"
     parser.add_option("--log-level", dest="log_level", metavar="LOG_LEVEL",
-                      help=help_olog, type="choice", choices=log_level_choices, default="warning")
-    parser.add_option("--log-file-level", dest="log_file_level", metavar="LOG_FILE_LEVEL",
-                      help=help_flog, type="choice", choices=log_level_choices, default="debug")
+                      help=help_olog, type="choice",
+                      choices=log_level_choices, default="warning")
+    parser.add_option("--log-file-level", dest="log_file_level",
+                      metavar="LOG_FILE_LEVEL", help=help_flog,
+                      type="choice", choices=log_level_choices,
+                      default="debug")
     parser.add_option("--log-file-name", dest="log_file_name",
                       help=help_fnlog, type="str", default=None)
     parser.add_option("--without-log-file", dest="without_log_file",
                       help=help_wflog, default=False)
 
     parser.add_option("--rconsole-port", dest="rconsole_port",
-                      metavar="RCONSOLE_PORT", help=help_rfoo, type="int", default=0)
+                      metavar="RCONSOLE_PORT", help=help_rfoo, type="int",
+                      default=0)
 
     res = list(parser.parse_args(proc_args))
     tango_args = res[1][:2] + tango_args
@@ -607,11 +693,47 @@ def prepare_cmdline(parser=None, args=None):
     return res
 
 
+def prepare_ORBendPoint(args, tango_args):
+    """Try to get Tango *free property* (object name: ``ORBendPoint``,
+    property name: ``<server_name>/<instance_name>``) and set it via
+    environment variable only in two occasions:
+
+    - this one was not existing
+    - ``-ORBendPoint`` argument was not passed
+    """
+    log_messages = []
+    server_name = args[0]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % server_name
+               + "Skipping ORBendPoint from free property configuration...")
+        log_messages.append(msg, )
+        return log_messages
+    env_name = "ORBendPoint"
+    if env_name in os.environ:
+        return log_messages
+    arg_name = "-" + env_name
+    if arg_name in tango_args:
+        return log_messages
+    db = PyTango.Database()
+    property_name = server_name + "/" + instance_name
+    env_val = get_free_property(db, env_name, property_name)
+    if env_val is not None:
+        os.environ[env_name] = env_val
+        log_messages.append(("setting %s=%s from Tango DB free property",
+                             env_name, env_val))
+    return log_messages
+
+
 def prepare_environment(args, tango_args, ORB_args):
     """Since we have to create a Tango Database object before the Tango Util,
     omniORB doesn't recognize parameters on the command line anymore
-    (tango, omniORB bug?), so we export these parameters as environment
-    variables (this workaround seems to work)"""
+    (ORB singleton did not receive cmd args), so we export these parameters as
+    environment variables (this workaround seems to work). For Tango >=
+    8.0.5 it is not necessary anymore.
+    More details in: https://sourceforge.net/p/tango-cs/bugs/495/
+    """
     log_messages = []
     ORB_args_len = len(ORB_args)
     for i in range(ORB_args_len):
@@ -635,26 +757,27 @@ def prepare_server(args, tango_args):
 
     nodb = "-nodb" in tango_args
     if nodb and not hasattr(DeviceClass, "device_name_factory"):
-        print "In order to start %s with 'nodb' you need PyTango >= 7.2.3" % server_name
+        print("In order to start %s with 'nodb' you need PyTango >= 7.2.3" %
+              server_name)
         sys.exit(1)
 
     if len(tango_args) < 2:
         valid = False
         while not valid:
-            inst_name = raw_input(
+            inst_name = input(
                 "Please indicate %s instance name: " % server_name)
             # should be a instance name validator.
-            valid_set = string.letters + string.digits + '_' + '-'
+            valid_set = string.ascii_letters + string.digits + '_' + '-'
             out = ''.join([c for c in inst_name if c not in valid_set])
             valid = len(inst_name) > 0 and len(out) == 0
             if not valid:
-                print "We only accept alphanumeric combinations"
+                print("We only accept alphanumeric combinations")
         args.append(inst_name)
         tango_args.append(inst_name)
     else:
         inst_name = tango_args[1].lower()
 
-    if "-nodb" in tango_args:
+    if nodb:
         return log_messages
 
     db = Database()
@@ -666,12 +789,12 @@ def prepare_server(args, tango_args):
                 # to
                 pool_names = []
                 pools = get_dev_from_class(db, "Pool")
-                all_pools = pools.keys()
-                for pool in pools.values():
+                all_pools = list(pools.keys())
+                for pool in list(pools.values()):
                     pool_alias = pool[2]
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
-                all_pools = map(str.lower, all_pools)
+                all_pools = list(map(str.lower, all_pools))
                 pools_for_choosing = []
                 for i in pools:
                     pools_for_choosing.append(pools[i][3])
@@ -684,7 +807,7 @@ def prepare_server(args, tango_args):
                 else:
                     print("\nAvailable Pools:")
                     for pool in pools_for_choosing:
-                        print pool
+                        print(pool)
                     print("")
                     while True:
                         msg = "Please select the Pool to connect to " \
@@ -692,19 +815,19 @@ def prepare_server(args, tango_args):
                         # user may abort it with Ctrl+C - this will not
                         # register anything in the database and the
                         # KeyboardInterrupt will be raised
-                        elem = raw_input(msg).strip()
+                        elem = input(msg).strip()
                         # no pools selected and user ended loop
                         if len(elem) == 0 and len(pool_names) == 0:
                             print(no_pool_msg)
                             break
                         # user ended loop with some pools selected
                         elif len(elem) == 0:
-                            print("\nMacroServer %s has been connected to "
-                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            print(("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names)))
                             break
                         # user entered unknown pool
                         elif elem.lower() not in all_pools:
-                            print "Unknown pool element"
+                            print("Unknown pool element")
                         else:
                             pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
@@ -717,7 +840,7 @@ def prepare_server(args, tango_args):
 
 
 def exists_server_instance(db, server_name, server_instance):
-    known_inst = map(str.lower, db.get_instance_name_list(server_name))
+    known_inst = list(map(str.lower, db.get_instance_name_list(server_name)))
     return server_instance.lower() in known_inst
 
 
@@ -762,9 +885,9 @@ def register_server_with_devices(db, server_name, server_instance, devices):
        :param db: database where to register devices
        :type db: PyTango.Database
        :param server_name: server name
-       :type server_name: str
+       :type server_name: :obj:`str`
        :param server_instance: server instance name
-       :type server_instance: str
+       :type server_instance: :obj:`str`
        :param devices: map of devices to create.
        :type devices: dict<str, seq<tuple<str, str, dict>>>
     """
@@ -803,7 +926,7 @@ def from_name_to_tango(db, name):
             alias = db.get_alias(name)
             if alias.lower() == 'nada':
                 alias = None
-        except:
+        except Exception:
             alias = None
     elif l == 1:
         alias = name
@@ -843,7 +966,7 @@ def get_dev_from_class_server(db, classname, server):
     def pairwise(iterable):
         "s -> (s0, s1), (s2, s3), (s4, s5), ..."
         a = iter(iterable)
-        return itertools.izip(a, a)
+        return list(zip(a, a))
 
     devices = []
     device_class_list = db.get_device_class_list(server)
@@ -892,6 +1015,20 @@ def get_free_alias(db, prefix, start_from=1):
         start_from += 1
 
 
+def get_free_property(db, obj_name, property_name):
+    """Get *free property* from Tango database.
+
+    If it is not defined return None.
+    """
+    value = None
+    try:
+        prop = db.get_property(obj_name, property_name)
+        value = prop[property_name][0]
+    except Exception:
+        pass
+    return value
+
+
 def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
     factory = taurus.Factory()
@@ -914,9 +1051,9 @@ def prepare_logstash(args):
     log_messages = []
 
     try:
-        import logstash
+        from logstash_async.handler import AsynchronousLogstashHandler
     except ImportError:
-        msg = ("Unable to import logstash. Skipping logstash "
+        msg = ("Unable to import logstash_async. Skipping logstash "
                + "configuration...", )
         log_messages.append(msg,)
         return log_messages
@@ -931,29 +1068,43 @@ def prepare_logstash(args):
             props = db.get_device_property(dev_name, "LogstashPort")
             port = int(props["LogstashPort"][0])
         except IndexError:
-            port = 12345
-        return host, port
+            port = None
+        try:
+            props = db.get_device_property(dev_name, "LogstashCacheDbPath")
+            cache_db_path = props["LogstashCacheDbPath"][0]
+        except IndexError:
+            cache_db_path = None
+        return host, port, cache_db_path
 
     db = Database()
 
     bin_name = args[0]
-    instance_name = args[1]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % bin_name
+               + "Skipping logstash configuration...")
+        log_messages.append(msg, )
+        return log_messages
     server_name = bin_name + "/" + instance_name
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
         dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name)
     else:
         dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name)
         if host is None:
             dev_name = get_dev_from_class_server(db, "MacroServer",
                                                  server_name)[0]
-            host, port = get_logstash_conf(dev_name)
+            host, port, cache = get_logstash_conf(dev_name)
 
     if host is not None:
         root = Logger.getRootLog()
-        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        handler = AsynchronousLogstashHandler(host, port, database_path=cache)
+        # don't use full path for program_name
+        handler._create_formatter_if_necessary()
+        _, handler.formatter._program_name = os.path.split(handler.formatter._program_name)
         root.addHandler(handler)
         msg = ("Log is being sent to logstash listening on %s:%d",
                host, port)
@@ -962,7 +1113,9 @@ def prepare_logstash(args):
     return log_messages
 
 
-def prepare_logging(options, args, tango_args, start_time=None, log_messages=None):
+def prepare_logging(options, args, tango_args, start_time=None,
+                    log_messages=None):
+
     taurus.setLogLevel(taurus.Debug)
     root = Logger.getRootLog()
 
@@ -991,7 +1144,7 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
             try:
                 # include the user name to avoid permission errors
                 tangodir = 'tango-%s' % getpass.getuser()
-            except:
+            except Exception:
                 tangodir = 'tango' % getpass.getuser()
             path = os.path.join(os.sep, "tmp", tangodir, ds_name, ds_instance)
             log_file_name = os.path.join(path, 'log.txt')
@@ -1006,7 +1159,7 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
         taurus._handlers = handlers = []
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
 
             from sardana import sardanacustomsettings
             maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)
@@ -1026,13 +1179,13 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
             else:
                 taurus.info("Starting up...")
             taurus.info("Log is being stored in %s", log_file_name)
-        except:
+        except Exception:
             if start_time is not None:
                 taurus.info("Started at %s", start_time)
             else:
                 taurus.info("Starting up...")
-            taurus.warning("'%s' could not be created. Logs will not be stored",
-                           log_file_name)
+            taurus.warning("'%s' could not be created. Logs will not be "
+                           "stored", log_file_name)
             taurus.debug("Error description", exc_info=1)
 
     if log_messages is None:
@@ -1053,14 +1206,14 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
 
 def prepare_rconsole(options, args, tango_args):
     port = options.rconsole_port
-    if port is None or port is 0:
+    if port is None or port == 0:
         return
     taurus.debug("Setting up rconsole on port %d...", port)
     try:
         import rfoo.utils.rconsole
         rfoo.utils.rconsole.spawn_server(port=port)
         taurus.debug("Finished setting up rconsole")
-    except:
+    except Exception:
         taurus.debug("Failed to setup rconsole", exc_info=1)
 
 
@@ -1143,16 +1296,21 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         pass
 
-    log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-
     try:
         log_messages.extend(prepare_server(args, tango_args))
-    except AbortException, e:
-        print e.message
+    except AbortException as e:
+        print(e)
         return
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")
         return
+
+    log_messages.extend(prepare_ORBendPoint(args, tango_args))
+    # Tango versions < 8.0.5 are affected by
+    # https://sourceforge.net/p/tango-cs/bugs/495/
+    tango_version = get_tango_version_number()
+    if tango_version < 80005:
+        log_messages.extend(prepare_environment(args, tango_args, ORB_args))
 
     log_messages.extend(prepare_logstash(args))
 

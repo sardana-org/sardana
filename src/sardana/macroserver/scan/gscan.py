@@ -36,20 +36,23 @@ import datetime
 import operator
 import time
 import threading
+import weakref
 import numpy as np
 
+import PyTango
 import taurus
+import collections
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.enumeration import Enumeration
+from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.event import CallableRef
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
+from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
@@ -2267,11 +2270,11 @@ class CTScan(CScan, CAcquisition):
             motors = self.macro.motors
             starts = self.macro.starts
             finals = self.macro.finals
-            nr_points = self.macro.nr_points
+            nb_points = self.macro.nb_points
             theoretical_positions = generate_positions(motors, starts, finals,
-                                                       nr_points)
+                                                       nb_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            for index, data in theoretical_positions.items():
+            for index, data in list(theoretical_positions.items()):
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
             # TODO: this changes the initial data on-the-fly - seems like not
@@ -2279,24 +2282,32 @@ class CTScan(CScan, CAcquisition):
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
-                for hook in macro.getHooks('pre-start'):
+                pre_acq_hooks = waypoint.get('pre-acq-hooks', [])
+                for hook in pre_acq_hooks:
                     hook()
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-
+            self.measurement_group.setNbStarts(1)
+            self.measurement_group.prepare()
             mg_id = self.measurement_group.start()
             if i == 0:
                 first_timestamp = time.time()
 
             try:
                 self.timestamp_to_start = time.time() + delta_start
-
+                end_move = False
                 # move to waypoint end position
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
-            finally:
+                end_move = True
+            except Exception as e:
+                measurement_group.waitFinish(timeout=0, id=mg_id)
+                msg = "Motion did not start properly.\n{0}".format(e)
+                self.debug(msg)
+                raise ScanException("move to final position failed")
+            else:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
                 # (this could be due to missed hardware triggers or
@@ -2304,18 +2315,19 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(measurement_group, "stateObj"):
-                    state = measurement_group.stateObj.read().rvalue
-                else:
-                    state = measurement_group.state()
+            finally:
+                state = measurement_group.stateObj.read().rvalue
                 import PyTango
                 if state == PyTango.DevState.MOVING:
-                    msg = "Measurement did not finish acquisition within "\
-                          "timeout. Stopping it..."
-                    self.debug(msg)
                     measurement_group.Stop()
-                    raise ScanException("acquisition timeout reached")
+                    if end_move:
+                        msg = "Measurement did not finish acquisition within "\
+                              "timeout. Stopping it..."
+                        self.debug(msg)
+                        raise ScanException("acquisition timeout reached")
+
+            for hook in waypoint.get('post-acq-hooks', []):
+                hook()
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2350,6 +2362,7 @@ class CTScan(CScan, CAcquisition):
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
         self.macro.debug("All data events are processed")
 
     def scan_loop(self):
@@ -2361,8 +2374,8 @@ class CTScan(CScan, CAcquisition):
         sum_delay = 0
         sum_integ_time = 0
 
-        if hasattr(macro, "nr_points"):
-            # nr_points = float(macro.nr_points)
+        if hasattr(macro, "nb_points"):
+            # nb_points = float(macro.nb_points)
             scream = True
         else:
             yield 0.0
@@ -2372,15 +2385,7 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2399,6 +2404,8 @@ class CTScan(CScan, CAcquisition):
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
+                self.measurement_group.unsubscribeValueRefBuffer(
+                    self.value_ref_buffer_changed)
                 self.__mntGrpSubscribed = False
             except Exception:
                 msg = "Exception occurred trying to remove data listeners"
@@ -2460,7 +2467,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
 
         try:
@@ -2469,7 +2476,7 @@ class HScan(SScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             raise
         self._sum_acq_time += integ_time
 
@@ -2479,7 +2486,7 @@ class HScan(SScan):
         m_state, m_positions = motion.readState(), motion.readPosition()
 
         if m_state != Ready:
-            self.dump_information(n, step)
+            self.dump_information(n, step, motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
                 "Motion ended with %s\n" % str(m_state)
             raise ScanException({'msg': m})
@@ -2508,11 +2515,10 @@ class HScan(SScan):
             except Exception:
                 pass
 
-    def dump_information(self, n, step):
-        moveables = self.motion.moveable_list
+    def dump_information(self, n, step, elements):
         msg = ["Report: Stopped at step #" + str(n) + " with:"]
-        for moveable in moveables:
-            msg.append(moveable.information())
+        for element in elements:
+            msg.append(element.information())
         self.macro.info("\n".join(msg))
 
 
@@ -2520,10 +2526,10 @@ class TScan(GScan, CAcquisition):
     """Time scan.
 
     Macro that employs the time scan must define the synchronization
-    information in either of the following two ways:
-      - synchronization attribute that follows the synchronization format of
-      the measurement group
-      - integ_time, nr_points and latency_time (optional) attributes
+    description in either of the following two ways:
+      - synch_description attribute that follows the synchronization
+      description format of the measurement group
+      - integ_time, nb_points and latency_time (optional) attributes
     """
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
@@ -2531,9 +2537,9 @@ class TScan(GScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self._synchronization = None
+        self._synch_description = None
 
-    def _create_synchronization(self, active_time, repeats, latency_time=0):
+    def _create_synch_description(self, active_time, repeats, latency_time=0):
         delay_time = 0
         mg_latency_time = self.measurement_group.getLatencyTime()
         if mg_latency_time > latency_time:
@@ -2541,38 +2547,39 @@ class TScan(GScan, CAcquisition):
                             mg_latency_time)
             latency_time = mg_latency_time
         total_time = active_time + latency_time
-        synchronization = [
+        synch_description = [
             {SynchParam.Delay: {SynchDomain.Time: delay_time},
              SynchParam.Active: {SynchDomain.Time: active_time},
              SynchParam.Total: {SynchDomain.Time: total_time},
              SynchParam.Repeats: repeats}]
-        return synchronization
+        return synch_description
 
-    def get_synchronization(self):
-        if self._synchronization is not None:
-            return self._synchronization
-        if hasattr(self.macro, "synchronization"):
-            synchronization = self.macro.synchronization
+    def get_synch_description(self):
+        if self._synch_description is not None:
+            return self._synch_description
+        if hasattr(self.macro, "synch_description"):
+            synch_description = self.macro.synch_description
         else:
             try:
                 active_time = getattr(self.macro, "integ_time")
-                repeats = getattr(self.macro, "nr_points")
+                repeats = getattr(self.macro, "nb_points")
             except AttributeError:
-                msg = "Macro object is missing synchronization attributes"
+                msg = "Macro object is missing synchronization description " \
+                      "attributes"
                 raise ScanSetupError(msg)
             latency_time = getattr(self.macro, "latency_time", 0)
-            synchronization = self._create_synchronization(active_time,
-                                                           repeats,
-                                                           latency_time)
-        self._synchronization = synchronization
-        return synchronization
+            synch_description = \
+                self._create_synch_description(active_time, repeats,
+                                               latency_time)
+        self._synch_description = synch_description
+        return synch_description
 
-    synchronization = property(get_synchronization)
+    synch_description = property(get_synch_description)
 
     def scan_loop(self):
         macro = self.macro
         measurement_group = self.measurement_group
-        synchronization = self.synchronization
+        synch_description = self.synch_description
 
         compatible, channels = \
             self.is_measurement_group_compatible(measurement_group)
@@ -2583,32 +2590,37 @@ class TScan(GScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
-        theoretical_timestamps = generate_timestamps(synchronization)
+        theoretical_timestamps = \
+            generate_timestamps(synch_description)
         self.data.initial_data = theoretical_timestamps
         msg = "Relative timestamp (dt) column contains theoretical values"
         self.macro.warning(msg)
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
+            for hook in macro.getHooks('pre-acq'):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.setNbStarts(1)
+        measurement_group.count_continuous(synch_description,
+                                           self.value_buffer_changed,
+                                           self.value_ref_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
+        self.macro.checkPoint()
         self._fill_missing_records()
         yield 100
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
+            for hook in macro.getHooks('post-acq'):
                 hook()
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nr_points = self.macro.nr_points
+        nb_points = self.macro.nb_points
         records = len(self.data.records)
-        missing_records = nr_points - records
+        missing_records = nb_points - records
         self.data.initRecords(missing_records)
 
     def _estimate(self):
@@ -2619,12 +2631,13 @@ class TScan(GScan, CAcquisition):
             i = self.macro.getIntervalEstimation()
             return t, i
 
-        if not hasattr(self.macro, "synchronization"):
-            raise AttributeError("synchronization is mandatory to estimate")
-        synchronization = self.macro.synchronization
+        if not hasattr(self.macro, "synch_description"):
+            raise AttributeError("synch_description is mandatory "
+                                 "to estimate")
+        synch_description = self.macro.synch_description
         time = 0
         intervals = 0
-        for group in synchronization:
+        for group in synch_description:
             delay = group[SynchParam.Delay][SynchDomain.Time]
             time += delay
             total = group[SynchParam.Total][SynchDomain.Time]

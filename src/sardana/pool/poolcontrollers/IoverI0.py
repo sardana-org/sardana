@@ -44,7 +44,7 @@ class IoverI0(PseudoCounterController):
     def Calc(self, axis, counter_values):
         i, i0 = counter_values
         try:
-            i = float(i / i0)
+            i = i / i0
         except ZeroDivisionError:
             pass
         return i

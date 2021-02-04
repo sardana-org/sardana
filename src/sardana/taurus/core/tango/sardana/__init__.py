@@ -23,7 +23,31 @@
 ##
 ##############################################################################
 
-"""The sardana package. It contains specific part of sardana"""
+"""Taurus extensions for Sardana devices.
+
+Objects obtained with :func:`taurus.Device` expose standard interfaces
+e.g., allow to interact with their attributes, check their state, etc.
+This module defines classes for enriched interaction with Sardana devices
+(also for other elements not exported as devices), e.g. synchronous move
+of a sardana motor with
+:meth:`~sardana.taurus.core.tango.sardana.pool.Motor.move`
+method instead of writing motor's position attribute and then waiting for its
+state change.
+
+To obtain these enriched objects with :func:`taurus.Device` you need to first
+register the extension classes with
+the :obj:`~sardana.taurus.core.tango.sardana.registerExtensions` function.
+
+The registration needs to be done before the first access to the given
+:func:`taurus.Device`.
+
+When you would like to get back to the default :func:`taurus.Device` behavior
+you need to unregister the extension classes with the
+:obj:`~sardana.taurus.core.tango.sardana.unregisterExtensions` function.
+
+Note that the unregistration will not remove the already created devices from
+the :func:`taurus.Factory` cache.
+"""
 
 __docformat__ = 'restructuredtext'
 

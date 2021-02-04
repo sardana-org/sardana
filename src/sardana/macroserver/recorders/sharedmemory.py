@@ -35,6 +35,7 @@ import operator
 
 from sardana.macroserver.scan.recorder import BaseSharedMemoryRecorder
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
+import numbers
 
 
 class SPSRecorder(BaseSharedMemoryRecorder):
@@ -91,7 +92,7 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         if not self.isInitialized():
             return
         p, a = self.program, self.array_ENV
-        for k, v in d.iteritems():
+        for k, v in d.items():
             self.sps.putenv(p, a, k, str(v))
 
     def _startRecordList(self, recordlist):
@@ -143,9 +144,11 @@ class SPSRecorder(BaseSharedMemoryRecorder):
 
         for colname in self.labels:
             val = record.data.get(colname)
-            if (not val is None) and (operator.isNumberType(val) and (type(val) in [int, float, long])):
+            if ((val is not None)
+                    and (isinstance(val, numbers.Number)
+                         and (type(val) in [int, float]))):
                 vals.append(val)
-            elif (not val is None) and (operator.isNumberType(val)):
+            elif (val is not None) and (isinstance(val, numbers.Number)):
                 valsmca = []
                 for i in range(0, len(val)):
                     valsmca.append(val[i])
@@ -234,11 +237,11 @@ class ShmRecorder(DataRecorder):
             self.sps.create(self.progname, self.shm_id_env, self.maxenv, self.envlen,
                             self.sps.STRING)
 
-        print "Starting new SHM recording"
+        print("Starting new SHM recording")
 
         self.putenv('title', recordlist.getEnvironValue('title'))
 
-        for env, val in recordlist.getEnviron().items():
+        for env, val in list(recordlist.getEnviron().items()):
             if env != 'title' and env != 'labels':
                 self.putenv(env, val)
 
@@ -271,7 +274,7 @@ class ShmRecorder(DataRecorder):
         for colname in self.labels:
             dim_list.append(0)
             val = record.data.get(colname)
-            if (not val is None) and (type(val) in [int, float, long]):
+            if (val is not None) and (type(val) in [int, float]):
                 vals.append(val)
 
         myj = 0
@@ -286,7 +289,7 @@ class ShmRecorder(DataRecorder):
 
         myj = 0
 
-        for val2 in record.data.values():
+        for val2 in list(record.data.values()):
             valsmca = []
             if type(val2) in [list]:
                 if dim_list[myj] == 1:

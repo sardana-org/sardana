@@ -26,19 +26,20 @@
 """This module contains tests for trigger gate generation using a
 given controller"""
 
-__docformat__ = "restructuredtext"
-
 import threading
 
 from taurus.test import insertTest
-from taurus.external import unittest
+import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
+from sardana.pool.poolacquisition import get_acq_ctrls
 from sardana.sardanadefs import State
 from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
-                               createPoolController, createPoolTriggerGate,
-                               createPoolSynchronizationConfiguration)
+from sardana.pool.test import FakePool, createCtrlConf, createElemConf, \
+    createPoolController, createPoolTriggerGate, \
+    createControllerConfiguration
+
+__docformat__ = "restructuredtext"
 
 
 class SynchronizationTestCase(object):
@@ -60,8 +61,9 @@ class SynchronizationTestCase(object):
         self.pool.add_element(self.tg_ctrl)
         self.pool.add_element(self.tg_elem)
         # create Synchronization action and its configuration
-        self.tg_cfg = createPoolSynchronizationConfiguration((self.tg_ctrl,),
-                                                             ((self.tg_elem,),),)
+        self.conf_ctrl = createControllerConfiguration(self.tg_ctrl,
+                                                       [self.tg_elem])
+        self.ctrls = get_acq_ctrls([self.conf_ctrl])
         self.tgaction = PoolSynchronization(self.tg_elem)
         self.tgaction.add_element(self.tg_elem)
 
@@ -76,14 +78,15 @@ class SynchronizationTestCase(object):
         trigger/gate generation.
 
        :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: str
+       :type ctrl_lib: :obj:`str`
        :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: str
+       :type ctrl_klass: :obj:`str`
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
        :param active_interval: signal at which triggers will be generated
        :type active_interval: float
-       :param passive_interval: temporal passive period between two active periods
+       :param passive_interval: temporal passive period between two active
+                                periods
        :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
@@ -93,10 +96,8 @@ class SynchronizationTestCase(object):
         self.createElements(ctrl_klass, ctrl_lib, ctrl_props)
 
         # create start_action arguments
-        args = ()
-        kwargs = {'config': self.tg_cfg,
-                  'synchronization': synchronization
-                  }
+        args = (self.ctrls, synchronization)
+        kwargs = {}
         # starting action
         self.tgaction.start_action(*args, **kwargs)
         # verifying that the elements involved in action changed its state
@@ -121,18 +122,19 @@ class SynchronizationTestCase(object):
         trigger/gate generation when aborting the trigger generation.
 
        :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: str
+       :type ctrl_lib: :obj:`str`
        :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: str
+       :type ctrl_klass: :obj:`str`
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
        :param active_interval: signal at which triggers will be generated
        :type active_interval: float
-       :param passive_interval: temporal passive period between two active periods
+       :param passive_interval: temporal passive period between two active
+                                periods
        :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
-       :param abort_time: wait this time before stopping the trigger generation.
+       :param abort_time: wait this time before stopping the trigger generation
        :type abort_time: float
         """
 
@@ -140,10 +142,8 @@ class SynchronizationTestCase(object):
         self.createElements(ctrl_klass, ctrl_lib, ctrl_props)
 
         # create start_action arguments
-        args = ()
-        kwargs = {'config': self.tg_cfg,
-                  'synchronization': synchronization
-                  }
+        args = (self.ctrls, synchronization)
+        kwargs = {}
         # starting action
         self.tgaction.start_action(*args, **kwargs)
         # verifying that the elements involved in action changed its state

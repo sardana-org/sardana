@@ -36,10 +36,9 @@ __all__ = ["ascan_demo", "ascanr", "toothedtriangle",
 
 __docformat__ = 'restructuredtext'
 
-import os
 import numpy
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Hookable, Type
 from sardana.macroserver.scan import *
 
 
@@ -71,7 +70,7 @@ class ascan_demo(Macro):
         self.final = numpy.array([final_pos], dtype='d')
         self.integ_time = integ_time
 
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.interv_size = (self.final - self.start) / nr_interv
         self.name = 'ascan_demo'
         # the "env" dictionary may be passed as an option
@@ -85,7 +84,7 @@ class ascan_demo(Macro):
         step = {}
         # integ_time is the same for all steps
         step["integ_time"] = self.integ_time
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.start + point_no * \
                 self.interv_size  # note that this is a numpy array
             step["point_id"] = point_no
@@ -98,6 +97,14 @@ class ascan_demo(Macro):
     @property
     def data(self):
         return self._gScan.data  # the GScan provides scan data
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version 3.0.3. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class ascanr(Macro, Hookable):
@@ -138,7 +145,7 @@ class ascanr(Macro, Hookable):
         self.repeat = repeat
         self.opts = opts
 
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.interv_sizes = (self.finals - self.starts) / nr_interv
         self.name = 'ascanr'
 
@@ -161,10 +168,10 @@ class ascanr(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"repetition": 0}  # !!!
         step['extrainfo'] = extrainfo  # !!!
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
-            for i in xrange(self.repeat):
+            for i in range(self.repeat):
                 extrainfo["repetition"] = i  # !!!
                 yield step
 
@@ -175,6 +182,14 @@ class ascanr(Macro, Hookable):
     @property
     def data(self):
         return self._gScan.data
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version 3.0.3. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class toothedtriangle(Macro, Hookable):
@@ -212,8 +227,8 @@ class toothedtriangle(Macro, Hookable):
         self.nr_cycles = nr_cycles
         self.nr_samples = nr_samples
         self.opts = opts
-        cycle_nr_points = self.nr_interv + 1 + (self.nr_interv + 1) - 2
-        self.nr_points = cycle_nr_points * nr_samples * nr_cycles + nr_samples
+        cycle_nb_points = self.nr_interv + 1 + (self.nr_interv + 1) - 2
+        self.nb_points = cycle_nb_points * nr_samples * nr_cycles + nr_samples
 
         self.interv_size = (self.final_pos - self.start_pos) / nr_interv
         self.name = 'toothedtriangle'
@@ -246,18 +261,18 @@ class toothedtriangle(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"cycle": None, "interval": None, "sample": None, }
         step['extrainfo'] = extrainfo
-        halfcycle1 = range(self.nr_interv + 1)
+        halfcycle1 = list(range(self.nr_interv + 1))
         halfcycle2 = halfcycle1[1:-1]
         halfcycle2.reverse()
         intervallist = halfcycle1 + halfcycle2
         point_no = 0
-        for cycle in xrange(self.nr_cycles):
+        for cycle in range(self.nr_cycles):
             extrainfo["cycle"] = cycle
             for interval in intervallist:
                 extrainfo["interval"] = interval
                 step["positions"] = numpy.array(
                     [self.start_pos + (interval) * self.interv_size], dtype='d')
-                for sample in xrange(self.nr_samples):
+                for sample in range(self.nr_samples):
                     extrainfo["sample"] = sample
                     step["point_id"] = point_no
                     yield step
@@ -266,7 +281,7 @@ class toothedtriangle(Macro, Hookable):
         # last step for closing the loop
         extrainfo["interval"] = 0
         step["positions"] = numpy.array([self.start_pos], dtype='d')
-        for sample in xrange(self.nr_samples):
+        for sample in range(self.nr_samples):
             extrainfo["sample"] = sample
             step["point_id"] = point_no
             yield step
@@ -279,6 +294,14 @@ class toothedtriangle(Macro, Hookable):
     @property
     def data(self):
         return self._gScan.data
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version 3.0.3. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 
 class regscan(Macro):
@@ -295,8 +318,9 @@ class regscan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos',  Type.Float,   None, 'next position'],
+          ['region_nr_intervals',  Type.Float,   None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
@@ -305,7 +329,7 @@ class regscan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor]
@@ -324,7 +348,7 @@ class regscan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
@@ -356,8 +380,9 @@ class reg2scan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos', Type.Float, None, 'next position'],
+          ['region_nr_intervals', Type.Float, None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
@@ -366,7 +391,7 @@ class reg2scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2]
@@ -385,7 +410,7 @@ class reg2scan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
@@ -404,11 +429,13 @@ class reg2scan(Macro):
 
 class reg3scan(Macro):
     """reg3scan.
-    Do an absolute scan of the specified motors with different number of intervals for each region.
-    It uses the gscan framework. All the motors will be drived to the same position in each step
+    Do an absolute scan of the specified motors with different number of
+    intervals for each region. It uses the gscan framework.
+    All the motors will be drived to the same position in each step
 
-    NOTE: Due to a ParamRepeat limitation, integration time has to be
-    specified before the regions.
+    .. note::
+        integration time is specified before the regions to facilitate
+        input of parameters in Spock.
     """
 
     hints = {'scan': 'reg3scan'}
@@ -421,8 +448,9 @@ class reg3scan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos',  Type.Float,   None, 'next position'],
+          ['region_nr_intervals',  Type.Float,   None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
@@ -431,7 +459,7 @@ class reg3scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2, motor3]
@@ -450,7 +478,7 @@ class reg3scan(Macro):
                 r][0], self.regions[r][1]
             positions = numpy.linspace(
                 region_start, region_stop, region_nr_intervals + 1)
-            if region_start != self.start_pos:
+            if point_id != 0:
                 # positions must be calculated from the start to the end of the region
                 # but after the first region, the 'start' point must not be
                 # repeated
@@ -518,11 +546,11 @@ class a2scan_mod(Macro):
         positions_m2 = numpy.linspace(start2, end2, interv2 + 1)
 
         if interv1 > interv2:
-            positions_m2 = start2 + (float(end2 - start2) / interv2) * (
-                numpy.arange(interv1 + 1) // (float(interv1) / float(interv2)))
+            positions_m2 = start2 + ((end2 - start2) / interv2) * (
+                numpy.arange(interv1 + 1) // (interv1 / interv2))
         elif interv2 > interv1:
-            positions_m1 = start1 + (float(end1 - start1) / interv1) * (
-                numpy.arange(interv2 + 1) // (float(interv2) / float(interv1)))
+            positions_m1 = start1 + ((end1 - start1) / interv1) * (
+                numpy.arange(interv2 + 1) // (interv2 / interv1))
 
         point_id = 0
         for pos1, pos2 in zip(positions_m1, positions_m2):
@@ -617,7 +645,7 @@ class ascan_with_addcustomdata(ascan_demo):
         # "/<currententry>/custom_data") if none given
         dh.addCustomData('Hello world1', 'dummyChar1')
         # you can pass arrays (but not all recorders will handle them)
-        dh.addCustomData(range(10), 'dummyArray1')
+        dh.addCustomData(list(range(10)), 'dummyArray1')
         # you can pass a custom nxpath *relative* to the current entry
         dh.addCustomData('Hello world2', 'dummyChar2',
                          nxpath='sample:NXsample')
@@ -633,3 +661,44 @@ class ascan_with_addcustomdata(ascan_demo):
         # as a bonus, plot the fit
         self.pyplot.plot(x, y, 'ro')
         self.pyplot.plot(x, fitted_y, 'b-')
+        self.pyplot.draw()
+
+
+class ascanct_midtrigger(Macro):
+    """This macro demonstrates how to add an extra scan column with
+    the shifted positions of the motor corresponding to the middle of the
+    space interval. Be aware that the space interval does not
+    necessarily correspond to the middle of the acquisition interval
+    (remember about the latency time).
+
+    This macro does not export all the ascanct features e.g. hooks.
+    """
+
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def run(self, *args, **kwargs):
+        motor = args[0]
+        scan_macro = self.execMacro("ascanct", *args, **kwargs)
+        # we get the datahandler
+        # TODO: use public api to GScan object whenever
+        # https://github.com/sardana-org/sardana/issues/784 gets solved
+        dh = scan_macro._gScan.data_handler
+        # calculate position corresponding to the middle space interval
+        positions = [r.data[motor.getName()] for r in scan_macro.data.records]
+        first_position = positions[0]
+        second_position = positions[1]
+        positive_direction = second_position > first_position
+        shift = abs(second_position - first_position) / 2
+        if positive_direction:
+            mid_positions = positions + shift
+        else:
+            mid_positions = positions - shift
+        # add custom data column to the measurement HDF5 group with the
+        # <motor_name>_mid name
+        dh.addCustomData(mid_positions, motor.getName() + '_mid',
+                         nxpath='measurement:NXcollection')

@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.external import unittest
+import unittest
 from sardana.pool.test import (FakePool, createPoolController,
                                dummyPoolCTCtrlConf01)
 from sardana.pool.poolcontroller import PoolController

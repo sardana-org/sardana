@@ -38,6 +38,10 @@ class MacrosListModel(Qt.QAbstractListModel):
     def __init__(self, parent=None):
         Qt.QAbstractListModel.__init__(self, parent)
         self.list = []
+        self._max_len = None
+
+    def setMaxLen(self, max_len):
+        self._max_len = max_len
 
     def rowCount(self, parent=Qt.QModelIndex()):
         return len(self.list)
@@ -45,9 +49,9 @@ class MacrosListModel(Qt.QAbstractListModel):
     def data(self, index, role):
         if index.isValid() and role == Qt.Qt.DisplayRole:
             macroNode = self.list[index.row()]
-            return Qt.QVariant(self.list[index.row()].toSpockCommand())
+            return self.list[index.row()].toSpockCommand()
         else:
-            return Qt.QVariant()
+            return None
 
     def index(self, row, column=0, parent=Qt.QModelIndex()):
         if self.rowCount():
@@ -57,6 +61,8 @@ class MacrosListModel(Qt.QAbstractListModel):
 
     def insertRow(self, macroNode, row=0):
         self.beginInsertRows(Qt.QModelIndex(), row, row)
+        if self._max_len is not None and len(self.list) == self._max_len:
+            self.list.pop()
         self.list.insert(row, macroNode)
         self.endInsertRows()
         return self.index(row)
@@ -92,13 +98,17 @@ class MacrosListModel(Qt.QAbstractListModel):
         for macroNode in self.list:
             listElement.append(macroNode.toXml(withId=False))
         xmlTree = etree.ElementTree(listElement)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):
+        self.beginResetModel()
         listElement = etree.fromstring(xmlString)
         for childElement in listElement.iterchildren("macro"):
+            if self._max_len is not None and len(self.list) >= self._max_len:
+                break
             macroNode = macro.MacroNode()
             macroNode.fromXml(childElement)
             self.list.append(macroNode)
-        self.reset()
+        self.endResetModel()

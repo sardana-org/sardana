@@ -33,12 +33,11 @@ import os
 import ctypes
 import PyTango
 
-from taurus.core import TaurusEventType, TaurusSWDevState
+from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
-from sardana.spock.parser import ParamParser
-from sardana.spock.inputhandler import SpockInputHandler, InputHandler
+from sardana.util.parser import ParamParser
 from sardana import sardanacustomsettings
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
@@ -53,12 +52,8 @@ else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
     BaseGUIViewer = object
 
-try:
-    RUNNING_STATE = TaurusSWDevState.Running
-except RuntimeError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core import TaurusDevState
-    RUNNING_STATE = TaurusDevState.Ready
+
+RUNNING_STATE = TaurusDevState.Ready
 
 
 class GUIViewer(BaseGUIViewer):
@@ -71,33 +66,40 @@ class GUIViewer(BaseGUIViewer):
         self.plot()
 
     def show_scan(self, scan_nb=None, scan_history_info=None, directory_map=None):
-        if scan_nb is None and scan_history_info is None:
-            #==================================================================
-            # Hack to avoid ipython-qt issues. See similar workaround in expconf magic command
-            # @todo: do this in a better way
-            #import taurus.qt.qtgui.plot
-            #w = taurus.qt.qtgui.plot.TaurusTrend()
-            #w.model = "scan://" + self._door.getNormalName()
-            # w.show()
-            import subprocess
-            args = ['taurustrend', 'scan://%s' % self._door.getNormalName()]
-            subprocess.Popen(args)
-            #==================================================================
-            return
-
         scan_dir, scan_file = None, None
         if scan_nb is None:
+            import h5py
             for scan in reversed(scan_history_info):
                 scan_dir = scan.get('ScanDir')
                 scan_file = scan.get('ScanFile')
                 if scan_dir is None or scan_file is None:
                     continue
-                if not isinstance(scan_file, (str, unicode)):
-                    scan_file = scan_file[0]
+                if not isinstance(scan_file, str):
+                    scan_files = scan_file
+                    scan_file = None
+                    for fname in scan_files:
+                        try:
+                            h5py.File(os.path.join(scan_dir, fname), "r")
+                        except IOError:
+                            pass
+                        else:
+                            scan_file = fname
+                            break
+                    if scan_file is None:
+                        print("Cannot plot scan:")
+                        print("It only works with HDF5 files.")
+                        return
+                else:
+                    try:
+                        h5py.File(os.path.join(scan_dir, scan_file), "r")
+                    except IOError:
+                        print("Cannot plot scan:")
+                        print("It only works with HDF5 files.")
+                        return
                 break
             else:
-                print "Cannot plot scan:"
-                print "No scan in scan history was saved into a file"
+                print("Cannot plot scan:")
+                print("No scan in scan history was saved into a file")
                 return
         else:
             for scan in reversed(scan_history_info):
@@ -105,15 +107,15 @@ class GUIViewer(BaseGUIViewer):
                     scan_dir = scan.get('ScanDir')
                     scan_file = scan.get('ScanFile')
                     if scan_dir is None or scan_file is None:
-                        print "Cannot plot scan:"
-                        print "Scan %d was not saved into a file" % (scan_nb,)
+                        print("Cannot plot scan:")
+                        print("Scan %d was not saved into a file" % (scan_nb,))
                         return
-                    if not isinstance(scan_file, (str, unicode)):
+                    if not isinstance(scan_file, str):
                         scan_file = scan_file[0]
                     break
             else:
-                print "Cannot plot scan:"
-                print "Scan %d not found in scan history" % (scan_nb,)
+                print("Cannot plot scan:")
+                print("Scan %d not found in scan history" % (scan_nb,))
                 return
 
         remote_file = os.path.join(scan_dir, scan_file)
@@ -128,7 +130,7 @@ class GUIViewer(BaseGUIViewer):
             local_directories = directory_map[scan_dir]
             # local_directories may be either a string or a list of strings
             # the further logic is unified to work on a list, so convert it
-            if isinstance(local_directories, (str, unicode)):
+            if isinstance(local_directories, str):
                 local_directories = [local_directories]
             locations = local_directories
             if scan_dir not in locations:
@@ -139,16 +141,17 @@ class GUIViewer(BaseGUIViewer):
                         local_file = os.path.join(local_directory, scan_file)
                         break
         if local_file is None:
-            print "Cannot plot scan:"
-            print "Could not find %s in any of the following locations:" % (scan_file,)
-            print "\n".join(locations)
+            print("Cannot plot scan:")
+            print("Could not find %s in any of the following locations:" %
+                  (scan_file,))
+            print("\n".join(locations))
             return
 
         import taurus.qt.qtgui.extra_nexus
         taurus_nexus_widget = taurus.qt.qtgui.extra_nexus.TaurusNeXusBrowser()
         taurus_nexus_widget.setMinimumSize(800, 600)
 
-        print "Trying to open local scan file %s..." % (local_file,)
+        print("Trying to open local scan file %s..." % (local_file,))
         taurus_nexus_widget.openFile(local_file)
         taurus_nexus_widget.show()
         nexus_widget = taurus_nexus_widget.neXusWidget()
@@ -169,32 +172,33 @@ class GUIViewer(BaseGUIViewer):
             file_model = nexus_widget.model()
             title = file_model.getNodeFromIndex(title_index)[0]
             windowTitle += " - " + title
-        except Exception, e:
-            print "Cannot plot scan:"
-            print str(e)
+        except Exception as e:
+            print("Cannot plot scan:")
+            print(str(e))
 
         taurus_nexus_widget.setWindowTitle(windowTitle)
 
     def plot(self):
         try:
             import sps
-        except:
-            print 'sps module not available. No plotting'
+        except Exception:
+            print('sps module not available. No plotting')
             return
 
         try:
             import pylab
-        except:
-            print "pylab not available (try running 'spock -pylab'). No plotting"
+        except Exception:
+            print("pylab not available (try running 'spock -pylab'). "
+                  "No plotting")
             return
 
         door = genutils.get_door()
 
         try:
             env = dict(door.getEnvironmentObj().read().value)
-        except Exception, e:
-            print 'Unable to read environment. No plotting'
-            print str(e)
+        except Exception as e:
+            print('Unable to read environment. No plotting')
+            print(str(e))
             return
 
         program = door.getNormalName().replace('/', '').replace('_', '')
@@ -203,26 +207,26 @@ class GUIViewer(BaseGUIViewer):
                 '/', '').replace('_', '').upper() + "0D"
             array_ENV = '%s_ENV' % array
         except:
-            print 'ActiveMntGrp not defined. No plotting'
+            print('ActiveMntGrp not defined. No plotting')
             return
 
         if not program in sps.getspeclist():
-            print '%s not found. No plotting' % program
+            print('%s not found. No plotting' % program)
             return
 
         if not array in sps.getarraylist(program):
-            print '%s not found in %s. No plotting' % (array, program)
+            print('%s not found in %s. No plotting' % (array, program))
             return
 
         if not array_ENV in sps.getarraylist(program):
-            print '%s not found in %s. No plotting' % (array_ENV, program)
+            print('%s not found in %s. No plotting' % (array_ENV, program))
             return
 
         try:
             mem = sps.attach(program, array)
             mem_ENV = sps.attach(program, array_ENV)
-        except Exception, e:
-            print 'sps.attach error: %s. No plotting' % str(e)
+        except Exception as e:
+            print('sps.attach error: %s. No plotting' % str(e))
             return
 
         # reconstruct the environment
@@ -239,7 +243,7 @@ class GUIViewer(BaseGUIViewer):
         col_nb = len(labels)
 
         if col_nb < 4:
-            print 'No data columns available in sps'
+            print('No data columns available in sps')
             return
 
         rows = int(env['nopts'])
@@ -250,7 +254,7 @@ class GUIViewer(BaseGUIViewer):
         colors = 'bgrcmyk'
         col_nb = min(col_nb, len(colors) + 3)
         # skip point_nb, motor and timer columns
-        for i in xrange(3, col_nb):
+        for i in range(3, col_nb):
             y = m[i][:rows]
             line, = pylab.plot(x, y, label=labels[i])
             line.linestyle = '-'
@@ -277,7 +281,7 @@ class SpockBaseDoor(BaseDoor):
 
     def __init__(self, name, **kw):
         self._consoleReady = kw.get("consoleReady", False)
-        if not kw.has_key('silent'):
+        if 'silent' not in kw:
             kw['silent'] = False
         self._lines = []
         self._spock_state = None
@@ -285,7 +289,9 @@ class SpockBaseDoor(BaseDoor):
         self.call__init__(BaseDoor, name, **kw)
 
     def create_input_handler(self):
-        return SpockInputHandler(self)
+        from sardana.spock.inputhandler import SpockInputHandler
+
+        return SpockInputHandler()
 
     def get_color_mode(self):
         return genutils.get_color_mode()
@@ -327,42 +333,84 @@ class SpockBaseDoor(BaseDoor):
     def runMacro(self, obj, parameters=[], synch=False):
         return BaseDoor.runMacro(self, obj, parameters=parameters, synch=synch)
 
+    def _handle_second_release(self):
+        try:
+            self.write('4th Ctrl-C received: Releasing...\n')
+            self.release()
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self.write('5th Ctrl-C received: Giving up...\n')
+            self.write('(The macro is probably still executing the on_abort '
+                       'method. Either wait or restart the server.)\n')
+
+    def _handle_first_release(self):
+        try:
+            self.write('3rd Ctrl-C received: Releasing...\n')
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self._handle_second_release()
+
+    def _handle_abort(self):
+        try:
+            self.write('2nd Ctrl-C received: Aborting...\n')
+            self.block_lines = 0
+            self.abort()
+            self.writeln("Aborting done!")
+        except KeyboardInterrupt:
+            self._handle_first_release()
+
+    def _handle_stop(self):
+        try:
+            self.write('\nCtrl-C received: Stopping...\n')
+            self.block_lines = 0
+            self.stop()
+            self.writeln("Stopping done!")
+        except KeyboardInterrupt:
+            self._handle_abort()
+
     def _runMacro(self, xml, **kwargs):
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
-            print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
+            print("Unable to run macro: No connection to door '%s'" %
+                  self.getSimpleName())
             raise Exception("Unable to run macro: No connection")
+        if self.stateObj.read().rvalue == PyTango.DevState.RUNNING:
+            print("Another macro is running. Wait until it finishes...")
+            raise Exception("Unable to run macro: door in RUNNING state")
         if xml is None:
             xml = self.getRunningXML()
         kwargs['synch'] = True
         try:
             return BaseDoor._runMacro(self, xml, **kwargs)
         except KeyboardInterrupt:
-            self.write('\nCtrl-C received: Stopping... ')
-            self.block_lines = 0
-            self.stop()
-            self.writeln("Done!")
-        except PyTango.DevFailed, e:
+            self._handle_stop()
+        except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
-               not isinstance(e.args, (str, unicode)):
+               not isinstance(e.args, str):
                 reason, desc = e.args[0].reason, e.args[0].desc
                 macro_obj = self.getRunningMacro()
                 if reason == 'MissingParam':
-                    print "Missing parameter:", desc
-                    print macro_obj.getInfo().doc
+                    print("Missing parameter:", desc)
+                    print(macro_obj.getInfo().doc)
                 elif reason == 'WrongParam':
-                    print "Wrong parameter:", desc
-                    print macro_obj.getInfo().doc
+                    print("Wrong parameter:", desc)
+                    print(macro_obj.getInfo().doc)
                 elif reason == 'UnkownParamObj':
-                    print "Unknown parameter:", desc
+                    print("Unknown parameter:", desc)
                 elif reason == 'MissingEnv':
-                    print "Missing environment:", desc
-                elif reason in ('API_CantConnectToDevice', 'API_DeviceNotExported'):
+                    print("Missing environment:", desc)
+                elif reason in ('API_CantConnectToDevice',
+                                'API_DeviceNotExported'):
                     self._updateState(self._old_sw_door_state,
                                       TaurusSWDevState.Shutdown, silent=True)
-                    print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
+                    print("Unable to run macro: No connection to door '%s'" %
+                          self.getSimpleName())
                 else:
-                    print "Unable to run macro:", reason, desc
+                    print("Unable to run macro:", reason, desc)
 
     def _getMacroResult(self, macro):
         ret = None
@@ -400,10 +448,7 @@ class SpockBaseDoor(BaseDoor):
     def plot(self):
         self._plotter.run()
 
-    def show_scan(self, scan_nb=None, online=False):
-        if online:
-            self._plotter.show_scan()
-            return
+    def show_scan(self, scan_nb=None):
         env = self.getEnvironment()
         scan_history_info = env.get("ScanHistory")
         directory_map = env.get("DirectoryMap")
@@ -464,9 +509,16 @@ class SpockBaseDoor(BaseDoor):
         if data is None:
             return
         data = data[1]
-        if data['type'] == 'function':
+        if (isinstance(data, dict)
+                and 'type' in data
+                and data['type'] == 'function'):
             func_name = data['func_name']
             if func_name.startswith("pyplot."):
+                try:
+                    from taurus.external.qt import Qt
+                except ImportError:
+                    print("Qt binding is not available. Macro plotting cannot work without it.")
+                    return
                 func_name = self.MathFrontend + "." + func_name
             args = data['args']
             kwargs = data['kwargs']
@@ -502,13 +554,10 @@ class SpockBaseDoor(BaseDoor):
         value = data.value
         size = len(value[1])
         if size > self._RECORD_DATA_THRESOLD:
-            sizekb = size / 1024
+            sizekb = size // 1024
             self.logReceived(self.Info, ['Received long data record (%d Kb)' % sizekb,
                                          'It may take some time to process. Please wait...'])
         return BaseDoor._processRecordData(self, data)
-
-
-from taurus.external.qt import Qt
 
 
 class QSpockDoor(SpockBaseDoor):
@@ -516,8 +565,7 @@ class QSpockDoor(SpockBaseDoor):
     def __init__(self, name, **kw):
         self.call__init__(SpockBaseDoor, name, **kw)
 
-        Qt.QObject.connect(self, Qt.SIGNAL('recordDataUpdated'),
-                           self.processRecordData)
+        self.recordDataUpdated.connect(self.processRecordData)
 
     def recordDataReceived(self, s, t, v):
         if genutils.get_pylab_mode() == "inline":
@@ -530,6 +578,9 @@ class QSpockDoor(SpockBaseDoor):
         return res
 
     def create_input_handler(self):
+        from sardana.spock.inputhandler import SpockInputHandler
+        from sardana.spock.qtinputhandler import InputHandler
+
         inputhandler = getattr(sardanacustomsettings, 'SPOCK_INPUT_HANDLER',
                                "CLI")
 
@@ -570,7 +621,7 @@ class SpockMacroServer(BaseMacroServer):
             # TODO: when it becomes possible to do:
             # some taurus.Device.<attr name> = <value>
             # replace device_proxy with element
-            device_proxy = element.getObj().getHWObj()
+            device_proxy = element.getObj().getDeviceProxy()
             genutils.expose_variable(element.name, device_proxy)
         return element
 
@@ -589,23 +640,28 @@ class SpockMacroServer(BaseMacroServer):
         # IPython < 1 magic commands have different API
         if genutils.get_ipython_version_list() < [1, 0]:
             def macro_fn(shell, parameter_s='', name=macro_name):
-                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
+                ms = genutils.get_macro_server()
+                params_def = ms.getMacroInfoObj(name).parameters
+                parameters = split_macro_parameters(parameter_s, params_def)
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
                 if macro is not None:  # maybe none if macro was aborted
                     return macro.getResult()
         else:
             def macro_fn(parameter_s='', name=macro_name):
-                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
+                ms = genutils.get_macro_server()
+                params_def = ms.getMacroInfoObj(name).parameters
+                parameters = split_macro_parameters(parameter_s, params_def)
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
                 if macro is not None:  # maybe none if macro was aborted
                     return macro.getResult()
 
-        macro_fn.func_name = macro_name
-        macro_fn.__doc__ = macro_info.doc
+        macro_fn.__name__ = macro_name
+        macro_fn.__doc__ = macro_info.doc + "\nWARNING: do not rely on the" \
+                                            " file path below\n"
 
         # register magic command
         genutils.expose_magic(macro_name, macro_fn)
@@ -619,19 +675,18 @@ class SpockMacroServer(BaseMacroServer):
         del self._local_magic[macro_name]
 
 
-def split_macro_parameters(parameters_s):
+def split_macro_parameters(parameters_s, params_def):
     """Split string with macro parameters into a list with macro parameters.
     Whitespaces are the separators between the parameters.
 
-    When the input string contains square brackets it indicates an advanced
-    syntax for representing repeat parameters. Repeat parameters are encapsulated
-    in square brackets and its internal repetitions, if composed from more than
-    one item are also encapsulated in brackets. In this case the output list
-    contains lists internally.
+    Repeat parameters are encapsulated in square brackets and its internal
+    repetitions, if composed from more than one item are also encapsulated
+    in brackets. In this case the output list contains lists internally.
 
-    :param parameters_s (string): input string containing parameters
-    :returns (list): parameters represented as a list (may contain internal
-        lists)
+    :param parameters_s: input string containing parameters
+    :type parameters_s: string
+    :return:  parameters represented as a list (may contain internal lists
+    :rtype: list
     """
-    parser = ParamParser()
+    parser = ParamParser(params_def)
     return parser.parse(parameters_s)

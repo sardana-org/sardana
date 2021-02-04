@@ -41,7 +41,7 @@ class xas_acq(Macro, Hookable):
 
     Perform an X-ray absorption scan experiment. Data is stored in a NXxas-compliant file.
     """
-    hints = {'FileRecorder': 'NXxas_FileRecorder', 'scan': 'xas_acq', 'allowsHooks': (
+    hints = {'scan': 'xas_acq', 'allowsHooks': (
         'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step')}
     # env = ('MonochromatorEnergy', )#'AbsorbedBeam', 'IncomingBeam',
     # 'Monitor') #this hints that the macro requires the ActiveMntGrp
@@ -60,7 +60,7 @@ class xas_acq(Macro, Hookable):
         self.finals = numpy.array([final], dtype='d')
         self.integ_time = integ_time
 
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.interv_sizes = (self.finals - self.starts) / nr_interv
         self.name = 'xas_acq'
         # the "env" dictionary may be passed as an option
@@ -69,10 +69,11 @@ class xas_acq(Macro, Hookable):
 
         # print "!!!!!", type(self.getInstrument('/instrument/monochromator')), self.getEnv('MonochromatorEnergy', macro_name=self.name)
         # ElementWithInterface('Instrument','monochromator')
-        for n, e in self.getElementsWithInterface('Instrument').iteritems():
+        for n, e in self.getElementsWithInterface('Instrument').items():
             inst = e.getObj()
             # ,inst.getElements()
-            print n, e.name, inst.getFullName(), type(e), type(inst), type(inst.getPoolObj())
+            print(n, e.name, inst.getFullName(), type(e), type(inst),
+                  type(inst.getPoolObj()))
 
         # maybe I should use the instrument interface to obtain the right
         # counters
@@ -108,7 +109,7 @@ class xas_acq(Macro, Hookable):
             "post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINT_')
         step["post-step-hooks"] = self.getHooks('post-step')
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step
@@ -120,3 +121,11 @@ class xas_acq(Macro, Hookable):
     @property
     def data(self):
         return self._gScan.data  # the GScan provides scan data
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version 3.0.3. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)

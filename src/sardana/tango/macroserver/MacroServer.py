@@ -68,7 +68,7 @@ class MacroServer(SardanaDevice):
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
         factory = taurus.Factory("tango")
-        for attr in factory.tango_attrs.values():
+        for attr in list(factory.tango_attrs.values()):
             attr.cleanUp()
 
     def init_device(self):
@@ -153,7 +153,7 @@ class MacroServer(SardanaDevice):
             # force the element list cache to be rebuild next time someone reads
             # the element list
             self.ElementsCache = None
-            self.set_attribute(elems_attr, value=evt_value.value)
+            self.set_attribute(elems_attr, value=evt_value.rvalue)
             #self.push_change_event('Elements', *evt_value.value)
         elif evt_name in ("elementcreated", "elementdeleted"):
             # force the element list cache to be rebuild next time someone reads
@@ -169,7 +169,7 @@ class MacroServer(SardanaDevice):
                 key = 'del'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "elementschanged":
@@ -190,7 +190,7 @@ class MacroServer(SardanaDevice):
                 deleted_values.append(json_elem)
             value = {"new": new_values, "change": changed_values,
                      "del": deleted_values}
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "environmentchanged":
@@ -229,7 +229,7 @@ class MacroServer(SardanaDevice):
             return value
         elements = self.macro_server.get_elements_info()
         value = dict(new=elements)
-        value = CodecFactory().getCodec('json').encode(('', value))
+        value = CodecFactory().getCodec('utf8_json').encode(('', value))
         self.ElementsCache = value
         return value
 
@@ -261,7 +261,7 @@ class MacroServer(SardanaDevice):
         codec = CodecFactory().getCodec('json')
         ret = []
 
-        for _, macro in macro_server.get_macros().items():
+        for _, macro in list(macro_server.get_macros().items()):
             if macro.name in macro_names:
                 ret.append(codec.encode(('', macro.serialize()))[1])
 
@@ -272,7 +272,7 @@ class MacroServer(SardanaDevice):
         try:
             for macro_name in macro_names:
                 self.macro_server.reload_macro(macro_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacro')
         return ['OK']
 
@@ -282,7 +282,7 @@ class MacroServer(SardanaDevice):
         try:
             for lib_name in lib_names:
                 self.macro_server.reload_macro_lib(lib_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacroLib')
         return ['OK']
 
@@ -290,7 +290,7 @@ class MacroServer(SardanaDevice):
         """GetMacroCode(<module name> [, <macro name>]) -> full filename, code, line_nb
         """
         ret = self.macro_server.get_or_create_macro_lib(*argin)
-        return map(str, ret)
+        return list(map(str, ret))
 
     def SetMacroCode(self, argin):
         lib_name, code = argin[:2]
@@ -345,12 +345,16 @@ class MacroServerClass(SardanaDeviceClass):
         'MacroPath':
             [DevVarStringArray,
              "list of directories to search for macros (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'RecorderPath':
             [DevVarStringArray,
              "list of directories to search for recorders (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'PythonPath':
             [DevVarStringArray,
@@ -392,7 +396,17 @@ class MacroServerClass(SardanaDeviceClass):
              None],
         'LogstashPort':
             [DevLong,
-             "Port on which Logstash will listen on events. "
+             "Port on which Logstash will listen on events [default: 12345]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             12345],
+        'LogstashCacheDbPath':
+            [DevString,
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
              "This property has been included in Sardana on a provisional "
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "

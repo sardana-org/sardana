@@ -29,7 +29,7 @@ __all__ = ["call_wa", "call_wm", "subsubm", "subm", "mainmacro", "runsubs"]
 
 __docformat__ = 'restructuredtext'
 
-from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Type
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 # First example:
@@ -47,8 +47,7 @@ class call_wa(Macro):
 class call_wm(Macro):
 
     param_def = [
-        ['motor_list',
-         ParamRepeat(['motor', Type.Motor, None, 'Motor to move']),
+        ['motor_list', [['motor', Type.Motor, None, 'Motor to move']],
          None, 'List of motor to show'],
     ]
 
@@ -184,7 +183,7 @@ class get_data(Macro):
 
         data = dscan.data
         len_data = len(data)
-        for point_nb in xrange(len_data):
+        for point_nb in range(len_data):
             position = data[point_nb].data[mot.getName()]
             positions.append(position)
 

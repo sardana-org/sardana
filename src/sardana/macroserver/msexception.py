@@ -30,13 +30,13 @@ __all__ = ["MacroServerException", "MacroServerExceptionList", "MissingEnv",
            "UnknownEnv", "UnknownMacro", "UnknownMacroLibrary",
            "UnknownRecorder", "MacroWrongParameterType", "LibraryError",
            "InterruptException", "StopException", "AbortException",
-           "InputCancelled"]
+           "ReleaseException", "InputCancelled"]
 
 __docformat__ = 'restructuredtext'
 
 from sardana.sardanaexception import SardanaException, SardanaExceptionList, \
     UnknownCode, UnknownLibrary, LibraryError, InterruptException, \
-    StopException, AbortException
+    StopException, AbortException, ReleaseException
 
 
 class MacroServerException(SardanaException):
