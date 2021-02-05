@@ -48,6 +48,7 @@ import operator
 import io
 import threading
 import traceback
+import functools
 
 from taurus.core.util.log import Logger
 from taurus.core.util.prop import propertx
@@ -160,6 +161,26 @@ class PauseEvent(Logger):
 
     def isPaused(self):
         return not self._event.isSet()
+
+
+def wrap_hook_with_logs(hook, macro_obj, hook_place=None):
+    @functools.wraps(hook)
+    def wrapper_hook(*args, **kwargs):
+        try:
+            hook_exec_line = hook._exec_line
+        except AttributeError:
+            hook_description = hook.__name__
+        msg = "Start hook: {}".format(hook_exec_line)
+        if hook_place is not None:
+            msg += " at hook place {}".format(hook_place)
+        macro_obj.debug(msg)
+        ret = hook(*args, **kwargs)
+        msg = "End hook: {}".format(hook_exec_line)
+        if hook_place is not None:
+            msg += " at hook place {}".format(hook_place)
+        macro_obj.debug(msg)
+        return ret
+    return wrapper_hook
 
 
 class Hookable(Logger):
