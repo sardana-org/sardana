@@ -231,24 +231,26 @@ class Hookable(Logger):
             and its optional parameters/arguments, the second one is the list
             of hints e.g. hook places
         """
-        self._getHooks().append(hook_info)
         hook = hook_info[0]
         hints = hook_info[1]
+        wrapped_hook = wrap_hook_with_logs(hook, self)
+        self._getHooks().append(wrapped_hook, hints)
         allowed_hookhints = self.getAllowedHookHints()
         if len(hints) == 0:
-            self._getHookHintsDict()['_ALL_'].append(hook)
-            self._hookHintsDict['_NOHINTS_'].append(hook)
+            self._getHookHintsDict()['_ALL_'].append(wrapped_hook)
+            self._hookHintsDict['_NOHINTS_'].append(wrapped_hook)
             return
         for hint in hints:
             if hint in allowed_hookhints:
-                self._getHookHintsDict()['_ALL_'].append(hook)
+                self._getHookHintsDict()['_ALL_'].append(wrapped_hook)
                 break
         for hint in hints:
             if hint in allowed_hookhints:
+                wrapped_hook_hint = wrap_hook_with_logs(hook, self, hint)
                 try:
-                    self._hookHintsDict[hint].append(hook)
+                    self._hookHintsDict[hint].append(wrapped_hook_hint)
                 except KeyError:
-                    self._hookHintsDict[hint] = [hook]
+                    self._hookHintsDict[hint] = [wrapped_hook_hint]
 
     @property
     def hooks(self):
