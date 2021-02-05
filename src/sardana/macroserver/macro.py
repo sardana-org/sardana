@@ -57,6 +57,7 @@ from taurus.console.list import List
 from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
 from sardana.util.thread import _asyncexc
+from sardana.sardanautils import is_non_str_seq
 
 from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
@@ -315,6 +316,13 @@ class ExecMacroHook(object):
         self._macro_obj_wr = weakref.ref(parent_macro)
         self._pars = pars
         self._opts = kwargs
+        macro_and_params = pars
+        if is_non_str_seq(macro_and_params[0]):
+            macro_and_params = macro_and_params[0]
+        name = macro_and_params[0]
+        params = macro_and_params[1:]
+        self._exec_line = "{}({})".format(name, ", ".join(map(str,params)))
+
 
     @property
     def macro_obj(self):
