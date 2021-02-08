@@ -650,6 +650,23 @@ class PoolBaseChannel(PoolElement):
     # shape
     # -------------------------------------------------------------------------
 
+    def _get_shape_from_max_dim_size(self):
+        # MaxDimSize could actually become a standard fallback
+        # in case the shape controller parameters is not implemented
+        # reconsider it whenever backwards compatibility with reading the value
+        # is about to be removed
+        try:
+            from sardana.pool.controller import MaxDimSize
+            controller = self.controller
+            axis_attr_info = controller.get_axis_attributes(self.axis)
+            value_info = axis_attr_info["Value"]
+            shape = value_info[MaxDimSize]
+        except Exception as e:
+            raise RuntimeError(
+                "can not provide backwards compatibility, you must"
+                "implement shape axis parameter") from e
+        return shape
+
     def get_shape(self, cache=True, propagate=1):
         if not cache or self._shape is None:
             shape = self.read_shape()
@@ -677,13 +694,16 @@ class PoolBaseChannel(PoolElement):
                     "not implementing shape axis parameter in 1D and 2D "
                     "controllers is deprecated since Jan21")
                 value = self.value.value
-                import numpy
-                try:
-                    shape = numpy.shape(value)
-                except Exception as e:
-                    raise RuntimeError(
-                        "can not provide backwards compatibility, you must"
-                        "implement shape axis parameter") from e
+                if value is None:
+                    self.debug("could not get shape from value")
+                    shape = self._get_shape_from_max_dim_size()
+                else:
+                    import numpy
+                    try:
+                        shape = numpy.shape(value)
+                    except Exception:
+                        self.debug("could not get shape from value")
+                        shape = self._get_shape_from_max_dim_size()
             # scalar channel
             else:
                 shape = []
