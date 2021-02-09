@@ -136,7 +136,7 @@ def createChannelDict(channel, index=None, **kwargs):
     # If the channel is a Tango one, try to guess data_type, shape and
     # data_units
     attrproxy = attrconf = value = None
-    dtype = shape = None
+    dtype = None
     try:
         attrproxy = PyTango.AttributeProxy(source)
         attrconf = attrproxy.get_config()
@@ -147,15 +147,9 @@ def createChannelDict(channel, index=None, **kwargs):
         print(str(e))
 
     if value is not None:
-        shape = list(numpy.shape(value))
         dtype = getattr(value, 'dtype', numpy.dtype(type(value))).name
         ret['data_units'] = attrconf.unit
     elif attrconf is not None:
-        if attrconf.data_format == PyTango.AttrDataFormat.SCALAR:
-            shape = []
-        else:
-            shape = [n for n in (attrconf.max_dim_x,
-                                 attrconf.max_dim_y) if n > 0]
         dtype = FROM_TANGO_TO_STR_TYPE[attrconf.data_type]
         ret['data_units'] = attrconf.unit
 
@@ -166,8 +160,6 @@ def createChannelDict(channel, index=None, **kwargs):
         #        elif dtype == 'bool':
         #            dtype='int8'
         ret['data_type'] = dtype
-    if shape is not None:
-        ret['shape'] = shape
 
     # now overwrite using the arguments
     ret.update(kwargs)
@@ -179,13 +171,7 @@ def createChannelDict(channel, index=None, **kwargs):
 
     # Choose a default plot_type for the channel
     if 'plot_type' not in ret:
-        default_plot_type = {0: PlotType.Spectrum,
-                             2: PlotType.Image, None: PlotType.No}
-        try:
-            rank = len(ret['shape'])
-        except KeyError:
-            rank = None  # if shape is not known, use the default plot_type
-        ret['plot_type'] = default_plot_type.get(rank, PlotType.No)
+        ret['plot_type'] = PlotType.No
 
     # And a default value for plot_axes
     if 'plot_axes' not in ret:
@@ -248,8 +234,6 @@ def getElementTypeToolTip(t):
         return "Channel active or not"
     elif t == ChannelView.Output:
         return "Channel output active or not"
-    elif t == ChannelView.Shape:
-        return "Shape of the data (using numpy convention). For example, a scalar will have shape=(), a spectrum of 10 elements will have shape=(10,) and an image of 20x30 will be shape=(20,30)"
     elif t == ChannelView.DataType:
         return "Type of data for storing (valid types are: char, float32, float64, [u]int{8|16|32|64})",
     elif t == ChannelView.PlotType:
@@ -305,7 +289,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
     itemdata_keys_map = {ChannelView.Channel: 'label',
                          ChannelView.Enabled: 'enabled',
                          ChannelView.Output: 'output',
-                         ChannelView.Shape: 'shape',
                          ChannelView.DataType: 'data_type',
                          ChannelView.PlotType: 'plot_type',
                          ChannelView.PlotAxes: 'plot_axes',
@@ -334,8 +317,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
             ret = Normalization[ret]
         elif taurus_role == ChannelView.PlotAxes:
             ret = "|".join(ret)
-        elif taurus_role == ChannelView.Shape:
-            ret = str(ret)
         return ret
 
     def setData(self, index, qvalue):
@@ -363,16 +344,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
             data = Normalization[qvalue]
         elif taurus_role == ChannelView.PlotAxes:
             data = [a for a in qvalue.split('|')]
-        elif taurus_role == ChannelView.Shape:
-            s = qvalue
-            try:
-                data = eval(s, {}, {})
-                if not isinstance(data, (tuple, list)):
-                    raise ValueError
-            except:
-                from taurus.core.util.log import Logger
-                Logger(self.__class__.__name__).error('Invalid shape %s', s)
-                data = ()
         else:
             raise NotImplementedError('Unknown role')
         ch_data[key] = data
@@ -394,13 +365,13 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
-    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type",
+    ColumnNames = ("Channel", "enabled", "output", "Data Type",
                    "Plot Type", "Plot Axes", "Timer", "Monitor",
                    "Synchronizer", "Synchronization", "Ref Enabled",
                    "Ref Pattern", "Conditioning",
                    "Normalization", "NeXus Path")
     ColumnRoles = ((ChannelView.Channel, ChannelView.Channel),
-                   ChannelView.Enabled, ChannelView.Output, ChannelView.Shape,
+                   ChannelView.Enabled, ChannelView.Output,
                    ChannelView.DataType, ChannelView.PlotType,
                    ChannelView.PlotAxes, ChannelView.Timer,
                    ChannelView.Monitor, ChannelView.Synchronizer,
@@ -978,7 +949,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
 
     DftPerspective = "Channel"
     _simpleViewColumns = (ChannelView.Channel, ChannelView.Output,
-                          ChannelView.Shape, ChannelView.PlotType, ChannelView.PlotAxes)
+                          ChannelView.PlotType, ChannelView.PlotAxes)
     _simpleView = False
 
     def __init__(self, parent=None, designMode=False, with_filter_widget=True, perspective=None):

@@ -430,8 +430,8 @@ Glossary
     dial
         See :term:`dial position`
 
-    ROI
-        *Region of interest* are samples within a data set identified for a
+    RoI
+        *Region of Interest* are samples within a data set identified for a
         particular purpose.
         
 .. _plug-in: http://en.wikipedia.org/wiki/Plug-in_(computing)

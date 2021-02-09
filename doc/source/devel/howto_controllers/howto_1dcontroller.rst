@@ -30,6 +30,35 @@ To write a 1D controller class you can follow
 the :ref:`sardana-countertimercontroller` guide keeping in mind
 differences explained in continuation.
 
+.. _sardana-1dcontroller-general-guide-shape:
+
+Get 1D shape
+~~~~~~~~~~~~
+
+1D controller should provide a shape of the spectrum which will be produced by
+acquisition. The shape can be either static e.g. defined by the detector's
+sensor size or dynamic e.g. depending on the detector's (or an intermediate
+control software layer e.g. `LImA`_) configuration like :term:`RoI` or binning.
+
+In any case you should provide the shape in the format of a one-element sequence
+with the length of the spectrum using
+the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetAxisPar`:
+
+.. code-block:: python
+
+    class SpringfieldOneDController(TwoDController):
+
+        def GetAxisPar(self, axis, par):
+            if par == "shape":
+                return self.springfield.getShape(axis)
+
+For backwards compatibility, in case of not implementing the ``shape`` axis
+parameter, shape will be determined from the ``MaxDimSize`` of the ``Value``
+attribute, currently (4096,).
+
 .. _sardana-1dcontroller-differences-countertimer:
 
 Differences with counter/timer controller
@@ -96,7 +125,7 @@ leaving the data storage at the responsibility of the detector
 just deals with the reference to the data.
 
 Please refer to :ref:`sardana-2dcontroller-valuereferencing` chapter from
-:ref:`sardana-2dcontroller-howto` in order to implement this feature for 1D
+:ref:`sardana-2dcontroller-howto` guide in order to implement this feature for 1D
 controller.
 
 .. _ALBA: http://www.cells.es/
