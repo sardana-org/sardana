@@ -73,6 +73,8 @@ negative. The value close to the zero indicates the beam centered in the middle.
 Similarly behaves the horizontal pseudo counter. The total pseudo counter is
 the mean value of all the four sensors and indicates the beam intensity.
 
+.. _sardana-pseudocountercontroller-howto-changing-interface:
+
 Changing default interface
 --------------------------
 
@@ -101,7 +103,7 @@ Get pseudo counter shape
 ------------------------
 
 If you change the pseudo counter format to spectrum or image then you
-controller must provide the shape of the calculation result in either
+controller should provide the shape of the calculation result in either
 of the formats:
 
 - one-element sequence with the length of the spectrum
@@ -117,6 +119,11 @@ Here is an example of the possible implementation of
     def GetAxisPar(self, axis, par):
         if par == "shape":
             return [1024, 1024]
+
+
+For backwards compatibility, in case of not implementing the ``shape`` axis
+parameter, shape will be determined from the ``MaxDimSize`` of the ``Value``
+attribute as defined in :ref:`sardana-pseudocountercontroller-howto-changing-interface`.
 
 Including external variables in the calculation
 -----------------------------------------------

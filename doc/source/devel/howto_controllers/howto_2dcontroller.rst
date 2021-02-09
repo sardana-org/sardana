@@ -32,12 +32,12 @@ differences explained in continuation.
 Get 2D shape
 ~~~~~~~~~~~~
 
-2D controller must provide a shape of the image which will be produced by
+2D controller should provide a shape of the image which will be produced by
 acquisition. The shape can be either static e.g. defined by the detector's
 sensor size or dynamic e.g. depending on the detector's (or an intermediate
 control software layer e.g. `LImA`_) configuration like :term:`RoI` or binning.
 
-In any case you must provide the shape in the format of a two-element sequence
+In any case you should provide the shape in the format of a two-element sequence
 with horizontal and vertical dimensions using
 the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
 
@@ -51,6 +51,10 @@ Here is an example of the possible implementation of
         def GetAxisPar(self, axis, par):
             if par == "shape":
                 return self.springfield.getShape(axis)
+
+For backwards compatibility, in case of not implementing the ``shape`` axis
+parameter, shape will be determined frm the ``MaxDimSize`` of the ``Value``
+attribute, currently (4096, 4096).
 
 .. _sardana-2dcontroller-differences-countertimer:
 
