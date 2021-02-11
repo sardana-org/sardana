@@ -39,6 +39,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   e.g. pseudo counter's value, in controllers (#1440, #1446)
 * Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
 * Storing string values as custom data in NXscanH5_FileRecorder (#1485)
+* Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * Allow running Spock without Qt bindings (#1462, #1463)
