@@ -27,12 +27,11 @@ import threading
 import time
 import unittest
 
+from sardana import ElementType
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.test import (FakePool, createPoolController, createPoolMotor,
                                dummyMotorConf01, dummyMotorConf02,
                                dummyPoolMotorCtrlConf01)
-from sardana.pool.test.test_poolmotor import motor
-from sardana.pool.test.test_poolmotorgroup import motor_group
 from sardana.sardanadefs import State
 
 
@@ -127,28 +126,7 @@ class PoolMotionTestCase(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
 
-def test_stop_motor_with_backlash(motor):
-
-    motion_done = threading.Event()
-
-    def on_motor_changed(event_source, event_type, event_value):
-        name = event_type.name.lower()
-        if name == "state":
-            if event_value == State.On:
-                motion_done.set()
-
-    motor.backlash = -1
-    target_position = 100
-    motor.position = target_position
-    motor.add_listener(on_motor_changed)
-    time.sleep(0.5)
-    motor.stop()
-    motion_done.wait()
-    assert motor.position.value != target_position
-
-
-def test_stop_motorgroup_with_backlash(motor_group):
-
+def test_stop_moveables_with_backlash(moveable):
     motion_done = threading.Event()
 
     def on_motor_group_changed(event_source, event_type, event_value):
@@ -157,13 +135,18 @@ def test_stop_motorgroup_with_backlash(motor_group):
             if event_value == State.On:
                 motion_done.set()
 
-    for motor in motor_group._physical_elements:
-        motor.backlash = -1
+    if "motgrp" in str(moveable):
+        for motor in moveable._physical_elements:
+            motor.backlash = -1
+        target_position = [100, 100]
+    else:
+        moveable.backlash = -1
+        target_position = 100
 
-    target_position = [100, 100]
-    motor_group.position = target_position
-    motor_group.add_listener(on_motor_group_changed)
+    moveable.position = target_position
+    moveable.add_listener(on_motor_group_changed)
     time.sleep(0.5)
-    motor_group.stop()
+    moveable.stop()
     motion_done.wait()
-    assert motor_group.position.value != target_position
+
+    assert moveable.position.value != target_position
