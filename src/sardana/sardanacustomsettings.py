@@ -37,10 +37,13 @@ UNITTEST_POOL_DS_NAME = "unittest1"
 #: UnitTests Pool Device name: Pool Device to use in unit tests.
 UNITTEST_POOL_NAME = "pool/demo1/1"
 
-#: Size and number of rotating backups of the log files.
-#: The Pool and MacroServer Device servers will use these values for their
-#: logs.
+#: Size of rotating backups of the log files.
+#: The Pool, MacroServer and Sardana device servers will use these values
+#: for their logs.
 LOG_FILES_SIZE = 1e7
+#: Number of rotating backups of the log files.
+#: The Pool, MacroServer and Sardana device servers will use these values
+#: for their logs.
 LOG_BCK_COUNT = 5
 
 #: Input handler for spock interactive macros. Accepted values are:
