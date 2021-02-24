@@ -30,6 +30,7 @@ __all__ = ["Moveable", "MoveableSource", "Motion", "MotionGroup"]
 __docformat__ = 'restructuredtext'
 
 import time
+from collections import OrderedDict
 
 from taurus.core.util.containers import CaselessDict
 
@@ -270,7 +271,7 @@ class Motion(BaseMotion):
                                                           allow_repeat=allow_repeat, allow_unknown=allow_unknown)
 
         # map<MoveableSource, Moveable>
-        ms_moveables = {}
+        ms_moveables = OrderedDict()
         for moveable_source, ms_names in list(ms_elem_names.items()):
             moveable = moveable_source.getMoveable(ms_names)
             ms_moveables[moveable_source] = moveable
@@ -330,7 +331,7 @@ class Motion(BaseMotion):
         belong to the that motion source.
         """
 
-        ms_elems = {}
+        ms_elems = OrderedDict()
 
         for name in names:
             moveable = None
