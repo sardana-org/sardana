@@ -44,6 +44,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * Allow running Spock without Qt bindings (#1462, #1463)
+* Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
