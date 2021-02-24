@@ -375,6 +375,9 @@ class GScan(Logger):
         # The Output recorder (if any)
         json_recorder = self._getJsonRecorder()
 
+        # The Generic Data recorders (if any)
+        data_recorders = self._getDataRecorders()
+
         # The File recorders (if any)
         file_recorders = self._getFileRecorders()
 
@@ -386,6 +389,8 @@ class GScan(Logger):
 
         data_handler.addRecorder(output_recorder)
         data_handler.addRecorder(json_recorder)
+        for data_recorder in data_recorders:
+            data_handler.addRecorder(data_recorder)
         for file_recorder in file_recorders:
             data_handler.addRecorder(file_recorder)
         data_handler.addRecorder(shm_recorder)
@@ -482,6 +487,26 @@ class GScan(Logger):
             pass
         self.info('JsonRecorder is not defined. Use "senv JsonRecorder '
                   'True" to enable it')
+
+    def _getDataRecorders(self):
+
+        try:
+            data_recorders = self.macro.getEnv('DataRecorder')
+        except InterruptException:
+            raise
+        except Exception as e:
+            self.debug('DataRecorder is not defined. Use "senv DataRecorder '
+                       'with the recorder class name (or a list).')
+            return []
+
+        if isinstance(data_recorders, str):
+            data_recorders = [data_recorders]
+
+        _rec_list = []
+        for rec in data_recorders:
+            _obj = self._rec_manager.getRecorderClass(rec)(macro=self.macro)
+            _rec_list.append(_obj)
+        return _rec_list
 
     def _getOutputRecorder(self):
         cols = None
