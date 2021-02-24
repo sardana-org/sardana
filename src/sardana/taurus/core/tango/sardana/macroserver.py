@@ -424,11 +424,10 @@ class BaseDoor(MacroServerDevice):
     def _get_macroserver_for_door(self):
         """Returns the MacroServer device object in the same DeviceServer as
         this door"""
-        db = self.factory().getDatabase()
+        db = self.getParentObj()
         door_name = self.dev_name()
         server_list = list(db.get_server_list('MacroServer/*'))
         server_list += list(db.get_server_list('Sardana/*'))
-        server_devs = None
         for server in server_list:
             server_devs = db.get_device_class_list(server)
             devs, klasses = server_devs[0::2], server_devs[1::2]
@@ -436,7 +435,8 @@ class BaseDoor(MacroServerDevice):
                 if dev.lower() == door_name:
                     for i, klass in enumerate(klasses):
                         if klass == 'MacroServer':
-                            return self.factory().getDevice(devs[i])
+                            full_name = db.getFullName() + "/" + devs[i]
+                            return self.factory().getDevice(full_name)
         else:
             return None
 
