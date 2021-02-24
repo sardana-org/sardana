@@ -7,7 +7,8 @@ Adding real elements
 For the sake of demonstration, let's suppose you want to integrate a slit with
 IcePAP-based motors into Sardana.
 
-Before doing anything else you should check the `controller plugin register <https://sourceforge.net/p/sardana/controllers.git>`_.
+Before doing anything else you should check the
+`Sardana plugins catalogue <https://github.com/sardana-org/sardana-plugins>`_.
 There's a high chance that somebody already wrote the plugin for your hardware.
 If not, you can :ref:`write the plugin yourself <sardana-controller-howto>`.
 

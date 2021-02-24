@@ -30,7 +30,7 @@ __all__ = ["Value", "PoolBaseChannel"]
 
 __docformat__ = 'restructuredtext'
 
-from sardana.sardanadefs import AttrQuality
+from sardana.sardanadefs import AttrQuality, ElementType
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
@@ -120,6 +120,7 @@ class PoolBaseChannel(PoolElement):
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
         self._integration_time = 0
+        self._shape = None
 
     def has_pseudo_elements(self):
         """Informs whether this channel forms part of any pseudo element
@@ -644,6 +645,71 @@ class PoolBaseChannel(PoolElement):
 
     integration_time = property(get_integration_time, set_integration_time,
                                 doc="channel integration time")
+
+    # -------------------------------------------------------------------------
+    # shape
+    # -------------------------------------------------------------------------
+
+    def _get_shape_from_max_dim_size(self):
+        # MaxDimSize could actually become a standard fallback
+        # in case the shape controller parameters is not implemented
+        # reconsider it whenever backwards compatibility with reading the value
+        # is about to be removed
+        try:
+            from sardana.pool.controller import MaxDimSize
+            controller = self.controller
+            axis_attr_info = controller.get_axis_attributes(self.axis)
+            value_info = axis_attr_info["Value"]
+            shape = value_info[MaxDimSize]
+        except Exception as e:
+            raise RuntimeError(
+                "can not provide backwards compatibility, you must"
+                "implement shape axis parameter") from e
+        return shape
+
+    def get_shape(self, cache=True, propagate=1):
+        if not cache or self._shape is None:
+            shape = self.read_shape()
+            self._set_shape(shape, propagate=propagate)
+        return self._shape
+
+    def _set_shape(self, shape, propagate=1):
+        self._shape = shape
+        if not propagate:
+            return
+        self.fire_event(
+            EventType("shape", priority=propagate), shape)
+
+    def read_shape(self):
+        try:
+            shape = self.controller.get_axis_par(self.axis, "shape")
+        except Exception:
+            shape = None
+        if shape is None:
+            # backwards compatibility for controllers not implementing
+            # shape axis par
+            if self.get_type() in (ElementType.OneDExpChannel,
+                                   ElementType.TwoDExpChannel):
+                self.warning(
+                    "not implementing shape axis parameter in 1D and 2D "
+                    "controllers is deprecated since Jan21")
+                value = self.value.value
+                if value is None:
+                    self.debug("could not get shape from value")
+                    shape = self._get_shape_from_max_dim_size()
+                else:
+                    import numpy
+                    try:
+                        shape = numpy.shape(value)
+                    except Exception:
+                        self.debug("could not get shape from value")
+                        shape = self._get_shape_from_max_dim_size()
+            # scalar channel
+            else:
+                shape = []
+        return shape
+
+    shape = property(get_shape, doc="channel value shape")
 
     def _prepare(self):
         # TODO: think of implementing the preparation in the software

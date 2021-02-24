@@ -953,7 +953,7 @@ class MeasurementConfiguration(object):
         channel_data['normalization'] = channel_data.get('normalization',
                                                          Normalization.No)
         # TODO: think of filling other keys: data_type, data_units, nexus_path
-        # shape here instead of feeling them on the Taurus extension level
+        #  here instead of feeling them on the Taurus extension level
 
         if ctype != ElementType.External:
             ctrl_name = channel.controller.full_name

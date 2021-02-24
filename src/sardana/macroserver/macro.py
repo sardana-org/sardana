@@ -538,6 +538,8 @@ class Macro(Logger):
         self._id = kwargs.get('id')
         self._desc = "Macro '%s'" % self._macro_line
         self._macro_status = {'id': self._id,
+                              'name': self._name,
+                              'macro_line': self._macro_line,
                               'range': (0.0, 100.0),
                               'state': 'start',
                               'step': 0.0}
@@ -2333,6 +2335,12 @@ class Macro(Logger):
 
         # make sure a 0.0 progress is sent
         yield macro_status
+
+        # Avoid repeating same information on subsequent events. If, in the
+        # future, clients that connect in the middle of macro execution need
+        # this information, just simply remove the lines below
+        del macro_status['name']
+        del macro_status['macro_line']
 
         # allow any macro to be paused at the beginning of its execution
         self.pausePoint()

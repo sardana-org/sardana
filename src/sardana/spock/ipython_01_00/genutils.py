@@ -82,7 +82,10 @@ from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
 
 # make sure Qt is properly initialized
-from taurus.external.qt import Qt
+try:
+    from taurus.external.qt import Qt
+except ImportError:
+    pass
 
 from sardana.spock import exception
 from sardana.spock import colors
@@ -110,7 +113,11 @@ ENV_NAME = "_E"
 
 
 def get_gui_mode():
-    return 'qt'
+    try:
+        import taurus.external.qt.Qt
+        return 'qt'
+    except ImportError:
+        return None
 
 
 def get_pylab_mode():
@@ -1159,7 +1166,8 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     term_app = config.TerminalIPythonApp
     term_app.display_banner = True
     term_app.gui = gui_mode
-    term_app.pylab = 'qt'
+    if gui_mode == 'qt':
+        term_app.pylab = 'qt'
     term_app.pylab_import_all = False
     #term_app.nosep = False
     #term_app.classic = True
@@ -1280,8 +1288,16 @@ def mainloop(app=None, user_ns=None):
 
 def prepare_input_handler():
     # initialize input handler as soon as possible
-    import sardana.spock.inputhandler
-    _ = sardana.spock.inputhandler.InputHandler()
+
+    from sardana import sardanacustomsettings
+
+    if getattr(sardanacustomsettings, "SPOCK_INPUT_HANDLER", "CLI") == "Qt":
+
+        try:
+            import sardana.spock.qtinputhandler
+            _ = sardana.spock.qtinputhandler.InputHandler()
+        except ImportError:
+            raise Exception("Cannot use Spock Qt input handler!")
 
 
 def prepare_cmdline(argv=None):

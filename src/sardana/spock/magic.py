@@ -40,6 +40,15 @@ from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
 def expconf(self, parameter_s=''):
     """Launches a GUI for configuring the environment variables
     for the experiments (scans)"""
+
+    try:
+        from taurus.external.qt import Qt
+    except ImportError:
+        print("Qt binding is not available. ExpConf cannot work without it."
+              "(hint: maybe you want to use experiment configuration macros? "
+              "https://sardana-controls.org/users/standard_macro_catalog.html#experiment-configuration-macros)")
+        return
+
     try:
         from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
@@ -81,38 +90,20 @@ def showscan(self, parameter_s=''):
     Where *online* means plot the scan as it runs and *offline* means -
     extract the scan data from the file - works only with HDF5 files.
     """
+
+    try:
+        from taurus.external.qt import Qt
+    except ImportError:
+        print("Qt binding is not available. Showscan cannot work without it.")
+        return
+
     params = parameter_s.split()
     door = get_door()
     scan_nb = None
     if len(params) > 0:
         if params[0].lower() == 'online':
-            try:
-                from sardana.taurus.qt.qtgui.extra_sardana import \
-                    ShowScanOnline
-
-            except Exception as e:
-                print("Error importing ShowScanOnline")
-                print(e)
-                return
-
-            doorname = get_door().fullname
-            # ===============================================================
-            # ugly hack to avoid ipython/qt thread problems #e.g. see
-            # https://sourceforge.net/p/sardana/tickets/10/
-            # this hack does not allow inter-process communication and
-            # leaves the widget open after closing spock
-            #
-            # @todo: investigate cause of segfaults when using launching qt
-            #  widgets from ipython
-            #
-
-            # https://sourceforge.net/p/sardana/tickets/10/
             import subprocess
-            import sys
-            fname = sys.modules[ShowScanOnline.__module__].__file__
-            python_executable = which_python_executable()
-            args = [python_executable, fname, doorname,
-                    '--taurus-log-level=error']
+            args = ['showscan', '--taurus-log-level=error', get_door().fullname]
             subprocess.Popen(args)
             return
         else:
@@ -121,6 +112,12 @@ def showscan(self, parameter_s=''):
 
 
 def spsplot(self, parameter_s=''):
+    try:
+        from taurus.external.qt import Qt
+    except ImportError:
+        print("Qt binding is not available. SPSplot cannot work without it.")
+        return
+
     get_door().plot()
 
 

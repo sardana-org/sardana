@@ -7,7 +7,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* *scan information* and *scan point* forms to the *showscan online* widget (#1386)
+* `shape` controller axis parameter (plugin), `shape` experimental channel
+  attribute (kernel) and `Shape` Tango attribute to the experimental channels
+  (#1296, #1466)
+* *scan information* and *scan point* forms to the *showscan online* widget (#1386, #1477, #1479)
 * `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
   widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
 * Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
@@ -18,11 +21,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Documentation on how to write 1D and 2D controllers (#1494)
+* Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* LICENSE file to python source distribution (#1490)
 
 ### Fixed
 
@@ -31,13 +37,28 @@ This file follows the formats and conventions from [keepachangelog.com]
   instead of reading only at the end (#1442, #1448)
 * Avoid problems when defining different, e.g. shape, standard attributes,
   e.g. pseudo counter's value, in controllers (#1440, #1446)
+* Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
+* Storing string values as custom data in NXscanH5_FileRecorder (#1485)
+* Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
+* Allow running Spock without Qt bindings (#1462, #1463)
+* Use equality instead of identity checks for numbers and strings (#1491)
+* Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
 * Disable flake8 job in travis CI (#1455)
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
+
+### Changed
+
+* Experimental channel shape is now considered as a result of the configuration
+  and not part of the measurement group configuration (#1296, #1466)
+
+### Removed
+
+* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
 
 ## [3.0.3] 2020-09-18
 

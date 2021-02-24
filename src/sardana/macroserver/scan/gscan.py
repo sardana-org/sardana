@@ -83,6 +83,32 @@ class ScanException(MacroServerException):
     pass
 
 
+def _get_shape(channel):
+    # internal Sardana channel
+    if isinstance(channel, PyTango.DeviceProxy):
+        try:
+            shape = channel.shape
+        except Exception:
+            return None
+        if shape is None:  # in PyTango empty spectrum is None
+            return []
+        return shape
+    # external channel (Tango attribute)
+    elif isinstance(channel, PyTango.AttributeProxy):
+        try:
+            attr_conf = channel.get_config()
+        except Exception:
+            return None
+        if attr_conf.data_format == PyTango.AttrDataFormat.SCALAR:
+            return []
+        try:
+            value = channel.read().value
+        except Exception:
+            return [n for n in (attr_conf.max_dim_x,
+                                attr_conf.max_dim_y) if n > 0]
+        return list(np.shape(value))
+
+
 class ExtraData(object):
 
     def __init__(self, **kwargs):
@@ -675,16 +701,24 @@ class GScan(Logger):
         counters = []
         for ci in channels_info:
             full_name = ci.full_name
+            shape = None
+            instrument = ''
             try:
                 # Use DeviceProxy instead of taurus to avoid crashes in Py3
                 # See: tango-controls/pytango#292
                 # channel = taurus.Device(full_name)
                 channel = PyTango.DeviceProxy(full_name)
-                instrument = channel.instrument
             except Exception:
-                # full_name of external channels is the name of the attribute
-                # external channels are not assigned to instruments
-                instrument = ''
+                try:
+                    channel = PyTango.AttributeProxy(full_name)
+                except Exception:
+                    channel = None
+            if channel:
+                shape = _get_shape(channel)
+                try:
+                    instrument = channel.instrument
+                except Exception:
+                    instrument = ''
             try:
                 instrumentFullName = self.macro.findObjs(
                     instrument, type_class=Type.Instrument)[0].getFullName()
@@ -692,6 +726,10 @@ class GScan(Logger):
                 raise
             except Exception:
                 instrumentFullName = ''
+            if shape is None:
+                self.warning("unknown shape of {}, assuming scalar".format(
+                    ci.name))
+                shape = []
             # substitute the axis placeholder by the corresponding moveable.
             plotAxes = []
             i = 0
@@ -713,7 +751,7 @@ class GScan(Logger):
             column = ColumnDesc(name=ci.full_name,
                                 label=ci.label,
                                 dtype=ci.data_type,
-                                shape=ci.shape,
+                                shape=shape,
                                 instrument=instrumentFullName,
                                 source=ci.source,
                                 output=ci.output,
