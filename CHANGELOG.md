@@ -21,6 +21,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Assert motor sign is -1 or 1 (#1345, #1507)
 * Documentation on how to write 1D and 2D controllers (#1494)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
