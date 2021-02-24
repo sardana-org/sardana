@@ -363,7 +363,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
                 first_reference = measurement[label][0]
-
+                # in some versions of h5py we get bytes
+                if isinstance(first_reference, bytes):
+                    first_reference = first_reference.decode()
                 group = re.match(self.pattern, first_reference)
                 if group is None:
                     msg = 'Unsupported reference %s' % first_reference
@@ -390,6 +392,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
                 for i in range(nb_points):
                     reference = measurement[label][i]
+                    # in some versions of h5py we get bytes
+                    if isinstance(reference, bytes):
+                        reference = reference.decode()
                     group = re.match(self.pattern, reference)
                     if group is None:
                         msg = 'Unsupported reference %s' % first_reference
