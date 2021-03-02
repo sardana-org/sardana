@@ -472,6 +472,11 @@ class mv(Macro, Hookable):
     ]
 
     def run(self, motor_pos_list):
+        self.motors, positions = [], []
+        for m, p in motor_pos_list:
+            self.motors.append(m)
+            positions.append(p)
+
         enable_hooks = getattr(sardanacustomsettings,
                                'PRE_POST_MOVE_HOOK_IN_MV',
                                True)
@@ -480,11 +485,9 @@ class mv(Macro, Hookable):
             for preMoveHook in self.getHooks('pre-move'):
                 preMoveHook()
 
-        self.motors, positions = [], []
-        for m, p in motor_pos_list:
-            self.motors.append(m)
-            positions.append(p)
+        for m, p in zip(self.motors, positions):
             self.debug("Starting %s movement to %s", m.getName(), p)
+
         motion = self.getMotion(self.motors)
         state, pos = motion.move(positions)
         if state != DevState.ON:
