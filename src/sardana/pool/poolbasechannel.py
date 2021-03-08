@@ -241,7 +241,7 @@ class PoolBaseChannel(PoolElement):
             value
         :rtype:
             :class:`~sardana.sardanavalue.SardanaValue`"""
-        return self.acquisition.read_value()[self]
+        return self.acquisition.read_value(serial=True)[self]
 
     def put_value(self, value, quality=AttrQuality.Valid, propagate=1):
         """Sets a value.
