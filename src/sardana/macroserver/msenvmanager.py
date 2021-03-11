@@ -145,7 +145,7 @@ class EnvironmentManager(MacroServerManager):
                 raise ose
         if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
             try:
-                self._env = shelve.open(f_name, flag='c', writeback=False)
+                self._env = shelve.open(f_name, flag='w', writeback=False)
             except Exception:
                 self.error("Failed to access environment in %s", f_name)
                 self.debug("Details:", exc_info=1)
