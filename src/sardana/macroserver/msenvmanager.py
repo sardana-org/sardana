@@ -53,7 +53,7 @@ def _dbm_dumb(filename):
     return dbm.dumb.open(filename, "c")
 
 
-def _dbm_shelve(filename, backend):
+def _create_dbm(filename, backend):
     if backend is None:
         try:
             return _dbm_gnu(filename)
@@ -143,22 +143,22 @@ class EnvironmentManager(MacroServerManager):
                 self.error("Creating environment: %s" % ose.strerror)
                 self.debug("Details:", exc_info=1)
                 raise ose
-        if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
-            try:
-                self._env = shelve.open(f_name, flag='w', writeback=False)
-            except Exception:
-                self.error("Failed to access environment in %s", f_name)
-                self.debug("Details:", exc_info=1)
-                raise
-        else:
+        if not os.path.exists(f_name) and not os.path.exists(f_name + ".dat"):
             backend = getattr(sardanacustomsettings, "MS_ENV_SHELVE_BACKEND",
                               None)
             try:
-                self._env = shelve.Shelf(_dbm_shelve(f_name, backend))
+                dbm = _create_dbm(f_name, backend)
+                dbm.close()
             except Exception:
                 self.error("Failed to create environment in %s", f_name)
                 self.debug("Details:", exc_info=1)
                 raise
+        try:
+            self._env = shelve.open(f_name, flag='w', writeback=False)
+        except Exception:
+            self.error("Failed to access environment in %s", f_name)
+            self.debug("Details:", exc_info=1)
+            raise
 
         self.info("Environment is being stored in %s", f_name)
 
