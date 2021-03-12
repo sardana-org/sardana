@@ -525,6 +525,32 @@ class MeasurementConfiguration(object):
 
         return self._filter_ctrls(timerable_ctrls, enabled)
 
+    def get_timerable_channels(self, acq_synch=None, enabled=None):
+        """Return timerable channels.
+
+        Allow to filter channels based on acquisition synchronization or
+        whether these are enabled/disabled.
+
+        :param acq_synch: (optional) filter controller based on acquisition
+         synchronization
+        :type acq_synch: :class:`~sardana.pool.pooldefs.AcqSynch`
+        :param enabled: (optional) filter controllers whether these are
+         enabled/disabled:
+
+         - :obj:`True` - enabled only
+         - :obj:`False` - disabled only
+         - :obj:`None` - all
+
+        :type enabled: :obj:`bool` or :obj:`None`
+        :return: timerable channels that fulfils the filtering criteria
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`>  # noqa
+        """
+        channels = []
+        ctrls = self.get_timerable_ctrls(acq_synch, enabled)
+        for ctrl in ctrls:
+            channels.extend(ctrl.get_channels(enabled))
+        return channels
+
     def get_zerod_ctrls(self, enabled=None):
         """Return 0D controllers.
 
@@ -842,29 +868,41 @@ class MeasurementConfiguration(object):
         # Fill user configuration with measurement group's timer & monitor
         # This is a backwards compatibility cause the measurement group's
         # timer & monitor are not used
-        if master_timer_sw is not None:
+        mnt_grp_timer = cfg.get('timer')
+        if mnt_grp_timer:
+            timerable_channels = self.get_timerable_channels(enabled=True)
+            if mnt_grp_timer in [ch.full_name for ch in timerable_channels]:
+                user_config['timer'] = mnt_grp_timer
+            else:
+                raise ValueError(
+                    'timer {} is not present/enabled'.format(mnt_grp_timer))
+        elif master_timer_sw is not None:
             user_config['timer'] = master_timer_sw.full_name
         elif master_timer_sw_start is not None:
             user_config['timer'] = master_timer_sw_start.full_name
-        else:  # Measurement Group with all channel synchronized by hardware
-            mnt_grp_timer = cfg.get('timer')
-            if mnt_grp_timer:
-                user_config['timer'] = mnt_grp_timer
-            else:
-                # for backwards compatibility use a random monitor
-                user_config['timer'] = user_config_ctrl['timer']
+        else:
+            # Measurement Group with all channel synchronized by hardware
+            # for backwards compatibility use a random monitor
+            user_config['timer'] = user_config_ctrl['timer']
 
-        if master_monitor_sw is not None:
+        mnt_grp_monitor = cfg.get('monitor')
+        if mnt_grp_monitor:
+            timerable_channels = self.get_timerable_channels(enabled=True)
+            if mnt_grp_monitor in [ch.full_name for ch in timerable_channels]:
+                user_config['monitor'] = mnt_grp_monitor
+            else:
+                raise ValueError(
+                    'monitor {} is not present/enabled'.format(
+                        mnt_grp_monitor))
+        elif master_monitor_sw is not None:
             user_config['monitor'] = master_monitor_sw.full_name
         elif master_monitor_sw_start is not None:
             user_config['monitor'] = master_monitor_sw_start.full_name
-        else:  # Measurement Group with all channel synchronized by hardware
-            mnt_grp_monitor = cfg.get('monitor')
-            if mnt_grp_monitor:
-                user_config['monitor'] = mnt_grp_monitor
-            else:
-                # for backwards compatibility use a random monitor
-                user_config['monitor'] = user_config_ctrl['monitor']
+        else:
+            # Measurement Group with all channel synchronized by hardware
+            # for backwards compatibility use a random monitor
+            user_config['monitor'] = user_config_ctrl['monitor']
+
 
         # Update internals values
         self._label = label
