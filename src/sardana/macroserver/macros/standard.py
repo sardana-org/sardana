@@ -511,9 +511,10 @@ class mstate(Macro):
         self.info("Motor %s" % str(motor.stateObj.read().rvalue))
 
 
-class umv(Macro):
+class umv(Macro, Hookable):
     """Move motor(s) to the specified position(s) and update"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mv.param_def
 
     def prepare(self, motor_pos_list, **opts):
@@ -530,7 +531,9 @@ class umv(Macro):
     def run(self, motor_pos_list):
         self.print_pos = True
         try:
-            self.execMacro('mv', motor_pos_list)
+            mv, _ = self.createMacro('mv', motor_pos_list)
+            mv.appendHook(self.hooks)
+            self.runMacro(mv)
         finally:
             self.finish()
 
