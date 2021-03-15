@@ -878,6 +878,8 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
+        'Shape': {'type': (int,),
+                  'description': 'Shape of the value, it is an empty array'}
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -941,6 +943,8 @@ class ZeroDController(Controller, Readable, Stopable):
         # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
+        'Shape': {'type': (int,),
+                  'description': 'Shape of the value, it is an empty array'}
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -973,6 +977,9 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
+        'Shape': {'type': (int,),
+                  'description': 'Shape of the value, it is an array with '
+                                 '1 element - X dimension'}
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1018,6 +1025,9 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
         # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
+        'Shape': {'type': (int,),
+                  'description': 'Shape of the value, it is an array with '
+                                 '2 elements: X and Y dimensions'}
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1264,6 +1274,8 @@ class PseudoCounterController(Controller):
         # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Data', },
+        'Shape': {'type': (int,),
+                  'description': 'Shape of the value, it is an empty array'}
     }
 
     #: A :obj:`str` representing the controller gender
