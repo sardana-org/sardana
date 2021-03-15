@@ -124,6 +124,17 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
+def _filter_ctrls(ctrls, enabled=None):
+    if enabled is None:
+        return ctrls
+
+    filtered_ctrls = []
+    for ctrl in ctrls:
+        if ctrl.enabled == enabled:
+            filtered_ctrls.append(ctrl)
+    return filtered_ctrls
+
+
 class ConfigurationItem(object):
     """Container of configuration attributes related to a given element.
 
@@ -482,16 +493,6 @@ class MeasurementConfiguration(object):
             controller = controller.element
         return self._ctrl_acq_synch[controller]
 
-    def _filter_ctrls(self, ctrls, enabled):
-        if enabled is None:
-            return ctrls
-
-        filtered_ctrls = []
-        for ctrl in ctrls:
-            if ctrl.enabled == enabled:
-                filtered_ctrls.append(ctrl)
-        return filtered_ctrls
-
     def get_timerable_ctrls(self, acq_synch=None, enabled=None):
         """Return timerable controllers.
 
@@ -523,7 +524,7 @@ class MeasurementConfiguration(object):
         else:
             timerable_ctrls = list(self._timerable_ctrls[acq_synch])
 
-        return self._filter_ctrls(timerable_ctrls, enabled)
+        return _filter_ctrls(timerable_ctrls, enabled)
 
     def get_timerable_channels(self, acq_synch=None, enabled=None):
         """Return timerable channels.
@@ -567,7 +568,7 @@ class MeasurementConfiguration(object):
         :return: 0D controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        return self._filter_ctrls(self._zerod_ctrls, enabled)
+        return _filter_ctrls(self._zerod_ctrls, enabled)
 
     def get_synch_ctrls(self, enabled=None):
         """Return synchronizer (currently only trigger/gate) controllers.
@@ -585,7 +586,7 @@ class MeasurementConfiguration(object):
         :return: synchronizer controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        return self._filter_ctrls(self._synch_ctrls, enabled)
+        return _filter_ctrls(self._synch_ctrls, enabled)
 
     def get_master_timer_software(self):
         """Return master timer in software acquisition.
