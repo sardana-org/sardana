@@ -197,13 +197,14 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-class br(Macro, _diffrac):
+class br(Macro, _diffrac, Hookable):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L.
     If a fourth parameter is given, the combination of angles to be set is
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['H', Type.String, None, "H value"],
         ['K', Type.String, None, "K value"],
@@ -259,7 +260,9 @@ class br(Macro, _diffrac):
                 cmd = cmd + " " + str(angle)
             if FlagPrinting == 1:
                 cmd = "u" + cmd
-            self.execMacro(cmd)
+            mv, _ = self.createMacro(cmd)
+            mv._setHooks(self.hooks)
+            self.runMacro(mv)
         else:
             for name, angle in zip(self.angle_names, angles_list):
                 angle_dev = self.getObj(self.angle_device_names[name])
@@ -269,11 +272,11 @@ class br(Macro, _diffrac):
                           hkl_values[l_idx], self.diffrac.WaveLength])
 
 
-class ubr(Macro, _diffrac):
+class ubr(Macro, _diffrac, Hookable):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
-
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ["hh", Type.String, "Not set", "H position"],
         ["kk", Type.String, "Not set", "K position"],
@@ -286,7 +289,9 @@ class ubr(Macro, _diffrac):
 
     def run(self, hh, kk, ll, AnglesIndex):
         if ll != "Not set":
-            self.execMacro("br", hh, kk, ll, AnglesIndex, 0, 1)
+            br, _ = self.prepareMacro("br", hh, kk, ll, AnglesIndex, 0, 1)
+            br._setHooks(self.hooks)
+            self.runMacro(br)
         else:
             self.output("usage:  ubr H K L [Trajectory]")
 
