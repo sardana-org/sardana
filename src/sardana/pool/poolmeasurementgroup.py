@@ -880,7 +880,8 @@ class MeasurementConfiguration(object):
         # timer & monitor are not used
         mnt_grp_timer = cfg.get('timer')
         if mnt_grp_timer:
-            timerable_channels = self.get_timerable_channels(enabled=True)
+            timerable_channels = _get_timerable_channels(timerable_ctrls,
+                                                         enabled=True)
             if mnt_grp_timer in [ch.full_name for ch in timerable_channels]:
                 user_config['timer'] = mnt_grp_timer
             else:
@@ -897,7 +898,8 @@ class MeasurementConfiguration(object):
 
         mnt_grp_monitor = cfg.get('monitor')
         if mnt_grp_monitor:
-            timerable_channels = self.get_timerable_channels(enabled=True)
+            timerable_channels = _get_timerable_channels(timerable_ctrls,
+                                                         enabled=True)
             if mnt_grp_monitor in [ch.full_name for ch in timerable_channels]:
                 user_config['monitor'] = mnt_grp_monitor
             else:
