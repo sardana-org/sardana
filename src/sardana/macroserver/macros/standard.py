@@ -564,9 +564,10 @@ class umv(Macro, Hookable):
         self.flushOutput()
 
 
-class mvr(Macro):
+class mvr(Macro, Hookable):
     """Move motor(s) relative to the current position(s)"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_disp_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -584,12 +585,15 @@ class mvr(Macro):
             else:
                 pos += disp
             motor_pos_list.append([motor, pos])
-        self.execMacro('mv', motor_pos_list)
+        mv, _ = self.createMacro('mv', motor_pos_list)
+        mv._setHooks(self.hooks)
+        self.runMacro(mv)
 
 
-class umvr(Macro):
+class umvr(Macro, Hookable):
     """Move motor(s) relative to the current position(s) and update"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mvr.param_def
 
     def run(self, motor_disp_list):
@@ -602,7 +606,9 @@ class umvr(Macro):
             else:
                 pos += disp
             motor_pos_list.append([motor, pos])
-        self.execMacro('umv', motor_pos_list)
+        umv, _ = self.createMacro('umv', motor_pos_list)
+        umv._setHooks(self.hooks)
+        self.runMacro(umv)
 
 # TODO: implement tw macro with param repeats in order to be able to pass
 # multiple motors and multiple deltas. Also allow to pass the integration time
