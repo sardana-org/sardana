@@ -283,6 +283,8 @@ class Hookable(Logger):
         # delete _hookHintsDict to force its recreation on the next access
         if hasattr(self, '_hookHintsDict'):
             del self._hookHintsDict
+        if len(self._hooks) == 0:
+            return
         # create _hookHintsDict
         self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
         nohints = self._hookHintsDict['_NOHINTS_']
