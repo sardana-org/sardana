@@ -34,3 +34,4 @@ def test_Hookable():
     hookable.hooks = []
     assert len(hookable.hooks) == 0
     hooks = hookable.getHooks("unexisting-hook-place")
+    assert len(hooks) == 0
