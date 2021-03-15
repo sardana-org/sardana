@@ -47,6 +47,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Allow running Spock without Qt bindings (#1462, #1463)
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
+* Setting `Hookable.hooks` to empty list (#1522)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
