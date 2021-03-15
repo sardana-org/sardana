@@ -883,11 +883,13 @@ class MeasurementConfiguration(object):
         if mnt_grp_timer:
             timerable_chs = _get_timerable_channels(timerable_ctrls,
                                                     enabled=True)
-            if mnt_grp_timer in [ch.full_name for ch in timerable_chs]:
-                user_config['timer'] = mnt_grp_timer
-            else:
-                raise ValueError(
-                    'timer {} is not present/enabled'.format(mnt_grp_timer))
+            if len(timerable_chs) > 0:
+                if mnt_grp_timer in [ch.full_name for ch in timerable_chs]:
+                    user_config['timer'] = mnt_grp_timer
+                else:
+                    raise ValueError(
+                        'timer {} is not present/enabled'.format(mnt_grp_timer)
+                    )
         elif master_timer_sw is not None:
             user_config['timer'] = master_timer_sw.full_name
         elif master_timer_sw_start is not None:
@@ -901,12 +903,13 @@ class MeasurementConfiguration(object):
         if mnt_grp_monitor:
             timerable_chs = _get_timerable_channels(timerable_ctrls,
                                                     enabled=True)
-            if mnt_grp_monitor in [ch.full_name for ch in timerable_chs]:
-                user_config['monitor'] = mnt_grp_monitor
-            else:
-                raise ValueError(
-                    'monitor {} is not present/enabled'.format(
-                        mnt_grp_monitor))
+            if len(timerable_chs) > 0:
+                if mnt_grp_monitor in [ch.full_name for ch in timerable_chs]:
+                    user_config['monitor'] = mnt_grp_monitor
+                else:
+                    raise ValueError(
+                        'monitor {} is not present/enabled'.format(
+                            mnt_grp_monitor))
         elif master_monitor_sw is not None:
             user_config['monitor'] = master_monitor_sw.full_name
         elif master_monitor_sw_start is not None:
