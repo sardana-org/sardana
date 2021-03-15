@@ -135,6 +135,29 @@ def _filter_ctrls(ctrls, enabled=None):
     return filtered_ctrls
 
 
+def _get_timerable_ctrls(ctrls, acq_synch=None, enabled=None):
+    timerable_ctrls = []
+    if acq_synch is None:
+        for ctrls in list(ctrls.values()):
+            timerable_ctrls += ctrls
+    elif isinstance(acq_synch, list):
+        acq_synch_list = acq_synch
+        for acq_synch in acq_synch_list:
+            timerable_ctrls += ctrls[acq_synch]
+    else:
+        timerable_ctrls = list(ctrls[acq_synch])
+
+    return _filter_ctrls(timerable_ctrls, enabled)
+
+
+def _get_timerable_channels(ctrls, acq_synch=None, enabled=None):
+    timerable_ctrls = _get_timerable_ctrls(ctrls, acq_synch, enabled)
+    timerable_channels = []
+    for ctrl in timerable_ctrls:
+        timerable_channels.extend(ctrl.get_channels(enabled))
+    return timerable_channels
+
+
 class ConfigurationItem(object):
     """Container of configuration attributes related to a given element.
 
@@ -513,18 +536,7 @@ class MeasurementConfiguration(object):
         :return: timerable controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        timerable_ctrls = []
-        if acq_synch is None:
-            for ctrls in list(self._timerable_ctrls.values()):
-                timerable_ctrls += ctrls
-        elif isinstance(acq_synch, list):
-            acq_synch_list = acq_synch
-            for acq_synch in acq_synch_list:
-                timerable_ctrls += self._timerable_ctrls[acq_synch]
-        else:
-            timerable_ctrls = list(self._timerable_ctrls[acq_synch])
-
-        return _filter_ctrls(timerable_ctrls, enabled)
+        return _get_timerable_ctrls(self._timerable_ctrls, acq_synch, enabled)
 
     def get_timerable_channels(self, acq_synch=None, enabled=None):
         """Return timerable channels.
@@ -546,11 +558,8 @@ class MeasurementConfiguration(object):
         :return: timerable channels that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`>  # noqa
         """
-        channels = []
-        ctrls = self.get_timerable_ctrls(acq_synch, enabled)
-        for ctrl in ctrls:
-            channels.extend(ctrl.get_channels(enabled))
-        return channels
+        return _get_timerable_channels(self._timerable_ctrls, acq_synch,
+                                       enabled)
 
     def get_zerod_ctrls(self, enabled=None):
         """Return 0D controllers.
