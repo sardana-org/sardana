@@ -637,8 +637,9 @@ class MeasurementConfiguration(object):
         """Set measurement configuration from serializable data structure.
 
         Setting of the configuration includes the validation process. Setting
-        of invalid configuration raises an exception hence it is not necessary
-        that the client application does the validation.
+        of invalid configuration raises an exception and leaves the object
+        as it was before the setting process. Thanks to that it is not
+        necessary that the client application does the validation.
 
         The configuration parameters for given channels/controllers may differ
         depending on their types e.g. 0D channel does not support timer
