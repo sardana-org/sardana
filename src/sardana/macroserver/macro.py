@@ -257,17 +257,19 @@ class Hookable(Logger):
           contains the hooks that don't provide hints
 
         """
-        if not isinstance(hooks, list):
-            self.error(
-                'the hooks must be passed as a list<callable,list<str>>')
-            return
-
         if len(self.hooks) > 0:
             msg = ("This macro defines its own hooks. Previously defined "
                    "hooks, including the general ones, would be only called "
                    "if these own hooks were added using the appendHook "
                    "method or appended to the self.hooks.")
             self.warning(msg)
+        self._setHooks(hooks)
+
+    def _setHooks(self, hooks):
+        if not isinstance(hooks, list):
+            self.error(
+                'the hooks must be passed as a list<callable,list<str>>')
+            return
         # store self._hooks, making sure it is of type:
         # list<callable,list<str>>
         self._hooks = []

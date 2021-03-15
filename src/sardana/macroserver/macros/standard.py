@@ -532,7 +532,7 @@ class umv(Macro, Hookable):
         self.print_pos = True
         try:
             mv, _ = self.createMacro('mv', motor_pos_list)
-            mv.appendHook(self.hooks)
+            mv._setHooks(self.hooks)
             self.runMacro(mv)
         finally:
             self.finish()
