@@ -137,7 +137,7 @@ class MacroInfo(object):
 
         :return: (bool) True if the macro has parameters or False otherwise
         """
-        return hasattr(self, 'parameters')
+        return hasattr(self, 'parameters') and len(self.parameters) > 0
 
     def getParamList(self):
         """Returs the list of parameters
@@ -223,7 +223,7 @@ class MacroInfo(object):
 
         :return: (bool) True if the macro has a result or False otherwise
         """
-        return hasattr(self, 'result')
+        return hasattr(self, 'result') and len(self.result) > 0
 
     def getResultList(self):
         """Returns the list of results
