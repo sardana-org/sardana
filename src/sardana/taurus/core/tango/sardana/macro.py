@@ -89,6 +89,9 @@ class MacroInfo(object):
         if self.hasResult():
             doc += '\n\nResult:\n\t'
             doc += '\n\t'.join(self.getResultDescr())
+        if self.allowsHooks():
+            doc += '\n\nAllows hooks:\n\t'
+            doc += '\n\t'.join(self.getAllowedHooks())
         self.doc = doc
 
     def _hasParamComplex(self, parameters=None):
@@ -298,6 +301,31 @@ class MacroInfo(object):
             return res[0]
         else:
             return tuple(res)
+
+    def allowsHooks(self):
+        """Checks whether the macro allows hooks
+
+        :return: True or False depending if the macro allows hooks
+        :rtype: bool
+        """
+        try:
+            self.hints["allowsHooks"]
+        except KeyError:
+            return False
+        return True
+
+    def getAllowedHooks(self):
+        """Gets allowed hooks
+
+        :return: list with the allowed hooks or empty list if the macro
+            does not allow hooks
+        :rtype: list[str]
+        """
+        try:
+            allowed_hooks = self.hints["allowsHooks"]
+        except KeyError:
+            return []
+        return allowed_hooks
 
     def __str__(self):
         return self.name
