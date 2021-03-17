@@ -48,6 +48,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
 * Setting `Hookable.hooks` to empty list (#1522)
+* `Macro.hasResult()` and `Macro.hasParams()` what avoids adding empty _Parameters_ and _Result_
+  sections in the macro description in Spock (#1524)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
