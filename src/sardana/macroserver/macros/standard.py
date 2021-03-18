@@ -369,8 +369,17 @@ class wm(Macro):
             except:
                 val1 = str_fmt % motor.getPosition(force=True)
 
-            val2 = str_fmt % posObj.getMaxRange().magnitude
-            val3 = str_fmt % posObj.getMinRange().magnitude
+            try:
+                val2 = fmt % posObj.getMaxRange().magnitude
+                val2 = str_fmt % val2
+            except Exception:
+                val2 = str_fmt % posObj.getMaxRange().magnitude
+
+            try:
+                val3 = fmt % posObj.getMinRange().magnitude
+                val3 = str_fmt % val3
+            except Exception:
+                val3 = str_fmt % posObj.getMinRange().magnitude
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
