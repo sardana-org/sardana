@@ -44,7 +44,6 @@ class _H5FileHandler:
 
     def __init__(self):
         self._files = {}
-        atexit.register(self.clean_up)
 
     def __getitem__(self, fname):
         return self._files[fname]
@@ -61,6 +60,8 @@ class _H5FileHandler:
         fd = _open_h5_file(fname, libver=libver)
         if swmr_mode:
             fd.swmr_mode = True
+        if not self._files:
+            atexit.register(self.clean_up)
         self._files[fname] = fd
         return fd
 
@@ -69,6 +70,8 @@ class _H5FileHandler:
             fd = self._files.pop(fname)
         except KeyError:
             raise ValueError('{} is not opened'.format(fname))
+        if not self._files:
+            atexit.unregister(self.clean_up)
         fd.close()
 
     def clean_up(self):
