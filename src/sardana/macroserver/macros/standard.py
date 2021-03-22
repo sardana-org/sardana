@@ -398,10 +398,10 @@ class wm(Macro):
             val1 = motor.getPosition(force=True)
             val1 = self.format_value(fmt, str_fmt, val1)
 
-            val2 = motor.getPosition(force=True)
+            val2 = posObj.getMaxRange().magnitude
             val2 = self.format_value(fmt, str_fmt, val2)
 
-            val3 = motor.getPosition(force=True)
+            val3 = posObj.getMinRange().magnitude
             val3 = self.format_value(fmt, str_fmt, val3)
 
             if show_ctrlaxis:
