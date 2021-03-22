@@ -305,6 +305,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 self.debug('Pre-scan snapshot of %s will be stored as type %s',
                            dd.name, dtype)
             elif dd.dtype == 'str':
+                dtype = NXscanH5_FileRecorder.str_dt
                 dd.dtype = NXscanH5_FileRecorder.str_dt
 
             if dtype in self.supported_dtypes:
@@ -585,7 +586,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if numpy.isscalar(value):
                 dtype = numpy.dtype(type(value)).name
                 if numpy.issubdtype(dtype, str):
-                    dtype = 'char'
+                    dtype = NXscanH5_FileRecorder.str_dt
                 if dtype == 'bool':
                     value, dtype = int(value), 'int8'
             else:

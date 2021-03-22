@@ -73,6 +73,8 @@ negative. The value close to the zero indicates the beam centered in the middle.
 Similarly behaves the horizontal pseudo counter. The total pseudo counter is
 the mean value of all the four sensors and indicates the beam intensity.
 
+.. _sardana-pseudocountercontroller-howto-changing-interface:
+
 Changing default interface
 --------------------------
 
@@ -80,23 +82,48 @@ Pseudo counters instantiated from your controller will have a default
 interface, which among others, comprises the *value* attribute. This attribute
 is feed with the result of the
 :meth:`~sardana.pool.controller.PseudoCounterController.calc` method and by
-default it expects values of ``float`` type and scalar shape. You can easily
+default it expects values of ``float`` type and scalar format. You can easily
 :ref:`change the default interface <sardana-controller-howto-change-default-interface>`.
-This way you could program a pseudo counter to obtain an image :term:`ROI`
+This way you could program a pseudo counter to obtain an image :term:`RoI`
 of a :ref:`2D experimental channel <sardana-2d-overview>`.
 
-Here is an example of how to change *value* attribute's shape to an image
+Here is an example of how to change *value* attribute's format to an image
 and specify its maximum dimension of 1024 x 1024 pixels:
 
 .. code-block:: python
 
-        def GetAxisAttributes(self, axis):
+    def GetAxisAttributes(self, axis):
         axis_attrs = PseudoCounterController.GetAxisAttributes(self, axis)
         axis_attrs = dict(axis_attrs)
         axis_attrs['Value'][Type] = ((float, ), )
         axis_attrs['Value'][MaxDimSize] = (1024, 1024)
         return axis_attrs
 
+Get pseudo counter shape
+------------------------
+
+If you change the pseudo counter format to spectrum or image then you
+controller should provide the shape of the calculation result in either
+of the formats:
+
+- one-element sequence with the length of the spectrum
+- two-element sequence with the horizontal and vertical dimensions of the image
+
+using the :meth:`~sardana.pool.controller.Controller.GetAxisPar` method.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetAxisPar`:
+
+.. code-block:: python
+
+    def GetAxisPar(self, axis, par):
+        if par == "shape":
+            return [1024, 1024]
+
+
+For backwards compatibility, in case of not implementing the ``shape`` axis
+parameter, shape will be determined from the ``MaxDimSize`` of the ``Value``
+attribute as defined in :ref:`sardana-pseudocountercontroller-howto-changing-interface`.
 
 Including external variables in the calculation
 -----------------------------------------------

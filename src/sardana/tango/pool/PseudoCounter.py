@@ -152,6 +152,8 @@ class PseudoCounter(PoolExpChannelDevice):
                 else:
                     value = event_value.value
                 timestamp = event_value.timestamp
+            else:
+                value = event_value
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,

@@ -45,6 +45,10 @@ Sardana v3 was reduced by long time ago deprecated features. You can
 find a list of them together with the suggested substitutes in this
 `table <https://github.com/sardana-org/sardana/issues/1315>`_.
 
+For migrating the measurement group configurations (non-URI model names) you
+can use the `upgrade_mntgrp.py <https://github.com/sardana-org/sardana/blob/develop/scripts/upgrade/upgrade_mntgrp.py>`_
+script.
+
 
 
 
