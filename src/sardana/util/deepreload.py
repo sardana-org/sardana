@@ -54,6 +54,7 @@ original_import = builtins.__import__
 
 
 class DeepReload(object):
+    """ """
 
     def __enter__(self):
         builtins.reload = reload
@@ -64,6 +65,17 @@ class DeepReload(object):
 
 @contextmanager
 def replace_import_hook(new_import):
+    """
+
+    Parameters
+    ----------
+    new_import :
+        
+
+    Returns
+    -------
+
+    """
     saved_import = builtins.__import__
     builtins.__import__ = new_import
     try:
@@ -73,16 +85,25 @@ def replace_import_hook(new_import):
 
 
 def get_parent(globals, level):
-    """
-    parent, name = get_parent(globals, level)
+    """parent, name = get_parent(globals, level)
 
-    Return the package that an import is being performed in.  If globals comes
-    from the module foo.bar.bat (not itself a package), this returns the
-    sys.modules entry for foo.bar.  If globals is from a package's __init__.py,
-    the package's entry in sys.modules is returned.
+    Parameters
+    ----------
+    globals :
+        
+    level :
+        
 
-    If globals doesn't come from a package or a module in a package, or a
-    corresponding entry is not found in sys.modules, None is returned.
+    Returns
+    -------
+    type
+        from the module foo.bar.bat (not itself a package), this returns the
+        sys.modules entry for foo.bar.  If globals is from a package's __init__.py,
+        the package's entry in sys.modules is returned.
+        
+        If globals doesn't come from a package or a module in a package, or a
+        corresponding entry is not found in sys.modules, None is returned.
+
     """
     orig_level = level
 
@@ -147,10 +168,24 @@ def get_parent(globals, level):
 
 
 def load_next(mod, altmod, name, buf):
-    """
-    mod, name, buf = load_next(mod, altmod, name, buf)
-
+    """mod, name, buf = load_next(mod, altmod, name, buf)
+    
     altmod is either None or same as mod
+
+    Parameters
+    ----------
+    mod :
+        
+    altmod :
+        
+    name :
+        
+    buf :
+        
+
+    Returns
+    -------
+
     """
 
     if len(name) == 0:
@@ -189,7 +224,21 @@ found_now = {}
 
 
 def import_submodule(mod, subname, fullname):
-    """m = import_submodule(mod, subname, fullname)"""
+    """m = import_submodule(mod, subname, fullname)
+
+    Parameters
+    ----------
+    mod :
+        
+    subname :
+        
+    fullname :
+        
+
+    Returns
+    -------
+
+    """
     # Require:
     # if mod == None: subname == fullname
     # else: mod.__name__ + "." + subname == fullname
@@ -236,7 +285,23 @@ def import_submodule(mod, subname, fullname):
 
 
 def add_submodule(mod, submod, fullname, subname):
-    """mod.{subname} = submod"""
+    """mod.{subname} = submod
+
+    Parameters
+    ----------
+    mod :
+        
+    submod :
+        
+    fullname :
+        
+    subname :
+        
+
+    Returns
+    -------
+
+    """
     if mod is None:
         return  # Nothing to do here.
 
@@ -249,7 +314,23 @@ def add_submodule(mod, submod, fullname, subname):
 
 
 def ensure_fromlist(mod, fromlist, buf, recursive):
-    """Handle 'from module import a, b, c' imports."""
+    """Handle 'from module import a, b, c' imports.
+
+    Parameters
+    ----------
+    mod :
+        
+    fromlist :
+        
+    buf :
+        
+    recursive :
+        
+
+    Returns
+    -------
+
+    """
     if not hasattr(mod, '__path__'):
         return
     for item in fromlist:
@@ -271,7 +352,25 @@ def ensure_fromlist(mod, fromlist, buf, recursive):
 
 
 def deep_import_hook(name, globals=None, locals=None, fromlist=None, level=-1):
-    """Replacement for __import__()"""
+    """Replacement for __import__()
+
+    Parameters
+    ----------
+    name :
+        
+    globals :
+         (Default value = None)
+    locals :
+         (Default value = None)
+    fromlist :
+         (Default value = None)
+    level :
+         (Default value = -1)
+
+    Returns
+    -------
+
+    """
     parent, buf = get_parent(globals, level)
 
     head, name, buf = load_next(
@@ -297,7 +396,17 @@ modules_reloading = {}
 
 
 def deep_reload_hook(m):
-    """Replacement for reload()."""
+    """Replacement for reload().
+
+    Parameters
+    ----------
+    m :
+        
+
+    Returns
+    -------
+
+    """
     if not isinstance(m, ModuleType):
         raise TypeError("reload() argument must be module")
 
@@ -363,6 +472,23 @@ def reload(module, exclude=['sys', 'os.path', '__builtin__', '__main__']):
     takes a list of modules to exclude from reloading.  The default exclude
     list contains sys, __main__, and __builtin__, to prevent, e.g., resetting
     display, exception, and io hooks.
+
+    Parameters
+    ----------
+    module :
+        
+    exclude :
+         (Default value = ['sys')
+    'os.path' :
+        
+    '__builtin__' :
+        
+    '__main__'] :
+        
+
+    Returns
+    -------
+
     """
     global found_now
     for i in exclude:

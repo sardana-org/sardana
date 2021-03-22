@@ -34,5 +34,5 @@ from sardana.macroserver.macro import Type, macro
 
 @macro()
 def raise_exception(self):
-    '''A macro that raises an exception (useful for debugging)'''
+    """A macro that raises an exception (useful for debugging)"""
     raise Exception('here is your exception!')

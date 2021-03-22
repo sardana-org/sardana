@@ -30,6 +30,7 @@ from . import release as __release
 
 
 class Release:
+    """ """
     pass
 
 

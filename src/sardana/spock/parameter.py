@@ -32,27 +32,53 @@ import sys
 
 
 class AbstractParam:
+    """ """
 
     def __init__(self, name=None, desc=None):
         self.name = name
         self.desc = desc
 
     def getParam(self, idx=0):
+        """
+
+        Parameters
+        ----------
+        idx :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         return self
 
     def getParamStr(self):
+        """ """
         return "<" + self.name + ">"
 
     def getParamDescr(self):
+        """ """
         str = self.name + " (" + self.type + ") - " + self.desc
         if self.defvalue != 'None':
             str = str + "\nDefault value: " + self.defvalue
         return str
 
     def getParamCount(self):
+        """ """
         return 1
 
     def formatParamValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return value
 
     def __str__(self):
@@ -60,6 +86,7 @@ class AbstractParam:
 
 
 class Param(AbstractParam):
+    """ """
 
     def __init__(self, name=None, type_name=None, desc=None, defvalue=None,
                  from_array=None):
@@ -72,6 +99,17 @@ class Param(AbstractParam):
                 setattr(self, key, from_array.read())
 
     def formatParamValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         ret = value
         if self.type == "File":
             f = open(ret, 'r')
@@ -81,6 +119,7 @@ class Param(AbstractParam):
 
 
 class ParamRepeat(AbstractParam):
+    """ """
 
     def __init__(self, name=None, desc=None, opts=None, param_def=None,
                  from_array=None):
@@ -112,23 +151,49 @@ class ParamRepeat(AbstractParam):
             self.param_def = ParamList(from_array=from_array)
 
     def getParam(self, idx=0):
+        """
+
+        Parameters
+        ----------
+        idx :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         idx = idx % len(self.param_def.pars)
         return self.param_def.getParam(idx)
 
     def getParamStr(self):
+        """ """
         return "[" + self.param_def.getParamStr() + " ]"
 
     def getParamDescr(self):
+        """ """
         return self.param_def.getParamDescr()
 
     def getParamCount(self):
+        """ """
         return self.param_def.getParamCount()
 
     def formatParamValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.param_def.formatParamValue(value)
 
 
 class ParamList(AbstractParam):
+    """ """
 
     def __init__(self, from_array):
         AbstractParam.__init__(self, name="ParamList",
@@ -147,6 +212,17 @@ class ParamList(AbstractParam):
             self.pars.append(par)
 
     def getParam(self, idx=0):
+        """
+
+        Parameters
+        ----------
+        idx :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         par_nb = len(self.pars)
         if idx < par_nb:
             par = idx
@@ -159,18 +235,21 @@ class ParamList(AbstractParam):
                     return self.pars[i].getParam(local_idx)
 
     def getParamStr(self):
+        """ """
         str = ""
         for par in self.pars:
             str = str + " " + par.getParamStr()
         return str
 
     def getParamDescr(self):
+        """ """
         str = ""
         for par in self.pars:
             str = str + "\n" + par.getParamDescr()
         return str
 
     def getParamCount(self):
+        """ """
         nb = 0
         for par in self.pars:
             local_nb = par.getParamCount()
@@ -180,6 +259,17 @@ class ParamList(AbstractParam):
         return nb
 
     def formatParamValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
 
         # for now we are not able to handle ParamRepeat with special value
         # format

@@ -57,15 +57,32 @@ RUNNING_STATE = TaurusDevState.Ready
 
 
 class GUIViewer(BaseGUIViewer):
+    """ """
 
     def __init__(self, door=None):
         BaseGUIViewer.__init__(self)
         self._door = door
 
     def run(self):
+        """ """
         self.plot()
 
     def show_scan(self, scan_nb=None, scan_history_info=None, directory_map=None):
+        """
+
+        Parameters
+        ----------
+        scan_nb :
+             (Default value = None)
+        scan_history_info :
+             (Default value = None)
+        directory_map :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         scan_dir, scan_file = None, None
         if scan_nb is None:
             import h5py
@@ -179,6 +196,7 @@ class GUIViewer(BaseGUIViewer):
         taurus_nexus_widget.setWindowTitle(windowTitle)
 
     def plot(self):
+        """ """
         try:
             import sps
         except Exception:
@@ -289,18 +307,32 @@ class SpockBaseDoor(BaseDoor):
         self.call__init__(BaseDoor, name, **kw)
 
     def create_input_handler(self):
+        """ """
         from sardana.spock.inputhandler import SpockInputHandler
 
         return SpockInputHandler()
 
     def get_color_mode(self):
+        """ """
         return genutils.get_color_mode()
 
     def _get_macroserver_for_door(self):
+        """ """
         ret = genutils.get_macro_server()
         return ret
 
     def _preprocessParameters(self, parameters):
+        """
+
+        Parameters
+        ----------
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         if is_pure_str(parameters):
             inside_str = False
             pars = []
@@ -328,12 +360,41 @@ class SpockBaseDoor(BaseDoor):
             return parameters
 
     def preRunMacro(self, obj, parameters):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         return BaseDoor.preRunMacro(self, obj, self._preprocessParameters(parameters))
 
     def runMacro(self, obj, parameters=[], synch=False):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        parameters :
+             (Default value = [])
+        synch :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return BaseDoor.runMacro(self, obj, parameters=parameters, synch=synch)
 
     def _handle_second_release(self):
+        """ """
         try:
             self.write('4th Ctrl-C received: Releasing...\n')
             self.release()
@@ -346,6 +407,7 @@ class SpockBaseDoor(BaseDoor):
                        'method. Either wait or restart the server.)\n')
 
     def _handle_first_release(self):
+        """ """
         try:
             self.write('3rd Ctrl-C received: Releasing...\n')
             self.block_lines = 0
@@ -355,6 +417,7 @@ class SpockBaseDoor(BaseDoor):
             self._handle_second_release()
 
     def _handle_abort(self):
+        """ """
         try:
             self.write('2nd Ctrl-C received: Aborting...\n')
             self.block_lines = 0
@@ -364,6 +427,7 @@ class SpockBaseDoor(BaseDoor):
             self._handle_first_release()
 
     def _handle_stop(self):
+        """ """
         try:
             self.write('\nCtrl-C received: Stopping...\n')
             self.block_lines = 0
@@ -373,6 +437,19 @@ class SpockBaseDoor(BaseDoor):
             self._handle_abort()
 
     def _runMacro(self, xml, **kwargs):
+        """
+
+        Parameters
+        ----------
+        xml :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
             print("Unable to run macro: No connection to door '%s'" %
@@ -413,6 +490,17 @@ class SpockBaseDoor(BaseDoor):
                     print("Unable to run macro:", reason, desc)
 
     def _getMacroResult(self, macro):
+        """
+
+        Parameters
+        ----------
+        macro :
+            
+
+        Returns
+        -------
+
+        """
         ret = None
         if macro.info.hasResult():
             ret = macro.getResult()
@@ -446,9 +534,21 @@ class SpockBaseDoor(BaseDoor):
         return ret
 
     def plot(self):
+        """ """
         self._plotter.run()
 
     def show_scan(self, scan_nb=None):
+        """
+
+        Parameters
+        ----------
+        scan_nb :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         env = self.getEnvironment()
         scan_history_info = env.get("ScanHistory")
         directory_map = env.get("DirectoryMap")
@@ -457,12 +557,42 @@ class SpockBaseDoor(BaseDoor):
                                 directory_map=directory_map)
 
     def stateChanged(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         old_sw_state = self._old_sw_door_state
         BaseDoor.stateChanged(self, s, t, v)
         new_sw_state = self._old_sw_door_state
         self._updateState(old_sw_state, new_sw_state)
 
     def _updateState(self, old_sw_state, new_sw_state, silent=False):
+        """
+
+        Parameters
+        ----------
+        old_sw_state :
+            
+        new_sw_state :
+            
+        silent :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         user_ns = genutils.get_ipapi().user_ns
         if new_sw_state == RUNNING_STATE:
             user_ns['DOOR_STATE'] = ""
@@ -484,28 +614,87 @@ class SpockBaseDoor(BaseDoor):
         self._spock_state = new_sw_state
 
     def write_asynch(self, msg):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+
+        Returns
+        -------
+
+        """
         self._lines.append(msg)
 
     def pre_prompt_hook(self, ip):
+        """
+
+        Parameters
+        ----------
+        ip :
+            
+
+        Returns
+        -------
+
+        """
         self._flush_lines()
 
     def _flush_lines(self):
+        """ """
         for l in self._lines:
             self.write(l)
         self._lines = []
 
     def setConsoleReady(self, state):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+
+        """
         self._consoleReady = state
 
     def isConsoleReady(self):
+        """ """
         return self._consoleReady
 
     def write(self, msg, stream=None):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+        stream :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if not self.isConsoleReady():
             return
         return BaseDoor.write(self, msg, stream=stream)
 
     def processRecordData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         if data is None:
             return
         data = data[1]
@@ -540,6 +729,17 @@ class SpockBaseDoor(BaseDoor):
     _RECORD_DATA_THRESOLD = 4 * 1024 * 1024  # 4Mb
 
     def _processInput(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         pyos_inputhook_ptr = ctypes.c_void_p.in_dll(
             ctypes.pythonapi, "PyOS_InputHook")
         old_pyos_inputhook_ptr = pyos_inputhook_ptr.value
@@ -549,6 +749,17 @@ class SpockBaseDoor(BaseDoor):
         return ret
 
     def _processRecordData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         if data is None:
             return
         value = data.value
@@ -561,6 +772,7 @@ class SpockBaseDoor(BaseDoor):
 
 
 class QSpockDoor(SpockBaseDoor):
+    """ """
 
     def __init__(self, name, **kw):
         self.call__init__(SpockBaseDoor, name, **kw)
@@ -568,6 +780,21 @@ class QSpockDoor(SpockBaseDoor):
         self.recordDataUpdated.connect(self.processRecordData)
 
     def recordDataReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if genutils.get_pylab_mode() == "inline":
             if t not in CHANGE_EVTS:
                 return
@@ -578,6 +805,7 @@ class QSpockDoor(SpockBaseDoor):
         return res
 
     def create_input_handler(self):
+        """ """
         from sardana.spock.inputhandler import SpockInputHandler
         from sardana.spock.qtinputhandler import InputHandler
 
@@ -591,8 +819,20 @@ class QSpockDoor(SpockBaseDoor):
 
 
 class SpockDoor(SpockBaseDoor):
+    """ """
 
     def _processRecordData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         data = SpockBaseDoor._processRecordData(self, data)
         return self.processRecordData(data)
 
@@ -606,6 +846,21 @@ class SpockMacroServer(BaseMacroServer):
         self.call__init__(BaseMacroServer, name, **kw)
 
     def on_elements_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         return BaseMacroServer.on_elements_changed(self, evt_src, evt_type,
                                                    evt_value)
 
@@ -613,6 +868,17 @@ class SpockMacroServer(BaseMacroServer):
         'controllerclass', 'controllerlib', 'macrolib'
 
     def _addElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         element = BaseMacroServer._addElement(self, element_data)
         elem_type = element.type
         if "MacroCode" in element.interfaces:
@@ -626,6 +892,17 @@ class SpockMacroServer(BaseMacroServer):
         return element
 
     def _removeElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         element = BaseMacroServer._removeElement(self, element_data)
         elem_type = element.type
         if "MacroCode" in element.interfaces:
@@ -635,11 +912,37 @@ class SpockMacroServer(BaseMacroServer):
         return element
 
     def _addMacro(self, macro_info):
+        """
+
+        Parameters
+        ----------
+        macro_info :
+            
+
+        Returns
+        -------
+
+        """
         macro_name = str(macro_info.name)
 
         # IPython < 1 magic commands have different API
         if genutils.get_ipython_version_list() < [1, 0]:
             def macro_fn(shell, parameter_s='', name=macro_name):
+                """
+
+                Parameters
+                ----------
+                shell :
+                    
+                parameter_s :
+                     (Default value = '')
+                name :
+                     (Default value = macro_name)
+
+                Returns
+                -------
+
+                """
                 door = genutils.get_door()
                 ms = genutils.get_macro_server()
                 params_def = ms.getMacroInfoObj(name).parameters
@@ -650,6 +953,19 @@ class SpockMacroServer(BaseMacroServer):
                     return macro.getResult()
         else:
             def macro_fn(parameter_s='', name=macro_name):
+                """
+
+                Parameters
+                ----------
+                parameter_s :
+                     (Default value = '')
+                name :
+                     (Default value = macro_name)
+
+                Returns
+                -------
+
+                """
                 door = genutils.get_door()
                 ms = genutils.get_macro_server()
                 params_def = ms.getMacroInfoObj(name).parameters
@@ -670,6 +986,17 @@ class SpockMacroServer(BaseMacroServer):
         return macro_info
 
     def _removeMacro(self, macro_info):
+        """
+
+        Parameters
+        ----------
+        macro_info :
+            
+
+        Returns
+        -------
+
+        """
         macro_name = macro_info.name
         genutils.unexpose_magic(macro_name)
         del self._local_magic[macro_name]
@@ -678,15 +1005,23 @@ class SpockMacroServer(BaseMacroServer):
 def split_macro_parameters(parameters_s, params_def):
     """Split string with macro parameters into a list with macro parameters.
     Whitespaces are the separators between the parameters.
-
+    
     Repeat parameters are encapsulated in square brackets and its internal
     repetitions, if composed from more than one item are also encapsulated
     in brackets. In this case the output list contains lists internally.
 
-    :param parameters_s: input string containing parameters
-    :type parameters_s: string
-    :return:  parameters represented as a list (may contain internal lists
-    :rtype: list
+    Parameters
+    ----------
+    parameters_s : string
+        input string containing parameters
+    params_def :
+        
+
+    Returns
+    -------
+    list
+        parameters represented as a list (may contain internal lists
+
     """
     parser = ParamParser(params_def)
     return parser.parse(parameters_s)

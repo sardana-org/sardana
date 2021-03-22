@@ -68,19 +68,23 @@ class PoolBaseController(PoolBaseElement):
         super(PoolBaseController, self).__init__(**kwargs)
 
     def get_ctrl_types(self):
+        """ """
         raise NotImplementedError
 
     def get_ctrl_type_names(self):
+        """ """
         return list(map(ElementType.whatis, self.get_ctrl_types()))
 
     def is_online(self):
+        """ """
         return True
 
     def get_ctrl_error(self):
+        """ """
         return self._ctrl_error
 
     def get_ctrl_error_str(self):
-        """"""
+        """ """
         err = self._ctrl_error
         if err is None:
             return ""
@@ -93,6 +97,19 @@ class PoolBaseController(PoolBaseElement):
         return s
 
     def add_element(self, elem, propagate=1):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
         if self.is_online():
             try:
@@ -117,6 +134,19 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_element(self, elem, propagate=1):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
         f = eid in self._element_ids
         if not f:
@@ -143,13 +173,19 @@ class PoolBaseController(PoolBaseElement):
     def rename_element(self, old_name, new_name, propagate=1):
         """Rename element in the controller.
 
-        :param old_name: old name of the element
-        :type old_name: :obj:`str`
-        :param new_name: new name of the element
-        :type new_name: :obj:`str`
-        :param propagate: 0 for not propagating, 1 to propagate,
-               2 propagate with priority
-        :type propagate: :obj:`int`
+        Parameters
+        ----------
+        old_name : obj:`str`
+            old name of the element
+        new_name : obj:`str`
+            new name of the element
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate,
+            2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         element = self._element_names.pop(old_name, None)
         if element is None:
@@ -162,6 +198,19 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_axis(self, axis, propagate=1):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         f = axis in self._element_axis
         if not f:
             f = axis in self._pending_element_axis
@@ -173,15 +222,29 @@ class PoolBaseController(PoolBaseElement):
         self.remove_element(elem, propagate=propagate)
 
     def get_elements(self):
+        """ """
         return self._element_ids
 
     def get_element_ids(self):
+        """ """
         return self._element_ids
 
     def get_element_axis(self):
+        """ """
         return self._element_axis
 
     def get_element(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         k = kwargs.get('axis')
         if k is None:
             k = kwargs.get('name')
@@ -204,11 +267,17 @@ class PoolBaseController(PoolBaseElement):
         """Reads the state for the given axes. If axes is None, reads the
         state of all active axes.
 
-        :param axes: the list of axis to get the state. Default is None meaning
-                       all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller state information for each axis
-        :rtype: dict<PoolElement, state info>
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the state. Default is None meaning
+            all active axis in this controller
+
+        Returns
+        -------
+        dict<PoolElement, state info>
+            a map containing the controller state information for each axis
+
         """
         raise NotImplementedError
 
@@ -216,11 +285,17 @@ class PoolBaseController(PoolBaseElement):
         """Reads the value for the given axes. If axes is None, reads the
         value of all active axes.
 
-        :param axes: the list of axis to get the value. Default is None meaning
-                       all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, value>
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the value. Default is None meaning
+            all active axis in this controller
+
+        Returns
+        -------
+        dict<PoolElement, value>
+            a map containing the controller value information for each axis
+
         """
         raise NotImplementedError
 
@@ -230,17 +305,22 @@ class PoolBaseController(PoolBaseElement):
         cache is empty). If propagate > 0 and if the status changed since last
         read, it will propagate the status event to all listeners.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             tells if return value from local cache or update from HW read
             [default: True]
-        :type cache: bool
-        :param propagate:
+        propagate : int
             if > 0 propagates the event in case it changed since last HW read.
             Values bigger that mean the event if sent should be a priority event
             [default: 1]
-        :type propagate: int
-        :return: the current object status
-        :rtype: str"""
+
+        Returns
+        -------
+        str
+            the current object status
+
+        """
         if not cache or self._status is None:
             state_info = None
             self._set_state_info(state_info, propagate=propagate)
@@ -253,11 +333,17 @@ class PoolBaseController(PoolBaseElement):
         implementation transforms the given state,status tuple into a
         state, new_status tuple where new_status is "*self.name* is *state*.
 
-        :param status_info:
+        Parameters
+        ----------
+        status_info : tuple<State, str>
             given status information [default: None, meaning use current state status.
-        :type status_info: tuple<State, str>
-        :return: a transformed state information
-        :rtype: tuple<State, str>"""
+
+        Returns
+        -------
+        tuple<State, str>
+            a transformed state information
+
+        """
         if status_info is None:
             status_info = self._state, self._status
         state, _ = status_info
@@ -267,8 +353,34 @@ class PoolBaseController(PoolBaseElement):
 
 
 def check_ctrl(fn):
+    """
+
+    Parameters
+    ----------
+    fn :
+        
+
+    Returns
+    -------
+
+    """
     @functools.wraps(fn)
     def wrapper(pool_ctrl, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        pool_ctrl :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         if not pool_ctrl.is_online():
             raise Exception("Cannot execute '%s' because '%s' is offline" %
                             (fn.__name__, pool_ctrl.name))
@@ -277,8 +389,34 @@ def check_ctrl(fn):
 
 
 def ctrl_access(fn):
+    """
+
+    Parameters
+    ----------
+    fn :
+        
+
+    Returns
+    -------
+
+    """
     @functools.wraps(fn)
     def wrapper(pool_ctrl, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        pool_ctrl :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         with pool_ctrl:
             return fn(pool_ctrl, *args, **kwargs)
     return wrapper
@@ -297,6 +435,19 @@ class PoolController(PoolBaseController):
         self.re_init()
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolBaseController.serialize(self, *args, **kwargs)
         ctrl_info = self._ctrl_info
         if ctrl_info is None:
@@ -322,6 +473,7 @@ class PoolController(PoolBaseController):
         return kwargs
 
     def _create_ctrl_args(self):
+        """ """
         name = self.name
         klass = self._ctrl_info.klass
         props = dict(self._properties)
@@ -329,6 +481,7 @@ class PoolController(PoolBaseController):
         return name, klass, props, args, kwargs
 
     def _create_controller(self):
+        """ """
         name, klass, props, args, kwargs = self._create_ctrl_args()
         api = self._ctrl_info.api_version
         if api == 0:
@@ -340,6 +493,7 @@ class PoolController(PoolBaseController):
         return ctrl
 
     def _init(self):
+        """ """
         if self._ctrl_info is None:
             if self._lib_info is not None:
                 self._ctrl_error = self._lib_info.get_error()
@@ -351,6 +505,7 @@ class PoolController(PoolBaseController):
             self._ctrl_error = sys.exc_info()
 
     def re_init(self):
+        """ """
         self.set_state(State.Init, propagate=2)
         status = "{0} is Initializing (temporarily unavailable)".format(
             self.name)
@@ -394,36 +549,54 @@ class PoolController(PoolBaseController):
         self.set_state(state, propagate=2)
 
     def get_ctrl_types(self):
+        """ """
         return self._ctrl_info.types
 
     def is_timerable(self):
+        """ """
         for t in self._ctrl_info.types:
             if t in TYPE_TIMERABLE_ELEMENTS:
                 return True
         return False
 
     def is_referable(self):
+        """ """
         return isinstance(self.ctrl, Referable)
 
     def is_pseudo(self):
+        """ """
         for t in self._ctrl_info.types:
             if t in TYPE_PSEUDO_ELEMENTS:
                 return True
         return False
 
     def is_online(self):
+        """ """
         return self._ctrl_error is None and self._ctrl is not None
 
     def get_ctrl(self):
+        """ """
         return self._ctrl
 
     def set_ctrl(self, ctrl):
+        """
+
+        Parameters
+        ----------
+        ctrl :
+            
+
+        Returns
+        -------
+
+        """
         self._ctrl = ctrl
 
     ctrl = property(fget=get_ctrl, fset=set_ctrl,
                     doc="actual controller object")
 
     def get_ctrl_info(self):
+        """ """
         return self._ctrl_info
 
     ctrl_info = property(fget=get_ctrl_info,
@@ -434,11 +607,19 @@ class PoolController(PoolBaseController):
            For example, in acquisition, it should be a :class:`PoolMeasurementGroup`
            object.
 
-           :param operator: the new operator object
-           :type operator: object"""
+        Parameters
+        ----------
+        operator : objec
+            the new operator object
+
+        Returns
+        -------
+
+        """
         self._operator = operator
 
     def get_operator(self):
+        """ """
         return self._operator
 
     operator = property(fget=get_operator, fset=set_operator,
@@ -448,20 +629,45 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_log_level(self, level):
+        """
+
+        Parameters
+        ----------
+        level :
+            
+
+        Returns
+        -------
+
+        """
         self.ctrl._log.log_obj.setLevel(level)
 
     @check_ctrl
     def get_log_level(self):
+        """ """
         return self.ctrl._log.log_obj.level
 
     def get_library_name(self):
+        """ """
         return self._lib_name
 
     def get_class_name(self):
+        """ """
         return self._class_name
 
     @check_ctrl
     def get_axis_attributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = self.ctrl.GetAxisAttributes(axis)
         if self.is_referable():
             referable_axis_attrs = {
@@ -485,6 +691,17 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def get_ctrl_attr(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_info = self.ctrl_info
         attr_info = ctrl_info.ctrl_attributes[name]
         if hasattr(self.ctrl, attr_info.fget):
@@ -494,6 +711,19 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_ctrl_attr(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_info = self.ctrl_info
         attr_info = ctrl_info.ctrl_attributes[name]
         if hasattr(self.ctrl, attr_info.fset):
@@ -503,6 +733,19 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def get_axis_attr(self, axis, name):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_info = self.ctrl_info
         axis_attr_info = ctrl_info.axis_attributes[name]
         if hasattr(self.ctrl, axis_attr_info.fget):
@@ -513,6 +756,21 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_axis_attr(self, axis, name, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_info = self.ctrl_info
         axis_attr_info = ctrl_info.axis_attributes[name]
         try:
@@ -522,18 +780,70 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_ctrl_par(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.SetCtrlPar(name, value)
 
     @check_ctrl
     def get_ctrl_par(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.GetCtrlPar(name)
 
     @check_ctrl
     def set_axis_par(self, axis, name, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.SetAxisPar(axis, name, value)
 
     @check_ctrl
     def get_axis_par(self, axis, name):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.GetAxisPar(axis, name)
 
     # END API WHICH ACCESSES CONTROLLER API ----------------------------------
@@ -549,6 +859,17 @@ class PoolController(PoolBaseController):
 
     @staticmethod
     def _format_exception(exc_info):
+        """
+
+        Parameters
+        ----------
+        exc_info :
+            
+
+        Returns
+        -------
+
+        """
         fmt_exc = traceback.format_exception_only(*exc_info[:2])
         fmt_exc = "".join(fmt_exc)
         if fmt_exc.endswith("\n"):
@@ -559,13 +880,21 @@ class PoolController(PoolBaseController):
         """**Unsafe method**. Reads the state for the given axes. If axes
         is None, reads the state of all active axes.
 
-        :param axes: the list of axis to get the state. Default is None meaning
-                       all active axis in this controller
-        :type axes: seq<int> or None
-        :return:
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the state. Default is None meaning
+            all active axis in this controller
+        ctrl_states :
+             (Default value = None)
+
+        Returns
+        -------
+        dict<PoolElement, state info>, bool
             a tuple of two elements: a map containing the controller state
             information for each axis and a boolean telling if an error occured
-        :rtype: dict<PoolElement, state info>, bool"""
+
+        """
         if axes is None:
             axes = list(self._element_axis.keys())
         if ctrl_states is None:
@@ -611,16 +940,47 @@ class PoolController(PoolBaseController):
         """Reads the state for the given axes. If axes is None, reads the
         state of all active axes.
 
-        :param axes: the list of axis to get the state. Default is None
-                       meaning all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller state information for each axis
-        :rtype: dict<PoolElement, state info>"""
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the state. Default is None
+            meaning all active axis in this controller
+
+        Returns
+        -------
+        dict<PoolElement, state info>
+            a map containing the controller state information for each axis
+
+        """
         return self.raw_read_axis_states(axes=axes)
 
     def _read_axis_value(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
 
         def is_chunk(type_, obj):
+            """
+
+            Parameters
+            ----------
+            type_ :
+                
+            obj :
+                
+
+            Returns
+            -------
+
+            """
             if not is_non_str_seq(obj):
                 return False
             if type_ == ElementType.CTExpChannel:
@@ -656,11 +1016,20 @@ class PoolController(PoolBaseController):
         """**Unsafe method**. Reads the value for the given axes. If axes
         is None, reads the value of all active axes.
 
-        :param axes: the list of axis to get the value. Default is None
-                       meaning all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, SardanaValue>"""
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the value. Default is None
+            meaning all active axis in this controller
+        ctrl_values :
+             (Default value = None)
+
+        Returns
+        -------
+        dict<PoolElement, SardanaValue>
+            a map containing the controller value information for each axis
+
+        """
         if axes is None:
             axes = list(self._element_axis.keys())
         if ctrl_values is None:
@@ -691,18 +1060,45 @@ class PoolController(PoolBaseController):
         """Reads the value for the given axes. If axes is None, reads the
         value of all active axes.
 
-        :param axes: the list of axis to get the value. Default is None meaning
-                       all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, SardanaValue>
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the value. Default is None meaning
+            all active axis in this controller
+
+        Returns
+        -------
+        dict<PoolElement, SardanaValue>
+            a map containing the controller value information for each axis
 
         """
         return self.raw_read_axis_values(axes=axes)
 
     def _read_axis_value_refs(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
 
         def is_chunk(obj):
+            """
+
+            Parameters
+            ----------
+            obj :
+                
+
+            Returns
+            -------
+
+            """
             if is_non_str_seq(obj):
                 return True
             return False
@@ -727,23 +1123,31 @@ class PoolController(PoolBaseController):
     def raw_read_axis_value_refs(self, axes=None, ctrl_values=None):
         """**Unsafe method**. Reads the value refs for the given axes. If axes
         is None, reads the value of all active axes.
-
+        
         .. note::
             The raw_read_axis_value_refs method has been included in Sardana
             on a provisional basis. Backwards incompatible changes (up to
             and including removal of the class) may occur if deemed
             necessary by the core developers.
-
+        
         .. todo::
             This method should be available only on the controllers which
             are *referable*.
 
-        :param axes: the list of axis to get the value. Default is None
+        Parameters
+        ----------
+        axes : seq<int> or None
+            the list of axis to get the value. Default is None
             meaning all active axis in this controller
-        :type axes: seq<int> or None
-        :return: a map containing the controller value information for each
+        ctrl_values :
+             (Default value = None)
+
+        Returns
+        -------
+        dict<PoolElement, SardanaValue>
+            a map containing the controller value information for each
             axis
-        :rtype: dict<PoolElement, SardanaValue>
+
         """
         if axes is None:
             axes = list(self._element_axis.keys())
@@ -759,10 +1163,16 @@ class PoolController(PoolBaseController):
     def stop_axes(self, axes):
         """Stops the given axes.
 
-        :param axes: the list of axes to stopped.
-        :type axes: list<axes>
-        :return: list of axes that could not be stopped
-        :rtype: list<int>
+        Parameters
+        ----------
+        axes : list<axes>
+            the list of axes to stopped.
+
+        Returns
+        -------
+        list<int>
+            list of axes that could not be stopped
+
         """
         ctrl = self.ctrl
 
@@ -809,9 +1219,19 @@ class PoolController(PoolBaseController):
     def stop_element(self, element):
         """Stops the given element.
 
-        :param element: element to stop
-        :type element: ~sardana.pool.poolelement.PoolElement
-        :raises Exception: not able to stop element
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElement
+            element to stop
+
+        Returns
+        -------
+
+        Raises
+        ------
+        Exception
+            not able to stop element
+
         """
 
         axes = [element.axis]
@@ -824,11 +1244,17 @@ class PoolController(PoolBaseController):
         """Stops the given elements. If elements is None, stops all
         active elements.
 
-        :param elements: the list of elements to stop. Default is None
-                         meaning all active elements in this controller
-        :type elements: seq<PoolElement> or None
-        :return: list of elements that could not be stopped
-        :rtype: list<PoolElements>
+        Parameters
+        ----------
+        elements : seq<PoolElement> or None
+            the list of elements to stop. Default is None
+            meaning all active elements in this controller
+
+        Returns
+        -------
+        list<PoolElements>
+            list of elements that could not be stopped
+
         """
 
         if elements is None:
@@ -845,10 +1271,16 @@ class PoolController(PoolBaseController):
     def abort_axes(self, axes):
         """Aborts the given axes.
 
-        :param axes: the list of axes to aborted.
-        :type axes: list<axes>
-        :return: list of axes that could not be aborted
-        :rtype: list<int>
+        Parameters
+        ----------
+        axes : list<axes>
+            the list of axes to aborted.
+
+        Returns
+        -------
+        list<int>
+            list of axes that could not be aborted
+
         """
 
         ctrl = self.ctrl
@@ -895,9 +1327,19 @@ class PoolController(PoolBaseController):
     def abort_element(self, element):
         """Aborts the given elements.
 
-        :param element: element to abort
-        :type element: ~sardana.pool.poolelement.PoolElement
-        :raises Exception: not able to abort element
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElement
+            element to abort
+
+        Returns
+        -------
+
+        Raises
+        ------
+        Exception
+            not able to abort element
+
         """
 
         axes = [element.axis]
@@ -910,11 +1352,17 @@ class PoolController(PoolBaseController):
         """Abort the given elements. If elements is None, stops all
         active elements.
 
-        :param elements: the list of elements to stop. Default is None
-                         meaning all active elements in this controller
-        :type elements: seq<PoolElement> or None
-        :return: list of elements that could not be aborted
-        :rtype: list<PoolElements>
+        Parameters
+        ----------
+        elements : seq<PoolElement> or None
+            the list of elements to stop. Default is None
+            meaning all active elements in this controller
+
+        Returns
+        -------
+        list<PoolElements>
+            list of elements that could not be aborted
+
         """
 
         if elements is None:
@@ -933,11 +1381,17 @@ class PoolController(PoolBaseController):
         stops all active elements.
         If stop could not be executed, an abort is attempted.
 
-        :param elements: the list of elements to stop. Default is None
-                         meaning all active elements in this controller
-        :type axes: seq<PoolElement> or None
-        :return: elements that could neither be stopped nor aborted
-        :rtype: list<PoolElement>
+        Parameters
+        ----------
+        elements :
+            the list of elements to stop. Default is None
+            meaning all active elements in this controller
+
+        Returns
+        -------
+        list<PoolElement>
+            elements that could neither be stopped nor aborted
+
         """
         if elements is None:
             elements = self.ctrl.get_elements()
@@ -965,6 +1419,17 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def send_to_controller(self, stream):
+        """
+
+        Parameters
+        ----------
+        stream :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.SendToCtrl(stream)
 
     # END API WHICH ACCESSES CRITICAL CONTROLLER API (like StateOne) ---------
@@ -972,6 +1437,17 @@ class PoolController(PoolBaseController):
     # START SPECIFIC TO MOTOR CONTROLLER -------------------------------------
 
     def raw_move(self, axis_pos):
+        """
+
+        Parameters
+        ----------
+        axis_pos :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         ctrl.PreStartAll()
         for axis, dial_position in list(axis_pos.items()):
@@ -987,16 +1463,42 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def move(self, axis_pos):
+        """
+
+        Parameters
+        ----------
+        axis_pos :
+            
+
+        Returns
+        -------
+
+        """
         return self.raw_move(axis_pos)
 
     def has_backlash(self):
+        """ """
         return "Backlash" in self._ctrl.ctrl_features
 
     def wants_rounding(self):
+        """ """
         return "Rounding" in self._ctrl.ctrl_features
 
     @check_ctrl
     def define_position(self, axis, position):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        position :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl.DefinePosition(axis, position)
 
     # END SPECIFIC TO MOTOR CONTROLLER ---------------------------------------
@@ -1004,6 +1506,19 @@ class PoolController(PoolBaseController):
     # START SPECIFIC TO IOR CONTROLLER ---------------------------------------
 
     def write_one(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.ctrl.WriteOne(axis, value)
 
     # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
@@ -1012,14 +1527,20 @@ class PoolController(PoolBaseController):
 
     def get_default_timer(self):
         """Get default timer as announced by the controller (plug-in).
-
+        
         Only for *Timerable* controllers, e.g.
         :class:`~sardana.pool.controller.CounterTimerController`,
         :class:`~sardana.pool.controller.OneDController`,
         :class:`~sardana.pool.controller.TwoDController`.
 
-        :return: axis of the default timer or :obj:`None` if not defined
-        :rtype: :obj:`int` or :obj:`None`
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`int` or :obj:`None`
+            axis of the default timer or :obj:`None` if not defined
+
         """
         if not self.is_timerable():
             raise TypeError("non-timerable controller")
@@ -1032,23 +1553,49 @@ class PoolController(PoolBaseController):
 
 
 class PoolPseudoMotorController(PoolController):
+    """ """
 
     def __init__(self, **kwargs):
         self._motor_ids = kwargs.pop('role_ids')
         super(PoolPseudoMotorController, self).__init__(**kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolController.serialize(self, *args, **kwargs)
         kwargs['type'] = 'Controller'
         return kwargs
 
     def _create_ctrl_args(self):
+        """ """
         pars = PoolController._create_ctrl_args(self)
         kwargs = pars[4]
         kwargs['motor_ids'] = tuple(self._motor_ids)
         return pars
 
     def _read_axis_value(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         try:
             axis = element.get_axis()
             ctrl_value = self.ctrl.ReadOne(axis)
@@ -1063,6 +1610,19 @@ class PoolPseudoMotorController(PoolController):
 
     @check_ctrl
     def calc_all_pseudo(self, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.CalcAllPseudo(physical_pos, curr_pseudo_pos)
@@ -1077,6 +1637,19 @@ class PoolPseudoMotorController(PoolController):
 
     @check_ctrl
     def calc_all_physical(self, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.CalcAllPhysical(pseudo_pos, curr_physical_pos)
@@ -1091,6 +1664,21 @@ class PoolPseudoMotorController(PoolController):
 
     @check_ctrl
     def calc_pseudo(self, axis, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.CalcPseudo(axis, physical_pos, curr_pseudo_pos)
@@ -1105,6 +1693,21 @@ class PoolPseudoMotorController(PoolController):
 
     @check_ctrl
     def calc_physical(self, axis, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.CalcPhysical(axis, pseudo_pos, curr_physical_pos)
@@ -1119,17 +1722,32 @@ class PoolPseudoMotorController(PoolController):
 
 
 class PoolPseudoCounterController(PoolController):
+    """ """
 
     def __init__(self, **kwargs):
         self._counter_ids = kwargs.pop('role_ids')
         super(PoolPseudoCounterController, self).__init__(**kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolController.serialize(self, *args, **kwargs)
         kwargs['type'] = 'Controller'
         return kwargs
 
     def _create_ctrl_args(self):
+        """ """
         pars = PoolController._create_ctrl_args(self)
         kwargs = pars[4]
         kwargs['counter_ids'] = tuple(self._counter_ids)
@@ -1137,6 +1755,19 @@ class PoolPseudoCounterController(PoolController):
 
     @check_ctrl
     def calc(self, axis, values):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        values :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.Calc(axis, values)
@@ -1150,6 +1781,17 @@ class PoolPseudoCounterController(PoolController):
         return value
 
     def calc_all(self, values):
+        """
+
+        Parameters
+        ----------
+        values :
+            
+
+        Returns
+        -------
+
+        """
         ctrl = self.ctrl
         try:
             ctrl_value = ctrl.CalcAll(values)

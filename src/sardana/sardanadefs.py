@@ -195,16 +195,23 @@ def from_dtype_str(dtype):
     """Transforms the given dtype parameter (string/:obj:`DataType` or None)
     into a tuple of two elements (str, :obj:`DataFormat`) where the first
     element is a string with a simplified data type.
-
+    
         - If None is given, it returns
           ('float', :obj:`DataFormat.Scalar`)
         - If :obj:`DataType` is given, it returns
           (:obj:`DataType`, :obj:`DataFormat.Scalar`)
 
-    :param dtype: the data type to be transformed
-    :type dtype: :obj:`str` or None or :obj:`DataType`
-    :return: a tuple <str, :obj:`DataFormat`> for the given dtype
-    :rtype: tuple<str, :obj:`DataFormat`>"""
+    Parameters
+    ----------
+    dtype : obj:`str` or None or :obj:`DataType`
+        the data type to be transformed
+
+    Returns
+    -------
+    tuple<str, :obj:`DataFormat`>
+        a tuple <str, :obj:`DataFormat`> for the given dtype
+
+    """
     dformat = DataFormat.Scalar
     if dtype is None:
         dtype = 'float'
@@ -226,10 +233,19 @@ def from_access_str(access):
     """Transforms the given access parameter (string or :obj:`DataAccess`) into
     a simplified data access string.
 
-    :param dtype: the access to be transformed
-    :type dtype: :obj:`str`
-    :return: a simple string for the given access
-    :rtype: :obj:`str`"""
+    Parameters
+    ----------
+    dtype : obj:`str`
+        the access to be transformed
+    access :
+        
+
+    Returns
+    -------
+    obj:`str`
+        a simple string for the given access
+
+    """
     if isinstance(access, str):
         access = access.lower()
         if access.startswith("pytango."):
@@ -242,10 +258,16 @@ def to_dtype_dformat(data):
     sequence of sequence of string/:obj:`DataType`) into a tuple of two
     elements (:obj:`DataType`, :obj:`DataFormat`).
 
-    :param data: the data information to be transformed
-    :type data: :obj:`str` or seq<str> or seq<seq<str>>
-    :return: a tuple <:obj:`DataType`, :obj:`DataFormat`> for the given data
-    :rtype: tuple<:obj:`DataType`, :obj:`DataFormat`>
+    Parameters
+    ----------
+    data : obj:`str` or seq<str> or seq<seq<str>>
+        the data information to be transformed
+
+    Returns
+    -------
+    tuple<:obj:`DataType`, :obj:`DataFormat`>
+        a tuple <:obj:`DataType`, :obj:`DataFormat`> for the given data
+
     """
     import operator
     dtype, dformat = data, DataFormat.Scalar
@@ -271,10 +293,19 @@ def to_daccess(daccess):
     """Transforms the given access parameter (string or None) into a
     :obj:`DataAccess`. If None is given returns :obj:`DataAccess.ReadWrite`
 
-    :param dtype: the access to be transformed
-    :type dtype: :obj:`str`
-    :return: a :obj:`DataAccess` for the given access
-    :rtype: :obj:`DataAccess`"""
+    Parameters
+    ----------
+    dtype : obj:`str`
+        the access to be transformed
+    daccess :
+        
+
+    Returns
+    -------
+    obj:`DataAccess`
+        a :obj:`DataAccess` for the given access
+
+    """
     if daccess is None:
         daccess = DataAccess.ReadWrite
     elif isinstance(daccess, str):
@@ -542,7 +573,15 @@ InterfacesExpanded = _InterfacesExpanded
 
 class ScalarNumberFilter(object):
     """A simple scalar number filter that returns ``False`` if two numbers are
-    indentical (i.e. |a-b| < error)"""
+    indentical (i.e. |a-b| < error)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __call__(self, a, b):
         try:

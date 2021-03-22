@@ -79,14 +79,38 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def islambda(f):
-    """inspect doesn't come with islambda so I create one :-P"""
+    """inspect doesn't come with islambda so I create one :-P
+
+    Parameters
+    ----------
+    f :
+        
+
+    Returns
+    -------
+
+    """
     return inspect.isfunction(f) and \
         f.__name__ == (lambda: True).__name__
 
 
 def _is_macro(macro, abs_file=None, logger=None):
     """Helper function to determine if a certain python object is a valid
-    macro"""
+    macro
+
+    Parameters
+    ----------
+    macro :
+        
+    abs_file :
+         (Default value = None)
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     if inspect.isclass(macro):
         if not issubclass(macro, Macro):
             return False
@@ -136,6 +160,21 @@ def _is_macro(macro, abs_file=None, logger=None):
 
 
 def is_macro(macro, abs_file=None, logger=None):
+    """
+
+    Parameters
+    ----------
+    macro :
+        
+    abs_file :
+         (Default value = None)
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     try:
         return _is_macro(macro, abs_file=abs_file, logger=logger)
     except Exception:
@@ -143,7 +182,17 @@ def is_macro(macro, abs_file=None, logger=None):
 
 
 def is_flat_list(obj):
-    """Check if a given object is a flat list."""
+    """Check if a given object is a flat list.
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     if not isinstance(obj, list):
         return False
     for item in obj:
@@ -153,6 +202,7 @@ def is_flat_list(obj):
 
 
 class MacroManager(MacroServerManager):
+    """ """
 
     DEFAULT_MACRO_DIRECTORIES = os.path.join(_BASE_DIR, 'macros'),
 
@@ -162,6 +212,7 @@ class MacroManager(MacroServerManager):
             self.setMacroPath(macro_path)
 
     def reInit(self):
+        """ """
         if self.is_initialized():
             return
 
@@ -192,6 +243,7 @@ class MacroManager(MacroServerManager):
         MacroServerManager.reInit(self)
 
     def cleanUp(self):
+        """ """
         if self.is_cleaned():
             return
 
@@ -210,7 +262,17 @@ class MacroManager(MacroServerManager):
         Warning: as a consequence all the macro modules will be reloaded.
         This means that if any reference to an old macro object was kept it will
         refer to an old module (which could possibly generate problems of type
-        class A != class A)."""
+        class A != class A).
+
+        Parameters
+        ----------
+        macro_path :
+            
+
+        Returns
+        -------
+
+        """
         p = []
         for item in macro_path:
             p.extend(item.split(os.pathsep))
@@ -235,9 +297,23 @@ class MacroManager(MacroServerManager):
                 pass
 
     def getMacroPath(self):
+        """ """
         return self._macro_path
 
     def _findMacroLibName(self, lib_name, path=None):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         path = path or self.getMacroPath()
         f_name = lib_name
         if not f_name.endswith('.py'):
@@ -252,6 +328,17 @@ class MacroManager(MacroServerManager):
         return None
 
     def _findMacroLibNames(self, path=None):
+        """
+
+        Parameters
+        ----------
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         path = path or self.getMacroPath()
         ret = OrderedDict()
         for p in reversed(path):
@@ -267,6 +354,19 @@ class MacroManager(MacroServerManager):
         return ret
 
     def _fromNameToFileName(self, lib_name, path=None):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         path = path or self.getMacroPath()[0]
         f_name = lib_name
         if not f_name.endswith('.py'):
@@ -285,20 +385,23 @@ class MacroManager(MacroServerManager):
         name is not None, a macro template code for the given macro name is
         appended to the end of the file.
 
-        :param lib_name:
+        Parameters
+        ----------
+        lib_name : obj:`str`
             module name, python file name, or full file name (with path)
-        :type lib_name: :obj:`str`
-        :param macro_name:
+        macro_name : obj:`str`
             an optional macro name. If given a macro template code is appended
             to the end of the file (default is None meaning no macro code is
             added)
-        :type macro_name: :obj:`str`
 
-        :return:
+        Returns
+        -------
+        seq<str, str, int>
             a sequence with three items: full_filename, code, line number is 0
             if no macro is created or n representing the first line of code for
             the given macro name.
-        :rtype: seq<str, str, int>"""
+
+        """
         # if only given the module name
         try:
             macro_lib = self.getMacroLib(lib_name)
@@ -333,6 +436,21 @@ class MacroManager(MacroServerManager):
         return [f_name, code, line_nb]
 
     def setMacroLib(self, lib_name, code, auto_reload=True):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+        code :
+            
+        auto_reload :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         f_name = self._fromNameToFileName(lib_name)
         f = open(f_name, 'w')
         f.write(code)
@@ -345,7 +463,19 @@ class MacroManager(MacroServerManager):
         return mod
 
     def createMacroLib(self, lib_name, path=None):
-        """Creates a new empty macro library (python module)"""
+        """Creates a new empty macro library (python module)
+
+        Parameters
+        ----------
+        lib_name :
+            
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         f_name = self._fromNameToFileName(lib_name, path)
 
         if os.path.exists(f_name):
@@ -357,6 +487,19 @@ class MacroManager(MacroServerManager):
         return f_name
 
     def createMacro(self, lib_name, macro_name):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         f_name = self._fromNameToFileName(lib_name)
 
         create = not os.path.exists(f_name)
@@ -404,24 +547,36 @@ class MacroManager(MacroServerManager):
     def reloadMacro(self, macro_name, path=None):
         """Reloads the module corresponding to the given macro name
 
-        :raises: MacroServerExceptionList in case the macro is unknown or the
-        reload process is not successful
+        Parameters
+        ----------
+        macro_name :
+            macro name
+        path :
+            a list of absolute path to search for libraries
+            (optional, default=None, means the current MacroPath
+            will be used
 
-        :param macro_name: macro name
-        :param path: a list of absolute path to search for libraries
-                     (optional, default=None, means the current MacroPath
-                     will be used)"""
+        Returns
+        -------
+
+        """
         self.reloadMacros([macro_name], path=path)
 
     def reloadMacros(self, macro_names, path=None):
         """Reloads the modules corresponding to the given macro names
 
-        :raises: MacroServerExceptionList in case the macro(s) are unknown or the
-        reload process is not successful
+        Parameters
+        ----------
+        macro_names :
+            a list of macro names
+        path :
+            a list of absolute path to search for libraries (optional,
+            default=None, means the current MacroPath will be used
 
-        :param macro_names: a list of macro names
-        :param path: a list of absolute path to search for libraries (optional,
-                     default=None, means the current MacroPath will be used)"""
+        Returns
+        -------
+
+        """
         module_names = []
         for macro_name in macro_names:
             module_name = self.getMacro(macro_name).module_name
@@ -431,13 +586,19 @@ class MacroManager(MacroServerManager):
     def reloadMacroLibs(self, module_names, path=None):
         """Reloads the given lib(=module) names
 
-        :raises: MacroServerExceptionList in case the reload process is not
-        successful for at least one library
+        Parameters
+        ----------
+        module_names :
+            a list of module names
+        path :
+            a list of absolute path to search for libraries
+            (optional, default=None, means the current MacroPath
+            will be used
 
-        :param module_names: a list of module names
-        :param path: a list of absolute path to search for libraries
-                     (optional, default=None, means the current MacroPath
-                     will be used)"""
+        Returns
+        -------
+
+        """
         ret = []
         for module_name in module_names:
             m = self.reloadMacroLib(module_name, path=path)
@@ -448,14 +609,20 @@ class MacroManager(MacroServerManager):
     def reloadLib(self, module_name, path=None):
         """Reloads the given library(=module) names.
 
-        :raises:
-            LibraryError if trying to reload a macro library
-
-        :param module_name: module name
-        :param path:
+        Parameters
+        ----------
+        module_name :
+            module name
+        path :
             a list of absolute path to search for libraries [default: None.
             Search in sys.path.]
-        :return: the reloaded python module object"""
+
+        Returns
+        -------
+        type
+            the reloaded python module object
+
+        """
         if module_name in self._modules:
             raise LibraryError("Cannot use simple " +
                                "reload to reload a Macro Library")
@@ -466,14 +633,20 @@ class MacroManager(MacroServerManager):
     def reloadMacroLib(self, module_name, path=None):
         """Reloads the given library(=module) names.
 
-        :raises:
-            LibraryError in case the reload process is not successful
-
-        :param module_name: macro library name (=python module name)
-        :param path:
+        Parameters
+        ----------
+        module_name :
+            macro library name (=python module name)
+        path :
             a list of absolute path to search for libraries [default: None,
             means the current MacroPath will be used]
-        :return: the MacroLibrary object for the reloaded macro library"""
+
+        Returns
+        -------
+        type
+            the MacroLibrary object for the reloaded macro library
+
+        """
         path = path or self.getMacroPath()
         mod_manager = ModuleManager()
         m, exc_info = None, None
@@ -568,12 +741,42 @@ class MacroManager(MacroServerManager):
                 raise Exception(msg)
 
     def addMacro(self, macro_lib, macro, isoverwritten=False):
+        """
+
+        Parameters
+        ----------
+        macro_lib :
+            
+        macro :
+            
+        isoverwritten :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         add = self.addMacroFunction
         if inspect.isclass(macro):
             add = self.addMacroClass
         return add(macro_lib, macro, isoverwritten)
 
     def addMacroClass(self, macro_lib, klass, isoverwritten=False):
+        """
+
+        Parameters
+        ----------
+        macro_lib :
+            
+        klass :
+            
+        isoverwritten :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_name = klass.__name__
         action = (macro_lib.has_macro(macro_name) and "Updating") or "Adding"
         self.debug("%s macro class %s" % (action, macro_name))
@@ -585,6 +788,21 @@ class MacroManager(MacroServerManager):
         self._macro_dict[macro_name] = macro_class
 
     def addMacroFunction(self, macro_lib, func, isoverwritten=False):
+        """
+
+        Parameters
+        ----------
+        macro_lib :
+            
+        func :
+            
+        isoverwritten :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_name = func.__name__
         action = (macro_lib.has_macro(macro_name) and "Updating") or "Adding"
         self.debug("%s macro function %s" % (action, macro_name))
@@ -596,9 +814,21 @@ class MacroManager(MacroServerManager):
         self._macro_dict[macro_name] = macro_function
 
     def getMacroLibNames(self):
+        """ """
         return sorted(self._modules.keys())
 
     def getMacroLibs(self, filter=None):
+        """
+
+        Parameters
+        ----------
+        filter :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if filter is None:
             return self._modules
         expr = re.compile(filter, re.IGNORECASE)
@@ -612,13 +842,18 @@ class MacroManager(MacroServerManager):
     def getMacros(self, filter=None):
         """Returns a :obj:`dict` containing information about macros.
 
-        :param filter:
+        Parameters
+        ----------
+        filter : obj:`str`
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: :obj:`str`
-        :return: a :obj:`dict` containing information about macros
-        :rtype:
-            :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroCode`\>"""
+
+        Returns
+        -------
+        obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroCode`\>
+            a :obj:`dict` containing information about macros
+
+        """
         if filter is None:
             return self._macro_dict
         expr = re.compile(filter, re.IGNORECASE)
@@ -633,13 +868,18 @@ class MacroManager(MacroServerManager):
     def getMacroClasses(self, filter=None):
         """Returns a :obj:`dict` containing information about macro classes.
 
-        :param filter:
+        Parameters
+        ----------
+        filter : obj:`str`
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: :obj:`str`
-        :return: a :obj:`dict` containing information about macro classes
-        :rtype:
-            :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroClass`\>"""
+
+        Returns
+        -------
+        obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroClass`\>
+            a :obj:`dict` containing information about macro classes
+
+        """
         macros = self.getMacros(filter=filter)
         macro_classes = {}
         for name, macro in list(macros.items()):
@@ -650,13 +890,18 @@ class MacroManager(MacroServerManager):
     def getMacroFunctions(self, filter=None):
         """Returns a :obj:`dict` containing information about macro functions.
 
-        :param filter:
+        Parameters
+        ----------
+        filter : obj:`str`
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: :obj:`str`
-        :return: a :obj:`dict` containing information about macro functions
-        :rtype:
-            :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroFunction`\>"""
+
+        Returns
+        -------
+        obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroFunction`\>
+            a :obj:`dict` containing information about macro functions
+
+        """
         macros = self.getMacros(filter=filter)
         macro_classes = {}
         for name, macro in list(macros.items()):
@@ -665,24 +910,80 @@ class MacroManager(MacroServerManager):
         return macro_classes
 
     def getMacroNames(self):
+        """ """
         return sorted(self._macro_dict.keys())
 
     def getMacro(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         ret = self._macro_dict.get(macro_name)
         if ret is None:
             raise UnknownMacro("Unknown macro %s" % macro_name)
         return ret
 
     def getMacroClass(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getMacro(macro_name)
 
     def getMacroFunction(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getMacro(macro_name)
 
     def removeMacro(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         self._macro_dict.pop(macro_name)
 
     def getMacroLib(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if os.path.isabs(name):
             abs_file_name = name
             for lib in list(self._modules.values()):
@@ -700,15 +1001,61 @@ class MacroManager(MacroServerManager):
         return ret
 
     def getMacroCode(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getMacro(macro_name).code_object
 
     def getMacroClassCode(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getMacroClass(macro_name).klass
 
     def getMacroFunctionCode(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getMacroFunction(macro_name).function
 
     def getMacroInfo(self, macro_names, format='json'):
+        """
+
+        Parameters
+        ----------
+        macro_names :
+            
+        format :
+             (Default value = 'json')
+
+        Returns
+        -------
+
+        """
         if isinstance(macro_names, str):
             macro_names = [macro_names]
         ret = []
@@ -719,6 +1066,19 @@ class MacroManager(MacroServerManager):
         return ret
 
     def _createMacroNode(self, macro_name, macro_params_raw):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+        macro_params_raw :
+            
+
+        Returns
+        -------
+
+        """
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
         macro_params_str = " ".join(macro_params_raw)
@@ -730,10 +1090,18 @@ class MacroManager(MacroServerManager):
     def decodeMacroParameters(self, door, raw_params):
         """Decode macro parameters
 
-        :param door: (sardana.macroserver.msdoor.MSDoor) door object
-        :param raw_params: (lxml.etree._Element or list) xml element
+        Parameters
+        ----------
+        door :
+            sardana.macroserver.msdoor.MSDoor) door object
+        raw_params :
+            lxml.etree._Element or list) xml element
             representing macro with subelements representing parameters or
             list with macro name followed by parameter values
+
+        Returns
+        -------
+
         """
         if isinstance(raw_params, etree._Element):
             macro_name = raw_params.get("name")
@@ -767,12 +1135,19 @@ class MacroManager(MacroServerManager):
 
     def strMacroParamValues(self, par_list):
         """strMacroParamValues(list<string> par_list) -> list<string>
-
+        
            Creates a short string representantion of the parameter values list.
-           Params:
-               - par_list: list of strings representing the parameter values.
-           Return:
-               a list containning an abreviated version of the par_list argument.
+
+        Parameters
+        ----------
+        par_list :
+            list of strings representing the parameter values
+
+        Returns
+        -------
+        type
+            a list containning an abreviated version of the par_list argument.
+
         """
         ret = []
         for p in par_list:
@@ -786,6 +1161,21 @@ class MacroManager(MacroServerManager):
                      init_opts={}, prepare_opts={}):
         """Creates the macro object and calls its prepare method.
            The return value is a tuple (MacroObject, return value of prepare)
+
+        Parameters
+        ----------
+        macro_class :
+            
+        par_list :
+            
+        init_opts :
+             (Default value = {})
+        prepare_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
         """
         macro = self.createMacroObj(macro_class, par_list, init_opts=init_opts)
         prepare_result = self.prepareMacroObj(
@@ -793,6 +1183,21 @@ class MacroManager(MacroServerManager):
         return macro, prepare_result
 
     def createMacroObj(self, macro_class, par_list, init_opts={}):
+        """
+
+        Parameters
+        ----------
+        macro_class :
+            
+        par_list :
+            
+        init_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         macro_env = macro_class.env
         macro_name = macro_class.__name__
 
@@ -822,9 +1227,39 @@ class MacroManager(MacroServerManager):
         return macroObj
 
     def prepareMacroObj(self, macro, par_list, prepare_opts={}):
+        """
+
+        Parameters
+        ----------
+        macro :
+            
+        par_list :
+            
+        prepare_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         return macro.prepare(*par_list, **prepare_opts)
 
     def createMacroObjFromMeta(self, meta, par_list, init_opts={}):
+        """
+
+        Parameters
+        ----------
+        meta :
+            
+        par_list :
+            
+        init_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         code = meta.code_object
         macro_env = code.env or ()
 
@@ -855,6 +1290,17 @@ class MacroManager(MacroServerManager):
         return macroObj
 
     def getMacroExecutor(self, door):
+        """
+
+        Parameters
+        ----------
+        door :
+            
+
+        Returns
+        -------
+
+        """
         me = self._macro_executors.get(door)
         if me is None:
             self._macro_executors[door] = me = MacroExecutor(door)
@@ -862,11 +1308,23 @@ class MacroManager(MacroServerManager):
 
 
 class LogMacroFilter(logging.Filter):
+    """ """
 
     def __init__(self, param=None):
         self.param = param
 
     def filter(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         allow = True
         if record.levelname == "DEBUG":
             if not isinstance(record.msg, str):
@@ -907,12 +1365,19 @@ class LogMacroManager(Logger):
     """Manage user-oriented macro logging to a file. It is configurable with
     LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
     variables.
-
+    
     .. note::
         The LogMacroManager class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     DEFAULT_DIR = os.path.join(os.sep, "tmp")
@@ -928,13 +1393,19 @@ class LogMacroManager(Logger):
 
     def getFilterClass(self):
         """Get filter class.
-
+        
         First look if a custom filter class was set using
         sardanacustomsettings.LOG_MACRO_FILTER variable, if not, silently
-        return None (no filter will be applied).
 
-        If the custom filter class was incorrectly set or class is not
-        importable warn the user and return None (no filter will be applied).
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            If the custom filter class was incorrectly set or class is not
+            importable warn the user and return None (no filter will be applied).
+
         """
         filter_class = None
         from sardana import sardanacustomsettings
@@ -964,8 +1435,14 @@ class LogMacroManager(Logger):
             * this is the top-most macro
             * macro logging is enabled by user
 
-        :return: True or False, depending if logging was enabled or not
-        :rtype: boolean
+        Parameters
+        ----------
+
+        Returns
+        -------
+        boolean
+            True or False, depending if logging was enabled or not
+
         """
         macro_obj = self._macro_obj
         executor = macro_obj.executor
@@ -1036,8 +1513,14 @@ class LogMacroManager(Logger):
     def disable(self):
         """Disable macro logging only if it was enabled before.
 
-        :return: True or False, depending if logging was disabled or not
-        :rtype: boolean
+        Parameters
+        ----------
+
+        Returns
+        -------
+        boolean
+            True or False, depending if logging was disabled or not
+
         """
 
         if not self._enabled:
@@ -1056,6 +1539,7 @@ class MacroExecutor(Logger):
     """ """
 
     class RunSubXMLHook:
+        """ """
 
         def __init__(self, me, xml):
             self._me = me
@@ -1106,31 +1590,41 @@ class MacroExecutor(Logger):
         self.call__init__(Logger, name)
 
     def getDoor(self):
+        """ """
         return self._door
 
     door = property(getDoor)
 
     def getMacroServer(self):
+        """ """
         return self.door.macro_server
 
     macro_server = property(getMacroServer)
 
     @property
     def macro_manager(self):
+        """ """
         return self.macro_server.macro_manager
 
     def getGeneralHooks(self):
         """Get data structure containing definition of the general hooks.
-
+        
         .. note::
         The `general_hooks` has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
-
+        
         .. todo::
         General hooks should reflect the state of configuration at the
         macro/sequence start.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
 
         try:
@@ -1141,19 +1635,55 @@ class MacroExecutor(Logger):
     general_hooks = property(getGeneralHooks)
 
     def getNewMacroID(self):
+        """ """
         self._macro_counter -= 1
         return self._macro_counter
 
     def _createMacroNode(self, macro_name, macro_params):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+        macro_params :
+            
+
+        Returns
+        -------
+
+        """
         return self.macro_manager._createMacroNode(macro_name, macro_params)
 
     def _preprocessParameters(self, par_str_list):
+        """
+
+        Parameters
+        ----------
+        par_str_list :
+            
+
+        Returns
+        -------
+
+        """
         if not par_str_list[0].lstrip().startswith('<'):
             xml_root = xml_seq = etree.Element('sequence')
             macro_name = par_str_list[0]
             macro_params = par_str_list[1:]
 
             def quote_string(string):
+                """
+
+                Parameters
+                ----------
+                string :
+                    
+
+                Returns
+                -------
+
+                """
                 # if string contains double quotes, use single quotes,
                 # otherwise use double quotes
                 if re.search('"', string):
@@ -1216,9 +1746,35 @@ class MacroExecutor(Logger):
         return result
 
     def _decodeMacroParameters(self, params):
+        """
+
+        Parameters
+        ----------
+        params :
+            
+
+        Returns
+        -------
+
+        """
         return self.macro_manager.decodeMacroParameters(self.door, params)
 
     def _composeMacroLine(self, macro_name, macro_params, macro_id):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+        macro_params :
+            
+        macro_id :
+            
+
+        Returns
+        -------
+
+        """
         # recursive map to maintain the list objects structure
         params_str_list = recur_map(str, macro_params)
         # plain map to be able to perform join (only strings may be joined)
@@ -1231,6 +1787,17 @@ class MacroExecutor(Logger):
         return macro_line
 
     def _prepareGeneralHooks(self, macro_obj):
+        """
+
+        Parameters
+        ----------
+        macro_obj :
+            
+
+        Returns
+        -------
+
+        """
         if not isinstance(macro_obj, Hookable):
             return
         general_hooks = self.general_hooks
@@ -1251,6 +1818,19 @@ class MacroExecutor(Logger):
             macro_obj.appendHook((hook, hook_places))
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
+        """
+
+        Parameters
+        ----------
+        xml_macro :
+            
+        parent_macro :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         macro_meta, _, macro_params = self._decodeMacroParameters(xml_macro)
         macro_name = macro_meta.name
         macro_id = xml_macro.get("id")
@@ -1278,6 +1858,21 @@ class MacroExecutor(Logger):
         return macro_obj, prepare_result
 
     def _createMacroObj(self, macro_name_or_meta, pars, init_opts={}):
+        """
+
+        Parameters
+        ----------
+        macro_name_or_meta :
+            
+        pars :
+            
+        init_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         macro_meta = macro_name_or_meta
         if isinstance(macro_meta, str):
             macro_meta = self.macro_manager.getMacro(macro_meta)
@@ -1296,6 +1891,21 @@ class MacroExecutor(Logger):
         return macroObj
 
     def _prepareMacroObj(self, macro_obj, pars, prepare_opts={}):
+        """
+
+        Parameters
+        ----------
+        macro_obj :
+            
+        pars :
+            
+        prepare_opts :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         return self.macro_manager.prepareMacroObj(macro_obj, pars,
                                                   prepare_opts=prepare_opts)
 
@@ -1303,13 +1913,24 @@ class MacroExecutor(Logger):
                         prepare_opts={}):
         """Prepare a new macro for execution
 
-        :param macro_name_or_meta name: name of the macro to be prepared or
-                                        the macro meta itself
-        :param pars: list of parameter objects
-        :param init_opts: keyword parameters for the macro constructor
-        :param prepare_opts: keyword parameters for the macro prepare
+        Parameters
+        ----------
+        macro_name_or_meta :
+            name: name of the macro to be prepared or
+            the macro meta itself
+        pars :
+            list of parameter objects
+        init_opts :
+            keyword parameters for the macro constructor (Default value = {})
+        prepare_opts :
+            keyword parameters for the macro prepare (Default value = {})
 
-        :return: a tuple of two elements: macro object, the result of preparing the macro"""
+        Returns
+        -------
+        type
+            a tuple of two elements: macro object, the result of preparing the macro
+
+        """
         macroObj = self._createMacroObj(
             macro_name_or_meta, pars, init_opts=init_opts)
         prepare_result = self._prepareMacroObj(
@@ -1346,16 +1967,29 @@ class MacroExecutor(Logger):
               parameter must be the last one):
               executor.prepareMacro('ascan th 0 100 10 1.0')
               executor.prepareMacro('mv %s 0' % motor.getName())
-
+        
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
             than one member is a list. In case when a macro defines only one
             repeat parameter and it is the last parameter, for the backwards
             compatibility reasons, the plain list of items' members is allowed.
 
-        :param pars: the command parameters as explained above
-        :param opts: keyword optional parameters for prepare
-        :return: a tuple of two elements: macro object, the result of preparing the macro
+        Parameters
+        ----------
+        pars :
+            the command parameters as explained above
+        opts :
+            keyword optional parameters for prepare
+        init_opts :
+             (Default value = {})
+        prepare_opts :
+             (Default value = {})
+
+        Returns
+        -------
+        type
+            a tuple of two elements: macro object, the result of preparing the macro
+
         """
         par0 = pars[0]
         if len(pars) == 1:
@@ -1397,12 +2031,20 @@ class MacroExecutor(Logger):
         return macro_obj, prepare_result
 
     def getRunningMacro(self):
+        """ """
         return self._macro_pointer
 
     def clearRunningMacro(self):
         """Clear pointer to the running macro.
-
+        
         ..warning:: Do not call it while the macro is running.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         self._macro_pointer = None
 
@@ -1448,21 +2090,67 @@ class MacroExecutor(Logger):
                     self.output("{} aborted".format(obj))
 
     def _setStopDone(self, _):
+        """
+
+        Parameters
+        ----------
+        _ :
+            
+
+        Returns
+        -------
+
+        """
         self._stop_done.set()
 
     def _waitStopDone(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._stop_done.wait(timeout)
 
     def _isStopDone(self):
+        """ """
         return self._stop_done.is_set()
 
     def _setAbortDone(self, _):
+        """
+
+        Parameters
+        ----------
+        _ :
+            
+
+        Returns
+        -------
+
+        """
         self._abort_done.set()
 
     def _waitAbortDone(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._abort_done.wait(timeout)
 
     def _isAbortDone(self):
+        """ """
         return self._abort_done.is_set()
 
     def abort(self):
@@ -1477,10 +2165,17 @@ class MacroExecutor(Logger):
 
     def release(self):
         """**Internal method**. Release the macro from hang situations
-
+        
         Hanged situations:
         * hanged process of aborting reserved objects
         * hanged macro on_abort method.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         # carefull: Inside this method never call a method that has the
         # mAPI decorator
@@ -1495,10 +2190,12 @@ class MacroExecutor(Logger):
 
 
     def stop(self):
+        """ """
         self._stopped = True
         self.macro_server.add_job(self._stop, self._setStopDone)
 
     def _abort(self):
+        """ """
         self._abort_thread = threading.current_thread()
         if self._stopped:
             # stopping did not finish on its own - we are aborting it
@@ -1510,6 +2207,7 @@ class MacroExecutor(Logger):
         self.__abortObjects()
 
     def _stop(self):
+        """ """
         self._stop_thread = threading.current_thread()
         m = self.getRunningMacro()
         if m is not None:
@@ -1519,17 +2217,29 @@ class MacroExecutor(Logger):
         self.__stopObjects()
 
     def pause(self):
+        """ """
         self._paused = True
         m = self.getRunningMacro()
         if m is not None:
             m.pause(cb=self._macroPaused)
 
     def _macroPaused(self, m):
-        """Calback that is executed when the macro has efectively paused"""
+        """Calback that is executed when the macro has efectively paused
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         self.sendMacroStatusPause()
         self.sendState(Macro.Pause)
 
     def resume(self):
+        """ """
         if not self._paused:
             return
         self._paused = False
@@ -1539,17 +2249,37 @@ class MacroExecutor(Logger):
 
     def _macroResumed(self, m):
         """Callback that is executed when the macro has effectively resumed
-        execution after being paused"""
+        execution after being paused
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         self.sendMacroStatusResume()
         self.sendState(Macro.Running)
 
     def run(self, params, asynch=True):
         """Runs the given macro(s)
 
-        :param params: (sequence<str>) can be either a sequence of <macro name> [, <macro_parameter> ]
-                       or a sequence with a single element which represents the xml string for a
-                       macro script
-        :return: (lxml.etree.Element) the xml representation of the running macro
+        Parameters
+        ----------
+        params :
+            sequence<str>) can be either a sequence of <macro name> [, <macro_parameter> ]
+            or a sequence with a single element which represents the xml string for a
+            macro script
+        asynch :
+             (Default value = True)
+
+        Returns
+        -------
+        type
+            lxml.etree.Element) the xml representation of the running macro
+
         """
         # dict<PoolElement, set<Macro>>
         # key PoolElement - reserved object
@@ -1585,6 +2315,19 @@ class MacroExecutor(Logger):
             # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kw :
+            
+
+        Returns
+        -------
+
+        """
         self.debug("Job ended (stopped=%s, aborted=%s)",
                    self._stopped, self._aborted)
 
@@ -1633,6 +2376,17 @@ class MacroExecutor(Logger):
     _runXMLMacro = __runXMLMacro
 
     def runMacro(self, macro_obj):
+        """
+
+        Parameters
+        ----------
+        macro_obj :
+            
+
+        Returns
+        -------
+
+        """
 
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
@@ -1737,24 +2491,60 @@ class MacroExecutor(Logger):
         return result
 
     def _popMacro(self):
+        """ """
         self._macro_stack.pop()
         length = len(self._macro_stack)
         if length > 0:
             self._macro_pointer = self._macro_stack[-1]
 
     def sendState(self, state):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+
+        """
         return self.door.set_state(state)
 
     def sendStatus(self, status):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+
+        Returns
+        -------
+
+        """
         return self.door.set_status(status)
 
     def sendResult(self, result):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+
+        Returns
+        -------
+
+        """
         return self.door.set_result(result)
 
     def getLastMacroStatus(self):
+        """ """
         return self._macro_pointer._getMacroStatus()
 
     def sendMacroStatusFinish(self):
+        """ """
         ms = self.getLastMacroStatus()
         if ms is not None:
             ms['state'] = 'finish'
@@ -1763,6 +2553,7 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatusStop(self):
+        """ """
         ms = self.getLastMacroStatus()
         if ms is not None:
             ms['state'] = 'stop'
@@ -1771,6 +2562,7 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatusAbort(self):
+        """ """
         ms = self.getLastMacroStatus()
         if ms is not None:
             ms['state'] = 'abort'
@@ -1779,6 +2571,17 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatusException(self, exc_info):
+        """
+
+        Parameters
+        ----------
+        exc_info :
+            
+
+        Returns
+        -------
+
+        """
         ms = self.getLastMacroStatus()
         if ms is not None:
             ms['state'] = 'exception'
@@ -1789,6 +2592,7 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatusPause(self):
+        """ """
         ms = self.getLastMacroStatus()
         if ms is not None and len(ms) > 0:
             ms['state'] = 'pause'
@@ -1796,6 +2600,7 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatusResume(self):
+        """ """
         ms = self.getLastMacroStatus()
         if ms is not None and len(ms) > 0:
             ms['state'] = 'resume'
@@ -1803,14 +2608,53 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatus(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         self._last_macro_status = data
         # data = self._macro_status_codec.encode(('', data))
         return self.door.set_macro_status(data)
 
     def sendRecordData(self, data, codec=None):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+        codec :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.door.set_record_data(data, codec=codec)
 
     def reserveObj(self, obj, macro_obj, priority=0):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        macro_obj :
+            
+        priority :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         if obj is None or macro_obj is None:
             return
 
@@ -1832,7 +2676,17 @@ class MacroExecutor(Logger):
             obj.reserve(macro_obj)
 
     def returnObjs(self, macro_obj):
-        """Free the macro reserved objects"""
+        """Free the macro reserved objects
+
+        Parameters
+        ----------
+        macro_obj :
+            
+
+        Returns
+        -------
+
+        """
         if macro_obj is None:
             return
         # remove eventually stopped objects to not keep reference to them
@@ -1846,7 +2700,19 @@ class MacroExecutor(Logger):
             self.returnObj(obj, macro_obj)
 
     def returnObj(self, obj, macro_obj):
-        """Free an object reserved by a macro"""
+        """Free an object reserved by a macro
+
+        Parameters
+        ----------
+        obj :
+            
+        macro_obj :
+            
+
+        Returns
+        -------
+
+        """
         if obj is None or macro_obj is None:
             return
 

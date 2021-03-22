@@ -43,12 +43,21 @@ from sardana.sardanaevent import EventGenerator, EventReceiver
 
 class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
     """The Sardana most abstract object. It contains only two members:
-
+    
        - _manager : a weak reference to the manager (pool or ms) where it
          belongs
        - _name : the name
        - _full_name : the name (usually a tango device name, but can be
-         anything else.)"""
+         anything else.)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    
+    """
 
     def __init__(self, **kwargs):
         EventGenerator.__init__(self)
@@ -66,50 +75,49 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         """Return the :class:`sardana.Manager` which *owns* this sardana
         object.
 
-        :return: the manager which *owns* this pool object.
-        :rtype: :class:`sardana.Manager`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._manager()
 
     def get_name(self):
-        """Returns this sardana object name
-
-        :return: this sardana object name
-        :rtype: :obj:`str`"""
+        """Returns this sardana object name"""
         return self._name
 
     def set_name(self, name):
         """Sets sardana object name
 
-        :param: sardana object name
-        :type: :obj:`str`"""
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        
+        """
         self._name = name
 
     def get_full_name(self):
-        """Returns this sardana object full name
-
-        :return: this sardana object full name
-        :rtype: :obj:`str`"""
+        """Returns this sardana object full name"""
         return self._full_name
 
     def get_type(self):
-        """Returns this sardana object type.
-
-        :return: this sardana object type
-        :rtype: :obj:`~sardana.sardanadefs.ElementType`"""
+        """Returns this sardana object type."""
         return self._type
 
     def get_parent(self):
-        """Returns this pool object parent.
-
-        :return: this objects parent
-        :rtype: :class:`~sardana.sardanabase.SardanaBaseObject`"""
+        """Returns this pool object parent."""
         return self._parent()
 
     def get_parent_name(self):
-        """Returns this sardana object parent's name.
-
-        :return: this objects parent
-        :rtype: :obj:`str`"""
+        """Returns this sardana object parent's name."""
         parent = self.get_parent()
         if parent and hasattr(parent, 'name'):
             return parent.name
@@ -118,14 +126,38 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         """Returns this sardana frontend object or None if no frontend is
         registered
 
-        :return: this objects frontend
-        :rtype: :obj:`object`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         f = self._frontend
         if f is None:
             return None
         return f()
 
     def fire_event(self, event_type, event_value, listeners=None, protected=True):
+        """
+
+        Parameters
+        ----------
+        event_type :
+            
+        event_value :
+            
+        listeners :
+            (Default value = None)
+        protected :
+            (Default value = True)
+
+        Returns
+        -------
+
+        
+        """
         if protected:
             try:
                 return EventGenerator.fire_event(self, event_type, event_value,
@@ -139,33 +171,32 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
                                              listeners=listeners)
 
     def get_interfaces(self):
-        """Returns the set of interfaces this object implements.
-
-        :return:
-            The set of interfaces this object implements.
-        :rtype:
-            class:`set` <:class:`sardana.sardanadefs.Interface`>"""
+        """Returns the set of interfaces this object implements."""
         return InterfacesExpanded[self.get_interface()]
 
     def get_interface(self):
-        """Returns the interface this object implements.
-
-        :return:
-            The interface this object implements.
-        :rtype:
-            :class:`sardana.sardanadefs.Interface`"""
+        """Returns the interface this object implements."""
         return Interface[ElementType[self.get_type()]]
 
     def get_interface_names(self):
-        """Returns a sequence of interface names this object implements.
-
-        :return:
-            The sequence of interfaces this object implements.
-        :rtype:
-            sequence<:obj:`str`>"""
+        """Returns a sequence of interface names this object implements."""
         return list(map(Interface.get, self.get_interfaces()))
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        
+        """
         kwargs['name'] = self.name
         kwargs['full_name'] = self.full_name
         kwargs['type'] = ElementType.whatis(self.get_type())
@@ -175,9 +206,37 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         return kwargs
 
     def serialized(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        
+        """
         return self.manager.serialize_element(self, *args, **kwargs)
 
     def str(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        
+        """
         return self.manager.str_element(self, *args, **kwargs)
 
     def __str__(self):
@@ -200,13 +259,24 @@ class SardanaObjectID(object):
         self._id = id
 
     def get_id(self):
-        """Returns this sardana object ID
-
-        :return: this sardana object ID
-        :rtype: int"""
+        """Returns this sardana object ID"""
         return self._id
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        
+        """
         kwargs['id'] = self.id
         return kwargs
 

@@ -35,6 +35,7 @@ from sardana.taurus.core.tango.sardana import macro
 
 
 class MacroSequenceTreeModel(Qt.QAbstractItemModel):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QAbstractItemModel.__init__(self, parent)
@@ -43,20 +44,45 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         self.headers = ["Macro", "Parameters", "Progress", "Pause"]
 
     def root(self):
+        """ """
         return self._root
 
     def setRoot(self, root):
+        """
+
+        Parameters
+        ----------
+        root :
+            
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         self._root = root
         self.endResetModel()
 
     def clearSequence(self):
+        """ """
         self.setRoot(macro.SequenceNode())
 
     def isEmpty(self):
+        """ """
         return len(self.root()) == 0
 
     def flags(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         column = index.column()
         node = self.nodeFromIndex(index)
         flags = Qt.Qt.ItemIsEnabled
@@ -84,6 +110,21 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return flags
 
     def _insertRow(self, parentIndex, node=None, row=-1):
+        """
+
+        Parameters
+        ----------
+        parentIndex :
+            
+        node :
+             (Default value = None)
+        row :
+             (Default value = -1)
+
+        Returns
+        -------
+
+        """
         parentNode = self.nodeFromIndex(parentIndex)
 
         if row == -1:
@@ -100,7 +141,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return self.index(row, 0, parentIndex)
 
     def _removeRow(self, index):
-        """This method is used remove macro (pased via index)"""
+        """This method is used remove macro (pased via index)
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -110,6 +161,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         self.endRemoveRows()
 
     def _upRow(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -121,6 +183,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return newIndex
 
     def _downRow(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -132,6 +205,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return newIndex
 
     def duplicateNode(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node_to_duplicate = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -142,7 +226,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
 
     def _leftRow(self, index):
         """This method is used to move selected macro (pased via index)
-        to it's grandparent's hook list. In tree representation it basically move macro to the left"""
+        to it's grandparent's hook list. In tree representation it basically move macro to the left
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         grandParentIndex = parentIndex.parent()
@@ -151,7 +245,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
 
     def _rightRow(self, index):
         """This method is used to move selected macro (pased via index)
-        to it's grandparent's hook list. In tree representation it basically move macro to the left"""
+        to it's grandparent's hook list. In tree representation it basically move macro to the left
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         row = index.row()
@@ -160,13 +264,48 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return self._insertRow(newParentIndex, node)
 
     def rowCount(self, parent):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         branchNode = self.nodeFromIndex(parent)
         return len(branchNode)
 
     def columnCount(self, parent):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         return self.columns
 
     def data(self, index, role):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if role == Qt.Qt.DisplayRole:
             node = self.nodeFromIndex(index)
             if index.column() == 0:
@@ -185,6 +324,21 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        value :
+            
+        role :
+             (Default value = Qt.Qt.EditRole)
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         if index.column() == 1:
             if isinstance(node, macro.SingleParamNode):
@@ -206,17 +360,58 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return True
 
     def headerData(self, section, orientation, role):
+        """
+
+        Parameters
+        ----------
+        section :
+            
+        orientation :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
             return self.headers[section]
         return None
 
     def index(self, row, column, parent):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        column :
+            
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         assert self.root() is not None
         branchNode = self.nodeFromIndex(parent)
         assert branchNode is not None
         return self.createIndex(row, column, branchNode.child(row))
 
     def parent(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(child)
         if node is None:
             return Qt.QModelIndex()
@@ -231,12 +426,36 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return self.createIndex(row, 0, parent)
 
     def nodeFromIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.isValid():
             return index.internalPointer()
         else:
             return self.root()
 
     def toXmlString(self, pretty=False, withId=True):
+        """
+
+        Parameters
+        ----------
+        pretty :
+             (Default value = False)
+        withId :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         xmlSequence = self.root().toXml(withId=withId)
         xmlTree = etree.ElementTree(xmlSequence)
         xmlString = etree.tostring(xmlTree, encoding='unicode',
@@ -244,6 +463,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return xmlString
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         xmlElement = etree.fromstring(xmlString)
         newRoot = macro.SequenceNode(None)
@@ -253,6 +483,19 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return newRoot
 
     def fromPlainText(self, text, macroInfos):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+        macroInfos :
+            
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         newRoot = macro.SequenceNode(None)
         newRoot.fromPlainText(text, macroInfos)
@@ -261,11 +504,17 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return newRoot
 
     def assignIds(self):
-        """
-        Assigns ids for all macros present in the sequence. If certain macro
+        """Assigns ids for all macros present in the sequence. If certain macro
         already had an id, it stays without change. A list of all ids is returned
-
+        
         :return: (list)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         parentNode = self.root()
         return self.__assignIds(parentNode)
@@ -280,13 +529,16 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return ids
 
     def firstMacroId(self):
+        """ """
         return self.root().child(0).id()
 
     def lastMacroId(self):
+        """ """
         root = self.root()
         return root.child(len(root.children()) - 1).id()
 
     def createIdIndexDictionary(self):
+        """ """
         parentIndex = Qt.QModelIndex()
         parentNode = self.root()
         return self.__createIdIndexDictionary(parentIndex, parentNode)
@@ -352,6 +604,7 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
 
 
 class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QSortFilterProxyModel.__init__(self, parent)
@@ -363,11 +616,23 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
         return getattr(self.sourceModel(), name)
 
     def nodeFromIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         sourceIndex = self.mapToSource(index)
         node = self.sourceModel().nodeFromIndex(sourceIndex)
         return node
 
     def createIdIndexDictionary(self):
+        """ """
         d = self.sourceModel().createIdIndexDictionary()
         for id, sourceIndex in d.items():
             proxyIndex = self.mapFromSource(sourceIndex)
@@ -375,12 +640,26 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
         return d
 
     def filterAcceptsRow(self, row, parentIndex):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        parentIndex :
+            
+
+        Returns
+        -------
+
+        """
         child = self.sourceModel().index(row, 0, parentIndex)
         node = self.sourceModel().nodeFromIndex(child)
         return isinstance(node, macro.MacroNode)
 
 
 class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QSortFilterProxyModel.__init__(self, parent)
@@ -392,25 +671,87 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
         return getattr(self.sourceModel(), name)
 
     def headerData(self, section, orientation, role):
+        """
+
+        Parameters
+        ----------
+        section :
+            
+        orientation :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
             return self.headers[section]
         return None
 
     def nodeFromIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         sourceIndex = self.mapToSource(index)
         node = self.sourceModel().nodeFromIndex(sourceIndex)
         return node
 
     def setMacroIndex(self, macroIndex):
+        """
+
+        Parameters
+        ----------
+        macroIndex :
+            
+
+        Returns
+        -------
+
+        """
         self._macroIndex = macroIndex
 
     def macroIndex(self):
+        """ """
         return self._macroIndex
 
     def columnCount(self, parent):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         return self.columns
 
     def filterAcceptsRow(self, row, parentIndex):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        parentIndex :
+            
+
+        Returns
+        -------
+
+        """
         if self.macroIndex() is None:
             return False
         if self.macroIndex() == parentIndex:

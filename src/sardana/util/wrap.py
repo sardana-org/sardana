@@ -36,7 +36,21 @@ __WRAPPER = "__wrapper__"
 
 def wraps(wrapped, *args, **kwargs):
     """A wrap decorator which stores in the returned function a reference to
-    the wrapped function (in member '__wrapped__')"""
+    the wrapped function (in member '__wrapped__')
+
+    Parameters
+    ----------
+    wrapped :
+        
+    *args :
+        
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     wrapper = _wraps(wrapped, *args, **kwargs)
     setattr(wrapper, __WRAPPED, weakref.ref(wrapped))
     setattr(wrapped, __WRAPPER, weakref.ref(wrapper))
@@ -44,18 +58,50 @@ def wraps(wrapped, *args, **kwargs):
 
 
 def is_wrapping(wrapper):
-    """Determines if the given callable is a wrapper for another callable"""
+    """Determines if the given callable is a wrapper for another callable
+
+    Parameters
+    ----------
+    wrapper :
+        
+
+    Returns
+    -------
+
+    """
     return hasattr(wrapper, __WRAPPED)
 
 
 def is_wrapped(wrapped):
-    """Determines if the given callable is being wrapped by another callable"""
+    """Determines if the given callable is being wrapped by another callable
+
+    Parameters
+    ----------
+    wrapped :
+        
+
+    Returns
+    -------
+
+    """
     return hasattr(wrapped, __WRAPPER)
 
 
 def wrapped(wrapper, recursive=True):
     """Returns the wrapped function around the given wrapper. If the given
-    callable is not "wrapping" any function, the wrapper itself is returned"""
+    callable is not "wrapping" any function, the wrapper itself is returned
+
+    Parameters
+    ----------
+    wrapper :
+        
+    recursive :
+         (Default value = True)
+
+    Returns
+    -------
+
+    """
     if is_wrapping(wrapper):
         _wrapped = wrapper.__wrapped__()
     else:

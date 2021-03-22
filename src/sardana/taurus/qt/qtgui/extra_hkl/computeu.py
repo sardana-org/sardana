@@ -36,6 +36,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 @UILoadable(with_ui="_ui")
 class ComputeU(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -46,6 +47,7 @@ class ComputeU(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'computeu'
         ret['group'] = 'Taurus Containers'
@@ -54,10 +56,22 @@ class ComputeU(TaurusWidget):
         return ret
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if model is not None:
             self.device = taurus.Device(model)
 
     def compute_u(self):
+        """ """
         index = []
         index.append(int(self._ui.indexreflection1lineEdit.text()))
         index.append(int(self._ui.indexreflection2lineEdit.text()))
@@ -66,6 +80,7 @@ class ComputeU(TaurusWidget):
 
 
 def main():
+    """ """
     app = Qt.QApplication(sys.argv)
     w = ComputeU()
     w.show()

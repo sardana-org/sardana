@@ -40,6 +40,17 @@ class mca_start(Macro):
     ]
 
     def run(self, mca):
+        """
+
+        Parameters
+        ----------
+        mca :
+            
+
+        Returns
+        -------
+
+        """
         name = mca.getName()
         mca.Start()
         o = "Starting " + name
@@ -54,6 +65,17 @@ class mca_stop(Macro):
     ]
 
     def run(self, mca):
+        """
+
+        Parameters
+        ----------
+        mca :
+            
+
+        Returns
+        -------
+
+        """
         name = mca.getName()
         mca.Abort()
         o = "Stopping " + name

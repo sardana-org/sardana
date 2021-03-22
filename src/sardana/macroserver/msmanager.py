@@ -45,17 +45,22 @@ class MacroServerManager(Logger):
         self.reInit()
 
     def reInit(self):
+        """ """
         self._state = ManagerState.INITED
 
     def cleanUp(self):
+        """ """
         self._state = ManagerState.CLEANED
 
     @property
     def macro_server(self):
+        """ """
         return self._macro_server()
 
     def is_initialized(self):
+        """ """
         return self._state == ManagerState.INITED
 
     def is_cleaned(self):
+        """ """
         return self._state == ManagerState.CLEANED

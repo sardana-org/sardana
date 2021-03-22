@@ -43,12 +43,24 @@ import numbers
 
 
 class JsonRecorder(DataRecorder):
+    """ """
 
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
         self._stream = weakref.ref(stream)
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         macro_id = recordlist.getEnvironValue('macro_id')
         title = recordlist.getEnvironValue('title')
         counters = recordlist.getEnvironValue('counters')
@@ -85,12 +97,34 @@ class JsonRecorder(DataRecorder):
         self._sendPacket(type="data_desc", data=data, macro_id=macro_id)
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         macro_id = recordlist.getEnvironValue('macro_id')
         data = {'endtime': recordlist.getEnvironValue('endtime').ctime(),
                 'deadtime': recordlist.getEnvironValue('deadtime')}
         self._sendPacket(type="record_end", data=data, macro_id=macro_id)
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         macro_id = self.recordlist.getEnvironValue('macro_id')
         data = {}  # dict(record.data)
         for k in self.column_desc:
@@ -99,16 +133,38 @@ class JsonRecorder(DataRecorder):
         self._sendPacket(type="record_data", data=data, macro_id=macro_id)
 
     def _sendPacket(self, **kwargs):
-        '''creates a JSON packet using the keyword arguments passed
-        and then sends it'''
+        """creates a JSON packet using the keyword arguments passed
+        and then sends it
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._stream()._sendRecordData(kwargs, codec='utf8_json')
 
     def _addCustomData(self, value, name, **kwargs):
-        '''
-        The custom data will be sent as a packet with type='custom_data'
+        """The custom data will be sent as a packet with type='custom_data'
         and its data will be the dictionary of keyword arguments passed to this
         method plus 'name' and 'value'
-        '''
+
+        Parameters
+        ----------
+        value :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # try to convert to list to avoid serialization problems
         try:
             value = value.tolist()
@@ -122,6 +178,7 @@ class JsonRecorder(DataRecorder):
 
 
 class OutputRecorder(DataRecorder):
+    """ """
 
     def __init__(self, stream, cols=None, number_fmt='%8.4f', col_width=8,
                  col_sep='  ', output_block=False, **pars):
@@ -143,6 +200,17 @@ class OutputRecorder(DataRecorder):
         self._output_block = output_block
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         starttime = recordlist.getEnvironValue('starttime').ctime()
         estimatedtime = recordlist.getEnvironValue('estimatedtime')
         data_desc = recordlist.getEnvironValue('datadesc')
@@ -220,6 +288,17 @@ class OutputRecorder(DataRecorder):
         self._stream()._flushOutput()
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self._stream()._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
@@ -246,6 +325,17 @@ class OutputRecorder(DataRecorder):
                                          deadtime_perc, motiontime_perc))
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         cells = []
         for i, (name, cell) in enumerate(self._scan_line_t):
             cell_data = record.data[name]
@@ -274,10 +364,22 @@ class OutputRecorder(DataRecorder):
         self._stream()._flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):
-        '''
-        The custom data will be added as an info line in the form:
+        """The custom data will be added as an info line in the form:
         Custom data: name : value
-        '''
+
+        Parameters
+        ----------
+        value :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         if numpy.ndim(value) > 0:
             v = 'Array(%s)' % str(numpy.shape(value))
         else:

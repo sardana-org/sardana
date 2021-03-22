@@ -38,13 +38,21 @@ __all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
 
 
 class BasePoolTestCase(object):
-    """Abstract class for pool DS testing.
-    """
+    """Abstract class for pool DS testing."""
     pool_ds_name = getattr(sardanacustomsettings, 'UNITTEST_POOL_DS_NAME')
     pool_name = getattr(sardanacustomsettings, 'UNITTEST_POOL_NAME')
 
     def setUp(self, properties=None):
         """Start Pool DS and register extensions.
+
+        Parameters
+        ----------
+        properties :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         db = PyTango.Database()
         # Discover the Pool launcher script
@@ -71,8 +79,7 @@ class BasePoolTestCase(object):
         self.pool = PyTango.DeviceProxy(self.pool_name)
 
     def tearDown(self):
-        """Remove the Pool instance.
-        """
+        """Remove the Pool instance."""
         self._starter.cleanDb(force=True)
         self._starter = None
         self.pool = None
@@ -82,13 +89,11 @@ class BasePoolTestCase(object):
 # TODO: Currently test inputs are implemented as class members, it would be
 # more aesthetic to implement them as decorators.
 class ControllerLoadsTestCase(BasePoolTestCase):
-    """Class for loading an arbitrary Sardana controller library and class.
-    """
+    """Class for loading an arbitrary Sardana controller library and class."""
     controller_classes = []
 
     def test_controller_loads(self):
-        """Test that the controller library and class can be loaded.
-        """
+        """Test that the controller library and class can be loaded."""
         libraries = \
             list(self.pool.getElementsOfType('ControllerLibrary').values())
         libraries_names = [lib.getName() for lib in libraries]
@@ -107,13 +112,11 @@ class ControllerLoadsTestCase(BasePoolTestCase):
 # TODO: Currently test inputs are implemented as class members, it would be
 # more aesthetic to implement them as decorators.
 class ControllerCreationTestCase(BasePoolTestCase):
-    """Class for creating a controller and testing the correct creation.
-    """
+    """Class for creating a controller and testing the correct creation."""
     controller_infos = []
 
     def test_controller_creation(self):
-        """Test that the controller has been created with the correct name.
-        """
+        """Test that the controller has been created with the correct name."""
         for cls, name, props in self.controller_infos:
             ctrl = self.pool.createController(cls, name, *props)
             msg = 'Controller %s was not correctly created.' % name
@@ -124,15 +127,13 @@ class ControllerCreationTestCase(BasePoolTestCase):
 # TODO: Currently test inputs are implemented as class members, it would be
 # more aesthetic to implement them as decorators.
 class ElementCreationTestCase(BasePoolTestCase):
-    """Class used for creating a Sardana controller and Sardana elements.
-    """
+    """Class used for creating a Sardana controller and Sardana elements."""
     controller_infos = []
     NAME = 0
     AXIS = 1
 
     def test_element_creation(self):
-        """Test that controller and elements have been correctly created.
-        """
+        """Test that controller and elements have been correctly created."""
         for cls, name, props, elements in self.controller_infos:
             ctrl = self.pool.createController(cls, name, *props)
             msg = 'Controller %s was not correctly created.' % name
@@ -157,6 +158,7 @@ if __name__ == '__main__':
 
     class BuiltinControllerLoadsTest(ControllerLoadsTestCase,
                                      unittest.TestCase):
+        """ """
 
         controller_classes = {
             'DummyMotorController': ('DummyMotorController',)
@@ -164,12 +166,14 @@ if __name__ == '__main__':
 
     class BuiltinControllerCreationTest(ControllerCreationTestCase,
                                         unittest.TestCase):
+        """ """
 
         controller_infos = [('DummyMotorController', 'unittest', ())
                             ]
 
     class BuiltinElementCreationTest(ElementCreationTestCase,
                                      unittest.TestCase):
+        """ """
         alias = get_free_alias(PyTango.Database(), "mot_test")
         controller_infos = [('DummyMotorController',
                              'unittest',

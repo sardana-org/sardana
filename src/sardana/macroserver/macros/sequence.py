@@ -51,13 +51,32 @@ class sequence(Macro):
     """This macro executes a sequence of macros. As a parameter
     it receives a string which is a xml structure. These macros which allow
     hooks can nest another sequence (xml structure). In such a case,
-    this macro is executed recursively."""
+    this macro is executed recursively.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['xml',   Type.String,   None, 'Xml string representing a sequence']
     ]
 
     def run(self, *pars):
+        """
+
+        Parameters
+        ----------
+        *pars :
+            
+
+        Returns
+        -------
+
+        """
         xmlDoc = xml.dom.minidom.parseString(pars[0])
         macros = self.parseXml(xmlDoc)
         for macro in macros:
@@ -65,6 +84,17 @@ class sequence(Macro):
 #            self.pausePoint()
 
     def parseXml(self, xmlDoc):
+        """
+
+        Parameters
+        ----------
+        xmlDoc :
+            
+
+        Returns
+        -------
+
+        """
         macros = []
         sequenceElement = xmlDoc.getElementsByTagName(TAG_SEQUENCE)[0]
         childElement = sequenceElement.firstChild
@@ -81,6 +111,17 @@ class sequence(Macro):
         return macros
 
     def parseMacro(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         name = str(xmlElement.getAttribute(ATTRIBUTE_NAME))
         params = (name,)
         hookElement = None
@@ -96,9 +137,31 @@ class sequence(Macro):
         return (params, hookElement)
 
     def parseParam(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         return (str(xmlElement.getAttribute(ATTRIBUTE_VALUE)),)
 
     def parseParamRepeat(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         params = ()
         childElement = xmlElement.firstChild
         while childElement:
@@ -108,6 +171,17 @@ class sequence(Macro):
         return params
 
     def parseRepeat(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         params = ()
         childElement = xmlElement.firstChild
         while childElement:

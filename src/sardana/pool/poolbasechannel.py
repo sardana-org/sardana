@@ -42,15 +42,22 @@ from sardana.sardanaevent import EventType
 from sardana.pool import AcqSynch, AcqMode
 
 class ValueBuffer(SardanaBuffer):
+    """ """
 
     def is_value_required(self, idx):
         """Check whether any of pseudo elements still still requires
         this value.
 
-        :param idx: value's index
-        :type idx: int
-        :return: whether value is required or can be freely removed
-        :rtype: bool
+        Parameters
+        ----------
+        idx : int
+            value's index
+
+        Returns
+        -------
+        bool
+            whether value is required or can be freely removed
+
         """
         for element in self.obj.get_pseudo_elements():
             if element.get_value_buffer().next_idx <= idx:
@@ -59,11 +66,25 @@ class ValueBuffer(SardanaBuffer):
 
 
 class Value(SardanaAttribute):
+    """ """
 
     def __init__(self, *args, **kwargs):
         super(Value, self).__init__(*args, **kwargs)
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or not self.has_value():
             value = self.obj.read_value()
             self.set_value(value, propagate=propagate)
@@ -71,31 +92,52 @@ class Value(SardanaAttribute):
 
 class ValueRefBuffer(SardanaBuffer):
     """Buffer for value refs.
-
+    
     .. note::
         The ValueRefBuffer class has been included in Sardana on a provisional
         basis. Backwards incompatible changes (up to and including removal
         of the class) may occur if deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     pass
 
 
 class ValueRef(SardanaAttribute):
     """Value ref attribute.
-
+    
     .. note::
         The ValueRef class has been included in Sardana on a provisional
         basis. Backwards incompatible changes (up to and including removal
         of the class) may occur if deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     pass
 
 
 class PoolBaseChannel(PoolElement):
     """Base class for Pool experimental channel
-
+    
     .. todo:: Value ref API should be exposed only on the channels which
         belongs to *referable* controllers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     ValueAttributeClass = Value
@@ -126,8 +168,14 @@ class PoolBaseChannel(PoolElement):
         """Informs whether this channel forms part of any pseudo element
         e.g. pseudo counter.
 
-        :return: has pseudo elements
-        :rtype: bool
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            has pseudo elements
+
         """
         return len(self._pseudo_elements) > 0
 
@@ -135,8 +183,14 @@ class PoolBaseChannel(PoolElement):
         """Returns list of pseudo elements e.g. pseudo counters that this
         channel belongs to.
 
-        :return: pseudo elements
-        :rtype: seq<:class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`>
+        Parameters
+        ----------
+
+        Returns
+        -------
+        seq<:class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`>
+            pseudo elements
+
         """
         return self._pseudo_elements
 
@@ -144,9 +198,14 @@ class PoolBaseChannel(PoolElement):
         """Adds pseudo element e.g. pseudo counter that this channel
         belongs to.
 
-        :param element: pseudo element
-        :type element:
-            :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        Parameters
+        ----------
+        element : class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+            pseudo element
+
+        Returns
+        -------
+
         """
         if not self.has_pseudo_elements():
             self.get_value_buffer().persistent = True
@@ -156,9 +215,14 @@ class PoolBaseChannel(PoolElement):
         """Removes pseudo element e.g. pseudo counters that this channel
         belongs to.
 
-        :param element: pseudo element
-        :type element:
-            :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        Parameters
+        ----------
+        element : class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+            pseudo element
+
+        Returns
+        -------
+
         """
 
         self._pseudo_elements.remove(element)
@@ -168,41 +232,69 @@ class PoolBaseChannel(PoolElement):
     def get_value_attribute(self):
         """Returns the value attribute object for this experiment channel
 
-        :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the value attribute
+
+        """
         return self._value
 
     def get_value_buffer(self):
         """Returns the value attribute object for this experiment channel
 
-        :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaBuffer`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaBuffer`
+            the value attribute
+
+        """
         return self._value_buffer
 
     def get_value_ref_attribute(self):
         """Returns the value attribute object for this experiment channel
-
+        
         .. note::
             The get_value_ref_attribute method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the value attribute
+
+        """
         return self._value_ref
 
     def get_value_ref_buffer(self):
         """Returns the value attribute object for this experiment channel
-
+        
         .. note::
             The get_value_ref_buffer method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaBuffer`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaBuffer`
+            the value attribute
+
+        """
         return self._value_ref_buffer
 
     # --------------------------------------------------------------------------
@@ -210,6 +302,21 @@ class PoolBaseChannel(PoolElement):
     # --------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # forward all events coming from attributes to the listeners
         self.fire_event(evt_type, evt_value)
 
@@ -218,6 +325,7 @@ class PoolBaseChannel(PoolElement):
     # --------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_value_attribute()
 
     # --------------------------------------------------------------------------
@@ -225,6 +333,7 @@ class PoolBaseChannel(PoolElement):
     # --------------------------------------------------------------------------
 
     def get_acquisition(self):
+        """ """
         return self.get_action_cache()
 
     acquisition = property(get_acquisition, doc="acquisition object")
@@ -236,28 +345,33 @@ class PoolBaseChannel(PoolElement):
     def read_value(self):
         """Reads the channel value from hardware.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanavalue.SardanaValue`
             a :class:`~sardana.sardanavalue.SardanaValue` containing the channel
             value
-        :rtype:
-            :class:`~sardana.sardanavalue.SardanaValue`"""
+
+        """
         return self.acquisition.read_value()[self]
 
     def put_value(self, value, quality=AttrQuality.Valid, propagate=1):
         """Sets a value.
 
-        :param value:
+        Parameters
+        ----------
+        value : class:`~sardana.sardanavalue.SardanaValue`
             the new value
-        :type value:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param quality:
-            the new quality
-        :type quality:
-            :class:`~sardana.AttrQuality`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
+        quality : class:`~sardana.AttrQuality`
+            the new quality (Default value = AttrQuality.Valid)
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         val_attr = self._value
         val_attr.set_quality(quality)
@@ -267,22 +381,36 @@ class PoolBaseChannel(PoolElement):
     def get_value(self, cache=True, propagate=1):
         """Returns the channel value.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the channel value
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         return self._get_value(cache=cache, propagate=propagate)
 
     def _get_value(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         value = self.get_value_attribute()
         value.update(cache=cache, propagate=propagate)
         return value
@@ -290,13 +418,29 @@ class PoolBaseChannel(PoolElement):
     def set_value(self, value):
         """Starts an acquisition on this channel
 
-        :param value:
+        Parameters
+        ----------
+        value : class:`~numbers.Number
             the value to count
-        :type value:
-            :class:`~numbers.Number`"""
+
+        Returns
+        -------
+
+        """
         return self._set_value(value)
 
     def _set_value(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.start_acquisition(value)
 
     value = property(get_value, set_value, doc="channel value")
@@ -311,13 +455,18 @@ class PoolBaseChannel(PoolElement):
         be added right after the last value in the buffer. Also update the read
         value of the attribute with the last element of values.
 
-        :param values:
+        Parameters
+        ----------
+        values : class:`~sardana.sardanavalue.SardanaValue`
             values to be added to the buffer
-        :type values:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        idx :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         if len(values) == 0:
             return
@@ -335,13 +484,18 @@ class PoolBaseChannel(PoolElement):
         be added with right after the last value in the buffer. Also update
         the read value.
 
-        :param value:
+        Parameters
+        ----------
+        value : class:`~sardana.sardanavalue.SardanaValue`
             value to be added to the buffer
-        :type value:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        idx :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         # fill value buffer
         val_buffer = self._value_buffer
@@ -352,6 +506,7 @@ class PoolBaseChannel(PoolElement):
         return val_buffer
 
     def clear_value_buffer(self):
+        """ """
         val_attr = self._value_buffer
         val_attr.clear()
 
@@ -361,36 +516,43 @@ class PoolBaseChannel(PoolElement):
 
     def read_value_ref(self):
         """Reads the channel value ref from hardware.
-
+        
         .. note::
             The read_value_ref method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanavalue.SardanaValue`
             a *sardana value* containing the channel value
-        :rtype:
-            :class:`~sardana.sardanavalue.SardanaValue`"""
+
+        """
         return self.acquisition.read_value_ref()[self]
 
     def put_value_ref(self, value_ref, propagate=1):
         """Sets a value ref.
-
+        
         .. note::
             The put_value_ref method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param value_ref:
+        Parameters
+        ----------
+        value_ref : class:`~sardana.sardanavalue.SardanaValue`
             the new value
-        :type value_ref:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         val_ref_attr = self._value_ref
         val_ref_attr.set_value(value_ref, propagate=propagate)
@@ -398,17 +560,22 @@ class PoolBaseChannel(PoolElement):
 
     def get_value_ref(self):
         """Returns the channel value ref.
-
+        
         .. note::
             The get_value_ref method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.SardanaValue`
             the channel value
-        :rtype:
-            :class:`~sardana.SardanaValue`"""
+
+        """
         value_ref_attr = self.get_value_ref_attribute()
         if not value_ref_attr.has_value():
             raise Exception("ValueRef not available: no successful"
@@ -426,23 +593,25 @@ class PoolBaseChannel(PoolElement):
         indexes starting with idx. If idx is omitted, then the new values will
         be added right after the last value ref in the buffer. Also update the
         read value ref of the attribute with the last element of values.
-
+        
         .. note::
             The extend_value_ref_buffer method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param value_refs:
+        Parameters
+        ----------
+        value_refs : class:`~sardana.sardanavalue.SardanaValue`
             values to be added to the buffer
-        :type value_refs:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param idx:
-            index at which to append the value_refs
-        :type idx: :obj:`int`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        idx : obj:`int`
+            index at which to append the value_refs (Default value = None)
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         if len(value_refs) == 0:
             return
@@ -456,27 +625,29 @@ class PoolBaseChannel(PoolElement):
 
     def append_value_ref_buffer(self, value_ref, idx=None, propagate=1):
         """Append new value ref to the value ref buffer at the idx position.
-
+        
         If idx is omitted, then the new value ref will be added right
         after the last value ref in the buffer.
         Also update the read value ref.
-
+        
         .. note::
             The append_value_ref_buffer method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param value_ref:
+        Parameters
+        ----------
+        value_ref : class:`~sardana.sardanavalue.SardanaValue`
             value ref to be added to the buffer
-        :type value_ref:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param idx:
-            index at which to append the value_ref
-        :type idx: :obj:`int`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        idx : obj:`int`
+            index at which to append the value_ref (Default value = None)
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         # fill value ref buffer
         val_ref_buffer = self._value_ref_buffer
@@ -488,12 +659,19 @@ class PoolBaseChannel(PoolElement):
 
     def clear_value_ref_buffer(self):
         """Clear value ref buffer.
-
+        
         .. note::
             The clear_value_ref_buffer method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         val_ref_attr = self._value_ref_buffer
         val_ref_attr.clear()
@@ -504,41 +682,60 @@ class PoolBaseChannel(PoolElement):
 
     def get_value_ref_pattern(self):
         """Returns the channel value reference pattern.
-
+        
         .. note::
             The get_value_ref_pattern method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
             the channel value
-        :rtype:
-            :obj:`str`
+
         """
         return self._value_ref_pattern
 
     def set_value_ref_pattern(self, value_ref_pattern, propagate=1):
         """Set a value reference pattern in the kernel (not in the hardware).
-
+        
         .. note::
             The set_value_ref_pattern method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param value_ref_pattern:
+        Parameters
+        ----------
+        value_ref_pattern : obj:`str`
             the new value reference pattern
-        :type value_ref_pattern:
-            :obj:`str`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            :obj:`int`
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         self._set_value_ref_pattern(value_ref_pattern, propagate=propagate)
 
     def _set_value_ref_pattern(self, value_ref_pattern, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value_ref_pattern :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._value_ref_pattern = value_ref_pattern
         if not propagate:
             return
@@ -556,42 +753,61 @@ class PoolBaseChannel(PoolElement):
 
     def is_value_ref_enabled(self):
         """Check if value reference is enabled.
-
+        
         .. note::
             The is_value_ref_enabled method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`bool`
             the channel value
-        :rtype:
-            :obj:`bool`
+
         """
         return self._value_ref_enabled
 
     def set_value_ref_enabled(self, value_ref_enabled, propagate=1):
         """Set value reference enabled flag in the kernel (not in the
         hardware).
-
+        
         .. note::
             The set_value_ref_enabled method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param value_ref_enabled:
+        Parameters
+        ----------
+        value_ref_enabled : obj:`bool`
             the new value reference enabled
-        :type value_ref_enabled:
-            :obj:`bool`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            :obj:`int`
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         self._set_value_ref_enabled(value_ref_enabled, propagate=propagate)
 
     def _set_value_ref_enabled(self, value_ref_enabled, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value_ref_enabled :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._value_ref_enabled = value_ref_enabled
         if not propagate:
             return
@@ -605,12 +821,19 @@ class PoolBaseChannel(PoolElement):
 
     def is_referable(self):
         """Check if channel has referable capability.
-
+        
         .. note::
             The is_referable method has been included in Sardana on
             a provisional basis. Backwards incompatible changes (up to and
             including removal of the class) may occur if deemed necessary by
             the core developers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self.controller.is_referable()
 
@@ -621,18 +844,30 @@ class PoolBaseChannel(PoolElement):
     def get_integration_time(self):
         """Return the integration time for this object.
 
-        :return: the current integration time
-        :rtype: :obj:`float`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`float`
+            the current integration time
+
+        """
         return self._integration_time
 
     def set_integration_time(self, integration_time, propagate=1):
         """Set the integration time for this object.
 
-        :param integration_time: integration time in seconds to set
-        :type integration_time: :obj:`float`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: :obj:`int`
+        Parameters
+        ----------
+        integration_time : obj:`float`
+            integration time in seconds to set
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         if integration_time == self._integration_time:
             # integration time is not changed. Do nothing
@@ -651,6 +886,7 @@ class PoolBaseChannel(PoolElement):
     # -------------------------------------------------------------------------
 
     def _get_shape_from_max_dim_size(self):
+        """ """
         # MaxDimSize could actually become a standard fallback
         # in case the shape controller parameters is not implemented
         # reconsider it whenever backwards compatibility with reading the value
@@ -668,12 +904,38 @@ class PoolBaseChannel(PoolElement):
         return shape
 
     def get_shape(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._shape is None:
             shape = self.read_shape()
             self._set_shape(shape, propagate=propagate)
         return self._shape
 
     def _set_shape(self, shape, propagate=1):
+        """
+
+        Parameters
+        ----------
+        shape :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._shape = shape
         if not propagate:
             return
@@ -681,6 +943,7 @@ class PoolBaseChannel(PoolElement):
             EventType("shape", priority=propagate), shape)
 
     def read_shape(self):
+        """ """
         try:
             shape = self.controller.get_axis_par(self.axis, "shape")
         except Exception:
@@ -712,6 +975,7 @@ class PoolBaseChannel(PoolElement):
     shape = property(get_shape, doc="channel value shape")
 
     def _prepare(self):
+        """ """
         # TODO: think of implementing the preparation in the software
         # acquisition action, similarly as it is done for the global
         # acquisition action
@@ -723,12 +987,14 @@ class PoolBaseChannel(PoolElement):
                                              self.value_ref_pattern)
 
     def start_acquisition(self):
+        """ """
         msg = "{0} does not support independent acquisition".format(
             self.__class__.__name__)
         raise NotImplementedError(msg)
 
 
 class PoolTimerableChannel(PoolBaseChannel):
+    """ """
 
     def __init__(self, **kwargs):
         PoolBaseChannel.__init__(self, **kwargs)
@@ -747,19 +1013,30 @@ class PoolTimerableChannel(PoolBaseChannel):
     def get_timer(self):
         """Return the timer for this object.
 
-        :return: the current timer
-        :rtype: :obj:`str`
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the current timer
+
         """
         return self._timer
 
     def set_timer(self, timer, propagate=1):
         """Set timer for this object.
 
-        :param timer: new timer to set
-        :type timer: :obj:`str`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: :obj:`int`
+        Parameters
+        ----------
+        timer : obj:`str`
+            new timer to set
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         if timer == self._timer:
             return
@@ -778,6 +1055,7 @@ class PoolTimerableChannel(PoolBaseChannel):
                      doc="timer for the timerable channel")
 
     def _configure_timer(self):
+        """ """
         timer = self.timer
         if timer == "__self":
             conf_timer = self._conf_channel
@@ -815,6 +1093,7 @@ class PoolTimerableChannel(PoolBaseChannel):
         self.acquisition.run(ctrls, self.integration_time, master, None)
 
     def _prepare(self):
+        """ """
         # TODO: think of implementing the preparation in the software
         # acquisition action, similarly as it is done for the global
         # acquisition action

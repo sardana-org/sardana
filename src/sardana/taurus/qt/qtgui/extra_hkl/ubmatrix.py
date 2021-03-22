@@ -60,6 +60,17 @@ class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def loadItems(self, items):
+        """
+
+        Parameters
+        ----------
+        items :
+            
+
+        Returns
+        -------
+
+        """
         all_items = [self.itemText(i) for i in range(self.count())]
         for crys in items:
             if crys not in all_items:
@@ -68,6 +79,7 @@ class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
 
 @UILoadable(with_ui="_ui")
 class UBMatrixBase(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -87,6 +99,7 @@ class UBMatrixBase(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'ubmatrix'
         ret['group'] = 'Taurus Containers'
@@ -95,6 +108,17 @@ class UBMatrixBase(TaurusWidget):
         return ret
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
 
         self.model = model
 
@@ -184,18 +208,52 @@ class UBMatrixBase(TaurusWidget):
 
     Qt.pyqtSlot('QString')
     def onEngineChanged(self, enginename):
+        """
+
+        Parameters
+        ----------
+        enginename :
+            
+
+        Returns
+        -------
+
+        """
         self.device.write_attribute("engine", str(enginename))
 
     Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
+        """
+
+        Parameters
+        ----------
+        modename :
+            
+
+        Returns
+        -------
+
+        """
         self.device.write_attribute("enginemode", str(modename))
 
     Qt.pyqtSlot('QString')
     def onCrystalChanged(self, crystalname):
+        """
+
+        Parameters
+        ----------
+        crystalname :
+            
+
+        Returns
+        -------
+
+        """
         if str(crystalname) != "":
             self.device.write_attribute("crystal", str(crystalname))
 
     def update_values(self):
+        """ """
         ub_values = self.device.ubmatrix
         self._ui.taurusub11value.setValue(ub_values[0][0])
         self._ui.taurusub12value.setValue(ub_values[0][1])
@@ -220,12 +278,14 @@ class UBMatrixBase(TaurusWidget):
         flag_update = 1
 
     def compute_ub(self):
+        """ """
         index = [0, 1]
 
         self.device.write_attribute("computeub", index)
         self.update_values()
 
     def reflections_list_window(self):
+        """ """
 
         reflections = self.device.reflectionlist
 
@@ -446,6 +506,7 @@ class UBMatrixBase(TaurusWidget):
         w.show()
 
     def edit_reflections_window(self):
+        """ """
 
         w = ReflectionsEditor()
         w.setModel(self.model)
@@ -453,16 +514,19 @@ class UBMatrixBase(TaurusWidget):
         w.show()
 
     def add_select_crystal(self):
+        """ """
         new_crystal = str(self._ui.NewCrystalLineEdit.text())
         self.device.write_attribute("AddCrystal", new_crystal)
         self.crystalscombobox.loadItems(self.device.crystallist)
         self.device.write_attribute("Crystal", new_crystal)
 
     def affine(self):
+        """ """
         self.device.write_attribute("affinecrystal", 1)
 
 
 def main():
+    """ """
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog  <model>"
     parser.set_description(

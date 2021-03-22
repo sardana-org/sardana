@@ -8,15 +8,33 @@ from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
 
 class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         SarTestTestCase.setUp(self)
         registerExtensions()
 
     def tearDown(self):
+        """ """
         SarTestTestCase.tearDown(self)
 
     def _assertResult(self, result, channels, expected_value):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+        channels :
+            
+        expected_value :
+            
+
+        Returns
+        -------
+
+        """
         expected_channels = list(channels)
         for channel, value in result.items():
             msg = "unexpected key: {}".format(channel)
@@ -27,6 +45,21 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
         self.assertEqual(len(expected_channels), 0, msg)
 
     def _assertMultipleResults(self, result, channels, expected_values):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+        channels :
+            
+        expected_values :
+            
+
+        Returns
+        -------
+
+        """
         expected_channels = list(channels)
         for (channel, value), expected_value in zip(result.items(),
                                                     expected_values):
@@ -40,6 +73,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_enabled(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                      "_test_2d_1_3",
                                      "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_2d_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -95,6 +145,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                     "_test_2d_1_3",
                                     "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_2d_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -150,6 +217,25 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
                                       "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_2d_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -198,6 +284,25 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
                                       "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_2d_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -272,6 +377,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                    "_test_ct_1_3",
                                    "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -317,6 +439,27 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
                                      "_test_ct_1_3", "_test_2d_1_1",
                                      '_test_2d_1_2',
                                      "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_2d_1_1" :
+            
+        '_test_2d_1_2' :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -357,6 +500,25 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                           "_test_ct_1_3", "_test_2d_1_1",
                                           "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_2d_1_1" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -405,6 +567,25 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_Synchronization(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                              "_test_ct_1_3", "_test_2d_1_1",
                                              "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_ct_1_1")
+        "_test_ct_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_2d_1_1" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -457,6 +638,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
                                              "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_2d_1_1")
+        "_test_2d_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -517,6 +715,23 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
     def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
                                              "_test_mt_1_3/position"]):
+        """
+
+        Parameters
+        ----------
+        elements :
+             (Default value = ["_test_2d_1_1")
+        "_test_2d_1_2" :
+            
+        "_test_ct_1_3" :
+            
+        "_test_mt_1_3/position"] :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)

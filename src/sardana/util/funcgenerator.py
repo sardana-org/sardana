@@ -35,24 +35,51 @@ from taurus.core.util.log import Logger
 
 
 def strictly_increasing(l):
-    """Check whether list l has strictly increasing values"""
+    """Check whether list l has strictly increasing values
+
+    Parameters
+    ----------
+    l :
+        
+
+    Returns
+    -------
+
+    """
     return all(x < y for x, y in zip(l, l[1:]))
 
 
 def strictly_decreasing(l):
-    """Check whether list l has strictly deacreasing values"""
+    """Check whether list l has strictly deacreasing values
+
+    Parameters
+    ----------
+    l :
+        
+
+    Returns
+    -------
+
+    """
     return all(x > y for x, y in zip(l, l[1:]))
 
 
 class FunctionGenerator(EventGenerator, Logger):
     """Generator of active and passive events describing a rectangular
     function.
-
+    
     .. note::
         The FunctionGenerator class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     MAX_NAP_TIME = 0.1
@@ -79,67 +106,173 @@ class FunctionGenerator(EventGenerator, Logger):
         self._start_fired = False
 
     def get_name(self):
+        """ """
         return self._name
 
     name = property(get_name)
 
     def set_initial_domain(self, domain):
+        """
+
+        Parameters
+        ----------
+        domain :
+            
+
+        Returns
+        -------
+
+        """
         self._initial_domain = domain
 
     def get_initial_domain(self):
+        """ """
         return self._initial_domain
 
     initial_domain = property(get_initial_domain, set_initial_domain)
 
     def set_active_domain(self, domain):
+        """
+
+        Parameters
+        ----------
+        domain :
+            
+
+        Returns
+        -------
+
+        """
         self._active_domain = domain
 
     def get_active_domain(self):
+        """ """
         return self._active_domain
 
     active_domain = property(get_active_domain, set_active_domain)
 
     def set_initial_domain_in_use(self, domain):
+        """
+
+        Parameters
+        ----------
+        domain :
+            
+
+        Returns
+        -------
+
+        """
         self._initial_domain_in_use = domain
 
     def get_initial_domain_in_use(self):
+        """ """
         return self._initial_domain_in_use
 
     initial_domain_in_use = property(get_initial_domain_in_use,
                                      set_initial_domain_in_use)
 
     def set_active_domain_in_use(self, domain):
+        """
+
+        Parameters
+        ----------
+        domain :
+            
+
+        Returns
+        -------
+
+        """
         self._active_domain_in_use = domain
 
     def get_active_domain_in_use(self):
+        """ """
         return self._active_domain_in_use
 
     active_domain_in_use = property(get_active_domain_in_use,
                                     set_active_domain_in_use)
 
     def add_active_event(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         self._active_events.append(event)
 
     def set_active_events(self, events):
+        """
+
+        Parameters
+        ----------
+        events :
+            
+
+        Returns
+        -------
+
+        """
         self._active_events = events
 
     def get_active_events(self):
+        """ """
         return self._active_events
 
     active_events = property(get_active_events, set_active_events)
 
     def add_passive_event(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         self._passive_events.append(event)
 
     def set_passive_events(self, events):
+        """
+
+        Parameters
+        ----------
+        events :
+            
+
+        Returns
+        -------
+
+        """
         self._passive_events = events
 
     def get_passive_events(self):
+        """ """
         return self._passive_events
 
     passive_events = property(get_passive_events, set_passive_events)
 
     def set_direction(self, direction):
+        """
+
+        Parameters
+        ----------
+        direction :
+            
+
+        Returns
+        -------
+
+        """
         self._direction = direction
         if direction == 1:
             self._condition = numpy.greater_equal
@@ -149,11 +282,25 @@ class FunctionGenerator(EventGenerator, Logger):
             raise ValueError("direction can be -1 or 1 (negative or positive)")
 
     def get_direction(self):
+        """ """
         return self._direction
 
     direction = property(get_direction, set_direction)
 
     def event_received(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         _, _, v = args
         if v.error:
             exc_info = v.exc_info
@@ -165,6 +312,7 @@ class FunctionGenerator(EventGenerator, Logger):
         self._position_event.set()
 
     def start(self):
+        """ """
         self._start_time = time.time()
         self._stopped = False
         self._started = True
@@ -175,18 +323,23 @@ class FunctionGenerator(EventGenerator, Logger):
         self.fire_event(EventType("state"), State.Moving)
 
     def stop(self):
+        """ """
         self._stopped = True
 
     def is_started(self):
+        """ """
         return self._started
 
     def is_stopped(self):
+        """ """
         return self._stopped
 
     def is_running(self):
+        """ """
         return self._running
 
     def run(self):
+        """ """
         self._running = True
         try:
             while len(self.active_events) > 0 and not self.is_stopped():
@@ -202,6 +355,17 @@ class FunctionGenerator(EventGenerator, Logger):
             self.fire_event(EventType("state"), State.On)
 
     def sleep(self, period):
+        """
+
+        Parameters
+        ----------
+        period :
+            
+
+        Returns
+        -------
+
+        """
         if period <= 0:
             return
         necessary_naps = int(math.ceil(period / self.MAX_NAP_TIME))
@@ -215,6 +379,7 @@ class FunctionGenerator(EventGenerator, Logger):
             time.sleep(nap)
 
     def fire_start(self):
+        """ """
         self.fire_event(EventType("start"), self._id)
         self._start_fired = True
         if self._id > 0:
@@ -222,6 +387,7 @@ class FunctionGenerator(EventGenerator, Logger):
             self.warning(msg)
 
     def wait_active(self):
+        """ """
         candidate = self.active_events[0]
         if self.initial_domain_in_use == SynchDomain.Time:
             now = time.time()
@@ -240,6 +406,7 @@ class FunctionGenerator(EventGenerator, Logger):
                     self._position_event.wait(self.MAX_NAP_TIME)
 
     def fire_active(self):
+        """ """
         # check if some events needs to be skipped
         i = 0
         while i < len(self.active_events) - 1:
@@ -261,6 +428,7 @@ class FunctionGenerator(EventGenerator, Logger):
         self.passive_events = self.passive_events[i:]
 
     def wait_passive(self):
+        """ """
         if self.active_domain_in_use == SynchDomain.Time:
             now = time.time()
             candidate = self._start_time + self.passive_events[0]
@@ -277,15 +445,28 @@ class FunctionGenerator(EventGenerator, Logger):
                         break
 
     def fire_passive(self):
+        """ """
         self.fire_event(EventType("passive"), self._id)
         self.set_passive_events(self.passive_events[1:])
         if len(self.passive_events) == 0:
             self.fire_end()
 
     def fire_end(self):
+        """ """
         self.fire_event(EventType("end"), self._id)
 
     def set_configuration(self, configuration):
+        """
+
+        Parameters
+        ----------
+        configuration :
+            
+
+        Returns
+        -------
+
+        """
         # make a copy since we may inject the initial time
         configuration = copy.deepcopy(configuration)
         active_events = []

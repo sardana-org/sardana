@@ -94,6 +94,17 @@ QUALITY = {
 
 
 def _is_referable(channel):
+    """
+
+    Parameters
+    ----------
+    channel :
+        
+
+    Returns
+    -------
+
+    """
     # Equivalent to ExpChannel.isReferable.
     # Use DeviceProxy instead of taurus to avoid crashes in Py3
     # See: tango-controls/pytango#292
@@ -103,25 +114,36 @@ def _is_referable(channel):
 
 
 class InterruptException(Exception):
+    """ """
     pass
 
 
 class StopException(InterruptException):
+    """ """
     pass
 
 
 class AbortException(InterruptException):
+    """ """
     pass
 
 
 class ReleaseException(InterruptException):
+    """ """
     pass
 
 
 class BaseElement(object):
-    """ The base class for elements in the Pool (Pool itself, Motor,
+    """The base class for elements in the Pool (Pool itself, Motor,
     ControllerClass, ExpChannel all should inherit from this class directly or
     indirectly)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __repr__(self):
@@ -132,6 +154,7 @@ class BaseElement(object):
         return self.getName()
 
     def serialize(self):
+        """ """
         return self.getPoolData()
 
     def str(self, n=0):
@@ -139,7 +162,15 @@ class BaseElement(object):
         'consistent' way.
         Default is to return <name>, <controller name>, <axis>
 
-        :param n: the number of elements in the tuple."""
+        Parameters
+        ----------
+        n :
+            the number of elements in the tuple (Default value = 0)
+
+        Returns
+        -------
+
+        """
         if n == 0:
             return CodecFactory.encode(('json'), self.serialize())
         return self._str_tuple[:n]
@@ -148,6 +179,7 @@ class BaseElement(object):
         return self.getPoolData()['full_name'] < o.getPoolData()['full_name']
 
     def getName(self):
+        """ """
         return self.getPoolData()['name']
 
     def getPoolObj(self):
@@ -160,6 +192,7 @@ class BaseElement(object):
 
 
 class ControllerClass(BaseElement):
+    """ """
     def __init__(self, **kw):
         self.__dict__.update(kw)
         self.path, self.f_name = os.path.split(self.file_name)
@@ -170,30 +203,39 @@ class ControllerClass(BaseElement):
         return "ControllerClass({0})".format(pd['full_name'])
 
     def getSimpleFileName(self):
+        """ """
         return self.f_name
 
     def getFileName(self):
+        """ """
         return self.file_name
 
     def getClassName(self):
+        """ """
         return self.getName()
 
     def getType(self):
+        """ """
         return self.getTypes()[0]
 
     def getTypes(self):
+        """ """
         return self.types
 
     def getLib(self):
+        """ """
         return self.f_name
 
     def getGender(self):
+        """ """
         return self.gender
 
     def getModel(self):
+        """ """
         return self.model
 
     def getOrganization(self):
+        """ """
         return self.organization
 
     def __lt__(self, o):
@@ -205,13 +247,16 @@ class ControllerClass(BaseElement):
 
 
 class ControllerLibrary(BaseElement):
+    """ """
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
     def getType(self):
+        """ """
         return self.getTypes()[0]
 
     def getTypes(self):
+        """ """
         return self.type
 
 
@@ -227,10 +272,25 @@ class TangoAttributeEG(Logger, EventGenerator):
         self._attr.addListener(self)
 
     def getAttribute(self):
+        """ """
         return self._attr
 
     def eventReceived(self, evt_src, evt_type, evt_value):
-        """Event handler from Taurus"""
+        """Event handler from Taurus
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type not in CHANGE_EVT_TYPES:
             return
         if evt_value is None:
@@ -242,6 +302,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         try:
             last_val = self._attr.read(cache=not force).rvalue
             if hasattr(last_val, "magnitude"):
@@ -254,6 +325,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         return EventGenerator.read(self)
 
     def readValue(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         r = self.read(force=force)
         if r is None:
             # do a retry
@@ -261,6 +343,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         return r
 
     def write(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._attr.write(value, with_read=False)
 
     def __getattr__(self, name):
@@ -268,7 +361,31 @@ class TangoAttributeEG(Logger, EventGenerator):
 
 
 def reservedOperation(fn):
+    """
+
+    Parameters
+    ----------
+    fn :
+        
+
+    Returns
+    -------
+
+    """
     def new_fn(*args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self = args[0]
         wr = self.getReservedWR()
         if wr is not None:
@@ -288,6 +405,19 @@ def reservedOperation(fn):
 
 
 def get_pool_for_device(db, device):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    device :
+        
+
+    Returns
+    -------
+
+    """
     server_devs = db.get_device_class_list(device.info().server_id)
     for dev_name, klass_name in zip(server_devs[0::2], server_devs[1::2]):
         if klass_name == "Pool":
@@ -316,10 +446,12 @@ class PoolElement(BaseElement, TangoDevice):
         self.getStateEG()
 
     def _find_pool_obj(self):
+        """ """
         pool = get_pool_for_device(self.getParentObj(), self.getDeviceProxy())
         return pool
 
     def _find_pool_data(self):
+        """ """
         pool = self._find_pool_obj()
         return pool.getElementInfo(self.getFullName())._data
 
@@ -329,6 +461,7 @@ class PoolElement(BaseElement, TangoDevice):
     # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
     # look for the pool object using the database information.
     def getPoolObj(self):
+        """ """
         try:
             return self._pool_obj
         except AttributeError:
@@ -341,6 +474,7 @@ class PoolElement(BaseElement, TangoDevice):
     # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
     # look for the pool object and its data using the database information.
     def getPoolData(self):
+        """ """
         try:
             return self._pool_data
         except AttributeError:
@@ -348,6 +482,7 @@ class PoolElement(BaseElement, TangoDevice):
             return self._pool_data
 
     def cleanUp(self):
+        """ """
         TangoDevice.cleanUp(self)
         self._reserved = None
         f = self.factory()
@@ -360,18 +495,52 @@ class PoolElement(BaseElement, TangoDevice):
             f.removeExistingAttribute(attr)
 
     def reserve(self, obj):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+
+        Returns
+        -------
+
+        """
         if obj is None:
             self._reserved = None
             return
         self._reserved = weakref.ref(obj, self._unreserveCB)
 
     def _unreserveCB(self, obj):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+
+        Returns
+        -------
+
+        """
         self.unreserve()
 
     def unreserve(self):
+        """ """
         self._reserved = None
 
     def isReserved(self, obj=None):
+        """
+
+        Parameters
+        ----------
+        obj :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if obj is None:
             return self._reserved is not None
         else:
@@ -379,31 +548,69 @@ class PoolElement(BaseElement, TangoDevice):
             return o == obj
 
     def getReservedWR(self):
+        """ """
         return self._reserved
 
     def getReserved(self):
+        """ """
         if self._reserved is None:
             return None
         return self._reserved()
 
     def dump_attributes(self):
+        """ """
         attr_names = self.get_attribute_list()
         req_id = self.read_attributes_asynch(attr_names)
         return self.read_attributes_reply(req_id, 2000)
 
     def _getAttrValue(self, name, force=False):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         attrEG = self._getAttrEG(name)
         if attrEG is None:
             return None
         return attrEG.readValue(force=force)
 
     def _getAttrEG(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         attrEG = self.getAttrEG(name)
         if attrEG is None:
             attrEG = self._createAttribute(name)
         return attrEG
 
     def _createAttribute(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         attrObj = self.getAttribute(name)
         if attrObj is None:
             self.warning("Unable to create attribute %s" % name)
@@ -413,6 +620,7 @@ class PoolElement(BaseElement, TangoDevice):
         return attrEG
 
     def _getEventWait(self):
+        """ """
         if self._evt_wait is None:
             # create an object that waits for attribute events.
             # each time we use it we have to connect and disconnect to an
@@ -421,43 +629,92 @@ class PoolElement(BaseElement, TangoDevice):
         return self._evt_wait
 
     def _clearEventWait(self):
+        """ """
         self._evt_wait = None
 
     def getStateEG(self):
+        """ """
         return self._getAttrEG('state')
 
     def getControllerName(self):
+        """ """
         return self.getControllerObj().name
 
     def getControllerObj(self):
+        """ """
         full_ctrl_name = self.getPoolData()['controller']
         return self.getPoolObj().getObj(full_ctrl_name, "Controller")
 
     def getAxis(self):
+        """ """
         return self.getPoolData()['axis']
 
     def getType(self):
+        """ """
         return self.getPoolData()['type']
 
     def waitReady(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.getStateEG().waitEvent(Moving, equal=False,
                                            timeout=timeout)
 
     def getAttrEG(self, name):
-        """Returns the TangoAttributeEG object"""
+        """Returns the TangoAttributeEG object
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self._attrEG.get(name)
 
     def getAttrObj(self, name):
-        """Returns the taurus.core.tangoattribute.TangoAttribute object"""
+        """Returns the taurus.core.tangoattribute.TangoAttribute object
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         attrEG = self._attrEG.get(name)
         if attrEG is None:
             return None
         return attrEG.getAttribute()
 
     def getInstrumentObj(self):
+        """ """
         return self._getAttrEG('instrument')
 
     def getInstrumentName(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         instr_name = self._getAttrValue('instrument', force=force)
         if not instr_name:
             return ''
@@ -465,9 +722,21 @@ class PoolElement(BaseElement, TangoDevice):
         return instr_name
 
     def setInstrumentName(self, instr_name):
+        """
+
+        Parameters
+        ----------
+        instr_name :
+            
+
+        Returns
+        -------
+
+        """
         self.getInstrumentObj().write(instr_name)
 
     def getInstrument(self):
+        """ """
         instr_name = self.getInstrumentName()
         if not instr_name:
             return None
@@ -475,6 +744,19 @@ class PoolElement(BaseElement, TangoDevice):
 
     @reservedOperation
     def start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
         try:
@@ -498,10 +780,16 @@ class PoolElement(BaseElement, TangoDevice):
     def waitFinish(self, timeout=None, id=None):
         """Wait for the operation to finish
 
-        :param timeout: optional timeout (seconds)
-        :type timeout: float
-        :param id: id of the opertation returned by start
-        :type id: tuple(float)
+        Parameters
+        ----------
+        timeout : float
+            optional timeout (seconds) (Default value = None)
+        id : tuple(float)
+            id of the opertation returned by start (Default value = None)
+
+        Returns
+        -------
+
         """
         if timeout is None:
             # 0.1 s of timeout with infinite retries facilitates aborting
@@ -526,6 +814,19 @@ class PoolElement(BaseElement, TangoDevice):
 
     @reservedOperation
     def go(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._total_go_time = 0
         start_time = time.time()
         eid = self.start(*args, **kwargs)
@@ -539,10 +840,31 @@ class PoolElement(BaseElement, TangoDevice):
 
     def getTotalLastGoTime(self):
         """Returns the time it took for last go operation, including dead time
-        to prepare, wait for events, etc"""
+        to prepare, wait for events, etc
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self._total_go_time
 
     def abort(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         state = self.getStateEG()
         state.lock()
         try:
@@ -553,6 +875,19 @@ class PoolElement(BaseElement, TangoDevice):
             state.unlock()
 
     def stop(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         state = self.getStateEG()
         state.lock()
         try:
@@ -563,10 +898,32 @@ class PoolElement(BaseElement, TangoDevice):
             state.unlock()
 
     def information(self, tab='    '):
+        """
+
+        Parameters
+        ----------
+        tab :
+             (Default value = '    ')
+
+        Returns
+        -------
+
+        """
         msg = self._information(tab=tab)
         return "\n".join(msg)
 
     def _information(self, tab='    '):
+        """
+
+        Parameters
+        ----------
+        tab :
+             (Default value = '    ')
+
+        Returns
+        -------
+
+        """
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
@@ -612,36 +969,73 @@ class PoolElement(BaseElement, TangoDevice):
 
 
 class Controller(PoolElement):
-    """ Class encapsulating Controller functionality."""
+    """Class encapsulating Controller functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
         self.call__init__(PoolElement, name, **kw)
 
     def getModuleName(self):
+        """ """
         return self.getPoolData()['module']
 
     def getClassName(self):
+        """ """
         return self.getPoolData()['klass']
 
     def getTypes(self):
+        """ """
         return self.getPoolData()['types']
 
     def getMainType(self):
+        """ """
         return self.getPoolData()['main_type']
 
     def addElement(self, elem):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+
+        Returns
+        -------
+
+        """
         axis = elem.getAxis()
         self._elems[axis] = elem
         self._last_axis = max(self._last_axis, axis)
 
     def removeElement(self, elem):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+
+        Returns
+        -------
+
+        """
         axis = elem.getAxis()
         del self._elems[elem.getAxis()]
         if axis == self._last_axis:
             self._last_axis = max(self._elems)
 
     def getElementByAxis(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pool = self.getPoolObj()
         for _, elem in \
                 list(pool.getElementsOfType(self.getMainType()).items()):
@@ -651,6 +1045,17 @@ class Controller(PoolElement):
             return elem
 
     def getElementByName(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         pool = self.getPoolObj()
         for _, elem in \
                 list(pool.getElementsOfType(self.getMainType()).items()):
@@ -662,8 +1067,14 @@ class Controller(PoolElement):
     def getUsedAxes(self):
         """Return axes in use by this controller
 
-        :return: list of axes
-        :rtype: list<int>
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<int>
+            list of axes
+
         """
 
         pool = self.getPoolObj()
@@ -678,8 +1089,14 @@ class Controller(PoolElement):
     def getLastUsedAxis(self):
         """Return the last used axis (the highest axis) in this controller
 
-        :return: last used axis
-        :rtype: int or None
+        Parameters
+        ----------
+
+        Returns
+        -------
+        int or None
+            last used axis
+
         """
         used_axes = self.getUsedAxes()
         if len(used_axes) == 0:
@@ -691,12 +1108,12 @@ class Controller(PoolElement):
 
 
 class ComChannel(PoolElement):
-    """ Class encapsulating CommunicationChannel functionality."""
+    """Class encapsulating CommunicationChannel functionality."""
     pass
 
 
 class ExpChannel(PoolElement):
-    """ Class encapsulating ExpChannel functionality."""
+    """Class encapsulating ExpChannel functionality."""
 
     def __init__(self, name, **kw):
         """ExpChannel initialization."""
@@ -716,20 +1133,45 @@ class ExpChannel(PoolElement):
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def isReferable(self):
+        """ """
         if "valueref" in list(map(str.lower, self.get_attribute_list())):
             return True
         return False
 
     def getIntegrationTime(self):
+        """ """
         return self._getAttrValue('IntegrationTime')
 
     def getIntegrationTimeObj(self):
+        """ """
         return self._getAttrEG('IntegrationTime')
 
     def setIntegrationTime(self, integ_time):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         self.getIntegrationTimeObj().write(integ_time)
 
     def putIntegrationTime(self, integ_time):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         if self._last_integ_time == integ_time:
             return
         self._last_integ_time = integ_time
@@ -738,24 +1180,54 @@ class ExpChannel(PoolElement):
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
 
-        :return: Value attribute event generator
-        :rtype: TangoAttributeEG
+        Parameters
+        ----------
 
-        ..todo:: When support to Taurus 3 will be dropped provide getValueObj.
-        Taurus 3 TaurusDevice class already uses this name.
+        Returns
+        -------
+        TangoAttributeEG
+
+..todo:: When support to Taurus 3 will be dropped provide getValueObj.
+Taurus 3 TaurusDevice class already uses this name.
+            Value attribute event generator
+
         """
         return self._getAttrEG('value')
 
     def getValue(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('value', force=force)
 
     def getValueBufferObj(self):
+        """ """
         return self._getAttrEG('valuebuffer')
 
     def getValueBuffer(self):
+        """ """
         return self._value_buffer
 
     def valueBufferChanged(self, value_buffer):
+        """
+
+        Parameters
+        ----------
+        value_buffer :
+            
+
+        Returns
+        -------
+
+        """
         if value_buffer is None:
             return
         _, value_buffer = self._value_buffer_codec.decode(value_buffer)
@@ -767,21 +1239,51 @@ class ExpChannel(PoolElement):
     def getValueRefObj(self):
         """Return ValueRef attribute event generator object.
 
-        :return: ValueRef attribute event generator
-        :rtype: TangoAttributeEG
+        Parameters
+        ----------
+
+        Returns
+        -------
+        TangoAttributeEG
+            ValueRef attribute event generator
+
         """
         return self._getAttrEG('value')
 
     def getValueRef(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('valueref', force=force)
 
     def getValueRefBufferObj(self):
+        """ """
         return self._getAttrEG('valuerefbuffer')
 
     def getValueRefBuffer(self):
+        """ """
         return self._value_ref_buffer
 
     def valueBufferRefChanged(self, value_ref_buffer):
+        """
+
+        Parameters
+        ----------
+        value_ref_buffer :
+            
+
+        Returns
+        -------
+
+        """
         if value_ref_buffer is None:
             return
         _, value_ref_buffer = self._value_ref_buffercodec.decode(
@@ -792,51 +1294,122 @@ class ExpChannel(PoolElement):
             self._value_ref_buffer[index] = value_ref
 
     def getValueRefPattern(self):
+        """ """
         return self._getAttrValue('ValueRefPattern')
 
     def getValueRefPatternObj(self):
+        """ """
         return self._getAttrEG('ValueRefPattern')
 
     def setValueRefPattern(self, value_ref_pattern):
+        """
+
+        Parameters
+        ----------
+        value_ref_pattern :
+            
+
+        Returns
+        -------
+
+        """
         self.getValueRefPatternObj().write(value_ref_pattern)
 
     def putValueRefPattern(self, value_ref_pattern):
+        """
+
+        Parameters
+        ----------
+        value_ref_pattern :
+            
+
+        Returns
+        -------
+
+        """
         if self._last_value_ref_pattern == value_ref_pattern:
             return
         self._last_value_ref_pattern = value_ref_pattern
         self.getValueRefPatternObj().write(value_ref_pattern)
 
     def isValueRefEnabled(self):
+        """ """
         return self._getAttrValue('ValueRefEnabled')
 
     def getValueRefEnabledObj(self):
+        """ """
         return self._getAttrEG('ValueRefEnabled')
 
     def setValueRefEnabled(self, value_ref_enabled):
+        """
+
+        Parameters
+        ----------
+        value_ref_enabled :
+            
+
+        Returns
+        -------
+
+        """
         self.getValueRefEnabledObj().write(value_ref_enabled)
 
     def putValueRefEnabled(self, value_ref_enabled):
+        """
+
+        Parameters
+        ----------
+        value_ref_enabled :
+            
+
+        Returns
+        -------
+
+        """
         if self._last_value_ref_enabled == value_ref_enabled:
             return
         self._last_value_ref_enabled = value_ref_enabled
         self.getValueRefEnabledObj().write(value_ref_enabled)
 
     def _start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.Start()
 
     def go(self, *args, **kwargs):
         """Count and report count result.
-
+        
         Configuration measurement, then start and wait until finish.
-
+        
         .. note::
             The count (go) method API is partially experimental (value
             references may be changed to values whenever possible in the
             future). Backwards incompatible changes may occur if deemed
             necessary by the core developers.
 
-        :return: state and value (or value reference - experimental)
-        :rtype: :obj:`tuple`
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+        obj:`tuple`
+            state and value (or value reference - experimental)
+
         """
         start_time = time.time()
         integration_time = args[0]
@@ -859,49 +1432,63 @@ class ExpChannel(PoolElement):
 
 
 class TimerableExpChannel(ExpChannel):
+    """ """
 
     def getTimer(self):
+        """ """
         return self._getAttrValue('Timer')
 
     def getTimerObj(self):
+        """ """
         return self._getAttrEG('Timer')
 
     def setTimer(self, timer):
+        """
+
+        Parameters
+        ----------
+        timer :
+            
+
+        Returns
+        -------
+
+        """
         self.getTimerObj().write(timer)
 
 
 class CTExpChannel(TimerableExpChannel):
-    """ Class encapsulating CTExpChannel functionality."""
+    """Class encapsulating CTExpChannel functionality."""
     pass
 
 
 class ZeroDExpChannel(ExpChannel):
-    """ Class encapsulating ZeroDExpChannel functionality."""
+    """Class encapsulating ZeroDExpChannel functionality."""
     pass
 
 
 class OneDExpChannel(TimerableExpChannel):
-    """ Class encapsulating OneDExpChannel functionality."""
+    """Class encapsulating OneDExpChannel functionality."""
     pass
 
 
 class TwoDExpChannel(TimerableExpChannel):
-    """ Class encapsulating TwoDExpChannel functionality."""
+    """Class encapsulating TwoDExpChannel functionality."""
     pass
 
 
 class PseudoCounter(ExpChannel):
-    """ Class encapsulating PseudoCounter functionality."""
+    """Class encapsulating PseudoCounter functionality."""
     pass
 
 
 class TriggerGate(PoolElement):
-    """ Class encapsulating TriggerGate functionality."""
+    """Class encapsulating TriggerGate functionality."""
     pass
 
 
 class Motor(PoolElement, Moveable):
-    """ Class encapsulating Motor functionality."""
+    """Class encapsulating Motor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
@@ -909,96 +1496,327 @@ class Motor(PoolElement, Moveable):
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('position', force=force)
 
     def getDialPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('dialposition', force=force)
 
     def getVelocity(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('velocity', force=force)
 
     def getAcceleration(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('acceleration', force=force)
 
     def getDeceleration(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('deceleration', force=force)
 
     def getBaseRate(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('base_rate', force=force)
 
     def getBacklash(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('backlash', force=force)
 
     def getLimitSwitches(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('limit_switches', force=force)
 
     def getOffset(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('offset', force=force)
 
     def getStepPerUnit(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('step_per_unit', force=force)
 
     def getSign(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('Sign', force=force)
 
     def getSimulationMode(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('SimulationMode', force=force)
 
     def getPositionObj(self):
+        """ """
         return self._getAttrEG('position')
 
     def getDialPositionObj(self):
+        """ """
         return self._getAttrEG('dialposition')
 
     def getVelocityObj(self):
+        """ """
         return self._getAttrEG('velocity')
 
     def getAccelerationObj(self):
+        """ """
         return self._getAttrEG('acceleration')
 
     def getDecelerationObj(self):
+        """ """
         return self._getAttrEG('deceleration')
 
     def getBaseRateObj(self):
+        """ """
         return self._getAttrEG('base_rate')
 
     def getBacklashObj(self):
+        """ """
         return self._getAttrEG('backlash')
 
     def getLimitSwitchesObj(self):
+        """ """
         return self._getAttrEG('limit_switches')
 
     def getOffsetObj(self):
+        """ """
         return self._getAttrEG('offset')
 
     def getStepPerUnitObj(self):
+        """ """
         return self._getAttrEG('step_per_unit')
 
     def getSimulationModeObj(self):
+        """ """
         return self._getAttrEG('step_per_unit')
 
     def setVelocity(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getVelocityObj().write(value)
 
     def setAcceleration(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getAccelerationObj().write(value)
 
     def setDeceleration(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getDecelerationObj().write(value)
 
     def setBaseRate(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getBaseRateObj().write(value)
 
     def setBacklash(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getBacklashObj().write(value)
 
     def setOffset(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getOffsetObj().write(value)
 
     def setStepPerUnit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getStepPerUnitObj().write(value)
 
     def setSign(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.getSignObj().write(value)
 
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -1006,6 +1824,19 @@ class Motor(PoolElement, Moveable):
     #
 
     def _start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         new_pos = args[0]
         if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
@@ -1020,6 +1851,19 @@ class Motor(PoolElement, Moveable):
         self.final_pos = new_pos
 
     def go(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         start_time = time.time()
         PoolElement.go(self, *args, **kwargs)
         ret = self.getStateEG().readValue(), self.readPosition()
@@ -1034,6 +1878,19 @@ class Motor(PoolElement, Moveable):
 
     @reservedOperation
     def iterMove(self, new_pos, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         state, pos = self.getAttribute("state"), self.getAttribute("position")
@@ -1075,15 +1932,39 @@ class Motor(PoolElement, Moveable):
             evt_iter_wait.disconnect()
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return [self.getPosition(force=force)]
 
     def getMoveableSource(self):
+        """ """
         return self.getPoolObj()
 
     def getSize(self):
+        """ """
         return 1
 
     def getIndex(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if name.lower() == self.getName().lower():
             return 0
         return -1
@@ -1093,6 +1974,17 @@ class Motor(PoolElement, Moveable):
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
+        """
+
+        Parameters
+        ----------
+        tab :
+             (Default value = '    ')
+
+        Returns
+        -------
+
+        """
         msg = PoolElement._information(self, tab=tab)
         try:
             position = self.read_attribute("position")
@@ -1114,7 +2006,7 @@ class Motor(PoolElement, Moveable):
 
 
 class PseudoMotor(PoolElement, Moveable):
-    """ Class encapsulating PseudoMotor functionality."""
+    """Class encapsulating PseudoMotor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
@@ -1122,15 +2014,39 @@ class PseudoMotor(PoolElement, Moveable):
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('position', force=force)
 
     def getDialPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self.getPosition(force=force)
 
     def getPositionObj(self):
+        """ """
         return self._getAttrEG('position')
 
     def getDialPositionObj(self):
+        """ """
         return self.getPositionObj()
 
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -1138,6 +2054,19 @@ class PseudoMotor(PoolElement, Moveable):
     #
 
     def _start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         new_pos = args[0]
         if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
@@ -1152,6 +2081,19 @@ class PseudoMotor(PoolElement, Moveable):
         self.final_pos = new_pos
 
     def go(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         start_time = time.time()
         PoolElement.go(self, *args, **kwargs)
         ret = self.getStateEG().readValue(), self.readPosition()
@@ -1165,15 +2107,39 @@ class PseudoMotor(PoolElement, Moveable):
     getTotalLastMotionTime = PoolElement.getTotalLastGoTime
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return [self.getPosition(force=force)]
 
     def getMoveableSource(self):
+        """ """
         return self.getPoolObj()
 
     def getSize(self):
+        """ """
         return 1
 
     def getIndex(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if name.lower() == self.getName().lower():
             return 0
         return -1
@@ -1183,6 +2149,17 @@ class PseudoMotor(PoolElement, Moveable):
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
+        """
+
+        Parameters
+        ----------
+        tab :
+             (Default value = '    ')
+
+        Returns
+        -------
+
+        """
         msg = PoolElement._information(self, tab=tab)
         try:
             position = self.read_attribute("position")
@@ -1204,7 +2181,7 @@ class PseudoMotor(PoolElement, Moveable):
 
 
 class MotorGroup(PoolElement, Moveable):
-    """ Class encapsulating MotorGroup functionality."""
+    """Class encapsulating MotorGroup functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
@@ -1212,19 +2189,44 @@ class MotorGroup(PoolElement, Moveable):
         self.call__init__(Moveable)
 
     def _create_str_tuple(self):
+        """ """
         return 3 * ["TODO"]
 
     def getMotorNames(self):
+        """ """
         return self.getPoolData()['elements']
 
     def hasMotor(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         motor_names = list(map(str.lower, self.getMotorNames()))
         return name.lower() in motor_names
 
     def getPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('position', force=force)
 
     def getPositionObj(self):
+        """ """
         return self._getAttrEG('position')
 
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -1232,6 +2234,19 @@ class MotorGroup(PoolElement, Moveable):
     #
 
     def _start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         new_pos = args[0]
         try:
             self.write_attribute('position', new_pos)
@@ -1244,6 +2259,19 @@ class MotorGroup(PoolElement, Moveable):
         self.final_pos = new_pos
 
     def go(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         start_time = time.time()
         PoolElement.go(self, *args, **kwargs)
         ret = self.getStateEG().readValue(), self.readPosition()
@@ -1257,15 +2285,39 @@ class MotorGroup(PoolElement, Moveable):
     getTotalLastMotionTime = PoolElement.getTotalLastGoTime
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self.getPosition(force=force)
 
     def getMoveableSource(self):
+        """ """
         return self.getPoolObj()
 
     def getSize(self):
+        """ """
         return len(self.getMotorNames())
 
     def getIndex(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             motor_names = list(map(str.lower, self.getMotorNames()))
             return motor_names.index(name.lower())
@@ -1277,6 +2329,17 @@ class MotorGroup(PoolElement, Moveable):
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
+        """
+
+        Parameters
+        ----------
+        tab :
+             (Default value = '    ')
+
+        Returns
+        -------
+
+        """
         msg = PoolElement._information(self, tab=tab)
         try:
             position = self.read_attribute("position")
@@ -1298,6 +2361,7 @@ class MotorGroup(PoolElement, Moveable):
 
 
 class BaseChannelInfo(object):
+    """ """
     def __init__(self, data):
         # dict<str, obj>
         # channel data
@@ -1306,15 +2370,28 @@ class BaseChannelInfo(object):
 
 
 class TangoChannelInfo(BaseChannelInfo):
+    """ """
     def __init__(self, data, info):
         BaseChannelInfo.__init__(self, data)
         # PyTango.AttributeInfoEx
         self.set_info(info)
 
     def has_info(self):
+        """ """
         return self.raw_info is not None
 
     def set_info(self, info):
+        """
+
+        Parameters
+        ----------
+        info :
+            
+
+        Returns
+        -------
+
+        """
         self.raw_info = info
 
         if info is None:
@@ -1353,19 +2430,28 @@ class TangoChannelInfo(BaseChannelInfo):
 
 
 def getChannelConfigs(mgconfig, ctrls=None, sort=True):
-    '''
-    gets a list of channel configurations of the controllers of the given
+    """gets a list of channel configurations of the controllers of the given
     measurement group configuration. It optionally filters to those channels
     matching given lists of controller.
 
-    :param ctrls: (seq<str> or None) a sequence of strings to filter the
-                  controllers. If None given, all controllers will be used
-    :param sort: (bool) If True (default) the returned list will be sorted
-                 according to channel index (if given in channeldata) and
-                 then by channelname.
+    Parameters
+    ----------
+    ctrls :
+        seq<str> or None) a sequence of strings to filter the
+        controllers. If None given, all controllers will be used (Default value = None)
+    sort :
+        bool) If True (default) the returned list will be sorted
+        according to channel index (if given in channeldata) and
+        then by channelname.
+    mgconfig :
+        
 
-    :return: (list<tuple>) A list of channelname,channeldata pairs.
-    '''
+    Returns
+    -------
+    type
+        list<tuple>) A list of channelname,channeldata pairs.
+
+    """
     chconfigs = []
     if not mgconfig:
         return []
@@ -1385,6 +2471,7 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 
 
 class MGConfiguration(object):
+    """ """
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
         self._raw_data = None
@@ -1393,6 +2480,19 @@ class MGConfiguration(object):
         self.set_data(data)
 
     def set_data(self, data, force=False):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
         # where key is a device name and value is a list with two elements:
         #  - A device proxy or None if there was an error building it
@@ -1501,6 +2601,7 @@ class MGConfiguration(object):
                 self.controller_list_name.append(ctrl)
 
     def _build(self):
+        """ """
         # internal channel structure that groups channels by tango device so
         # they can be read as a group minimizing this way the network requests
         self.tango_dev_channels = tg_dev_chs = CaselessDict()
@@ -1566,12 +2667,24 @@ class MGConfiguration(object):
                 tg_chs_info[channel_name] = dev_name, attr_name, attr_info
 
     def _build_empty_tango_attr_info(self, channel_data):
+        """
+
+        Parameters
+        ----------
+        channel_data :
+            
+
+        Returns
+        -------
+
+        """
         ret = PyTango.AttributeInfoEx()
         ret.name = channel_data['name']
         ret.label = channel_data['label']
         return ret
 
     def prepare(self):
+        """ """
         # first time? build everything
         if self.tango_dev_channels is None:
             return self._build()
@@ -1603,9 +2716,21 @@ class MGConfiguration(object):
                     pass
 
     def getChannels(self):
+        """ """
         return self.channel_list
 
     def getChannelInfo(self, channel_name):
+        """
+
+        Parameters
+        ----------
+        channel_name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self.tango_channels_info[channel_name]
         except Exception:
@@ -1624,10 +2749,16 @@ class MGConfiguration(object):
             - attribute information or None if there was an error trying to get
               the information
 
-        :param only_enabled: flag to filter out disabled channels
-        :type only_enabled: bool
-        :return: dictionary with channels info
-        :rtype: dict<str, tuple<str, str, TangoChannelInfo>>
+        Parameters
+        ----------
+        only_enabled : bool
+            flag to filter out disabled channels (Default value = False)
+
+        Returns
+        -------
+        dict<str, tuple<str, str, TangoChannelInfo>>
+            dictionary with channels info
+
         """
         self.prepare()
         ret = CaselessDict(self.tango_channels_info)
@@ -1641,10 +2772,16 @@ class MGConfiguration(object):
         """Returns information about the channels present in the measurement
         group in a form of ordered, based on the channel index, list.
 
-        :param only_enabled: flag to filter out disabled channels
-        :type only_enabled: bool
-        :return: list with channels info
-        :rtype: list<TangoChannelInfo>
+        Parameters
+        ----------
+        only_enabled : bool
+            flag to filter out disabled channels (Default value = False)
+
+        Returns
+        -------
+        list<TangoChannelInfo>
+            list with channels info
+
         """
         channels_info = self.getChannelsInfo(only_enabled=only_enabled)
         ret = []
@@ -1654,6 +2791,7 @@ class MGConfiguration(object):
         return ret
 
     def getCountersInfoList(self):
+        """ """
         channels_info = self.getChannelsInfoList()
         timer_name, idx = self.timer, -1
         for i, ch in enumerate(channels_info):
@@ -1672,10 +2810,16 @@ class MGConfiguration(object):
             - A dict where keys are attribute names and value is a reference to
               a dict representing channel data as received in raw data
 
-        :param only_enabled: flag to filter out disabled channels
-        :type only_enabled: bool
-        :return: dict with Tango channels
-        :rtype: dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
+        Parameters
+        ----------
+        only_enabled : bool
+            flag to filter out disabled channels (Default value = False)
+
+        Returns
+        -------
+        dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
+            dict with Tango channels
+
         """
         if not only_enabled:
             return self.tango_dev_channels
@@ -1689,11 +2833,23 @@ class MGConfiguration(object):
         return tango_dev_channels
 
     def read(self, parallel=True):
+        """
+
+        Parameters
+        ----------
+        parallel :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         if parallel:
             return self._read_parallel()
         return self._read()
 
     def _read_parallel(self):
+        """ """
         self.prepare()
         ret = CaselessDict(self.cache)
         dev_replies = {}
@@ -1729,6 +2885,7 @@ class MGConfiguration(object):
         return ret
 
     def _read(self):
+        """ """
         self.prepare()
         ret = CaselessDict(self.cache)
         tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
@@ -1749,6 +2906,17 @@ class MGConfiguration(object):
         return ret
 
     def _get_channel_data(self, channel_name):
+        """
+
+        Parameters
+        ----------
+        channel_name :
+            
+
+        Returns
+        -------
+
+        """
         if channel_name in self.channels_names:
             return self.channels_names[channel_name]
         elif channel_name in self.channels_labels:
@@ -1770,6 +2938,17 @@ class MGConfiguration(object):
         return data
 
     def _get_ctrl_data(self, ctrl_name):
+        """
+
+        Parameters
+        ----------
+        ctrl_name :
+            
+
+        Returns
+        -------
+
+        """
         if ctrl_name in self.controllers_names:
             return self.controllers_names[ctrl_name]
         elif ctrl_name in self.controllers:
@@ -1787,6 +2966,23 @@ class MGConfiguration(object):
 
     def _set_channels_key(self, key, value, channels_names=None,
                           apply_cfg=True):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        value :
+            
+        channels_names :
+             (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
 
         self._local_changes = True
         if channels_names is None:
@@ -1803,9 +2999,21 @@ class MGConfiguration(object):
             self.applyConfiguration()
 
     def _get_channels_key(self, key, channels_names=None, use_fullname=False):
-        """
-        Helper method to return the value for one channel configuration key,
+        """Helper method to return the value for one channel configuration key,
         if the key does not exist the value will be None.
+
+        Parameters
+        ----------
+        key :
+            
+        channels_names :
+             (Default value = None)
+        use_fullname :
+             (Default value = False)
+
+        Returns
+        -------
+
         """
         result = collections.OrderedDict({})
 
@@ -1834,6 +3042,23 @@ class MGConfiguration(object):
         return result
 
     def _set_ctrls_key(self, key, value, ctrls_names=None, apply_cfg=True):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        value :
+            
+        ctrls_names :
+             (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         self._local_changes = True
         if ctrls_names is None:
             ctrls_names = self.controllers.keys()
@@ -1847,9 +3072,21 @@ class MGConfiguration(object):
             self.applyConfiguration()
 
     def _get_ctrls_key(self, key, ctrls_names=None, use_fullname=False):
-        """
-        Helper method to return the value for one controller configuration key,
+        """Helper method to return the value for one controller configuration key,
         if the key does not exist the value will be None.
+
+        Parameters
+        ----------
+        key :
+            
+        ctrls_names :
+             (Default value = None)
+        use_fullname :
+             (Default value = False)
+
+        Returns
+        -------
+
         """
         result = collections.OrderedDict({})
         if ctrls_names is None:
@@ -1881,6 +3118,19 @@ class MGConfiguration(object):
         return result
 
     def _get_ctrl_for_channel(self, channels_names, unique=False):
+        """
+
+        Parameters
+        ----------
+        channels_names :
+            
+        unique :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         result = collections.OrderedDict({})
 
         if channels_names is None:
@@ -1900,6 +3150,19 @@ class MGConfiguration(object):
         return result
 
     def _get_ctrl_channels(self, ctrl, use_fullname=False):
+        """
+
+        Parameters
+        ----------
+        ctrl :
+            
+        use_fullname :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         idx_channel = {}
         if ctrl not in self.controllers_channels:
             ctrl = self.controllers_alias[ctrl]
@@ -1918,6 +3181,19 @@ class MGConfiguration(object):
         return channels
 
     def _get_channels_for_element(self, element, use_fullname=False):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        use_fullname :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         channels = []
         if element in self.controllers_channels:
             channels += self._get_ctrl_channels(element, use_fullname)
@@ -1926,6 +3202,17 @@ class MGConfiguration(object):
         return channels
 
     def _get_ctrl_for_element(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         if element in self.controllers_channels:
             ctrl = element
         else:
@@ -1935,6 +3222,17 @@ class MGConfiguration(object):
         return ctrl
 
     def applyConfiguration(self, timeout=3):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = 3)
+
+        Returns
+        -------
+
+        """
         if not self._local_changes:
             return
         if self._pending_event_data is not None:
@@ -1958,13 +3256,21 @@ class MGConfiguration(object):
     def _getValueRefEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
-        :param channels: (seq<str>) a list of channels names to get the
-        Enabled info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            seq<str>) a list of channels names to get the
+            Enabled info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return a OrderedDict where the key are the channels and value the
+            Enabled state (Default value = False)
 
-        :return a OrderedDict where the key are the channels and value the
-        Enabled state
+        Returns
+        -------
+
         """
 
         return self._get_channels_key('value_ref_enabled', channels,
@@ -1974,22 +3280,40 @@ class MGConfiguration(object):
                                     apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
-        :param state: <bool> The state of the channels to be set.
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+        Parameters
+        ----------
+        state :
+            bool> The state of the channels to be set.
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         self._set_channels_key('value_ref_enabled', state, channels, apply_cfg)
 
     def _getValueRefPatternChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
-        :param channels: (seq<str>) a list of channels names to get the
-        Enabled info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            seq<str>) a list of channels names to get the
+            Enabled info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return a OrderedDict where the key are the channels and value the
+            Enabled state (Default value = False)
 
-        :return a OrderedDict where the key are the channels and value the
-        Enabled state
+        Returns
+        -------
+
         """
 
         return self._get_channels_key('value_ref_pattern', channels,
@@ -1999,9 +3323,19 @@ class MGConfiguration(object):
                                     apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
-        :param pattern: <str> The state of the channels to be set.
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+        Parameters
+        ----------
+        pattern :
+            str> The state of the channels to be set.
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         self._set_channels_key('value_ref_pattern', pattern, channels,
                                apply_cfg)
@@ -2009,13 +3343,21 @@ class MGConfiguration(object):
     def _getEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
-        :param channels: (seq<str>) a list of channels names to get the
-        Enabled info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            seq<str>) a list of channels names to get the
+            Enabled info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return a OrderedDict where the key are the channels and value the
+            Enabled state (Default value = False)
 
-        :return a OrderedDict where the key are the channels and value the
-        Enabled state
+        Returns
+        -------
+
         """
 
         return self._get_channels_key('enabled', channels, use_fullname)
@@ -2023,22 +3365,40 @@ class MGConfiguration(object):
     def _setEnabledChannels(self, state, channels=None, apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
-        :param state: <bool> The state of the channels to be set.
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+        Parameters
+        ----------
+        state :
+            bool> The state of the channels to be set.
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         self._set_channels_key('enabled', state, channels, apply_cfg)
 
     def _getOutputChannels(self, channels=None, use_fullname=False):
         """get the output State of the channels.
 
-        :param channels: (list<str>) a string indicating the channel name,
-        in case of None, it will return all the Outputs Info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            list<str>) a string indicating the channel name,
+            in case of None, it will return all the Outputs Info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return a OrderedDict where keys are channel names and
+            value the Outputs configuration (Default value = False)
 
-        :return a OrderedDict where keys are channel names and
-        value the Outputs configuration
+        Returns
+        -------
+
         """
 
         return self._get_channels_key('output', channels, use_fullname)
@@ -2046,9 +3406,19 @@ class MGConfiguration(object):
     def _setOutputChannels(self, state, channels=None, apply_cfg=True):
         """Set the Output state of the indicated channels.
 
-        :param state: (bool) Indicate the state of the output.
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
+        Parameters
+        ----------
+        state :
+            bool) Indicate the state of the output.
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
 
         self._set_channels_key('output', state, channels, apply_cfg)
@@ -2057,13 +3427,21 @@ class MGConfiguration(object):
         """get the Plot Type for the channel indicated. In case of empty
         channel value it will return  all the Plot Type Info
 
-        :param channels: (list<str>) Indicate the channel to return the
-        Plot Type Info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            list<str>) Indicate the channel to return the
+            Plot Type Info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return  a OrderedDict where keys are channel names and
+            value the plot axes info (Default value = False)
 
-        :return  a OrderedDict where keys are channel names and
-        value the plot axes info
+        Returns
+        -------
+
         """
         # TODO: Change to return enum value SEP12
         return self._get_channels_key('plot_type', channels, use_fullname)
@@ -2071,9 +3449,19 @@ class MGConfiguration(object):
     def _setPlotTypeChannels(self, ptype, channels=None, apply_cfg=True):
         """Set the Plot Type for the indicated channels.
 
-        :param ptype: <str> string indicating the type name
-        :param channels: (seq<str>) a list of strings indicating the channels
-        to apply the PlotType
+        Parameters
+        ----------
+        ptype :
+            str> string indicating the type name
+        channels :
+            seq<str>) a list of strings indicating the channels
+            to apply the PlotType (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
 
         msg_error = 'Wrong value! PlotType allowed: ' \
@@ -2098,13 +3486,21 @@ class MGConfiguration(object):
         """get the PlotAxes for the channel indicated. In case of empty channel
         value it will return  all the PlotAxes Info
 
-        :param channels: (list<str>) Indicate the channel to return the
-        PlotAxes Info
-        :param use_fullname: (bool) returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        channels :
+            list<str>) Indicate the channel to return the
+            PlotAxes Info (Default value = None)
+        use_fullname :
+            bool) returns a full name instead sardana
+            element name
+            
+            :return  a OrderedDict where keys are channel names and
+            value the plot axes info (Default value = False)
 
-        :return  a OrderedDict where keys are channel names and
-        value the plot axes info
+        Returns
+        -------
+
         """
 
         return self._get_channels_key('plot_axes', channels, use_fullname)
@@ -2112,9 +3508,19 @@ class MGConfiguration(object):
     def _setPlotAxesChannels(self, axes, channels_names=None, apply_cfg=True):
         """Set the PlotAxes for the indicated channels.
 
-        :param axes: <seq(str)> string indicating the axis name
-        :param channels_names: (seq<str>) a list of strings indicating the
-        channels to apply the PlotAxes
+        Parameters
+        ----------
+        axes :
+            seq(str)> string indicating the axis name
+        channels_names :
+            seq<str>) a list of strings indicating the
+            channels to apply the PlotAxes (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         # Validate axes values
         for i, value in enumerate(axes):
@@ -2145,13 +3551,21 @@ class MGConfiguration(object):
     def _getCtrlsTimer(self, ctrls=None, use_fullname=False):
         """get the acquisition Timer.
 
-        :param ctrls: <list(str)> list of Controllers names to get the timer
-        info
-        :param use_fullname: <bool> returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        ctrls :
+            list(str)> list of Controllers names to get the timer
+            info (Default value = None)
+        use_fullname :
+            bool> returns a full name instead sardana
+            element name
+            
+            :return a OrderedDict where keys are controller names and
+            value the Timer Info (Default value = False)
 
-        :return a OrderedDict where keys are controller names and
-        value the Timer Info
+        Returns
+        -------
+
         """
 
         return self._get_ctrls_key('timer', ctrls, use_fullname)
@@ -2160,7 +3574,19 @@ class MGConfiguration(object):
         """Set the acquisition Timer to the controllers compatibles,
         it finds the controller comptible with this timer and set it
         .
-        :param timer_name: <str> strings indicating the timer name
+
+        Parameters
+        ----------
+        timer_name :
+            str> strings indicating the timer name
+        timers :
+            
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         result = self._get_ctrl_for_channel(timers, unique=True)
         meas_ctrl = self.channels[self.timer]['_controller_name']
@@ -2175,12 +3601,20 @@ class MGConfiguration(object):
         """get the Monitor for the channel indicated. In case of empty channel
         value it will return  all the Monitor Info
 
-        :param ctrls: <str> Indicate the controllers to return the Monitor Info
-        :param use_fullname: <bool> returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        ctrls :
+            str> Indicate the controllers to return the Monitor Info (Default value = None)
+        use_fullname :
+            bool> returns a full name instead sardana
+            element name
+            
+            :return  a OrderedDict where keys are channel names and
+            value the Monitor Info (Default value = False)
 
-        :return  a OrderedDict where keys are channel names and
-        value the Monitor Info
+        Returns
+        -------
+
         """
 
         return self._get_ctrls_key('monitor', ctrls, use_fullname)
@@ -2189,9 +3623,19 @@ class MGConfiguration(object):
         """Set the Monitor for to the controllers compatibles,
         it finds the controller comptible with this timer and set it
 
-        :param monitors: (seq<str>) a list of strings indicating the channels
-        to apply the monitor
-        :param monitor: <str> string indicating the monitor name
+        Parameters
+        ----------
+        monitors :
+            seq<str>) a list of strings indicating the channels
+            to apply the monitor
+        monitor :
+            str> string indicating the monitor name
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
 
         result = self._get_ctrl_for_channel(monitors, unique=True)
@@ -2207,13 +3651,23 @@ class MGConfiguration(object):
         """get the Synchronization for the channel indicated. In case of empty
         ctrl value it will return  all the Synchronization Info
 
-        :param ctrl: <str> Indicate the controllers to return the
-        Synchronization Info
-        :param use_fullname: <bool> returns a full name instead sardana
-        element name
+        Parameters
+        ----------
+        ctrl :
+            str> Indicate the controllers to return the
+            Synchronization Info
+        use_fullname :
+            bool> returns a full name instead sardana
+            element name
+            
+            :return  a OrderedDict where keys are controllers names and
+            value the Synchronization Info (Default value = False)
+        ctrls :
+             (Default value = None)
 
-        :return  a OrderedDict where keys are controllers names and
-        value the Synchronization Info
+        Returns
+        -------
+
         """
 
         return self._get_ctrls_key('synchronization', ctrls, use_fullname)
@@ -2222,10 +3676,20 @@ class MGConfiguration(object):
                                  apply_cfg=True):
         """Set the Synchronization to the indicated controllers.
 
-        :param synchronization: <str> string indicating the synchronization
-        :param ctrls: (seq<str>) a list of strings indicating the channels
-        to apply the Synchronization
-        name
+        Parameters
+        ----------
+        synchronization :
+            str> string indicating the synchronization
+        ctrls :
+            seq<str>) a list of strings indicating the channels
+            to apply the Synchronization
+            name (Default value = None)
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         msg_error = 'Wrong value! Synchronization allowed: ' \
                     '{0}'.format(AcqSynchType.keys())
@@ -2251,12 +3715,20 @@ class MGConfiguration(object):
         """get the synchronizer for the channel indicated. In case of empty
         channel value it will return  all the Synchronizers Info
 
-        :param ctrls: <str> Indicate the controllers to return the
-        Synchronizer Info
-        :param use_fullname: <bool> returns a full name instead sardana
-        element name
-        :return  a OrderedDict where keys are controllers names and
-        value the synchronizer info
+        Parameters
+        ----------
+        ctrls :
+            str> Indicate the controllers to return the
+            Synchronizer Info (Default value = None)
+        use_fullname :
+            bool> returns a full name instead sardana
+            element name
+            :return  a OrderedDict where keys are controllers names and
+            value the synchronizer info (Default value = False)
+
+        Returns
+        -------
+
         """
 
         return self._get_ctrls_key('synchronizer', ctrls, use_fullname)
@@ -2265,9 +3737,21 @@ class MGConfiguration(object):
         """Set the synchronizer for the indicated controollers. In case of
         empty ctrls value it will be applied to all the controllers
 
-        :param syncronizer: <str> string indicating the synchronizer name
-        :param ctrls: (seq<str>) a list of strings indicating the
-        controllers to apply the synchronizer
+        Parameters
+        ----------
+        syncronizer :
+            str> string indicating the synchronizer name
+        ctrls :
+            seq<str>) a list of strings indicating the
+            controllers to apply the synchronizer (Default value = None)
+        synchronizer :
+            
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         if synchronizer == 'software':
             pass
@@ -2281,61 +3765,108 @@ class MGConfiguration(object):
         self._set_ctrls_key('synchronizer', synchronizer, ctrls, apply_cfg)
 
     def _getTimerName(self):
+        """ """
         return self._getTimer()['name']
 
     def _getTimer(self):
+        """ """
         return self.channels[self.timer]
 
     def _getTimerValue(self):
+        """ """
         return self._getTimerName()
 
     def _getMonitorName(self):
+        """ """
         return self._getMonitor()['name']
 
     def _getMonitor(self):
+        """ """
         return self.channels[self.monitor]
 
     def getValues(self, parallel=True):
+        """
+
+        Parameters
+        ----------
+        parallel :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self.read(parallel=parallel)
 
     def _getCounters(self):
+        """ """
         return [c for c in self.getChannels() if c['full_name'] != self.timer]
 
     def _getChannelNames(self):
+        """ """
         return [ch['name'] for ch in self.getChannels()]
 
     def _getCounterNames(self):
+        """ """
         return [ch['name'] for ch in self.getCounters()]
 
     def _getChannelLabels(self):
+        """ """
         return [ch['label'] for ch in self.getChannels()]
 
     def _getCounterLabels(self):
+        """ """
         return [ch['label'] for ch in self.getCounters()]
 
     def _getChannel(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.channels[name]
 
     def getChannelsEnabledInfo(self):
-        """
-        Returns information about **only enabled** channels present in the
+        """Returns information about **only enabled** channels present in the
         measurement group in a form of ordered, based on the channel index,
         list.
 
-        :return: list with channels info
-        :rtype: list<TangoChannelInfo>
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<TangoChannelInfo>
+            list with channels info
+
         """
         return self.getChannelsInfoList(only_enabled=True)
 
     def getCountersInfo(self):
+        """ """
         return self.getCountersInfoList()
 
     def setTimer(self, timer, apply_cfg=True):
         """DEPRECATED: Set the Global Timer to the measurement group.
-
+        
         Also it changes the timer in the controllers with the previous timer.
 
-        :param timer: <str> timer name
+        Parameters
+        ----------
+        timer :
+            str> timer name
+        apply_cfg :
+             (Default value = True)
+
+        Returns
+        -------
+
         """
         self._mg().warning("setTimer() is deprecated since 3.0.3. "
                            "Global measurement group timer does not exist")
@@ -2364,7 +3895,7 @@ class MGConfiguration(object):
 
 class MeasurementGroup(PoolElement):
     """MeasurementGroup Sardana-Taurus extension.
-
+    
     Setting configuration parameters using e.g.,
     `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled` or
     `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setTimer`, etc.
@@ -2376,11 +3907,18 @@ class MeasurementGroup(PoolElement):
     setting of the last parameter should use ``apply=True`` or use
     `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.applyConfiguration`
     afterwards::
-
+    
         # or in a macro use: meas_grp = self.getMeasurementGroup("mntgrp01")
         meas_grp = taurus.Device("mntgrp01")
         meas_grp.setEnabled(False, apply=False)
         meas_grp.setEnabled(True, "ct01", "ct02")
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, name, **kw):
@@ -2405,36 +3943,87 @@ class MeasurementGroup(PoolElement):
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def cleanUp(self):
+        """ """
         PoolElement.cleanUp(self)
         f = self.factory()
         f.removeExistingAttribute(self.__cfg_attr)
 
     def _create_str_tuple(self):
+        """ """
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
 
     def getConfigurationAttrEG(self):
+        """ """
         return self._getAttrEG('Configuration')
 
     def setConfiguration(self, configuration):
+        """
+
+        Parameters
+        ----------
+        configuration :
+            
+
+        Returns
+        -------
+
+        """
         self._flg_event.clear()
         codec = CodecFactory().getCodec('json')
         f, data = codec.encode(('', configuration))
         self.write_attribute('configuration', data)
 
     def _setConfiguration(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         if self._configuration is None:
             self._configuration = MGConfiguration(self, data)
         else:
             self._configuration.set_data(data)
 
     def getConfiguration(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if force or self._configuration is None:
             data = self.getConfigurationAttrEG().readValue(force=True)
             self._setConfiguration(data)
         return self._configuration
 
     def on_configuration_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
@@ -2442,6 +4031,7 @@ class MeasurementGroup(PoolElement):
         self._flg_event.set()
 
     def getValueBuffers(self):
+        """ """
         value_buffers = []
         for channel_info in self.getChannels():
             channel = Device(channel_info["full_name"])
@@ -2449,42 +4039,103 @@ class MeasurementGroup(PoolElement):
         return value_buffers
 
     def getIntegrationTime(self):
+        """ """
         return self._getAttrValue('IntegrationTime')
 
     def getIntegrationTimeObj(self):
+        """ """
         return self._getAttrEG('IntegrationTime')
 
     def setIntegrationTime(self, ctime):
+        """
+
+        Parameters
+        ----------
+        ctime :
+            
+
+        Returns
+        -------
+
+        """
         self.getIntegrationTimeObj().write(ctime)
 
     def putIntegrationTime(self, ctime):
+        """
+
+        Parameters
+        ----------
+        ctime :
+            
+
+        Returns
+        -------
+
+        """
         if self._last_integ_time == ctime:
             return
         self.getIntegrationTimeObj().write(ctime)
         self._last_integ_time = ctime
 
     def getAcquisitionModeObj(self):
+        """ """
         return self._getAttrEG('AcquisitionMode')
 
     def getAcquisitionMode(self):
+        """ """
         return self._getAttrValue('AcquisitionMode')
 
     def setAcquisitionMode(self, acqMode):
+        """
+
+        Parameters
+        ----------
+        acqMode :
+            
+
+        Returns
+        -------
+
+        """
         self.getAcquisitionModeObj().write(acqMode)
 
     def getSynchDescriptionObj(self):
+        """ """
         return self._getAttrEG('SynchDescription')
 
     def getSynchDescription(self):
+        """ """
         return self._getAttrValue('SynchDescription')
 
     def setSynchDescription(self, synch_description):
+        """
+
+        Parameters
+        ----------
+        synch_description :
+            
+
+        Returns
+        -------
+
+        """
         codec = CodecFactory().getCodec('json')
         _, data = codec.encode(('', synch_description))
         self.getSynchDescriptionObj().write(data)
         self._last_integ_time = None
 
     def _get_channels_for_elements(self, elements):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         if not elements:
             return None
         config = self.getConfiguration()
@@ -2494,6 +4145,17 @@ class MeasurementGroup(PoolElement):
         return channels
 
     def _get_ctrl_for_elements(self, elements):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         if not elements:
             return None
         ctrls = []
@@ -2507,19 +4169,27 @@ class MeasurementGroup(PoolElement):
 
     def setOutput(self, output, *elements, apply=True):
         """Set the output configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the output
         on the controller means setting it to all channels of this controller
         present in this measurement group.
 
-        :param output: `True` - output enabled, `False` - output disabled
-        :type output: bool
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        output : bool
+            True` - output enabled, `False` - output disabled
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2528,23 +4198,31 @@ class MeasurementGroup(PoolElement):
 
     def getOutput(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the output
         from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, bool)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, bool)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2552,19 +4230,27 @@ class MeasurementGroup(PoolElement):
 
     def setEnabled(self, enabled, *elements, apply=True):
         """Set the enabled configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the enabled
         on the controller means setting it to all channels of this controller
         present in this measurement group.
 
-        :param enabled: `True` - element enabled, `False` - element disabled
-        :type enabled: bool
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        enabled : bool
+            True` - element enabled, `False` - element disabled
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2573,23 +4259,31 @@ class MeasurementGroup(PoolElement):
 
     def getEnabled(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the enabled
         from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, bool)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, bool)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2597,19 +4291,27 @@ class MeasurementGroup(PoolElement):
 
     def setPlotType(self, plot_type, *elements, apply=True):
         """Set the enabled configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the plot
         type on the controller means setting it to all channels of this
         controller present in this measurement group.
 
-        :param plot_type: 'No'/0 , 'Spectrum'/1, 'Image'/2
-        :type plot_type: str or int
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        plot_type : str or int
+            No'/0 , 'Spectrum'/1, 'Image'/2
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2618,23 +4320,31 @@ class MeasurementGroup(PoolElement):
 
     def getPlotType(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the plot
         type from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, int)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, int)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2645,19 +4355,27 @@ class MeasurementGroup(PoolElement):
 
     def setPlotAxes(self, plot_axes, *elements, apply=True):
         """Set the enabled configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the plot
         axes on the controller means setting it to all channels of this
         controller present in this measurement group.
 
-        :param plot_axes: ['<mov>'] / ['<mov>', '<idx>']
-        :type plot_axes: list(str)
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        plot_axes : list(str)
+            mov>'] / ['<mov>', '<idx>']
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2666,23 +4384,31 @@ class MeasurementGroup(PoolElement):
 
     def getPlotAxes(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the plot
         axes from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, str)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, str)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2691,19 +4417,27 @@ class MeasurementGroup(PoolElement):
 
     def setValueRefEnabled(self, value_ref_enabled, *elements, apply=True):
         """Set the output configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the value
         reference enabled on the controller means setting it to all channels
         of this controller present in this measurement group.
 
-        :param value_ref_enabled: `True` - enabled, `False` - disabled
-        :type value_ref_enabled: bool
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        value_ref_enabled : bool
+            True` - enabled, `False` - disabled
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2713,23 +4447,31 @@ class MeasurementGroup(PoolElement):
 
     def getValueRefEnabled(self, *elements, ret_full_name=False):
         """Get the value reference enabled configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the value
         from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, bool)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, bool)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2738,19 +4480,27 @@ class MeasurementGroup(PoolElement):
 
     def setValueRefPattern(self, value_ref_pattern, *elements, apply=True):
         """Set the output configuration for the given elements.
-
+        
         Channels and controllers are accepted as elements. Setting the value
         reference pattern on the controller means setting it to all channels
         of this controller present in this measurement group.
 
-        :param value_ref_pattern: `/path/file{index:03d}.txt`
-        :type value_ref_pattern: :py:obj:`str`
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        value_ref_pattern : py:obj:`str`
+            path/file{index:03d}.txt`
+        elements : list(str)
+            sequence of element names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
 
         channels = self._get_channels_for_elements(elements)
@@ -2760,23 +4510,31 @@ class MeasurementGroup(PoolElement):
 
     def getValueRefPattern(self, *elements, ret_full_name=False):
         """Get the value reference enabled configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the value
         from the controller means getting it from all channels of this
         controller present in this measurement group.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, str)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their output
             configurations. Note that even if the *elements* contained
             controllers, the returned configuration will always contain
             only channels.
-        :rtype: dict(str, str)
+
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
@@ -2784,6 +4542,21 @@ class MeasurementGroup(PoolElement):
                                                   use_fullname=ret_full_name)
 
     def _get_value_per_channel(self, config, ctrls_values, use_fullname=False):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+        ctrls_values :
+            
+        use_fullname :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         channels_values = collections.OrderedDict({})
         for ctrl, value in ctrls_values.items():
             for channel in config._get_ctrl_channels(ctrl, use_fullname):
@@ -2793,19 +4566,27 @@ class MeasurementGroup(PoolElement):
     def setTimer(self, timer, *elements, apply=True):
         """Set the timer configuration for the given channels of the same
         controller.
-
+        
         .. note:: Currently the controller's timer must be unique. Hence this
            method will set it for the whole controller regardless of the
            ``elements`` argument.
 
-        :param timer: channel use as timer
-        :type timer: :py:obj:`str`
-        :param elements: sequence of channels names or full names, no elements
+        Parameters
+        ----------
+        timer : py:obj:`str`
+            channel use as timer
+        elements : list(str)
+            sequence of channels names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
         config = self.getConfiguration()
         # TODO: Implement solution to set the timer per channel when it is
@@ -2814,25 +4595,33 @@ class MeasurementGroup(PoolElement):
 
     def getTimer(self, *elements, ret_full_name=False, ret_by_ctrl=False):
         """Get the timer configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the output
         from the controller means getting it from all channels of this
         controller present in this measurement group, unless
         `ret_by_ctrl=True`.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :param ret_by_ctrl: whether keys in the returned dictionary are
+        ret_by_ctrl : bool
+            whether keys in the returned dictionary are
             controllers or channels (default: `False` means return channels)
-        :type ret_by_ctrl: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, str)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their timer
             configurations
-        :rtype: dict(str, str)
+
         """
         # TODO: Implement solution to set the timer per channel when it is
         #  allowed.
@@ -2848,19 +4637,27 @@ class MeasurementGroup(PoolElement):
     def setMonitor(self, monitor, *elements, apply=True):
         """Set the monitor configuration for the given channels of the same
         controller.
-
+        
         .. note:: Currently the controller's monitor must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
 
-        :param monitor: channel use as monitor
-        :type monitor: :py:obj:`str`
-        :param elements: sequence of channels names or full names, no elements
+        Parameters
+        ----------
+        monitor : py:obj:`str`
+            channel use as monitor
+        elements : list(str)
+            sequence of channels names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
         config = self.getConfiguration()
         # TODO: Implement solution to set the moniotor per channel when it is
@@ -2869,25 +4666,33 @@ class MeasurementGroup(PoolElement):
 
     def getMonitor(self, *elements, ret_full_name=False, ret_by_ctrl=False):
         """Get the monitor configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the output
         from the controller means getting it from all channels of this
         controller present in this measurement group, unless
         `ret_by_ctrl=True`.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :param ret_by_ctrl: whether keys in the returned dictionary are
+        ret_by_ctrl : bool
+            whether keys in the returned dictionary are
             controllers or channels (default: `False` means return channels)
-        :type ret_by_ctrl: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, str)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their monitor
             configurations
-        :rtype: dict(str, str)
+
         """
         # TODO: Implement solution to set the timer per channel when it is
         #  allowed.
@@ -2904,19 +4709,27 @@ class MeasurementGroup(PoolElement):
     def setSynchronizer(self, synchronizer, *elements, apply=True):
         """Set the synchronizer configuration for the given channels or
         controller.
-
+        
         .. note:: Currently the controller's synchronizer must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
 
-        :param synchronizer: triger/gate element name or software
-        :type synchronizer: :py:obj:`str`
-        :param elements: sequence of channels names or full names, no elements
+        Parameters
+        ----------
+        synchronizer : py:obj:`str`
+            triger/gate element name or software
+        elements : list(str)
+            sequence of channels names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
         config = self.getConfiguration()
         # TODO: Implement solution to set the timer per channel when it is
@@ -2927,25 +4740,33 @@ class MeasurementGroup(PoolElement):
     def getSynchronizer(self, *elements, ret_full_name=False,
                         ret_by_ctrl=False):
         """Get the synchronizer configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the output
         from the controller means getting it from all channels of this
         controller present in this measurement group, unless
         `ret_by_ctrl=True`.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :param ret_by_ctrl: whether keys in the returned dictionary are
+        ret_by_ctrl : bool
+            whether keys in the returned dictionary are
             controllers or channels (default: `False` means return channels)
-        :type ret_by_ctrl: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict(str, str)
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their synchronizer
             configurations
-        :rtype: dict(str, str)
+
         """
         # TODO: Implement solution to set the synchronizer per channel when it
         #  is allowed.
@@ -2962,20 +4783,28 @@ class MeasurementGroup(PoolElement):
     def setSynchronization(self, synchronization, *elements, apply=True):
         """Set the synchronization configuration for the given channels or
         controller.
-
+        
         .. note:: Currently the controller's synchronization must be unique.
            Hence this method will set it for the whole controller regardless of
            the ``elements`` argument.
 
-        :param synchronization: synchronization type e.g. Trigger, Gate or
-          Start
-        :type synchronization: `sardana.pool.AcqSynchType`
-        :param elements: sequence of channels names or full names, no elements
+        Parameters
+        ----------
+        synchronization : sardana.pool.AcqSynchType`
+            synchronization type e.g. Trigger, Gate or
+            Start
+        elements : list(str)
+            sequence of channels names or full names, no elements
             means set to all
-        :type elements: list(str)
-        :param apply: `True` - apply on the server, `False` - do not apply yet
+        apply : bool
+            True` - apply on the server, `False` - do not apply yet
             on the server and keep locally (default: `True`)
-        :type apply: bool
+        *elements :
+            
+
+        Returns
+        -------
+
         """
         config = self.getConfiguration()
         # TODO: Implement solution to set the synchronization per channel when
@@ -2987,25 +4816,33 @@ class MeasurementGroup(PoolElement):
     def getSynchronization(self, *elements, ret_full_name=False,
                            ret_by_ctrl=False):
         """Get the synchronization configuration of the given elements.
-
+        
         Channels and controllers are accepted as elements. Getting the output
         from the controller means getting it from all channels of this
         controller present in this measurement group, unless
         `ret_by_ctrl=True`.
 
-        :param elements: sequence of element names or full names, no elements
+        Parameters
+        ----------
+        elements : list(str)
+            sequence of element names or full names, no elements
             means get from all
-        :type elements: list(str)
-        :param ret_full_name: whether keys in the returned dictionary are
+        ret_full_name : bool
+            whether keys in the returned dictionary are
             full names or names (default: `False` means return names)
-        :type ret_full_name: bool
-        :param ret_by_ctrl: whether keys in the returned dictionary are
+        ret_by_ctrl : bool
+            whether keys in the returned dictionary are
             controllers or channels (default: `False` means return channels)
-        :type ret_by_ctrl: bool
-        :return: ordered dictionary where keys are **channel** names (or full
+        *elements :
+            
+
+        Returns
+        -------
+        dict<`str`, `sardana.pool.AcqSynchType`>
+            ordered dictionary where keys are **channel** names (or full
             names if `ret_full_name=True`) and values are their
             synchronization configurations
-        :rtype: dict<`str`, `sardana.pool.AcqSynchType`>
+
         """
         # TODO: Implement solution to set the synchronization per channel
         #  when it is allowed.
@@ -3021,7 +4858,7 @@ class MeasurementGroup(PoolElement):
 
     def applyConfiguration(self):
         """Apply configuration changes kept locally on the server.
-
+        
         Setting configuration parameters using e.g.,
         `~sardana.taurus.core.tango.sardana.pool.MeasurementGroup.setEnabled`
         or
@@ -3029,6 +4866,13 @@ class MeasurementGroup(PoolElement):
         etc.
         with ``apply=False`` keeps the changes locally. Use this method to
         apply them on the server afterwards.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         self.getConfiguration().applyConfiguration()
 
@@ -3039,39 +4883,86 @@ class MeasurementGroup(PoolElement):
         """Returns information about **only enabled** channels present in the
         measurement group in a form of ordered, based on the channel index,
         list.
-        :return: list with channels info
-        :rtype: list<TangoChannelInfo>
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<TangoChannelInfo>
+            list with channels info
+
         """
         return self.getConfiguration().getChannelsInfoList(only_enabled=True)
 
     def getCountersInfo(self):
+        """ """
         return self.getConfiguration().getCountersInfoList()
 
     def getValues(self, parallel=True):
+        """
+
+        Parameters
+        ----------
+        parallel :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self.getConfiguration().getValues(parallel)
 
     def getChannels(self):
+        """ """
         return self.getConfiguration().getChannels()
 
     def getCounters(self):
+        """ """
         return self.getConfiguration()._getCounters()
 
     def getChannelNames(self):
+        """ """
         return self.getConfiguration()._getChannelNames()
 
     def getCounterNames(self):
+        """ """
         return self.getConfiguration()._getCounterNames()
 
     def getChannelLabels(self):
+        """ """
         return self.getConfiguration()._getChannelLabels()
 
     def getCounterLabels(self):
+        """ """
         return self.getConfiguration()._getCounterLabels()
 
     def getChannel(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getConfiguration()._getChannel(name)
 
     def getChannelInfo(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getConfiguration().getChannelInfo(name)
 
     #########################################################################
@@ -3101,48 +4992,90 @@ class MeasurementGroup(PoolElement):
         return self.getConfiguration()._getTimerValue()
 
     def enableChannels(self, channels):
-        '''DEPRECATED: Enable acquisition of the indicated channels.
+        """DEPRECATED: Enable acquisition of the indicated channels.
 
-        :param channels: (seq<str>) a sequence of strings indicating
-           channel names
-        '''
+        Parameters
+        ----------
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names
+
+        Returns
+        -------
+
+        """
         self.warning("enableChannels() in deprecated since 3.0.3. "
                      "Use setEnabled() instead.")
         self.setEnabled(True, *channels)
 
     def disableChannels(self, channels):
-        '''DEPRECATED: Disable acquisition of the indicated channels.
+        """DEPRECATED: Disable acquisition of the indicated channels.
 
-        :param channels: (seq<str>) a sequence of strings indicating
-           channel names
-        '''
+        Parameters
+        ----------
+        channels :
+            seq<str>) a sequence of strings indicating
+            channel names
+
+        Returns
+        -------
+
+        """
         self.warning("enableChannels() in deprecated since 3.0.3. "
                      "Use setEnabled() instead.")
         self.setEnabled(False, *channels)
 
     # NbStarts Methods
     def getNbStartsObj(self):
+        """ """
         return self._getAttrEG('NbStarts')
 
     def setNbStarts(self, starts):
+        """
+
+        Parameters
+        ----------
+        starts :
+            
+
+        Returns
+        -------
+
+        """
         self.getNbStartsObj().write(starts)
 
     def getNbStarts(self):
+        """ """
         return self._getAttrValue('NbStarts')
 
     def getMoveableObj(self):
+        """ """
         return self._getAttrEG('Moveable')
 
     def getMoveable(self):
+        """ """
         return self._getAttrValue('Moveable')
 
     def getLatencyTimeObj(self):
+        """ """
         return self._getAttrEG('LatencyTime')
 
     def getLatencyTime(self):
+        """ """
         return self._getAttrValue('LatencyTime')
 
     def setMoveable(self, moveable=None):
+        """
+
+        Parameters
+        ----------
+        moveable :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if moveable is None:
             moveable = 'None'  # Tango attribute is of type DevString
         self.getMoveableObj().write(moveable)
@@ -3151,11 +5084,17 @@ class MeasurementGroup(PoolElement):
         """Receive value buffer updates, pre-process them, and call
         the subscribed callback.
 
-        :param channel: channel that reports value buffer update
-        :type channel: ExpChannel
-        :param value_buffer: json encoded value buffer update, it contains
+        Parameters
+        ----------
+        channel : ExpChannel
+            channel that reports value buffer update
+        value_buffer : obj:`str`
+            json encoded value buffer update, it contains
             at least values and indexes
-        :type value_buffer: :obj:`str`
+
+        Returns
+        -------
+
         """
         if value_buffer is None:
             return
@@ -3171,9 +5110,15 @@ class MeasurementGroup(PoolElement):
         callback is passed, the default channel's callback is subscribed which
         will store the data in the channel's value_buffer attribute.
 
-        :param cb: callback to be subscribed, None means subscribe the default
+        Parameters
+        ----------
+        cb : callable
+            callback to be subscribed, None means subscribe the default
             channel's callback
-        :type cb: callable
+
+        Returns
+        -------
+
         """
         self._value_buffer_channels = []
         for channel_info in self.getChannels():
@@ -3198,9 +5143,15 @@ class MeasurementGroup(PoolElement):
         """Unsubscribe from channels' value buffer events. If no callback is
         passed, unsubscribe the channel's default callback.
 
-        :param cb: callback to be unsubscribed, None means unsubscribe the
+        Parameters
+        ----------
+        cb : callable
+            callback to be unsubscribed, None means unsubscribe the
             default channel's callback
-        :type cb: callable
+
+        Returns
+        -------
+
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
@@ -3223,11 +5174,17 @@ class MeasurementGroup(PoolElement):
         """Receive value ref buffer updates, pre-process them, and call
         the subscribed callback.
 
-        :param channel: channel that reports value ref buffer update
-        :type channel: ExpChannel
-        :param value_ref_buffer: json encoded value ref buffer update,
+        Parameters
+        ----------
+        channel : ExpChannel
+            channel that reports value ref buffer update
+        value_ref_buffer : obj:`str`
+            json encoded value ref buffer update,
             it contains at least value refs and indexes
-        :type value_ref_buffer: :obj:`str`
+
+        Returns
+        -------
+
         """
         if value_ref_buffer is None:
             return
@@ -3240,9 +5197,15 @@ class MeasurementGroup(PoolElement):
         callback is passed, the default channel's callback is subscribed which
         will store the data in the channel's value_buffer attribute.
 
-        :param cb: callback to be subscribed, None means subscribe the default
+        Parameters
+        ----------
+        cb : callable
+            callback to be subscribed, None means subscribe the default
             channel's callback
-        :type cb: callable
+
+        Returns
+        -------
+
         """
         self._value_ref_buffer_channels = []
         for channel_info in self.getChannels():
@@ -3269,9 +5232,15 @@ class MeasurementGroup(PoolElement):
         """Unsubscribe from channels' value ref buffer events. If no
         callback is passed, unsubscribe the channel's default callback.
 
-        :param cb: callback to be unsubscribed, None means unsubscribe the
+        Parameters
+        ----------
+        cb : callable
+            callback to be unsubscribed, None means unsubscribe the
             default channel's callback
-        :type cb: callable
+
+        Returns
+        -------
+
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
@@ -3294,6 +5263,19 @@ class MeasurementGroup(PoolElement):
         self._value_ref_buffer_channels = None
 
     def _start(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self.Start()
         except DevFailed as e:
@@ -3306,25 +5288,32 @@ class MeasurementGroup(PoolElement):
             raise e
 
     def prepare(self):
+        """ """
         self.command_inout("Prepare")
 
     def count_raw(self, start_time=None):
         """Raw count and report count values.
-
+        
         Simply start and wait until finish, no configuration nor preparation.
-
+        
         .. note::
             The count_raw method API is partially experimental (value
             references may be changed to values whenever possible in the
             future). Backwards incompatible changes may occur if deemed
             necessary by the core developers.
 
-        :param start_time: start time of the whole count operation, if not
-          passed a current timestamp will be used
-        :type start_time: :obj:`float`
-        :return: channel names and values (or value references - experimental)
-        :rtype: :obj:`dict` where keys are channel full names and values are
-          channel values (or value references - experimental)
+        Parameters
+        ----------
+        start_time : obj:`float`
+            start time of the whole count operation, if not
+            passed a current timestamp will be used (Default value = None)
+
+        Returns
+        -------
+        obj:`dict` where keys are channel full names and values are
+  channel values (or value references - experimental)
+            channel names and values (or value references - experimental)
+
         """
         if start_time is None:
             start_time = time.time()
@@ -3340,19 +5329,29 @@ class MeasurementGroup(PoolElement):
 
     def go(self, *args, **kwargs):
         """Count and report count values.
-
+        
         Configuration and prepare for measurement, then start and wait until
         finish.
-
+        
         .. note::
             The count (go) method API is partially experimental (value
             references may be changed to values whenever possible in the
             future). Backwards incompatible changes may occur if deemed
             necessary by the core developers.
 
-        :return: channel names and values (or value references - experimental)
-        :rtype: :obj:`dict` where keys are channel full names and values are
-          channel values (or value references - experimental)
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+        obj:`dict` where keys are channel full names and values are
+  channel values (or value references - experimental)
+            channel names and values (or value references - experimental)
+
         """
         start_time = time.time()
         cfg = self.getConfiguration()
@@ -3371,23 +5370,29 @@ class MeasurementGroup(PoolElement):
         """Execute measurement process according to the given synchronization
         description.
 
-        :param synch_description: synchronization description
-        :type synch_description: list of groups with equidistant
-          synchronizations
-        :param value_buffer_cb: callback on value buffer updates
-        :type value_buffer_cb: callable
-        :param value_ref_buffer_cb: callback on value reference
-          buffer updates
-        :type value_ref_buffer_cb: callable
-        :return: state and eventually value buffers if no callback was passed
-        :rtype: tuple<list<DevState>,<list>>
+        Parameters
+        ----------
+        synch_description : list of groups with equidistant
+  synchronizations
+            synchronization description
+        value_buffer_cb : callable
+            callback on value buffer updates (Default value = None)
+        value_ref_buffer_cb : callable
+            callback on value reference
+            buffer updates (Default value = None)
 
-        .. todo:: Think of unifying measure with count.
+        Returns
+        -------
+        tuple<list<DevState>,<list>>
 
-        .. note:: The measure method has been included in MeasurementGroup
-            class on a provisional basis. Backwards incompatible changes
-            (up to and including removal of the method) may occur if
-            deemed necessary by the core developers.
+.. todo:: Think of unifying measure with count.
+
+.. note:: The measure method has been included in MeasurementGroup
+    class on a provisional basis. Backwards incompatible changes
+    (up to and including removal of the method) may occur if
+    deemed necessary by the core developers.
+            state and eventually value buffers if no callback was passed
+
         """
         start_time = time.time()
         cfg = self.getConfiguration()
@@ -3421,19 +5426,44 @@ class MeasurementGroup(PoolElement):
 
 
 class IORegister(PoolElement):
-    """ Class encapsulating IORegister functionality."""
+    """Class encapsulating IORegister functionality."""
 
     def __init__(self, name, **kw):
         """IORegister initialization."""
         self.call__init__(PoolElement, name, **kw)
 
     def getValueObj(self):
+        """ """
         return self._getAttrEG('value')
 
     def readValue(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self._getAttrValue('value', force=force)
 
     def startWriteValue(self, new_value, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_value :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         try:
             self.getValueObj().write(new_value)
             self.final_val = new_value
@@ -3445,9 +5475,33 @@ class IORegister(PoolElement):
                     raise
 
     def waitWriteValue(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def writeValue(self, new_value, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_value :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.startWriteValue(new_value, timeout=timeout)
         self.waitWriteValue(timeout=timeout)
         return self.getStateEG().readValue(), self.readValue()
@@ -3457,32 +5511,39 @@ class IORegister(PoolElement):
 
 
 class Instrument(BaseElement):
+    """ """
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
     def getFullName(self):
+        """ """
         return self.full_name
 
     def getParentInstrument(self):
+        """ """
         return self.getPoolObj().getObj(self.parent_instrument)
 
     def getParentInstrumentName(self):
+        """ """
         return self.parent_instrument
 
     def getChildrenInstruments(self):
+        """ """
         raise NotImplementedError
         return self._children
 
     def getElements(self):
+        """ """
         raise NotImplementedError
         return self._elements
 
     def getType(self):
+        """ """
         return self.klass
 
 
 class Pool(TangoDevice, MoveableSource):
-    """ Class encapsulating device Pool functionality."""
+    """Class encapsulating device Pool functionality."""
 
     def __init__(self, name, **kw):
         self.call__init__(TangoDevice, name, **kw)
@@ -3493,11 +5554,23 @@ class Pool(TangoDevice, MoveableSource):
         self.__elements_attr.addListener(self.on_elements_changed)
 
     def cleanUp(self):
+        """ """
         TangoDevice.cleanUp(self)
         f = self.factory()
         f.removeExistingAttribute(self.__elements_attr)
 
     def getObject(self, element_info):
+        """
+
+        Parameters
+        ----------
+        element_info :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = element_info.getType()
         data = element_info._data
         if elem_type in ('ControllerClass', 'ControllerLibrary', 'Instrument'):
@@ -3511,6 +5584,21 @@ class Pool(TangoDevice, MoveableSource):
         return obj
 
     def on_elements_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type == TaurusEventType.Error:
             msg = evt_value
             if isinstance(msg, DevFailed):
@@ -3553,40 +5641,134 @@ class Pool(TangoDevice, MoveableSource):
         return elems
 
     def _addElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         element_data['manager'] = self
         element = BaseSardanaElement(**element_data)
         self.getElementsInfo().addElement(element)
         return element
 
     def _removeElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         name = element_data['full_name']
         element = self.getElementInfo(name)
         self.getElementsInfo().removeElement(element)
         return element
 
     def getElementsInfo(self):
+        """ """
         return self._elements
 
     def getElements(self):
+        """ """
         return self.getElementsInfo().getElements()
 
     def getElementInfo(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElement(name)
 
     def getElementNamesOfType(self, elem_type):
+        """
+
+        Parameters
+        ----------
+        elem_type :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementNamesOfType(elem_type)
 
     def getElementsOfType(self, elem_type):
+        """
+
+        Parameters
+        ----------
+        elem_type :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementsOfType(elem_type)
 
     def getElementsWithInterface(self, interface):
+        """
+
+        Parameters
+        ----------
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementsWithInterface(interface)
 
     def getElementWithInterface(self, elem_name, interface):
+        """
+
+        Parameters
+        ----------
+        elem_name :
+            
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementWithInterface(elem_name,
                                                               interface)
 
     def getObj(self, name, elem_type=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        elem_type :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if elem_type is None:
             return self.getElementInfo(name)
         elif isinstance(elem_type, str):
@@ -3615,9 +5797,19 @@ class Pool(TangoDevice, MoveableSource):
 
     def getMoveable(self, names):
         """getMoveable(seq<string> names) -> Moveable
-
+        
         Returns a moveable object that handles all the moveable items given in
-        names."""
+        names.
+
+        Parameters
+        ----------
+        names :
+            
+
+        Returns
+        -------
+
+        """
         # if simple motor just return it (if the pool has it)
         if isinstance(names, str):
             names = names,
@@ -3667,6 +5859,23 @@ class Pool(TangoDevice, MoveableSource):
 
     def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
                                        contains=True):
+        """
+
+        Parameters
+        ----------
+        container :
+            
+        elem_name :
+            
+        timeout :
+             (Default value = 0.5)
+        contains :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         start = time.time()
         cond = True
         nap = 0.01
@@ -3689,6 +5898,19 @@ class Pool(TangoDevice, MoveableSource):
             time.sleep(nap)
 
     def createMotorGroup(self, mg_name, elements):
+        """
+
+        Parameters
+        ----------
+        mg_name :
+            
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create motor group for elements: %s', params)
         self.command_inout('CreateMotorGroup', params)
@@ -3696,6 +5918,19 @@ class Pool(TangoDevice, MoveableSource):
         return self._wait_for_element_in_container(elements_info, mg_name)
 
     def createMeasurementGroup(self, mg_name, elements):
+        """
+
+        Parameters
+        ----------
+        mg_name :
+            
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create measurement group: %s', params)
         self.command_inout('CreateMeasurementGroup', params)
@@ -3703,9 +5938,35 @@ class Pool(TangoDevice, MoveableSource):
         return self._wait_for_element_in_container(elements_info, mg_name)
 
     def deleteMeasurementGroup(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.deleteElement(name)
 
     def createElement(self, name, ctrl, axis=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        ctrl :
+            
+        axis :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         ctrl_type = ctrl.types[0]
         if axis is None:
             last_axis = ctrl.getLastUsedAxis()
@@ -3722,6 +5983,19 @@ class Pool(TangoDevice, MoveableSource):
         return self._wait_for_element_in_container(elements_info, name)
 
     def renameElement(self, old_name, new_name):
+        """
+
+        Parameters
+        ----------
+        old_name :
+            
+        new_name :
+            
+
+        Returns
+        -------
+
+        """
         self.debug('trying to rename element: %s to: %s', old_name, new_name)
         self.command_inout('RenameElement', [old_name, new_name])
         elements_info = self.getElementsInfo()
@@ -3729,6 +6003,17 @@ class Pool(TangoDevice, MoveableSource):
                                                    contains=True)
 
     def deleteElement(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         self.debug('trying to delete element: %s', name)
         self.command_inout('DeleteElement', name)
         elements_info = self.getElementsInfo()
@@ -3736,6 +6021,21 @@ class Pool(TangoDevice, MoveableSource):
                                                    contains=False)
 
     def createController(self, class_name, name, *props):
+        """
+
+        Parameters
+        ----------
+        class_name :
+            
+        name :
+            
+        *props :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_class = self.getObj(class_name, elem_type='ControllerClass')
         if ctrl_class is None:
             raise Exception("Controller class %s not found" % class_name)
@@ -3747,15 +6047,40 @@ class Pool(TangoDevice, MoveableSource):
         return self._wait_for_element_in_container(elements_info, name)
 
     def deleteController(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.deleteElement(name)
 
     def createInstrument(self, full_name, class_name):
+        """
+
+        Parameters
+        ----------
+        full_name :
+            
+        class_name :
+            
+
+        Returns
+        -------
+
+        """
         self.command_inout("CreateInstrument", [full_name, class_name])
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, full_name)
 
 
 def registerExtensions():
+    """ """
     factory = Factory()
     factory.registerDeviceClass("Pool", Pool)
 
@@ -3772,6 +6097,7 @@ def registerExtensions():
 
 
 def unregisterExtensions():
+    """ """
     factory = Factory()
     factory.unregisterDeviceClass("Pool")
 

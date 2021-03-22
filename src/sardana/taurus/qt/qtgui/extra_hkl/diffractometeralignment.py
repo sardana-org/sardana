@@ -62,12 +62,24 @@ class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def loadEngineModeNames(self, enginemodes):
+        """
+
+        Parameters
+        ----------
+        enginemodes :
+            
+
+        Returns
+        -------
+
+        """
         self.clear()
         self.addItems(enginemodes)
 
 
 @UILoadable(with_ui="_ui")
 class DiffractometerAlignment(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -91,6 +103,7 @@ class DiffractometerAlignment(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'diffractometeralignment'
         ret['group'] = 'Taurus Containers'
@@ -99,6 +112,17 @@ class DiffractometerAlignment(TaurusWidget):
         return ret
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if model is not None:
             self.device = taurus.Device(model)
 
@@ -242,24 +266,41 @@ class DiffractometerAlignment(TaurusWidget):
             self.tomax_buttons[i].clicked.connect(tomax_functions[i])
 
     def exec_scan1(self):
+        """ """
         self.exec_scan(0)
 
     def exec_scan2(self):
+        """ """
         self.exec_scan(1)
 
     def exec_scan3(self):
+        """ """
         self.exec_scan(2)
 
     def exec_scan4(self):
+        """ """
         self.exec_scan(3)
 
     def exec_scan5(self):
+        """ """
         self.exec_scan(4)
 
     def exec_scan6(self):
+        """ """
         self.exec_scan(5)
 
     def exec_scan(self, imot):
+        """
+
+        Parameters
+        ----------
+        imot :
+            
+
+        Returns
+        -------
+
+        """
         macro_command = []
 
         macro_command.append("_diff_scan")
@@ -287,24 +328,41 @@ class DiffractometerAlignment(TaurusWidget):
                         None))
 
     def tomax_scan1(self):
+        """ """
         self.tomax_scan(0)
 
     def tomax_scan2(self):
+        """ """
         self.tomax_scan(1)
 
     def tomax_scan3(self):
+        """ """
         self.tomax_scan(2)
 
     def tomax_scan4(self):
+        """ """
         self.tomax_scan(3)
 
     def tomax_scan5(self):
+        """ """
         self.tomax_scan(4)
 
     def tomax_scan6(self):
+        """ """
         self.tomax_scan(5)
 
     def tomax_scan(self, imot):
+        """
+
+        Parameters
+        ----------
+        imot :
+            
+
+        Returns
+        -------
+
+        """
         motor = str(self.motor_names[imot])
         position = str(self.tomax_buttons[imot].text())
         macro_command = ["mv", motor, position]
@@ -312,11 +370,23 @@ class DiffractometerAlignment(TaurusWidget):
 
     @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
+        """
+
+        Parameters
+        ----------
+        modename :
+            
+
+        Returns
+        -------
+
+        """
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")
         self.device.write_attribute("enginemode", str(modename))
 
     def open_macroserver_connection_panel(self):
+        """ """
         w = TaurusMacroConfigurationDialog(self)
         Qt.qApp.SDM.connectReader("macroserverName", w.selectMacroServer)
         Qt.qApp.SDM.connectReader("doorName", w.selectDoor)
@@ -328,14 +398,27 @@ class DiffractometerAlignment(TaurusWidget):
         w.show()
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         if doorName != self.door_device_name:
             self.door_device_name = doorName
             self.door_device = taurus.Device(doorName)
 
     def stop_movements(self):
+        """ """
         self.door_device.StopMacro()
 
     def store_reflection(self):
+        """ """
         hklref = []
         hklref.append(self.h_device.Position)
         hklref.append(self.k_device.Position)
@@ -344,12 +427,14 @@ class DiffractometerAlignment(TaurusWidget):
         self.device.write_attribute("addreflection", hklref)
 
     def open_selectsignal_panel(self):
+        """ """
 
         self.selectsignal.update_signals(self.door_device_name)
         self.selectsignal.show()
 
 
 def main():
+    """ """
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog <model> [door_name]"
     desc = ("a taurus application for diffractometer alignment: h, k, l " +

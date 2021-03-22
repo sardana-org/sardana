@@ -204,6 +204,7 @@ NO_DB_MAP = {
 
 
 def get_pytango_version_str():
+    """ """
     try:
         import PyTango
     except:
@@ -215,6 +216,7 @@ def get_pytango_version_str():
 
 
 def get_pytango_version_number():
+    """ """
     tgver_str = get_pytango_version_str()
     if tgver_str is None:
         return None
@@ -223,6 +225,7 @@ def get_pytango_version_number():
 
 
 def get_tango_version_str():
+    """ """
     try:
         import PyTango.constants
     except:
@@ -234,6 +237,7 @@ def get_tango_version_str():
 
 
 def get_tango_version_number():
+    """ """
     tgver_str = get_tango_version_str()
     if tgver_str is None:
         return None
@@ -242,32 +246,78 @@ def get_tango_version_number():
 
 
 class GenericScalarAttr(Attr):
+    """ """
     pass
 
 
 class GenericSpectrumAttr(SpectrumAttr):
+    """ """
 
     def __init__(self, name, tg_type, tg_access, dim_x=2048):
         SpectrumAttr.__init__(self, name, tg_type, tg_access, dim_x)
 
 
 class GenericImageAttr(ImageAttr):
+    """ """
 
     def __init__(self, name, tg_type, tg_access, dim_x=2048, dim_y=2048):
         ImageAttr.__init__(self, name, tg_type, tg_access, dim_x, dim_y)
 
 
 def clean_device_attribute_memorized(db, dev_name, attr_name):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    dev_name :
+        
+    attr_name :
+        
+
+    Returns
+    -------
+
+    """
     props = "__value", "__value_ts"
     db.delete_device_attribute_property(dev_name, {attr_name: props})
 
 
 def clean_device_memorized(db, dev_name):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    dev_name :
+        
+
+    Returns
+    -------
+
+    """
     for attr_name in PyTango.DeviceProxy(dev_name).get_attribute_list():
         clean_device_attribute_memorized(db, dev_name, attr_name)
 
 
 def clean_server_memorized(db, server_name, server_instance):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    server_name :
+        
+    server_instance :
+        
+
+    Returns
+    -------
+
+    """
     server = server_name + "/" + server_instance
     dev_names = db.get_device_class_list(server)[::2]
     for dev_name in dev_names:
@@ -288,6 +338,21 @@ def __get_last_write_value(attribute):
 
 
 def _check_attr_range(dev_name, attr_name, attr_value):
+    """
+
+    Parameters
+    ----------
+    dev_name :
+        
+    attr_name :
+        
+    attr_value :
+        
+
+    Returns
+    -------
+
+    """
     util = PyTango.Util.instance()
     dev = util.get_device_by_name(dev_name)
     multi_attr = dev.get_device_attr()
@@ -317,19 +382,37 @@ def _check_attr_range(dev_name, attr_name, attr_value):
 def memorize_write_attribute(write_attr_func):
     """The main purpose is to use this as a decorator for write_<attr_name>
        device methods.
-
+    
        Properly memorizes the attribute write value:
-
+    
            - only memorize if write doesn't throw exception
            - also memorize the timestamp
 
-       :param write_attr_func: the write method
-       :type write_attr_func: callable
-       :return: a write method safely wrapping the given write method
-       :rtype: callable"""
+    Parameters
+    ----------
+    write_attr_func : callable
+        the write method
+
+    Returns
+    -------
+    callable
+        a write method safely wrapping the given write method
+
+    """
 
     @wraps(write_attr_func)
     def write_attr_wrapper(self, attribute):
+        """
+
+        Parameters
+        ----------
+        attribute :
+            
+
+        Returns
+        -------
+
+        """
         ts = repr(time.time())
         attr_name = attribute.get_name()
         dev_name = self.get_name()
@@ -365,14 +448,53 @@ def memorize_write_attribute(write_attr_func):
 
 
 def tango_protect(wrapped, *args, **kwargs):
+    """
+
+    Parameters
+    ----------
+    wrapped :
+        
+    *args :
+        
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     @wraps(wrapped)
     def wrapper(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         with self.tango_lock:
             return wrapped(self, *args, **kwargs)
     return wrapper
 
 
 def from_deviceattribute_value(da):
+    """
+
+    Parameters
+    ----------
+    da :
+        
+
+    Returns
+    -------
+
+    """
     if da.has_failed:
         return
     dtype, dformat, value = da.type, da.data_format, da.value
@@ -387,6 +509,17 @@ def from_deviceattribute_value(da):
 
 
 def from_deviceattribute(da):
+    """
+
+    Parameters
+    ----------
+    da :
+        
+
+    Returns
+    -------
+
+    """
     if da.has_failed:
         exc_info = DevFailed(*da.get_err_stack())
         value = None
@@ -403,10 +536,32 @@ def from_deviceattribute(da):
 
 
 def to_tango_state(state):
+    """
+
+    Parameters
+    ----------
+    state :
+        
+
+    Returns
+    -------
+
+    """
     return DevState(state)
 
 
 def from_tango_state_to_state(state):
+    """
+
+    Parameters
+    ----------
+    state :
+        
+
+    Returns
+    -------
+
+    """
     return int(state)
 
 
@@ -450,6 +605,21 @@ TACCESS_MAP = {
 R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
 
 def exception_str(etype=None, value=None, sep='\n'):
+    """
+
+    Parameters
+    ----------
+    etype :
+         (Default value = None)
+    value :
+         (Default value = None)
+    sep :
+         (Default value = '\n')
+
+    Returns
+    -------
+
+    """
     if etype is None:
         etype, value = sys.exc_info()[:2]
     return sep.join(traceback.format_exception_only(etype, value))
@@ -459,10 +629,17 @@ def to_tango_access(access):
     """Transforms a :obj:`~sardana.DataAccess` into a
     :obj:`~PyTango.AttrWriteType`
 
-    :param access: the access to be transformed
-    :type access: :obj:`~sardana.DataAccess`
-    :return: the tango attribute write type
-    :rtype: :obj:`PyTango.AttrWriteType`"""
+    Parameters
+    ----------
+    access : obj:`~sardana.DataAccess`
+        the access to be transformed
+
+    Returns
+    -------
+    obj:`PyTango.AttrWriteType`
+        the tango attribute write type
+
+    """
     return TACCESS_MAP[access]
 
 
@@ -470,10 +647,17 @@ def from_tango_access(access):
     """Transforms a :obj:`~PyTango.AttrWriteType` into a
     :obj:`~sardana.DataAccess`
 
-    :param access: the tango access to be transformed
-    :type access: :obj:`~PyTango.AttrWriteType`
-    :return: the sardana attribute write type
-    :rtype: :obj:`~sardana.DataAccess`"""
+    Parameters
+    ----------
+    access : obj:`~PyTango.AttrWriteType`
+        the tango access to be transformed
+
+    Returns
+    -------
+    obj:`~sardana.DataAccess`
+        the sardana attribute write type
+
+    """
     return R_TACCESS_MAP[access]
 
 
@@ -481,14 +665,20 @@ def to_tango_type_format(dtype_or_info, dformat=None):
     """Transforms a :obj:`~sardana.DataType` :obj:`~sardana.DataFormat` into a
     :obj:`~PyTango.CmdArgType`, :obj:`~PyTango.AttrDataFormat` tuple
 
-    :param dtype_or_info: the type to be transformed
-    :type dtype_or_info: :obj:`~sardana.DataType`
-    :param dformat: the format to be transformed
-    :type dformat: :obj:`~sardana.DataFormat`
+    Parameters
+    ----------
+    dtype_or_info : obj:`~sardana.DataType`
+        the type to be transformed
+    dformat : obj:`~sardana.DataFormat`
+        the format to be transformed (Default value = None)
 
-    :return: a tuple of two elements: the tango attribute write type,
-    tango data format
-    :rtype: tuple< :obj:`PyTango.CmdArgType`, :obj:`PyTango.AttrDataFormat`>"""
+    Returns
+    -------
+    tuple< :obj:`PyTango.CmdArgType`, :obj:`PyTango.AttrDataFormat`>
+        a tuple of two elements: the tango attribute write type,
+        tango data format
+
+    """
     dtype = dtype_or_info
     if dformat is None:
         dtype, dformat = to_dtype_dformat(dtype)
@@ -499,13 +689,19 @@ def from_tango_type_format(dtype, dformat=PyTango.SCALAR):
     """Transforms a :obj:`~PyTango.CmdArgType`, :obj:`~PyTango.AttrDataFormat`
     into a :obj:`~sardana.DataType` :obj:`~sardana.DataFormat` tuple
 
-    :param dtype: the type to be transformed
-    :type dtype: :obj:`~PyTango.CmdArgType`
-    :param dformat: the format to be transformed
-    :type dformat: :obj:`~PyTango.AttrDataFormat`
+    Parameters
+    ----------
+    dtype : obj:`~PyTango.CmdArgType`
+        the type to be transformed
+    dformat : obj:`~PyTango.AttrDataFormat`
+        the format to be transformed (Default value = PyTango.SCALAR)
 
-    :return: a tuple of two elements: data type, data format
-    :rtype: tuple< :obj:`~sardana.DataType`, :obj:`~sardana.DataFormat` >"""
+    Returns
+    -------
+    tuple< :obj:`~sardana.DataType`, :obj:`~sardana.DataFormat` >
+        a tuple of two elements: data type, data format
+
+    """
     return R_TTYPE_MAP[dtype], R_TFORMAT_MAP[dformat]
 
 
@@ -513,13 +709,35 @@ def to_tango_quality(quality):
     """Transforms a :obj:`~sardana.AttrQuality` into a
     :obj:`~PyTango.AttrQuality`
 
-    :param access: the quality to be transformed
-    :type access: :obj:`~sardana.AttrQuality`
-    :return: the tango attribute quality
-    :rtype: :obj:`PyTango.AttrQuality`"""
+    Parameters
+    ----------
+    access : obj:`~sardana.AttrQuality`
+        the quality to be transformed
+    quality :
+        
+
+    Returns
+    -------
+    obj:`PyTango.AttrQuality`
+        the tango attribute quality
+
+    """
     return TQUALITY_MAP[quality]
 
 def to_tango_attr_info(attr_name, attr_info):
+    """
+
+    Parameters
+    ----------
+    attr_name :
+        
+    attr_info :
+        
+
+    Returns
+    -------
+
+    """
     if isinstance(attr_info, DataInfo):
         data_type, data_format = attr_info.dtype, attr_info.dformat
         data_access = attr_info.access
@@ -545,7 +763,17 @@ def to_tango_attr_info(attr_name, attr_info):
 
 
 def throw_sardana_exception(exc):
-    """Throws an exception as a tango exception"""
+    """Throws an exception as a tango exception
+
+    Parameters
+    ----------
+    exc :
+        
+
+    Returns
+    -------
+
+    """
     if isinstance(exc, SardanaException):
         if exc.exc_info and None not in exc.exc_info:
             Except.throw_python_exception(*exc.exc_info)
@@ -562,14 +790,28 @@ def throw_sardana_exception(exc):
 
 def ask_yes_no(prompt, default=None):
     """Asks a question and returns a boolean (y/n) answer.
-
+    
     If default is given (one of 'y','n'), it is used if the user input is
     empty. Otherwise the question is repeated until an answer is given.
-
+    
     An EOF is treated as the default answer.  If there is no default, an
-    exception is raised to prevent infinite loops.
 
-    Valid answers are: y/yes/n/no (match is not case sensitive)."""
+    Parameters
+    ----------
+    prompt :
+        
+    default :
+         (Default value = None)
+
+    Returns
+    -------
+
+    Raises
+    ------
+    Valid
+        answers are
+
+    """
     answers = {'y': True, 'n': False, 'yes': True, 'no': False}
     ans = None
     if default is not None:
@@ -597,6 +839,17 @@ def ask_yes_no(prompt, default=None):
 
 
 def clean_tango_args(args):
+    """
+
+    Parameters
+    ----------
+    args :
+        
+
+    Returns
+    -------
+
+    """
     ret, ret_for_tango, ret_for_ORB = [], [], []
 
     tango_args = "-?", "-nodb", "-file="
@@ -641,8 +894,19 @@ def prepare_cmdline(parser=None, args=None):
     """Prepares the command line separating tango options from server specific
     options.
 
-    :return: a sequence of options, arguments, tango arguments
-    :rtype: seq<opt, list<str>, list<str>>"""
+    Parameters
+    ----------
+    parser :
+         (Default value = None)
+    args :
+         (Default value = None)
+
+    Returns
+    -------
+    seq<opt, list<str>, list<str>>
+        a sequence of options, arguments, tango arguments
+
+    """
     import optparse
     if args is None:
         args = []
@@ -697,9 +961,20 @@ def prepare_ORBendPoint(args, tango_args):
     """Try to get Tango *free property* (object name: ``ORBendPoint``,
     property name: ``<server_name>/<instance_name>``) and set it via
     environment variable only in two occasions:
-
+    
     - this one was not existing
     - ``-ORBendPoint`` argument was not passed
+
+    Parameters
+    ----------
+    args :
+        
+    tango_args :
+        
+
+    Returns
+    -------
+
     """
     log_messages = []
     server_name = args[0]
@@ -733,6 +1008,19 @@ def prepare_environment(args, tango_args, ORB_args):
     environment variables (this workaround seems to work). For Tango >=
     8.0.5 it is not necessary anymore.
     More details in: https://sourceforge.net/p/tango-cs/bugs/495/
+
+    Parameters
+    ----------
+    args :
+        
+    tango_args :
+        
+    ORB_args :
+        
+
+    Returns
+    -------
+
     """
     log_messages = []
     ORB_args_len = len(ORB_args)
@@ -747,7 +1035,19 @@ def prepare_environment(args, tango_args, ORB_args):
 
 
 def prepare_server(args, tango_args):
-    """Register a proper server if the user gave an unknown server"""
+    """Register a proper server if the user gave an unknown server
+
+    Parameters
+    ----------
+    args :
+        
+    tango_args :
+        
+
+    Returns
+    -------
+
+    """
     log_messages = []
     _, bin_name = os.path.split(args[0])
     server_name, _ = os.path.splitext(bin_name)
@@ -840,11 +1140,43 @@ def prepare_server(args, tango_args):
 
 
 def exists_server_instance(db, server_name, server_instance):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    server_name :
+        
+    server_instance :
+        
+
+    Returns
+    -------
+
+    """
     known_inst = list(map(str.lower, db.get_instance_name_list(server_name)))
     return server_instance.lower() in known_inst
 
 
 def register_sardana(db, bin_name, inst_name, pool_names=None):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    bin_name :
+        
+    inst_name :
+        
+    pool_names :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     devices = []
     log_messages = []
     if bin_name == 'MacroServer':
@@ -882,14 +1214,20 @@ def register_server_with_devices(db, server_name, server_instance, devices):
         - device alias
         - dictionary of properties
 
-       :param db: database where to register devices
-       :type db: PyTango.Database
-       :param server_name: server name
-       :type server_name: :obj:`str`
-       :param server_instance: server instance name
-       :type server_instance: :obj:`str`
-       :param devices: map of devices to create.
-       :type devices: dict<str, seq<tuple<str, str, dict>>>
+    Parameters
+    ----------
+    db : PyTango.Database
+        database where to register devices
+    server_name : obj:`str`
+        server name
+    server_instance : obj:`str`
+        server instance name
+    devices : dict<str, seq<tuple<str, str, dict>>>
+        map of devices to create.
+
+    Returns
+    -------
+
     """
     info = DbDevInfo()
     info.server = server_name + "/" + server_instance
@@ -911,6 +1249,19 @@ def register_server_with_devices(db, server_name, server_instance, devices):
 
 
 def from_name_to_tango(db, name):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    name :
+        
+
+    Returns
+    -------
+
+    """
     alias = None
 
     c = name.count('/')
@@ -939,7 +1290,19 @@ def from_name_to_tango(db, name):
 
 
 def get_dev_from_class(db, classname):
-    """Returns tuple<full device name, device name, alias, ouput string>"""
+    """Returns tuple<full device name, device name, alias, ouput string>
+
+    Parameters
+    ----------
+    db :
+        
+    classname :
+        
+
+    Returns
+    -------
+
+    """
     server_wildcard = '*'
     try:
         exp_dev_list = db.get_device_exported_for_class(classname)
@@ -961,9 +1324,34 @@ def get_dev_from_class(db, classname):
 
 
 def get_dev_from_class_server(db, classname, server):
-    """Returns device(s) name for a given class and server"""
+    """Returns device(s) name for a given class and server
+
+    Parameters
+    ----------
+    db :
+        
+    classname :
+        
+    server :
+        
+
+    Returns
+    -------
+
+    """
 
     def pairwise(iterable):
+        """
+
+        Parameters
+        ----------
+        iterable :
+            
+
+        Returns
+        -------
+
+        """
         "s -> (s0, s1), (s2, s3), (s4, s5), ..."
         a = iter(iterable)
         return list(zip(a, a))
@@ -977,6 +1365,21 @@ def get_dev_from_class_server(db, classname, server):
 
 
 def get_free_server(db, prefix, start_from=1):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    prefix :
+        
+    start_from :
+         (Default value = 1)
+
+    Returns
+    -------
+
+    """
     prefix = prefix + "_"
     server_members = db.get_server_list(prefix + "*")
     server = server_members.value_string
@@ -986,6 +1389,21 @@ def get_free_server(db, prefix, start_from=1):
 
 
 def get_free_device(db, prefix, start_from=1):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    prefix :
+        
+    start_from :
+         (Default value = 1)
+
+    Returns
+    -------
+
+    """
     members = db.get_device_member(prefix + "/*")
     while str(start_from) in members:
         start_from += 1
@@ -993,14 +1411,22 @@ def get_free_device(db, prefix, start_from=1):
 
 
 def get_free_alias(db, prefix, start_from=1):
-    '''Iterates until failure, trying to retrieve from the database device of
+    """Iterates until failure, trying to retrieve from the database device of
     the given alias. This way, first which fails is available in the database.
 
-    :param db: database where to look for the free alias
-    :type db: PyTango.Database
-    :param start_from: alias suffix in form of consecutive number
-    :type start_from: int
-    '''
+    Parameters
+    ----------
+    db : PyTango.Database
+        database where to look for the free alias
+    start_from : int
+        alias suffix in form of consecutive number (Default value = 1)
+    prefix :
+        
+
+    Returns
+    -------
+
+    """
     while True:
         name = prefix + "_" + str(start_from)
         try:
@@ -1017,8 +1443,21 @@ def get_free_alias(db, prefix, start_from=1):
 
 def get_free_property(db, obj_name, property_name):
     """Get *free property* from Tango database.
-
+    
     If it is not defined return None.
+
+    Parameters
+    ----------
+    db :
+        
+    obj_name :
+        
+    property_name :
+        
+
+    Returns
+    -------
+
     """
     value = None
     try:
@@ -1030,6 +1469,21 @@ def get_free_property(db, obj_name, property_name):
 
 
 def prepare_taurus(options, args, tango_args):
+    """
+
+    Parameters
+    ----------
+    options :
+        
+    args :
+        
+    tango_args :
+        
+
+    Returns
+    -------
+
+    """
     # make sure the polling is not active
     factory = taurus.Factory()
     factory.disablePolling()
@@ -1039,14 +1493,20 @@ def prepare_logstash(args):
     """Prepare logstash handler based on the configuration stored in the Tango
     database.
 
-    :param args: process execution arguments
-    :type args: list<str>
+    Parameters
+    ----------
+    args : list<str>
 
-    .. note::
-        The prepare_logstash function has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including its removal) may occur if
-        deemed necessary by the core developers.
+.. note::
+    The prepare_logstash function has been included in Sardana
+    on a provisional basis. Backwards incompatible changes
+    (up to and including its removal) may occur if
+    deemed necessary by the core developers.
+        process execution arguments
+
+    Returns
+    -------
+
     """
     log_messages = []
 
@@ -1059,6 +1519,17 @@ def prepare_logstash(args):
         return log_messages
 
     def get_logstash_conf(dev_name):
+        """
+
+        Parameters
+        ----------
+        dev_name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             props = db.get_device_property(dev_name, "LogstashHost")
             host = props["LogstashHost"][0]
@@ -1115,6 +1586,25 @@ def prepare_logstash(args):
 
 def prepare_logging(options, args, tango_args, start_time=None,
                     log_messages=None):
+    """
+
+    Parameters
+    ----------
+    options :
+        
+    args :
+        
+    tango_args :
+        
+    start_time :
+         (Default value = None)
+    log_messages :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
 
     taurus.setLogLevel(taurus.Debug)
     root = Logger.getRootLog()
@@ -1205,6 +1695,21 @@ def prepare_logging(options, args, tango_args, start_time=None,
 
 
 def prepare_rconsole(options, args, tango_args):
+    """
+
+    Parameters
+    ----------
+    options :
+        
+    args :
+        
+    tango_args :
+        
+
+    Returns
+    -------
+
+    """
     port = options.rconsole_port
     if port is None or port == 0:
         return
@@ -1218,6 +1723,19 @@ def prepare_rconsole(options, args, tango_args):
 
 
 def run_tango_server(tango_util=None, start_time=None):
+    """
+
+    Parameters
+    ----------
+    tango_util :
+         (Default value = None)
+    start_time :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     try:
         if tango_util is None:
             tango_util = Util(sys.argv)
@@ -1248,6 +1766,27 @@ def run_tango_server(tango_util=None, start_time=None):
 
 def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         name=None):
+    """
+
+    Parameters
+    ----------
+    prepare_func :
+        
+    args :
+         (Default value = None)
+    tango_util :
+         (Default value = None)
+    start_time :
+         (Default value = None)
+    mode :
+         (Default value = None)
+    name :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
 
     if mode is None:
         mode = ServerRunMode.SynchPure
@@ -1268,8 +1807,10 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
             import threading
 
             class task_klass(threading.Thread):
+                """ """
 
                 def terminate(self):
+                    """ """
                     if not self.is_alive():
                         return
                     Util.instance().get_dserver_device().kill()

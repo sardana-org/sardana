@@ -27,7 +27,15 @@ from sardana.pool.controller import IORegisterController
 
 class DummyIORController(IORegisterController):
     """This controller offers as many IORegisters as the user wants (up to
-    1024)."""
+    1024).
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     gender = "Simulation"
     model = "Basic"
@@ -40,19 +48,87 @@ class DummyIORController(IORegisterController):
         self.myvalue = 1
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('AddDevice %d' % axis)
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return (State.On, "Device in On state")
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return self.myvalue
 
     def WriteOne(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.myvalue = value
 
     def SendToCtrl(self, in_data):
+        """
+
+        Parameters
+        ----------
+        in_data :
+            
+
+        Returns
+        -------
+
+        """
         return ""

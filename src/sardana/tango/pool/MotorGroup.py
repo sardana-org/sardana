@@ -45,27 +45,63 @@ from sardana.tango.pool.PoolDevice import PoolGroupDevice, PoolGroupDeviceClass
 
 
 class MotorGroup(PoolGroupDevice):
+    """ """
 
     def __init__(self, dclass, name):
         self.in_write_position = False
         PoolGroupDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolGroupDevice.init(self, name)
 
     def _is_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return PoolGroupDevice._is_allowed(self, req_type)
 
     def get_motor_group(self):
+        """ """
         return self.element
 
     def set_motor_group(self, motor_group):
+        """
+
+        Parameters
+        ----------
+        motor_group :
+            
+
+        Returns
+        -------
+
+        """
         self.element = motor_group
 
     motor_group = property(get_motor_group, set_motor_group)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolGroupDevice.delete_device(self)
         motor_group = self.motor_group
         if motor_group is not None:
@@ -73,6 +109,7 @@ class MotorGroup(PoolGroupDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolGroupDevice.init_device(self)
         detect_evts = "position",
         non_detect_evts = "elementlist",
@@ -89,6 +126,21 @@ class MotorGroup(PoolGroupDevice):
         self.set_state(DevState.ON)
 
     def on_motor_group_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_motor_group_changed(event_source, event_type, event_value)
         except:
@@ -99,6 +151,21 @@ class MotorGroup(PoolGroupDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_motor_group_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -138,13 +205,36 @@ class MotorGroup(PoolGroupDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         pass
         #state = to_tango_state(self.motor_group.get_state(cache=False))
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def _to_motor_positions(self, pos):
+        """
+
+        Parameters
+        ----------
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         positions = []
         for elem in self.motor_group.get_user_elements():
             position = pos[elem]
@@ -154,6 +244,17 @@ class MotorGroup(PoolGroupDevice):
         return positions
 
     def _to_motor_write_positions(self, pos):
+        """
+
+        Parameters
+        ----------
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         w_positions = []
         for elem in self.motor_group.get_user_elements():
             position = pos[elem]
@@ -163,6 +264,17 @@ class MotorGroup(PoolGroupDevice):
         return w_positions
 
     def read_Position(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         # if motors are moving their position is already being updated with a
         # high frequency so don't bother overloading and just get the cached
         # values
@@ -180,6 +292,17 @@ class MotorGroup(PoolGroupDevice):
                            timestamp=position.timestamp)
 
     def write_Position(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.in_write_position = True
         try:
             position = attr.get_write_value()
@@ -199,6 +322,7 @@ class MotorGroup(PoolGroupDevice):
 
 
 class MotorGroupClass(PoolGroupDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -221,6 +345,7 @@ class MotorGroupClass(PoolGroupDeviceClass):
     attr_list.update(PoolGroupDeviceClass.attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolGroupDeviceClass._get_class_properties(self)
         ret['Description'] = "Motor group device class"
         ret['InheritedFrom'].insert(0, 'PoolGroupDevice')

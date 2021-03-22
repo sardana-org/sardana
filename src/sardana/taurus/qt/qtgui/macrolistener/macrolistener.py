@@ -79,6 +79,17 @@ NO_PLOT_MESSAGE = 'Plots cannot be displayed (pyqtgraph not installed)'
 
 
 def assertPlotAvailability(exit_on_error=True):
+    """
+
+    Parameters
+    ----------
+    exit_on_error :
+         (Default value = True)
+
+    Returns
+    -------
+
+    """
     if pyqtgraph is None:
         Qt.QMessageBox.critical(None, 'Plot error', NO_PLOT_MESSAGE)
         if exit_on_error:
@@ -86,10 +97,22 @@ def assertPlotAvailability(exit_on_error=True):
 
 
 def empty_data(nb_points):
+    """
+
+    Parameters
+    ----------
+    nb_points :
+        
+
+    Returns
+    -------
+
+    """
     return ArrayBuffer(numpy.full(nb_points, numpy.nan))
 
 
 class MultiPlotWidget(Qt.QWidget):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -108,6 +131,19 @@ class MultiPlotWidget(Qt.QWidget):
     #           curves: [{ name: curve_name, label: curve_label }] }
 
     def prepare(self, plots, nb_points=None):
+        """
+
+        Parameters
+        ----------
+        plots :
+            
+        nb_points :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.win.clear()
         plot_widgets = {}
         nb_points = 2**16 if nb_points is None else nb_points
@@ -142,6 +178,17 @@ class MultiPlotWidget(Qt.QWidget):
         self._start_update()
 
     def onNewPoint(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         # update internal data and mark the new event
         for plot_widget, curves in self._plots.items():
             x_axis = plot_widget.x_axis
@@ -153,10 +200,22 @@ class MultiPlotWidget(Qt.QWidget):
         self._event_nb += 1
 
     def onEnd(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         self.do_update()
         self._end_update()
 
     def do_update(self):
+        """ """
         if self._event_nb == self._last_event_nb:
             return
         self._last_event_nb = self._event_nb
@@ -168,6 +227,7 @@ class MultiPlotWidget(Qt.QWidget):
                 curve_item.setData(x_data.contents(), y_data.contents())
 
     def _start_update(self):
+        """ """
         self._end_update()
         timer = Qt.QTimer()
         timer.timeout.connect(self.do_update)
@@ -176,21 +236,28 @@ class MultiPlotWidget(Qt.QWidget):
         self._timer = timer
 
     def _end_update(self):
+        """ """
         if self._timer:
             self._timer.stop()
         self._timer = None
 
 
 class PlotManager(Qt.QObject, TaurusBaseComponent):
-    '''
-    This is a manager of plots related to the execution of macros.
+    """This is a manager of plots related to the execution of macros.
     It dynamically creates/removes plots according to the configuration made by
     an ExperimentConfiguration widget.
-
+    
     Currently it supports only 1D scan trends (2D scans are only half-baked)
-
+    
     To use it simply instantiate it and pass it a door name as a model.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     plots_available = pyqtgraph is not None
 
@@ -208,17 +275,36 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
         self.plot = plot or MultiPlotWidget()
 
     def setGroupMode(self, group):
+        """
+
+        Parameters
+        ----------
+        group :
+            
+
+        Returns
+        -------
+
+        """
         assert group in (self.Single, self.XAxis)
         self._group_mode = group
 
     def groupMode(self):
+        """ """
         return self._group_mode
 
     def setModel(self, doorname):
-        '''reimplemented from :meth:`TaurusBaseComponent`
+        """reimplemented from :meth:`TaurusBaseComponent`
 
-        :param doorname: (str) device name corresponding to a Door device.
-        '''
+        Parameters
+        ----------
+        doorname :
+            str) device name corresponding to a Door device.
+
+        Returns
+        -------
+
+        """
         TaurusBaseComponent.setModel(self, doorname)
         # self._onDoorChanged(doorname)
         if not doorname:
@@ -237,7 +323,7 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
         self.message_template = 'Ready!'
 
     def _checkJsonRecorder(self):
-        '''Checks if JsonRecorder env var is set and offers to set it'''
+        """Checks if JsonRecorder env var is set and offers to set it"""
         door = self.getModelObj()
         if 'JsonRecorder' not in door.getEnvironment():
             msg = ('JsonRecorder environment variable is not set, but it '
@@ -251,17 +337,22 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
                 self.info('JsonRecorder Enabled for %s' % door.getFullName())
 
     def onRecordDataUpdated(self, arg):
-        """
-        Receive RecordDataUpdated tuple, the method detects when the event
+        """Receive RecordDataUpdated tuple, the method detects when the event
         type is 'data_desc' (come with new data description), it will call
         to 'onExpConfChanged' to refresh the plots configuration,
         adding/removing plots based in the new Experimental configuration.
-
+        
         Note: After the plots reorder, the data description event is resend
         to reconfig the plot with the new data description.
 
-        :param arg: RecordData Tuple
-        :return:
+        Parameters
+        ----------
+        arg :
+            RecordData Tuple
+
+        Returns
+        -------
+
         """
         data = arg[1]
         if 'type' in data:
@@ -274,9 +365,17 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
                 self.end(data)
 
     def prepare(self, data_desc):
-        """
-        Prepare UI for a new scan. Rebuilds plots as necessary to adapt to the
+        """Prepare UI for a new scan. Rebuilds plots as necessary to adapt to the
         new scan channels and moveables
+
+        Parameters
+        ----------
+        data_desc :
+            
+
+        Returns
+        -------
+
         """
         data = data_desc['data']
         col_map = {column['name']: column for column in data['column_desc']}
@@ -349,6 +448,17 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
             self.message_template.format(progress='Preparing...'))
 
     def newPoint(self, point):
+        """
+
+        Parameters
+        ----------
+        point :
+            
+
+        Returns
+        -------
+
+        """
         data = point['data']
         self.plot.onNewPoint(data)
         point_nb = 'Point #{}'.format(data['point_nb'])
@@ -356,6 +466,17 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
         self.newShortMessage.emit(msg)
 
     def end(self, end_data):
+        """
+
+        Parameters
+        ----------
+        end_data :
+            
+
+        Returns
+        -------
+
+        """
         data = end_data['data']
         self.plot.onEnd(data)
         progress = 'Ended {}'.format(data['endtime'])
@@ -364,14 +485,21 @@ class PlotManager(Qt.QObject, TaurusBaseComponent):
 
 
 class DynamicPlotManager(PlotManager):
-    '''This is a manager of plots related to the execution of macros.
+    """This is a manager of plots related to the execution of macros.
     It dynamically creates/removes plots according to the configuration made by
     an ExperimentConfiguration widget.
-
+    
     Currently it supports only 1D scan trends (2D scans are only half-baked)
-
+    
     To use it simply instantiate it and pass it a door name as a model.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, *args, **kwargs):
         PlotManager.__init__(self, *args, **kwargs)
@@ -380,32 +508,57 @@ class DynamicPlotManager(PlotManager):
             self.plot, 'Scan plot', registerconfig=False, permanent=False)
 
     def createPanel(self, widget, name, **kwargs):
-        '''Creates a "panel" from a widget. In this basic implementation this
+        """Creates a "panel" from a widget. In this basic implementation this
         means that the widgets is shown as a non-modal top window
 
-        :param widget: (QWidget) widget to be used for the panel
-        :param name: (str) name of the panel. Must be unique.
+        Parameters
+        ----------
+        widget :
+            QWidget) widget to be used for the panel
+        name :
+            str) name of the panel. Must be unique.
+            
+            Note: for backawards compatibility, this implementation accepts
+            arbitrary keyword arguments which are just ignored
+        **kwargs :
+            
 
-        Note: for backawards compatibility, this implementation accepts
-        arbitrary keyword arguments which are just ignored
-        '''
+        Returns
+        -------
+
+        """
         widget.setWindowTitle(name)
         widget.show()
         self.__panels[name] = widget
 
     def getPanelWidget(self, name):
-        '''Returns the widget associated to a panel name
+        """Returns the widget associated to a panel name
 
-        :param name: (str) name of the panel. KeyError is raised if not found
+        Parameters
+        ----------
+        name :
+            str) name of the panel. KeyError is raised if not found
 
-        :return: (QWidget)
-        '''
+        Returns
+        -------
+        type
+            QWidget)
+
+        """
         return self.__panels[name]
 
     def removePanel(self, name):
-        '''stop managing the given panel
+        """stop managing the given panel
 
-        :param name: (str) name of the panel'''
+        Parameters
+        ----------
+        name :
+            str) name of the pane
+
+        Returns
+        -------
+
+        """
         widget = self.__panels.pop(name)
         if hasattr(widget, 'setModel'):
             widget.setModel(None)
@@ -414,10 +567,10 @@ class DynamicPlotManager(PlotManager):
 
 
 class MacroBroker(DynamicPlotManager):
-    '''A manager of all macro-related panels of a TaurusGui.
-
+    """A manager of all macro-related panels of a TaurusGui.
+    
     It creates, destroys and manages connections for the following objects:
-
+    
         - Macro Configuration dialog
         - Experiment Configuration panel
         - Macro Executor panel
@@ -427,7 +580,14 @@ class MacroBroker(DynamicPlotManager):
         - Macro editor
         - Macro "panic" button (to abort macros)
         - Dynamic plots (see :class:`DynamicPlotManager`)
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent):
         '''Passing the parent object (the main window) is mandatory'''
@@ -440,7 +600,17 @@ class MacroBroker(DynamicPlotManager):
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def setModel(self, doorname):
-        ''' Reimplemented from :class:`DynamicPlotManager`.'''
+        """Reimplemented from :class:`DynamicPlotManager`.
+
+        Parameters
+        ----------
+        doorname :
+            
+
+        Returns
+        -------
+
+        """
         # disconnect the previous door
         door = self.getModelObj()
         if door is not None:  # disconnect it from *all* shared data providing
@@ -501,7 +671,7 @@ class MacroBroker(DynamicPlotManager):
                               "experimentConfigurationChanged")
 
     def _createPermanentPanels(self):
-        '''creates panels on the main window'''
+        """creates panels on the main window"""
         from sardana.taurus.qt.qtgui.extra_macroexecutor import \
             TaurusMacroExecutorWidget, TaurusSequencerWidget, \
             TaurusMacroConfigurationDialog, TaurusMacroDescriptionViewer, \
@@ -663,25 +833,69 @@ class MacroBroker(DynamicPlotManager):
         self.__lastAbortTime = now
 
     def createPanel(self, widget, name, **kwargs):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        widget :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         return mainwindow.createPanel(widget, name, **kwargs)
 
     def getPanelWidget(self, name):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         return mainwindow.getPanel(name).widget()
 
     def removePanel(self, name):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         mainwindow.removePanel(name)
 
     def removeTemporaryPanels(self, names=None):
-        '''Remove temporary panels managed by this widget'''
+        """Remove temporary panels managed by this widget
+
+        Parameters
+        ----------
+        names :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # for now, the only temporary panels are the plots
         DynamicPlotManager.removePanels(self, names=names)
 

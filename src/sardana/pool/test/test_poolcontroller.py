@@ -39,11 +39,20 @@ class PoolControllerTestCase(unittest.TestCase):
 
     def test_init(self):
         """Verify that the created Controller is an instance of
-        PoolController"""
+        PoolController
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         msg = 'PoolController constructor does not create ' +\
               'PoolController instance'
         self.assertIsInstance(self.pc, PoolController, msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)
         self.pc = None

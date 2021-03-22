@@ -40,16 +40,39 @@ from .sardanaexception import SardanaException
 
 
 class LateValueException(SardanaException):
-    """Exception indicating that a given value is not present in the buffer and
-    will not arrive any more (newer value(s) were already added to the buffer).
+    """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Raises
+    ------
+    will
+        not arrive any more
+
     """
     pass
 
 
 class EarlyValueException(SardanaException):
-    """Exception indicating that a given value is not present in the buffer but
-    there is still a chance that it will arrive (no newer values were added to
-    the buffer yet).
+    """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Raises
+    ------
+    there
+        is still a chance that it will arrive
+    the
+        buffer yet
+
     """
     pass
 
@@ -58,11 +81,18 @@ class SardanaBuffer(EventGenerator):
     """Buffer for SardanaValue objects. Each value is identified by an unique
     idx and all values are organized based on the order of addition to the
     buffer
-
+    
     ..todo:: Eliminate the last_chunk - it is not really necessary and just
      consumes memory.
     ..todo:: It is better to fire events in form of a list with tuples
     of idx and value objects.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, obj=None, name=None, persistent=False, **kwargs):
@@ -93,11 +123,19 @@ class SardanaBuffer(EventGenerator):
     def get_obj(self):
         """Returns the object which owns this buffer
 
-        :return: the object which owns this buffer
-        :rtype: obj"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj
+            the object which owns this buffer
+
+        """
         return self._get_obj()
 
     def _get_obj(self):
+        """ """
         obj = self._obj
         if obj is not None:
             obj = obj()
@@ -106,20 +144,32 @@ class SardanaBuffer(EventGenerator):
     def get_value(self, idx):
         """Return value of a given index.
 
-        :param idx: index of the value to be returned
-        :type idx: int
-        :return: the value corresponding to the idx
-        :rtype: object
+        Parameters
+        ----------
+        idx : int
+            index of the value to be returned
+
+        Returns
+        -------
+        object
+            the value corresponding to the idx
+
         """
         return self.get_value_obj(idx).value
 
     def get_value_obj(self, idx):
         """Return the value object of a given index.
 
-        :param idx: index of the value to be returned
-        :type idx: int
-        :return: the value object corresponding to the idx
-        :rtype: SardanaValue
+        Parameters
+        ----------
+        idx : int
+            index of the value to be returned
+
+        Returns
+        -------
+        SardanaValue
+            the value object corresponding to the idx
+
         """
         try:
             return self._buffer[idx]
@@ -133,14 +183,20 @@ class SardanaBuffer(EventGenerator):
     def append(self, value, idx=None):
         """Append a single value at the end of the buffer with a given index.
 
-        :param value: value to be appended to the buffer
-        :type param: SardanaValue or any object
-        :param idx: at which index append the value, None means append at the
-            end of the buffer
-        :type idx: int
-        :param persistent: whether value should be added to a persistent
+        Parameters
+        ----------
+        value :
+            value to be appended to the buffer
+        idx : int
+            at which index append the value, None means append at the
+            end of the buffer (Default value = None)
+        persistent :
+            whether value should be added to a persistent
             buffer or just as a last chunk
-        :type param: bool
+
+        Returns
+        -------
+
         """
         if idx is None:
             idx = self._next_idx
@@ -157,12 +213,18 @@ class SardanaBuffer(EventGenerator):
         """Extend buffer with a list of objects assigning them consecutive
         indexes.
 
-        :param values: objects that extend the buffer
-        :type values: list<object>
-        :param initial_idx: at which index append the first object,
+        Parameters
+        ----------
+        values : list<object>
+            objects that extend the buffer
+        initial_idx : int
+            at which index append the first object,
             the rest of them will be assigned the next consecutive indexes,
-            None means assign at the end of the buffer
-        :type initial_idx: int
+            None means assign at the end of the buffer (Default value = None)
+
+        Returns
+        -------
+
         """
         if initial_idx is None:
             initial_idx = self._next_idx
@@ -179,10 +241,16 @@ class SardanaBuffer(EventGenerator):
     def remove(self, idx):
         """Remove value object of a given index.
 
-        :param idx: index of the value to be returned
-        :type idx: int
-        :return: the value object corresponding to the idx
-        :rtype: object
+        Parameters
+        ----------
+        idx : int
+            index of the value to be returned
+
+        Returns
+        -------
+        object
+            the value object corresponding to the idx
+
         """
         try:
             return self._buffer.pop(idx)
@@ -194,27 +262,47 @@ class SardanaBuffer(EventGenerator):
         """Fires an event to the listeners of the object which owns this
         buffer.
 
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        Parameters
+        ----------
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         evt_type = EventType(self.name, priority=propagate)
         self.fire_event(evt_type, self.last_chunk)
 
     def clear(self):
+        """ """
         self._next_idx = 0
         self._buffer = OrderedDict()
 
     def get_last_chunk(self):
+        """ """
         return self._last_chunk
 
     def get_next_idx(self):
+        """ """
         return self._next_idx
 
     def get_persistent(self):
+        """ """
         return self._persistent
 
     def set_persistent(self, persistent):
+        """
+
+        Parameters
+        ----------
+        persistent :
+            
+
+        Returns
+        -------
+
+        """
         self._persistent = persistent
 
     obj = property(get_obj, "container object for this buffer")

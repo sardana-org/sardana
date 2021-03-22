@@ -45,12 +45,22 @@ from sardana.sardanabase import SardanaBaseObject
 # Start patch around inspect issue http://bugs.python.org/issue993580
 
 def findsource(obj):
-    """Return the entire source file and starting line number for an object.
+    """
 
-    The argument may be a module, class, method, function, traceback, frame,
-    or code object.  The source code is returned as a list of all the lines
-    in the file and the line number indexes a line in that list.  An IOError
-    is raised if the source code cannot be retrieved."""
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+    type
+        The argument may be a module, class, method, function, traceback, frame,
+        or code object.  The source code is returned as a list of all the lines
+        in the file and the line number indexes a line in that list.  An IOError
+        is raised if the source code cannot be retrieved.
+
+    """
     filename = inspect.getsourcefile(obj)
     if filename:
         linecache.checkcache(filename)
@@ -58,13 +68,22 @@ def findsource(obj):
 
 
 def getsourcelines(object):
-    """Return a list of source lines and starting line number for an object.
+    """
 
-    The argument may be a module, class, method, function, traceback, frame,
-    or code object.  The source code is returned as a list of the lines
-    corresponding to the object and the line number indicates where in the
-    original source file the first line of code was found.  An IOError is
-    raised if the source code cannot be retrieved."""
+    Parameters
+    ----------
+    object :
+        
+
+    Returns
+    -------
+    type
+        The argument may be a module, class, method, function, traceback, frame,
+        or code object.  The source code is returned as a list of the lines
+        corresponding to the object and the line number indicates where in the
+        original source file the first line of code was found.  An IOError is
+
+    """
     lines, lnum = findsource(object)
 
     if inspect.ismodule(object):
@@ -74,11 +93,21 @@ def getsourcelines(object):
 
 
 def getsource(object):
-    """Return the text of the source code for an object.
+    """
 
-    The argument may be a module, class, method, function, traceback, frame,
-    or code object.  The source code is returned as a single string.  An
-    IOError is raised if the source code cannot be retrieved."""
+    Parameters
+    ----------
+    object :
+        
+
+    Returns
+    -------
+    type
+        The argument may be a module, class, method, function, traceback, frame,
+        or code object.  The source code is returned as a single string.  An
+        IOError is raised if the source code cannot be retrieved.
+
+    """
     lines, lnum = getsourcelines(object)
     return str.join('', lines)
 
@@ -89,7 +118,7 @@ def getsource(object):
 class SardanaLibrary(SardanaBaseObject):
     """Object representing a python module containing sardana classes.
        Public members:
-
+    
            - module - reference to python module
            - file_path - complete (absolute) path (with file name at the end)
            - file_name - file name (including file extension)
@@ -97,7 +126,15 @@ class SardanaLibrary(SardanaBaseObject):
            - name - (=module name) module name (without file extension)
            - meta_classes - dict<str, SardanMetaClass>
            - exc_info - exception information if an error occurred when loading
-                        the module"""
+                        the module
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     description = '<Undocumented>'
 
@@ -140,16 +177,30 @@ class SardanaLibrary(SardanaBaseObject):
     def module_name(self):
         """Returns the module name for this library.
 
-        :return: the module name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the module name
+
+        """
         return self.name
 
     @property
     def code(self):
         """Returns a sequence of sourcelines corresponding to the module code.
 
-           :return: list of source code lines
-           :rtype: list<str>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<str>
+            list of source code lines
+
+        """
         code = self._code
         if code is None:
             raise IOError('source code not available')
@@ -159,8 +210,15 @@ class SardanaLibrary(SardanaBaseObject):
         """Adds a new :class:~`sardana.sardanameta.SardanaClass` to this
         library.
 
-        :param meta_class: the meta class to be added to this library
-        :type meta_class: :class:~`sardana.sardanameta.SardanaClass`"""
+        Parameters
+        ----------
+        meta_class : class: :class:~`sardana.sardanameta.SardanaClass
+            the meta class to be added to this library
+
+        Returns
+        -------
+
+        """
         self.meta_classes[meta_class.name] = meta_class
 
     def get_meta_class(self, meta_class_name):
@@ -168,37 +226,64 @@ class SardanaLibrary(SardanaBaseObject):
         given meta class name or None if the meta class does not exist in this
         library.
 
-        :param meta_class_name: the meta class name
-        :type meta_class_name: :obj:`str`
-        :return: a meta class or None
-        :rtype: :class:~`sardana.sardanameta.SardanaClass`"""
+        Parameters
+        ----------
+        meta_class_name : obj:`str`
+            the meta class name
+
+        Returns
+        -------
+        class:~`sardana.sardanameta.SardanaClass`
+            a meta class or None
+
+        """
         return self.meta_classes.get(meta_class_name)
 
     def get_meta_classes(self):
         """Returns a sequence of the meta classes that belong to this library.
 
-        :return: a sequence of meta classes that belong to this library
-        :rtype: seq<:class:~`sardana.sardanameta.SardanaClass`>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        seq<:class:~`sardana.sardanameta.SardanaClass`>
+            a sequence of meta classes that belong to this library
+
+        """
         return list(self.meta_classes.values())
 
     def has_meta_class(self, meta_class_name):
         """Returns True if the given meta class name belongs to this library
         or False otherwise.
 
-        :param meta_class_name: the meta class name
-        :type meta_class_name: :obj:`str`
+        Parameters
+        ----------
+        meta_class_name : obj:`str`
+            the meta class name
 
-        :return: True if the given meta class name belongs to this library
-                 or False otherwise
-        :rtype: bool"""
+        Returns
+        -------
+        bool
+            True if the given meta class name belongs to this library
+            or False otherwise
+
+        """
         return meta_class_name in self.meta_classes
 
     def add_meta_function(self, meta_function):
         """Adds a new :class:~`sardana.sardanameta.SardanaFunction` to this
         library.
 
-        :param meta_function: the meta function to be added to this library
-        :type meta_function: :class:~`sardana.sardanameta.SardanaFunction`"""
+        Parameters
+        ----------
+        meta_function : class:~`sardana.sardanameta.SardanaFunction
+            the meta function to be added to this library
+
+        Returns
+        -------
+
+        """
         self.meta_functions[meta_function.name] = meta_function
 
     def get_meta_function(self, meta_function_name):
@@ -206,39 +291,66 @@ class SardanaLibrary(SardanaBaseObject):
         given meta function name or None if the meta function does not exist in
         this library.
 
-        :param meta_function_name: the meta function name
-        :type meta_function_name: :obj:`str`
-        :return: a meta function or None
-        :rtype: :class:~`sardana.sardanameta.SardanaFunction`"""
+        Parameters
+        ----------
+        meta_function_name : obj:`str`
+            the meta function name
+
+        Returns
+        -------
+        class:~`sardana.sardanameta.SardanaFunction`
+            a meta function or None
+
+        """
         return self.meta_functions.get(meta_function_name)
 
     def get_meta_functions(self):
         """Returns a sequence of the meta functions that belong to this library.
 
-        :return: a sequence of meta functions that belong to this library
-        :rtype: seq<:class:~`sardana.sardanameta.SardanaFunction`>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        seq<:class:~`sardana.sardanameta.SardanaFunction`>
+            a sequence of meta functions that belong to this library
+
+        """
         return list(self.meta_functions.values())
 
     def has_meta_function(self, meta_function_name):
         """Returns True if the given meta function name belongs to this library
         or False otherwise.
 
-        :param meta_function_name: the meta function name
-        :type meta_function_name: :obj:`str`
+        Parameters
+        ----------
+        meta_function_name : obj:`str`
+            the meta function name
 
-        :return: True if the given meta function name belongs to this library
-                 or False otherwise
-        :rtype: bool"""
+        Returns
+        -------
+        bool
+            True if the given meta function name belongs to this library
+            or False otherwise
+
+        """
         return meta_function_name in self.meta_functions
 
     def get_meta(self, meta_name):
         """Returns a :class:~`sardana.sardanameta.SardanaCode` for the
         given meta name or None if the meta does not exist in this library.
 
-        :param meta_name: the meta name (class, function)
-        :type meta_name: :obj:`str`
-        :return: a meta or None
-        :rtype: :class:~`sardana.sardanameta.SardanaCode`"""
+        Parameters
+        ----------
+        meta_name : obj:`str`
+            the meta name (class, function)
+
+        Returns
+        -------
+        class:~`sardana.sardanameta.SardanaCode`
+            a meta or None
+
+        """
         ret = self.get_meta_class(meta_name)
         if ret is None:
             ret = self.get_meta_function(meta_name)
@@ -248,13 +360,18 @@ class SardanaLibrary(SardanaBaseObject):
         """Returns True if the given meta name belongs to this library
         or False otherwise.
 
-        :param meta_name: the meta name
-        :type meta_name: :obj:`str`
+        Parameters
+        ----------
+        meta_name : obj:`str`
+            the meta name
 
-        :return:
+        Returns
+        -------
+        bool
             True if the given meta (class or function) name belongs to this
             library or False otherwise
-        :rtype: bool"""
+
+        """
         return self.has_meta_class(meta_name) or \
             self.has_meta_function(meta_name)
 
@@ -262,10 +379,15 @@ class SardanaLibrary(SardanaBaseObject):
         """Returns True if any meta object exists in the library
         or False otherwise.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
             True if any meta object (class or function) exists
             in the library or False otherwise
-        :rtype: bool
+
         """
         has_metas_bool = False
         if (len(self.get_meta_classes()) > 0 or
@@ -277,55 +399,103 @@ class SardanaLibrary(SardanaBaseObject):
         """Returns a sequence of the meta (class and functions) that belong to
         this library.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        seq<:class:~`sardana.sardanameta.SardanaCode`>
             a sequence of meta (class and functions) that belong to this library
-        :rtype: seq<:class:~`sardana.sardanameta.SardanaCode`>"""
+
+        """
         return self.get_meta_classes() + self.get_meta_functions()
 
     def get_name(self):
         """Returns the module name for this library (same as
         :meth:~sardana.sardanameta.SardanaLibrary.get_module_name).
 
-        :return: the module name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the module name
+
+        """
         return self.name
 
     def get_module_name(self):
         """Returns the module name for this library (same as
         :meth:~sardana.sardanameta.SardanaLibrary.get_name).
 
-        :return: the module name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the module name
+
+        """
         return self.module_name
 
     def get_module(self):
         """Returns the python module for this library.
 
-        :return: the python module
-        :rtype: object"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        object
+            the python module
+
+        """
         return self.module
 
     def get_description(self):
         """Returns the this library documentation or "<Undocumented>" if no
         documentation exists.
 
-        :return: this library documentation or None
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            this library documentation or None
+
+        """
         return self.description
 
     def get_code(self):
         """Returns a sequence of sourcelines corresponding to the module code.
 
-       :return: list of source code lines
-       :rtype: list<str>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<str>
+            list of source code lines
+
+        """
         return self.code
 
     def get_file_path(self):
         """Returns the file path for this library. On posix systems is something
         like: /abs/path/filename.py
 
-        :return: this library file path
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            this library file path
+
+        """
         if self.file_path is None:
             return None
         if self.file_path.endswith('.pyc'):
@@ -336,23 +506,44 @@ class SardanaLibrary(SardanaBaseObject):
         """Returns the file name for this library. On posix systems is something
         like: filename.py
 
-        :return: this library file name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            this library file name
+
+        """
         return self.file_name
 
     def has_errors(self):
         """Returns True if this library has syntax errors or False otherwise.
 
-        :return: True if this library has syntax errors or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True if this library has syntax errors or False otherwise
+
+        """
         return self.exc_info is not None
 
     def set_error(self, exc_info):
         """Sets the error information for this library
 
-        :param exc_info: error information. It must be an object similar to the
-                         one returned by :func:`sys.exc_info`
-        :type exc_info: tuple<type, value, traceback>"""
+        Parameters
+        ----------
+        exc_info : tuple<type, value, traceback
+            error information. It must be an object similar to the
+            one returned by :func:`sys.exc_info`
+
+        Returns
+        -------
+
+        """
         self.exc_info = exc_info
         if exc_info is None:
             self.meta_classes = {}
@@ -362,16 +553,34 @@ class SardanaLibrary(SardanaBaseObject):
         """Gets the error information for this library or None if no error
         exists
 
-        :return: error information. An object similar to the one returned by
-                 :func:`sys.exc_info`
-        :rtype: tuple<type, value, traceback>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        tuple<type, value, traceback>
+            error information. An object similar to the one returned by
+            :func:`sys.exc_info`
+
+        """
         return self.exc_info
 
     def serialize(self, *args, **kwargs):
         """Returns a serializable object describing this object.
 
-        :return: a serializable dict
-        :rtype: dict"""
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+        dict
+            a serializable dict
+
+        """
         kwargs = SardanaBaseObject.serialize(self, *args, **kwargs)
         kwargs['id'] = 0
         kwargs['module'] = self.name
@@ -412,6 +621,7 @@ class SardanaCode(SardanaBaseObject):
 
     @property
     def code_object(self):
+        """ """
         return self._code_obj
 
     @property
@@ -419,24 +629,45 @@ class SardanaCode(SardanaBaseObject):
         """Returns the library :class:~`sardana.sardanameta.SardanaLibrary`
         for this class.
 
-        :return: a reference to the library where this class is located
-        :rtype: :class:~`sardana.sardanameta.SardanaLibrary`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:~`sardana.sardanameta.SardanaLibrary`
+            a reference to the library where this class is located
+
+        """
         return self._lib()
 
     @property
     def module(self):
         """Returns the python module for this class.
 
-        :return: the python module
-        :rtype: object"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        object
+            the python module
+
+        """
         return self.lib.module
 
     @property
     def module_name(self):
         """Returns the module name for this class.
 
-        :return: the module name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the module name
+
+        """
         return self.lib.get_module_name()
 
     @property
@@ -444,8 +675,15 @@ class SardanaCode(SardanaBaseObject):
         """Returns the file path for for the library where this class is. On
         posix systems is something like: /abs/path/filename.py
 
-        :return: the file path for for the library where this class is
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the file path for for the library where this class is
+
+        """
         return self.lib.file_path
 
     @property
@@ -453,8 +691,15 @@ class SardanaCode(SardanaBaseObject):
         """Returns the file name for the library where this class is. On posix
         systems is something like: filename.py
 
-        :return: the file name for the library where this class is
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the file name for the library where this class is
+
+        """
         return self.lib.file_name
 
     @property
@@ -462,15 +707,30 @@ class SardanaCode(SardanaBaseObject):
         """Returns the absolute path for the library where this class is. On
         posix systems is something like: /abs/path
 
-        :return: the absolute path for the library where this class is
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the absolute path for the library where this class is
+
+        """
         return self.lib.path
 
     @property
     def code(self):
         """Returns a tuple (sourcelines, firstline) corresponding to the
         definition of this code object. sourcelines is a list of source code
-        lines. firstline is the line number of the first source code line."""
+        lines. firstline is the line number of the first source code line.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         code = self._code
         if code is None:
             raise IOError('source code not available')
@@ -479,14 +739,33 @@ class SardanaCode(SardanaBaseObject):
     def get_code(self):
         """Returns a tuple (sourcelines, firstline) corresponding to the
         definition of the controller class. sourcelines is a list of source code
-        lines. firstline is the line number of the first source code line."""
+        lines. firstline is the line number of the first source code line.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self.code
 
     def serialize(self, *args, **kwargs):
         """Returns a serializable object describing this object.
 
-        :return: a serializable dict
-        :rtype: dict"""
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+        dict
+            a serializable dict
+
+        """
         kwargs = SardanaBaseObject.serialize(self, *args, **kwargs)
         kwargs['id'] = 0
         kwargs['module'] = self.module_name
@@ -497,6 +776,17 @@ class SardanaCode(SardanaBaseObject):
         return kwargs
 
     def get_brief_description(self, max_chars=60):
+        """
+
+        Parameters
+        ----------
+        max_chars :
+             (Default value = 60)
+
+        Returns
+        -------
+
+        """
         desc = self.description.replace('\n', ' ')
         if len(desc) > (max_chars - 5):
             desc = desc[:max_chars - 5] + '[...]'
@@ -514,6 +804,7 @@ class SardanaClass(SardanaCode):
 
     @property
     def klass(self):
+        """ """
         return self.code_object
 
 
@@ -528,4 +819,5 @@ class SardanaFunction(SardanaCode):
 
     @property
     def function(self):
+        """ """
         return self.code_object

@@ -44,11 +44,31 @@ class PoolBaseObject(SardanaBaseObject):
         """Return the :class:`sardana.pool.pool.Pool` which *owns* this pool
         object.
 
-        :return: the pool which *owns* this pool object.
-        :rtype: :class:`sardana.pool.pool.Pool`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`sardana.pool.pool.Pool`
+            the pool which *owns* this pool object.
+
+        """
         return self.get_manager()
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaBaseObject.serialize(self, *args, **kwargs)
         kwargs['pool'] = self.pool.name
         return kwargs

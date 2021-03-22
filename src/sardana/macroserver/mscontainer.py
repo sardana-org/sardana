@@ -34,4 +34,5 @@ from sardana.sardanacontainer import SardanaContainer
 
 
 class MSContainer(SardanaContainer):
+    """ """
     pass

@@ -33,12 +33,17 @@ class SardanaValueTestCase(unittest.TestCase):
 
     """Instantiating in different ways a Sardana Value and perform some
        verifications.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def testInstanceCreation(self):
-        """
-        Instantiate in different ways a SardanaValue object.
-            """
+        """Instantiate in different ways a SardanaValue object."""
         sar_val = SardanaValue()
         self.assertIsInstance(sar_val, SardanaValue, 'Instantiation of an ' +
                               'object SardanaValue without arguments does not work')
@@ -64,6 +69,13 @@ class SardanaValueTestCase(unittest.TestCase):
     def testSardanaValueWithExceptionInfo(self):
         """Verify the creation of SardanaValue when exc_info != None.
             Verify that 'Error' is contained in the returned string.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         val = 4
         sar_val = SardanaValue(value=val, exc_info='exception_info')
@@ -79,7 +91,14 @@ class SardanaValueTestCase(unittest.TestCase):
         """Verify the creation of SardanaValue when exc_info is not specified
             and we give a value as argument of the SardanaValue constructor.
             SardanaValue representation shall contain its value.
-            """
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         value = 5
         sar_val = SardanaValue(value=value)
         returned_string = sar_val.__repr__()

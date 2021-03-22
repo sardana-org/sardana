@@ -49,10 +49,16 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 
 class LimitsListener(Qt.QObject):
-    """
-    A class that listens to changes on motor limits.
+    """A class that listens to changes on motor limits.
     If that is the case it emits a signal so the application
     can do whatever with it.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     updateLimits = Qt.pyqtSignal(compat.PY_OBJECT)
@@ -61,6 +67,21 @@ class LimitsListener(Qt.QObject):
         Qt.QObject.__init__(self)
 
     def eventReceived(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
         limits = evt_value.value
@@ -68,12 +89,14 @@ class LimitsListener(Qt.QObject):
 
 
 class Limit(IntEnum):
+    """ """
     Home = 0
     Positive = 1
     Negative = 2
 
 
 class LimitInfo:
+    """ """
 
     def __init__(self, exist=False, active=False, status=""):
         # for software limit True when defined
@@ -86,12 +109,18 @@ class LimitInfo:
 def eval_hw_limit(limit, value):
     """Evaluate hardware limit information
 
-    :param limit: which limit (negative or positive)
-    :type limit: `Limit`
-    :param value: limit value, `None` means no hardware limit (pseudo motor)
-    :type value: `bool` or `None`
-    :return: limit information
-    :rtype: `LimitInfo`
+    Parameters
+    ----------
+    limit : Limit`
+        which limit (negative or positive)
+    value : bool` or `None`
+        limit value, `None` means no hardware limit (pseudo motor)
+
+    Returns
+    -------
+    LimitInfo`
+        limit information
+
     """
     if limit is Limit.Positive:
         status = "Positive "
@@ -116,12 +145,18 @@ def eval_hw_limit(limit, value):
 def eval_sw_limit(limit, position_attr):
     """Evaluate software limit information
 
-    :param limit: which limit (negative or positive)
-    :type limit: `Limit`
-    :param position_attr: position attribute
-    :type position_attr: `taurus.core.tango.TangoAttribute`
-    :return: limit information
-    :rtype: `LimitInfo`
+    Parameters
+    ----------
+    limit : Limit`
+        which limit (negative or positive)
+    position_attr : taurus.core.tango.TangoAttribute`
+        position attribute
+
+    Returns
+    -------
+    LimitInfo`
+        limit information
+
     """
     if limit == Limit.Positive:
         getter_name = "getMaxRange"
@@ -153,6 +188,7 @@ def eval_sw_limit(limit, position_attr):
 
 
 class PoolMotorClient():
+    """ """
 
     maxint_in_32_bits = 2147483647
 
@@ -162,6 +198,17 @@ class PoolMotorClient():
         self.has_encoder = False
 
     def setMotor(self, pool_motor_dev_name):
+        """
+
+        Parameters
+        ----------
+        pool_motor_dev_name :
+            
+
+        Returns
+        -------
+
+        """
         # AT SOME POINT THIS WILL BE USING THE 'POOL' TAURUS EXTENSION
         # TO OPERATE THE MOTOR INSTEAD OF A 'TANGO' TAURUSDEVICE
         try:
@@ -174,15 +221,38 @@ class PoolMotorClient():
             taurus.warning('Exception Creating Motor Device %s', str(e))
 
     def moveMotor(self, pos):
+        """
+
+        Parameters
+        ----------
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         #self.motor_dev['position'] = pos
         # Make use of Taurus operations (being logged)
         self.motor_dev.getAttribute('Position').write(pos)
 
     def moveInc(self, inc):
+        """
+
+        Parameters
+        ----------
+        inc :
+            
+
+        Returns
+        -------
+
+        """
         self.moveMotor(self.motor_dev['position'].value + inc)
 
     @Qt.pyqtSlot()
     def jogNeg(self):
+        """ """
         neg_limit = -((self.maxint_in_32_bits // 2) - 1)
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
         # SO IF THERE ARE STEPS PER UNIT, max_int HAS TO BE REDUCED
@@ -198,6 +268,7 @@ class PoolMotorClient():
 
     @Qt.pyqtSlot()
     def jogPos(self):
+        """ """
         pos_limit = (self.maxint_in_32_bits // 2) - 1
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
         # SO IF THERE ARE STEPS PER UNIT, max_int HAS TO BE REDUCED
@@ -213,17 +284,30 @@ class PoolMotorClient():
 
     @Qt.pyqtSlot()
     def goHome(self):
+        """ """
         pass
 
     @Qt.pyqtSlot()
     def abort(self):
+        """ """
         self.motor_dev.abort()
 
 
 class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
-    """ Offer richer mime data with taurus-device, taurus-attribute, and plain-text. """
+    """Offer richer mime data with taurus-device, taurus-attribute, and plain-text."""
 
     def mouseMoveEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         model = self.taurusValueBuddy().getModelName().encode('utf-8')
         mimeData = Qt.QMimeData()
         mimeData.setText(self.text())
@@ -239,12 +323,14 @@ class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
 
 
 class PoolMotorConfigurationForm(TaurusAttrForm):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusAttrForm.__init__(self, parent, designMode)
         self._form.setWithButtons(False)
 
     def getMotorControllerType(self):
+        """ """
         modelObj = self.getModelObj()
         modelNormalName = modelObj.getNormalName()
         poolDsId = modelObj.getDeviceProxy().info().server_id
@@ -274,6 +360,17 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
         return controllerType
 
     def getDisplayAttributes(self, controllerType):
+        """
+
+        Parameters
+        ----------
+        controllerType :
+            
+
+        Returns
+        -------
+
+        """
         attributes = ['position',
                       'state',
                       'status',
@@ -376,6 +473,17 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
         return attributes
 
     def setModel(self, modelName):
+        """
+
+        Parameters
+        ----------
+        modelName :
+            
+
+        Returns
+        -------
+
+        """
         TaurusAttrForm.setModel(self, modelName)
         controllerType = self.getMotorControllerType()
         attributes = self.getDisplayAttributes(controllerType)
@@ -390,9 +498,15 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
 ##########################################################################
 
 class TaurusAttributeListener(Qt.QObject):
-    """
-    A class that recieves events on tango attribute changes.
+    """A class that recieves events on tango attribute changes.
     If that is the case it emits a signal with the event's value.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     eventReceivedSignal = Qt.pyqtSignal(compat.PY_OBJECT)
@@ -401,6 +515,21 @@ class TaurusAttributeListener(Qt.QObject):
         Qt.QObject.__init__(self)
 
     def eventReceived(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
         try:
@@ -415,14 +544,20 @@ class TaurusAttributeListener(Qt.QObject):
 #                  LABEL WIDGET                  #
 ##################################################
 class PoolMotorTVLabelWidget(TaurusWidget):
-    '''
-    @TODO tooltip should be extended with status info
+    """@TODO tooltip should be extended with status info
     @TODO context menu should be the lbl_alias extended
     @TODO default tooltip extended with the complete (multiline) status
     @TODO rightclick popup menu with actions: (1) switch user/expert view, (2) Config -all attributes-, (3) change motor
     For the (3), a drop event should accept if it is a device, and add it to the 'change-motor' list and select
     @TODO on the 'expert' row, it could be an ENABLE section with a button to set PowerOn to True/False
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     layoutAlignment = Qt.Qt.AlignTop
 
@@ -460,6 +595,17 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.lbl_alias.mouseMoveEvent = self.mouseMoveEvent
 
     def setExpertView(self, expertView):
+        """
+
+        Parameters
+        ----------
+        expertView :
+            
+
+        Returns
+        -------
+
+        """
         btn_poweron_visible = expertView \
                               and self.taurusValueBuddy().hasPowerOn()
         self.btn_poweron.setVisible(btn_poweron_visible)
@@ -468,12 +614,24 @@ class PoolMotorTVLabelWidget(TaurusWidget):
     @ProtectTaurusMessageBox(
         msg='An error occurred trying to write PowerOn Attribute.')
     def setPowerOn(self):
+        """ """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             poweron = (self.btn_poweron.text() == 'Set ON')
             motor_dev.getAttribute('PowerOn').write(poweron)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         # Handle User/Expert view
         try:
             self.taurusValueBuddy().expertViewChanged.disconnect(
@@ -498,6 +656,17 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.setExpertView(self.taurusValueBuddy()._expertView)
 
     def calculateExtendedTooltip(self, cache=False):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         default_label_widget_tooltip = DefaultLabelWidget.getFormatedToolTip(
             self.lbl_alias, cache)
         status_info = ''
@@ -514,6 +683,17 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         return default_label_widget_tooltip + status_info
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         # Overwrite the default taurus label behaviour
         menu = Qt.QMenu(self)
         action_expert_view = Qt.QAction(self)
@@ -541,6 +721,17 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         event.accept()
 
     def mouseMoveEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         model = self.taurusValueBuddy().getModelObj()
         mimeData = Qt.QMimeData()
         mimeData.setText(self.lbl_alias.text())
@@ -560,10 +751,16 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
 
 class PoolMotorTVReadWidget(TaurusWidget):
-    '''
-    @TODO on the 'expert' row, there should be an Indexer/Encoder radiobuttongroup to show units from raw dial/indx/enc
+    """@TODO on the 'expert' row, there should be an Indexer/Encoder radiobuttongroup to show units from raw dial/indx/enc
     @TODO TaurusLCD may be used but, now it does not display the sign, and color is WHITE...
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     layoutAlignment = Qt.Qt.AlignTop
 
@@ -632,6 +829,19 @@ class PoolMotorTVReadWidget(TaurusWidget):
         # SIGNAL...
 
     def eventFilter(self, obj, event):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        event :
+            
+
+        Returns
+        -------
+
+        """
         if event.type() == Qt.QEvent.MouseButtonDblClick:
             if isinstance(self.parent(), TaurusReadWriteSwitcher):
                 self.parent().enterEdit()
@@ -647,11 +857,23 @@ class PoolMotorTVReadWidget(TaurusWidget):
     @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
     def abort(self):
+        """ """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             motor_dev.abort()
 
     def setExpertView(self, expertView):
+        """
+
+        Parameters
+        ----------
+        expertView :
+            
+
+        Returns
+        -------
+
+        """
         if self.lbl_enc_read is None:
             return
         self.lbl_enc.setVisible(False)
@@ -662,6 +884,17 @@ class PoolMotorTVReadWidget(TaurusWidget):
             self.lbl_enc_read.setVisible(encoder)
 
     def prepare_button(self, btn):
+        """
+
+        Parameters
+        ----------
+        btn :
+            
+
+        Returns
+        -------
+
+        """
         btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
         btn_policy.setHorizontalStretch(0)
         btn_policy.setVerticalStretch(0)
@@ -671,6 +904,17 @@ class PoolMotorTVReadWidget(TaurusWidget):
         btn.setText('')
 
     def prepare_limit(self, lbl):
+        """
+
+        Parameters
+        ----------
+        lbl :
+            
+
+        Returns
+        -------
+
+        """
         lbl_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
         lbl_policy.setHorizontalStretch(0)
         lbl_policy.setVerticalStretch(0)
@@ -680,12 +924,20 @@ class PoolMotorTVReadWidget(TaurusWidget):
     def _config_limit(self, limit, hw_lim, sw_lim):
         """Configure sub-widgets according to limit information
 
-        :param limit: which limit (negative or positive)
-        :type limit: `Limit`
-        :param hw_lim: hardware limit information
-        :type hw_lim: `LimitInfo`
-        :param hw_lim: software limit information
-        :type hw_lim: `LimitInfo`
+        Parameters
+        ----------
+        limit : Limit`
+            which limit (negative or positive)
+        hw_lim : LimitInfo`
+            hardware limit information
+        hw_lim : LimitInfo`
+            software limit information
+        sw_lim :
+            
+
+        Returns
+        -------
+
         """
         if limit == Limit.Negative:
             widget = self.lim_neg
@@ -711,6 +963,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
         widget.setPixmap(pixmap)
 
     def _create_encoder(self):
+        """ """
         if self.taurusValueBuddy().hasEncoder() and self.lbl_enc_read is None:
             self.lbl_enc = Qt.QLabel('Encoder')
             self.layout().addWidget(self.lbl_enc, 1, 0)
@@ -730,6 +983,17 @@ class PoolMotorTVReadWidget(TaurusWidget):
             self.lbl_enc_read.setVisible(False)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if hasattr(self, 'taurusValueBuddy'):
             try:
                 self.taurusValueBuddy().expertViewChanged.disconnect(
@@ -758,6 +1022,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
 ##################################################
 
 class PoolMotorTVWriteWidget(TaurusWidget):
+    """ """
 
     layoutAlignment = Qt.Qt.AlignTop
 
@@ -910,7 +1175,19 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             w.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        '''reimplemented to intercept events from the subwidgets'''
+        """reimplemented to intercept events from the subwidgets
+
+        Parameters
+        ----------
+        obj :
+            
+        event :
+            
+
+        Returns
+        -------
+
+        """
         try:
             if obj in (self.btn_to_neg_press, self.btn_to_pos_press):
                 if event.type() == Qt.QEvent.MouseButtonRelease:
@@ -927,6 +1204,17 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         return False
 
     def cbAbsoluteRelativeChanged(self, abs_rel_option):
+        """
+
+        Parameters
+        ----------
+        abs_rel_option :
+            
+
+        Returns
+        -------
+
+        """
         abs_visible = abs_rel_option == 'Abs'
         rel_visible = abs_rel_option == 'Rel'
         if rel_visible:
@@ -936,14 +1224,27 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
     @Qt.pyqtSlot()
     def stepDown(self):
+        """ """
         self.goRelative(-1)
 
     @Qt.pyqtSlot()
     def stepUp(self):
+        """ """
         self.goRelative(+1)
 
     @ProtectTaurusMessageBox(msg='An error occurred trying to move the motor.')
     def goRelative(self, direction):
+        """
+
+        Parameters
+        ----------
+        direction :
+            
+
+        Returns
+        -------
+
+        """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             increment = direction * float(self.cb_step.currentText())
@@ -955,6 +1256,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to move the motor.')
     def goNegative(self):
+        """ """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             min_value = float(motor_dev.getAttribute('Position').min_value)
@@ -963,6 +1265,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to move the motor.')
     def goPositive(self):
+        """ """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             max_value = float(motor_dev.getAttribute('Position').max_value)
@@ -971,11 +1274,23 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
     def abort(self):
+        """ """
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             motor_dev.abort()
 
     def prepare_button(self, btn):
+        """
+
+        Parameters
+        ----------
+        btn :
+            
+
+        Returns
+        -------
+
+        """
         btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
         btn_policy.setHorizontalStretch(0)
         btn_policy.setVerticalStretch(0)
@@ -985,6 +1300,17 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         btn.setText('')
 
     def setExpertView(self, expertView):
+        """
+
+        Parameters
+        ----------
+        expertView :
+            
+
+        Returns
+        -------
+
+        """
         self.btn_to_neg.setVisible(expertView)
         self.btn_to_neg_press.setVisible(expertView)
 
@@ -1003,6 +1329,17 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.btn_to_pos_press.setEnabled(pos_sw_limit_enabled)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if hasattr(self, 'taurusValueBuddy'):
             try:
                 self.taurusValueBuddy().expertViewChanged.disconnect(
@@ -1022,6 +1359,17 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.setExpertView)
 
     def keyPressEvent(self, key_event):
+        """
+
+        Parameters
+        ----------
+        key_event :
+            
+
+        Returns
+        -------
+
+        """
         if key_event.key() == Qt.Qt.Key_Escape:
             self.abort()
             key_event.accept()
@@ -1029,17 +1377,26 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
     @Qt.pyqtSlot()
     def emitEditingFinished(self):
+        """ """
         self.applied.emit()
 
     def _config_limit(self, limit, hw_lim, sw_lim):
         """Configure sub-widgets according to limit information
 
-        :param limit: which limit (negative or positive)
-        :type limit: `Limit`
-        :param hw_lim: hardware limit information
-        :type hw_lim: `LimitInfo`
-        :param hw_lim: software limit information
-        :type hw_lim: `LimitInfo`
+        Parameters
+        ----------
+        limit : Limit`
+            which limit (negative or positive)
+        hw_lim : LimitInfo`
+            hardware limit information
+        hw_lim : LimitInfo`
+            software limit information
+        sw_lim :
+            
+
+        Returns
+        -------
+
         """
         if limit == Limit.Negative:
             step_widget = self.btn_step_down
@@ -1067,6 +1424,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 #                  UNITS WIDGET                  #
 ##################################################
 class PoolMotorTVUnitsWidget(DefaultUnitsWidget):
+    """ """
 
     layoutAlignment = Qt.Qt.AlignTop
 
@@ -1074,6 +1432,17 @@ class PoolMotorTVUnitsWidget(DefaultUnitsWidget):
         DefaultUnitsWidget.__init__(self, parent, designMode)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if model in (None, ''):
             DefaultUnitsWidget.setModel(self, model)
             return
@@ -1085,14 +1454,21 @@ class PoolMotorTVUnitsWidget(DefaultUnitsWidget):
 
 
 class PoolMotorTV(TaurusValue):
-    ''' A widget that displays and controls a pool Motor device.  It
+    """A widget that displays and controls a pool Motor device.  It
     behaves as a TaurusValue.
     @TODO the view mode should be stored in the configuration
     @TODO the motor list should be stored in the configuration
     @TODO the selected radiobuttons (dial/indx/enc) and (abs/rel) should be stored in configuration
     @TODO it would be nice if the neg/pos limits could react also when software limits are 'active'
     @TODO expert view for read widget should include signals (indexer/encoder/inpos)...
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     expertViewChanged = Qt.pyqtSignal(bool)
 
@@ -1113,16 +1489,40 @@ class PoolMotorTV(TaurusValue):
         self.setExpertView(False)
 
     def setExpertView(self, expertView):
+        """
+
+        Parameters
+        ----------
+        expertView :
+            
+
+        Returns
+        -------
+
+        """
         self._expertView = expertView
         self.expertViewChanged.emit(expertView)
 
     def getExpertView(self):
+        """ """
         return self._expertView
 
     def minimumHeight(self):
+        """ """
         return None  # @todo: UGLY HACK to avoid subwidgets being forced to minimumheight=20
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         TaurusValue.setModel(self, model)
 
         # disconnect signals
@@ -1213,18 +1613,33 @@ class PoolMotorTV(TaurusValue):
             return
 
     def hasPowerOn(self):
+        """ """
         try:
             return hasattr(self.motor_dev, 'PowerOn')
         except:
             return False
 
     def hasHwLimits(self):
+        """ """
         try:
             return hasattr(self.motor_dev, 'Limit_Switches')
         except:
             return False
 
     def updateLimits(self, limits, position=None):
+        """
+
+        Parameters
+        ----------
+        limits :
+            
+        position :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if isinstance(limits, dict):
             limits = limits["limits"]
 
@@ -1243,6 +1658,17 @@ class PoolMotorTV(TaurusValue):
         write_widget._config_limit(Limit.Negative, neg_hw_lim, neg_sw_lim)
 
     def updatePowerOn(self, poweron='__no_argument__'):
+        """
+
+        Parameters
+        ----------
+        poweron :
+             (Default value = '__no_argument__')
+
+        Returns
+        -------
+
+        """
         if poweron == '__no_argument__':
             msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
             self.debug(msg)
@@ -1253,6 +1679,17 @@ class PoolMotorTV(TaurusValue):
         self.labelWidget().btn_poweron.setText(btn_text)
 
     def updateStatus(self, status):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+
+        Returns
+        -------
+
+        """
         # SHOULD THERE BE A BETTER METHOD FOR THIS UPDATE?
         # IF THIS IS NOT DONE, THE TOOLTIP IS NOT CALCULATED EVERY TIME
         # TaurusLabel.updateStyle DIDN'T WORK, SO I HAD TO GO DEEPER TO THE CONTROLLER...
@@ -1260,6 +1697,17 @@ class PoolMotorTV(TaurusValue):
         self.labelWidget().lbl_alias.controllerUpdate()
 
     def updatePosition(self, position='__no_argument__'):
+        """
+
+        Parameters
+        ----------
+        position :
+             (Default value = '__no_argument__')
+
+        Returns
+        -------
+
+        """
         if position == '__no_argument__':
             msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
             self.debug(msg)
@@ -1276,12 +1724,14 @@ class PoolMotorTV(TaurusValue):
             self.updateLimits(limit_switches, position=position)
 
     def hasEncoder(self):
+        """ """
         try:
             return hasattr(self.motor_dev, 'Encoder')
         except:
             return False
 
     def showTangoAttributes(self):
+        """ """
         model = self.getModel()
         taurus_attr_form = TaurusAttrForm()
         taurus_attr_form.setMinimumSize(Qt.QSize(555, 800))
@@ -1306,8 +1756,7 @@ class PoolMotorTV(TaurusValue):
 
 
 class PoolMotor(TaurusFrame):
-    ''' A widget that displays and controls a pool Motor device.
-    '''
+    """A widget that displays and controls a pool Motor device."""
 
     def __init__(self, parent=None, designMode=False):
         TaurusFrame.__init__(self, parent, designMode)
@@ -1321,6 +1770,17 @@ class PoolMotor(TaurusFrame):
         self.pool_motor_tv = PoolMotorTV(self)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.pool_motor_tv.setModel(model)
         try:
             self.motor_dev = taurus.Device(model)
@@ -1329,6 +1789,7 @@ class PoolMotor(TaurusFrame):
 
 
 def main():
+    """ """
 
     import sys
     import taurus.qt.qtgui.application

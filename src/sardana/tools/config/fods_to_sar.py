@@ -17,6 +17,17 @@ from lxml import etree
 
 
 def transform(f):
+    """
+
+    Parameters
+    ----------
+    f :
+        
+
+    Returns
+    -------
+
+    """
     directory = os.path.dirname(os.path.abspath(__file__))
     xslt_filename = os.path.join(directory, "FODS_TO_SAR.xslt")
 
@@ -29,6 +40,7 @@ def transform(f):
 
 
 def main():
+    """ """
     if len(sys.argv) < 2:
         print(__doc__)
         sys.exit(1)

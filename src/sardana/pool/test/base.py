@@ -42,6 +42,23 @@ class BasePoolTestCase(object):
     LOGLEVEL = logging.WARNING
 
     def createController(self, name, klass, lib, props={}):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        klass :
+            
+        lib :
+            
+        props :
+             (Default value = {})
+
+        Returns
+        -------
+
+        """
         c_cfg = createCtrlConf(self.pool, name, klass, lib, props)
         ctrl_obj = createPoolController(self.pool, c_cfg)
         self.ctrls[name] = ctrl_obj
@@ -49,6 +66,21 @@ class BasePoolTestCase(object):
         return ctrl_obj
 
     def createCTElement(self, ctrl_obj, name, axis):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolCounterTimer(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -58,6 +90,21 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createZeroDElement(self, ctrl_obj, name, axis):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolZeroDExpChannel(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -67,6 +114,21 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createTwoDElement(self, ctrl_obj, name, axis):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolTwoDExpChannel(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -76,6 +138,21 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createTGElement(self, ctrl_obj, name, axis):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolTriggerGate(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -85,6 +162,21 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createMotorElement(self, ctrl_obj, name, axis):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolMotor(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -94,6 +186,23 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createPCElement(self, ctrl_obj, name, axis, elements=[]):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+        elements :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolPseudoCounter(self.pool, ctrl_obj, e_cfg,
                                            elements)
@@ -103,6 +212,23 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def createPMElement(self, ctrl_obj, name, axis, elements=[]):
+        """
+
+        Parameters
+        ----------
+        ctrl_obj :
+            
+        name :
+            
+        axis :
+            
+        elements :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolPseudoMotor(self.pool, ctrl_obj, e_cfg,
                                          elements)
@@ -112,8 +238,7 @@ class BasePoolTestCase(object):
         return elem_obj
 
     def setUp(self):
-        """Create a collection of controllers and elements.
-        """
+        """Create a collection of controllers and elements."""
         self.nctctrls = self.nzerodctrls = self.ntgctrls = self.nmotctrls = 4
         # dummy controller generates an array of zeros (1024x1024) for each
         # axis, many axes may increase the memory consumption of testsuite
@@ -217,6 +342,7 @@ class BasePoolTestCase(object):
             raise Exception(msg)
 
     def tearDown(self):
+        """ """
         self.pool.cleanup()
         self.pool = None
         self.ctrls = None

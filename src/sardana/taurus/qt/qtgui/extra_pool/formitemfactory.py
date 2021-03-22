@@ -44,12 +44,18 @@ T_FORM_POOL_WIDGET_MAP = {
 
 
 def pool_item_factory(model):
-    """
-    Taurus Value Factory to be registered as a TaurusForm item factory plugin
+    """Taurus Value Factory to be registered as a TaurusForm item factory plugin
 
-    :param model: taurus model object
+    Parameters
+    ----------
+    model :
+        taurus model object
 
-    :return: custom TaurusValue class
+    Returns
+    -------
+    type
+        custom TaurusValue class
+
     """
     # TODO: use sardana element types instead of tango classes
     try:

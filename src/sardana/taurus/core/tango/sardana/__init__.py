@@ -55,6 +55,7 @@ from .sardana import *
 
 
 def registerExtensions():
+    """ """
     from . import pool
     from . import macroserver
 
@@ -63,6 +64,7 @@ def registerExtensions():
 
 
 def unregisterExtensions():
+    """ """
     from . import pool
     from . import macroserver
 

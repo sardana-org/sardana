@@ -48,10 +48,12 @@ from taurus.core.util.containers import chunks
 
 
 class AmbiguousRecorderError(MacroServerException):
+    """ """
     pass
 
 
 class BaseFileRecorder(DataRecorder):
+    """ """
 
     def __init__(self, **pars):
         DataRecorder.__init__(self, **pars)
@@ -59,12 +61,15 @@ class BaseFileRecorder(DataRecorder):
         self.fd = None
 
     def getFileName(self):
+        """ """
         return self.filename
 
     def getFileObj(self):
+        """ """
         return self.fd
 
     def getFormat(self):
+        """ """
         return '<unknown>'
 
 
@@ -97,6 +102,17 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         self.entryname = 'entry'
 
     def setFileName(self, filename):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+
+        Returns
+        -------
+
+        """
         if self.fd is not None:
             self.fd.close()
 
@@ -110,11 +126,22 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def getFormat(self):
+        """ """
         return self.nxfilemode
 
     def sanitizeName(self, name):
-        '''It returns a version of the given name that can be used as a python
-        variable (and conforms to NeXus best-practices for dataset names)'''
+        """It returns a version of the given name that can be used as a python
+        variable (and conforms to NeXus best-practices for dataset names)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         # make sure the name does not start with a digit
         if name[0].isdigit():
             name = "_%s" % name
@@ -123,14 +150,23 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         return "".join(x for x in name.replace(' ', '_') if x.isalnum() or x == '_')
 
     def _nxln(self, src, dst, name=None):
-        '''convenience function to create NX links with just one call. On successful return, dst will be open.
+        """convenience function to create NX links with just one call. On successful return, dst will be open.
 
-        :param src: (str or NXgroup or NXfield) source group or dataset (or its path)
-        :param dst: (str or NXgroup) the group that will hold the link (or its path)
-        :param name: (str) name for the link. If not given, the name of the source is used
+        Parameters
+        ----------
+        src :
+            str or NXgroup or NXfield) source group or dataset (or its path)
+        dst :
+            str or NXgroup) the group that will hold the link (or its path)
+        name :
+            str) name for the link. If not given, the name of the source is used
+            
+            .. note:: `groupname:nxclass` notation can be used for both paths for better performance (Default value = None)
 
-        .. note:: `groupname:nxclass` notation can be used for both paths for better performance
-        '''
+        Returns
+        -------
+
+        """
 
         fd = getattr(self, 'fd')
         if fd is None:
@@ -159,14 +195,47 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
     #=========================================================================
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError(
             '_startRecordList must be implemented in BaseNEXUS_FileRecorder derived classes')
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError(
             '_writeRecord must be implemented in BaseNEXUS_FileRecorder derived classes')
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError(
             '_endRecordList must be implemented in BaseNEXUS_FileRecorder derived classes')
 
@@ -181,13 +250,31 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
     _nxentryInPath = re.compile(r'/[^/:]+:NXentry')
 
     def _makedata(self, name, dtype=None, shape=None, mode='lzw', chunks=None, comprank=None):
-        '''
-        combines :meth:`nxs.NeXus.makedata` and :meth:`nxs.NeXus.compmakedata` by selecting between
+        """combines :meth:`nxs.NeXus.makedata` and :meth:`nxs.NeXus.compmakedata` by selecting between
         using compression or not based on the comprank parameter and the rank of the data.
         Compression will be used only if the shape of the data is given and its length is larger
         than comprank. If comprank is not passed (or None is passed) the default dataCompressionRank
         will be used
-        '''
+
+        Parameters
+        ----------
+        name :
+            
+        dtype :
+             (Default value = None)
+        shape :
+             (Default value = None)
+        mode :
+             (Default value = 'lzw')
+        chunks :
+             (Default value = None)
+        comprank :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if comprank is None:
             comprank = self._dataCompressionRank
 
@@ -206,12 +293,30 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
                     name, dtype=dtype, shape=shape, mode=mode, chunks=chunks)
 
     def _writeData(self, name, data, dtype, shape=None, chunks=None, attrs=None):
-        '''
-        convenience method that creates datasets (calling self._makedata), opens
+        """convenience method that creates datasets (calling self._makedata), opens
         it (napi.opendata) and writes the data (napi.putdata).
         It also writes attributes (napi.putattr) if passed in a dictionary and
         it returns the data Id (useful for linking). The dataset is left closed.
-        '''
+
+        Parameters
+        ----------
+        name :
+            
+        data :
+            
+        dtype :
+            
+        shape :
+             (Default value = None)
+        chunks :
+             (Default value = None)
+        attrs :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if shape is None:
             if dtype == 'char':
                 shape = [len(data)]
@@ -230,9 +335,23 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         return nid
 
     def _newentryname(self, prefix='entry', suffix='', offset=1):
-        '''Returns a str representing the name for a new entry.
+        """Returns a str representing the name for a new entry.
         The name is formed by the prefix and an incremental numeric suffix.
-        The offset indicates the start of the numeric suffix search'''
+        The offset indicates the start of the numeric suffix search
+
+        Parameters
+        ----------
+        prefix :
+             (Default value = 'entry')
+        suffix :
+             (Default value = '')
+        offset :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         i = offset
         while True:
             entry = "%s%i" % (prefix, i)
@@ -246,13 +365,21 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
                 return entry
 
     def _nxln(self, src, dst):
-        '''convenience function to create NX links with just one call. On successful return, dst will be open.
+        """convenience function to create NX links with just one call. On successful return, dst will be open.
 
-        :param src: (str) the nxpath to the source group or dataset
-        :param dst: (str) the nxpath to the group that will hold the link
+        Parameters
+        ----------
+        src :
+            str) the nxpath to the source group or dataset
+        dst :
+            str) the nxpath to the group that will hold the link
+            
+            .. note:: `groupname:nxclass` notation can be used for both paths for better performance
 
-        .. note:: `groupname:nxclass` notation can be used for both paths for better performance
-        '''
+        Returns
+        -------
+
+        """
         self.fd.openpath(src)
         try:
             nid = self.fd.getdataID()
@@ -262,17 +389,25 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         self.fd.makelink(nid)
 
     def _createBranch(self, path):
-        """
-        Navigates the nexus tree starting in / and finishing in path.
-
+        """Navigates the nexus tree starting in / and finishing in path.
+        
         If path does not start with `/<something>:NXentry`, the current entry is
         prepended to it.
-
+        
         This method creates the groups if they do not exist. If the
         path is given using `name:nxclass` notation, the given nxclass is used.
         Otherwise, the class name is obtained from self.instrDict values (and if
         not found, it defaults to NXcollection). If successful, path is left
         open
+
+        Parameters
+        ----------
+        path :
+            
+
+        Returns
+        -------
+
         """
         m = self._nxentryInPath.match(path)
         if m is None:
@@ -302,6 +437,21 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
 
 
 def FileRecorder(filename, macro, **pars):
+    """
+
+    Parameters
+    ----------
+    filename :
+        
+    macro :
+        
+    **pars :
+        
+
+    Returns
+    -------
+
+    """
     ext = os.path.splitext(filename)[1].lower() or '.spec'
     rec_manager = macro.getMacroServer().recorder_manager
     klasses = rec_manager.getRecorderClasses(

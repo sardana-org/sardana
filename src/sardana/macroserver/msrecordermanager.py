@@ -50,6 +50,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class RecorderManager(MacroServerManager):
+    """ """
 
     DEFAULT_RECORDER_DIRECTORIES = os.path.join(_BASE_DIR, 'recorders'),
 
@@ -59,6 +60,7 @@ class RecorderManager(MacroServerManager):
             self.setRecorderPath(recorder_path)
 
     def reInit(self):
+        """ """
         if self.is_initialized():
             return
 
@@ -93,11 +95,29 @@ class RecorderManager(MacroServerManager):
 
     def setScanRecorderMap(self, recorder_map):
         """Registers a new map of recorders in this manager.
+
+        Parameters
+        ----------
+        recorder_map :
+            
+
+        Returns
+        -------
+
         """
         self._scan_recorder_map = dict(recorder_map)
 
     def setRecorderPath(self, recorder_path):
         """Registers a new list of recorder directories in this manager.
+
+        Parameters
+        ----------
+        recorder_path :
+            
+
+        Returns
+        -------
+
         """
         _recorder_path = []
         for paths in recorder_path:
@@ -126,15 +146,24 @@ class RecorderManager(MacroServerManager):
         pass
 
     def getRecorderPath(self):
+        """ """
         return self._recorder_path
 
     def getRecorderMetaClass(self, recorder_name):
-        """ Return the Recorder class for the given class name.
-        :param klass_name: Name of the recorder class.
-        :type klass_name: :obj:`str`
-        :return:  a :obj:`class` class of recorder or None if it does not exist
-        :rtype:
-            :obj:`class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+        """Return the Recorder class for the given class name.
+
+        Parameters
+        ----------
+        klass_name : obj:`str`
+            Name of the recorder class.
+        recorder_name :
+            
+
+        Returns
+        -------
+        obj:`class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+            a :obj:`class` class of recorder or None if it does not exist
+
         """
         ret = self._recorder_dict.get(recorder_name)
         if ret is None:
@@ -142,20 +171,27 @@ class RecorderManager(MacroServerManager):
         return ret
 
     def getRecorderMetaClasses(self, filter=None, extension=None):
-        """ Returns a :obj:`dict` containing information about recorder
+        """Returns a :obj:`dict` containing information about recorder
         classes. These may be limitted by two conditions - filter and
         extension. The first one selects just the classes inheriting from the
         filter. The second one selects just the classes implementing a given
         extension (format). Both can be used at the same time.
 
-        :param filter: a klass of a valid type of Recorder
-        :type filter: obj
-        :param filter: a scan file extension
-        :type filter: :obj:`str`
-        :return: a :obj:`dict` containing information about recorder classes
-        :rtype:
-            :obj:`dict`\<:obj:`str`\,
-            :class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+        Parameters
+        ----------
+        filter : obj
+            a klass of a valid type of Recorder (Default value = None)
+        filter : obj:`str`
+            a scan file extension (Default value = None)
+        extension :
+             (Default value = None)
+
+        Returns
+        -------
+        obj:`dict`\<:obj:`str`\,
+    :class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+            a :obj:`dict` containing information about recorder classes
+
         """
         if filter is None:
             filter = DataRecorder
@@ -180,14 +216,22 @@ class RecorderManager(MacroServerManager):
         return ret
 
     def getRecorderClasses(self, filter=None, extension=None):
-        """ Returns a :obj:`dict` containing information about recorder classes.
-        :param filter: a klass of a valid type of Recorder
-        :type filter: obj
-        :param filter: a scan file extension
-        :type filter: :obj:`str`
-        :return: a :obj:`dict` containing information about recorder classes
-        :rtype:
-            :obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
+        """Returns a :obj:`dict` containing information about recorder classes.
+
+        Parameters
+        ----------
+        filter : obj
+            a klass of a valid type of Recorder (Default value = None)
+        filter : obj:`str`
+            a scan file extension (Default value = None)
+        extension :
+             (Default value = None)
+
+        Returns
+        -------
+        obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
+            a :obj:`dict` containing information about recorder classes
+
         """
         if filter is None:
             filter = DataRecorder
@@ -197,17 +241,36 @@ class RecorderManager(MacroServerManager):
                     for (key, value) in list(meta_klasses.items()))
 
     def getRecorderClass(self, klass_name):
-        """ Return the Recorder class for the given class name.
-        :param klass_name: Name of the recorder class.
-        :type klass_name: :obj:`str`
-        :return:  a :obj:`class` class of recorder or None if it does not exist
-        :rtype:
-            :obj:`class:`DataRecorder`\>
+        """Return the Recorder class for the given class name.
+
+        Parameters
+        ----------
+        klass_name : obj:`str`
+            Name of the recorder class.
+
+        Returns
+        -------
+        obj:`class:`DataRecorder`\>
+            a :obj:`class` class of recorder or None if it does not exist
+
         """
         meta_klass = self.getRecorderMetaClass(klass_name)
         return meta_klass.klass
 
     def _findRecorderLibName(self, lib_name, path=None):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         path = path or self.getRecorderPath()
         f_name = lib_name
         if not f_name.endswith('.py'):
@@ -222,6 +285,17 @@ class RecorderManager(MacroServerManager):
         return None
 
     def _findRecorderLibNames(self, recorder_path=None):
+        """
+
+        Parameters
+        ----------
+        recorder_path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         path = recorder_path or self.getRecorderPath()
         ret = OrderedDict()
         for p in reversed(path):
@@ -240,10 +314,18 @@ class RecorderManager(MacroServerManager):
     def reloadRecorderLib(self, module_name, path=None):
         """Reloads the given library(=module) names.
 
-        :param module_name: recorder library name (=python module name)
-        :param path:
+        Parameters
+        ----------
+        module_name :
+            recorder library name (=python module name)
+        path :
             a list of absolute path to search for libraries [default: None,
-            means the current RecorderPath will be used]"""
+            means the current RecorderPath will be used
+
+        Returns
+        -------
+
+        """
         path = path or self.getRecorderPath()
         # reverse the path order:
         # more priority elements last. This way if there are repeated elements
@@ -308,6 +390,17 @@ class RecorderManager(MacroServerManager):
 
     def addRecorder(self, recorder_lib, klass):
         """Adds a new recorder class
+
+        Parameters
+        ----------
+        recorder_lib :
+            
+        klass :
+            
+
+        Returns
+        -------
+
         """
         recorder_name = klass.__name__
         exists = recorder_lib.has_recorder(recorder_name)
@@ -336,6 +429,17 @@ class RecorderManager(MacroServerManager):
         self.debug("%s recorder %s" % (action, recorder_name))
 
     def _addRecorderToMap(self, recorder_class):
+        """
+
+        Parameters
+        ----------
+        recorder_class :
+            
+
+        Returns
+        -------
+
+        """
         klass = recorder_class.klass
         for ext in list(klass.formats.values()):
             recorders = self._scan_recorder_map.get(ext, [])

@@ -61,12 +61,31 @@ from sardana.tango.pool.test.base_sartest import SarTestTestCase
             elements=["_test_ct_1_1"], repeats=100,
             synchronizer="software", synchronization=AcqSynchType.Trigger)
 class TestStressMeasurementGroup(SarTestTestCase, TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         SarTestTestCase.setUp(self)
         registerExtensions()
 
     def stress_count(self, elements, repeats, synchronizer, synchronization):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+        repeats :
+            
+        synchronizer :
+            
+        synchronization :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -87,4 +106,5 @@ class TestStressMeasurementGroup(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
+        """ """
         SarTestTestCase.tearDown(self)

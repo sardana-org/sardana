@@ -30,12 +30,27 @@ from unittest import TestCase
 
 
 def job(i, duration):
+    """
+
+    Parameters
+    ----------
+    i :
+        
+    duration :
+        
+
+    Returns
+    -------
+
+    """
     time.sleep(duration)
 
 
 class CountLatchTestCase(TestCase):
+    """ """
 
     def test_countlatch(self):
+        """ """
         pool = get_thread_pool()
         latch = CountLatch()
         for i in range(10):

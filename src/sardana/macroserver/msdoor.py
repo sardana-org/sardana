@@ -43,6 +43,7 @@ from sardana.macroserver.msexception import MacroServerException
 
 
 class MacroProxy(object):
+    """ """
 
     def __init__(self, door, macro_meta):
         self._door = weakref.ref(door)
@@ -50,10 +51,12 @@ class MacroProxy(object):
 
     @property
     def door(self):
+        """ """
         return self._door()
 
     @property
     def macro_info(self):
+        """ """
         return self._macro_meta()
 
     def __call__(self, *args, **kwargs):
@@ -69,6 +72,7 @@ class MacroProxy(object):
 
 
 class MacroProxyCache(dict):
+    """ """
 
     def __init__(self, door):
         self._door = weakref.ref(door)
@@ -76,9 +80,11 @@ class MacroProxyCache(dict):
 
     @property
     def door(self):
+        """ """
         return self._door()
 
     def rebuild(self):
+        """ """
         self.clear()
         door = self.door
         macros = self.door.get_macros()
@@ -87,6 +93,7 @@ class MacroProxyCache(dict):
 
 
 class BaseInputHandler(object):
+    """ """
 
     def __init__(self):
         try:
@@ -95,6 +102,17 @@ class BaseInputHandler(object):
             self._input = input
 
     def input(self, input_data=None):
+        """
+
+        Parameters
+        ----------
+        input_data :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if input_data is None:
             input_data = {}
         prompt = input_data.get('prompt')
@@ -120,16 +138,19 @@ class MSDoor(MSObject):
         MSObject.__init__(self, **kwargs)
 
     def get_macro_executor(self):
+        """ """
         return self.macro_server.macro_manager.getMacroExecutor(self)
 
     macro_executor = property(get_macro_executor)
 
     def get_running_macro(self):
+        """ """
         return self.macro_executor.getRunningMacro()
 
     running_macro = property(get_running_macro)
 
     def get_macro_data(self):
+        """ """
         macro = self.running_macro
         if macro is None:
             raise MacroServerException("No macro has run so far " +
@@ -138,14 +159,27 @@ class MSDoor(MSObject):
         return data
 
     def set_pylab_handler(self, ph):
+        """
+
+        Parameters
+        ----------
+        ph :
+            
+
+        Returns
+        -------
+
+        """
         self._pylab_handler = ph
 
     def get_pylab_handler(self):
+        """ """
         return self._pylab_handler
 
     pylab_handler = property(get_pylab_handler, set_pylab_handler)
 
     def get_pylab(self):
+        """ """
         ph = self.pylab_handler
         if ph is None:
             import matplotlib.pylab
@@ -155,14 +189,27 @@ class MSDoor(MSObject):
     pylab = property(get_pylab)
 
     def set_pyplot_handler(self, ph):
+        """
+
+        Parameters
+        ----------
+        ph :
+            
+
+        Returns
+        -------
+
+        """
         self._pyplot_handler = ph
 
     def get_pyplot_handler(self):
+        """ """
         return self._pyplot_handler
 
     pyplot_handler = property(get_pyplot_handler, set_pyplot_handler)
 
     def get_pyplot(self):
+        """ """
         ph = self.pyplot_handler
         if ph is None:
             import matplotlib.pyplot
@@ -172,14 +219,39 @@ class MSDoor(MSObject):
     pyplot = property(get_pyplot)
 
     def set_input_handler(self, ih):
+        """
+
+        Parameters
+        ----------
+        ih :
+            
+
+        Returns
+        -------
+
+        """
         self._input_handler = ih
 
     def get_input_handler(self):
+        """ """
         return self._input_handler
 
     input_handler = property(get_input_handler, set_input_handler)
 
     def append_prompt(self, prompt, msg):
+        """
+
+        Parameters
+        ----------
+        prompt :
+            
+        msg :
+            
+
+        Returns
+        -------
+
+        """
         if '?' in prompt:
             prefix, suffix = prompt.rsplit('?', 1)
             if not prefix.endswith(' '):
@@ -190,6 +262,21 @@ class MSDoor(MSObject):
         return prompt
 
     def input(self, msg, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs['data_type'] = kwargs.get('data_type', Type.String)
         kwargs['allow_multiple'] = kwargs.get('allow_multiple', False)
 
@@ -219,6 +306,21 @@ class MSDoor(MSObject):
         return handle(macro, input_data, data_type)
 
     def _handle_seq_input(self, obj, input_data, data_type):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        input_data :
+            
+        data_type :
+            
+
+        Returns
+        -------
+
+        """
         valid = False
         allow_multiple = input_data['allow_multiple']
         while not valid:
@@ -234,6 +336,21 @@ class MSDoor(MSObject):
         return result
 
     def _handle_type_input(self, obj, input_data, data_type):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        input_data :
+            
+        data_type :
+            
+
+        Returns
+        -------
+
+        """
         type_obj = self.type_manager.getTypeObj(data_type)
 
         valid = False
@@ -250,62 +367,131 @@ class MSDoor(MSObject):
                 obj.warning("Please give a valid %s.", dtype)
 
     def get_report_logger(self):
+        """ """
         return self.macro_server.report_logger
 
     report_logger = property(get_report_logger)
 
     def report(self, msg, *args, **kwargs):
-        """
-        Record a log message in the sardana report (if enabled) with default
+        """Record a log message in the sardana report (if enabled) with default
         level **INFO**. The msg is the message format string, and the args are
         the arguments which are merged into msg using the string formatting
         operator. (Note that this means that you can use keywords in the
         format string, together with a single dictionary argument.)
-
+        
         *kwargs* are the same as :meth:`logging.Logger.debug` plus an optional
         level kwargs which has default value **INFO**
-
+        
         Example::
-
+        
             self.report("this is an official report!")
 
-        :param msg: the message to be recorded
-        :type msg: :obj:`str`
-        :param args: list of arguments
-        :param kwargs: list of keyword arguments"""
+        Parameters
+        ----------
+        msg : obj:`str`
+            the message to be recorded
+        args :
+            list of arguments
+        kwargs :
+            list of keyword argument
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         return self.macro_server.report(msg, *args, **kwargs)
 
     def get_state(self):
+        """ """
         return self._state
 
     def set_state(self, state, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._state = state
         self.fire_event(EventType("state", priority=propagate), state)
 
     state = property(get_state, set_state)
 
     def get_status(self):
+        """ """
         return self._status
 
     def set_status(self, status, propagate=1):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._status = status
         self.fire_event(EventType("status", priority=propagate), status)
 
     status = property(get_status, set_status)
 
     def get_result(self):
+        """ """
         return self._result
 
     def set_result(self, result, propagate=1):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._result = result
         self.fire_event(EventType("result", priority=propagate), result)
 
     result = property(get_result, set_result)
 
     def get_macro_status(self):
+        """ """
         return self._macro_status
 
     def set_macro_status(self, macro_status, propagate=1):
+        """
+
+        Parameters
+        ----------
+        macro_status :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._macro_status = macro_status
         self.fire_event(EventType("macrostatus", priority=propagate),
                         macro_status)
@@ -313,9 +499,25 @@ class MSDoor(MSObject):
     macro_status = property(get_macro_status, set_macro_status)
 
     def get_record_data(self):
+        """ """
         return self._record_data
 
     def set_record_data(self, record_data, codec=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        record_data :
+            
+        codec :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._record_data = record_data
         self.fire_event(EventType("recorddata", priority=propagate),
                         (codec, record_data))
@@ -325,36 +527,67 @@ class MSDoor(MSObject):
     def get_env(self, key=None, macro_name=None):
         """Gets the environment with the context for this door matching the
         given parameters:
-
+        
         - macro_name defines the context where to look for the environment. If
           None, the global environment is used. If macro name is given the
           environment in the context of that macro is given
         - If key is None it returns the complete environment, otherwise
           key must be a string containing the environment variable name.
 
-        :param key:
+        Parameters
+        ----------
+        key : obj:`str`
             environment variable name [default: None, meaning all environment]
-        :type key: :obj:`str`
-        :param macro_name:
+        macro_name : obj:`str`
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: :obj:`str`
 
-        :raises: UnknownEnv"""
+        Returns
+        -------
+
+        """
         return self.macro_server.environment_manager.getAllDoorEnv(self.name)
 
     def set_env(self, key, value):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.macro_server.set_env(key, value)
 
     def _build_macro_proxy_cache(self):
+        """ """
         self._macro_proxy_cache = MacroProxyCache(self)
 
     def get_macro_proxies(self):
+        """ """
         if self._macro_proxy_cache is None:
             self._macro_proxy_cache = MacroProxyCache(self)
         return self._macro_proxy_cache
 
     def run_macro(self, par_str_list, asynch=False):
+        """
+
+        Parameters
+        ----------
+        par_str_list :
+            
+        asynch :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if isinstance(par_str_list, str):
             par_str_list = par_str_list,
 
@@ -364,6 +597,23 @@ class MSDoor(MSObject):
             Logger.addLevelName(15, "OUTPUT")
 
             def output(loggable, msg, *args, **kw):
+                """
+
+                Parameters
+                ----------
+                loggable :
+                    
+                msg :
+                    
+                *args :
+                    
+                **kw :
+                    
+
+                Returns
+                -------
+
+                """
                 loggable.getLogObj().log(Logger.Output, msg, *args, **kw)
             Logger.output = output
 

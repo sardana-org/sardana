@@ -41,11 +41,13 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TypeManager(MacroServerManager):
+    """ """
 
     DEFAULT_TYPE_DIR = _BASE_DIR
     DEFAULT_TYPE_MODULES = 'basetypes',
 
     def reInit(self):
+        """ """
         if self.is_initialized():
             return
 
@@ -68,6 +70,7 @@ class TypeManager(MacroServerManager):
         MacroServerManager.reInit(self)
 
     def cleanUp(self):
+        """ """
         if self.is_cleaned():
             return
 
@@ -82,10 +85,23 @@ class TypeManager(MacroServerManager):
         MacroServerManager.cleanUp(self)
 
     def getTypeListObj(self):
+        """ """
         return self._type_list_obj
 
     def reloadTypeModule(self, module_name, path=None):
-        """Loads/reloads the given module name"""
+        """Loads/reloads the given module name
+
+        Parameters
+        ----------
+        module_name :
+            
+        path :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         #path = path or [ os.path.dirname(__file__) ]
         m = None
         try:
@@ -120,6 +136,17 @@ class TypeManager(MacroServerManager):
             self.addType(t)
 
     def addType(self, type_obj):
+        """
+
+        Parameters
+        ----------
+        type_obj :
+            
+
+        Returns
+        -------
+
+        """
         type_name = type_obj.getName()
         type_class = type_obj.__class__
         module_name = type_obj.__module__
@@ -136,6 +163,7 @@ class TypeManager(MacroServerManager):
         Type.addType(type_name)
 
     def getTypeListStr(self):
+        """ """
         type_list_basic, type_list_obj = [], []
 
         for _, type_class_dict in list(self._modules.items()):
@@ -149,6 +177,17 @@ class TypeManager(MacroServerManager):
         return type_list
 
     def getTypeClass(self, type_name):
+        """
+
+        Parameters
+        ----------
+        type_name :
+            
+
+        Returns
+        -------
+
+        """
         for _, type_class_dict in list(self._modules.items()):
             tklass = type_class_dict.get(type_name)
             if tklass is None:
@@ -157,10 +196,23 @@ class TypeManager(MacroServerManager):
         return None
 
     def getTypeObj(self, type_name):
+        """
+
+        Parameters
+        ----------
+        type_name :
+            
+
+        Returns
+        -------
+
+        """
         return self._inst_dict.get(type_name)
 
     def getTypes(self):
+        """ """
         return self._inst_dict
 
     def getTypeNames(self):
+        """ """
         return list(self._inst_dict.keys())

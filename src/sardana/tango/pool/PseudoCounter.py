@@ -46,27 +46,63 @@ from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
 
 
 class PseudoCounter(PoolExpChannelDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolExpChannelDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolExpChannelDevice.init(self, name)
 
     def _is_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return PoolExpChannelDevice._is_allowed(self, req_type)
 
     def get_pseudo_counter(self):
+        """ """
         return self.element
 
     def set_pseudo_counter(self, pseudo_counter):
+        """
+
+        Parameters
+        ----------
+        pseudo_counter :
+            
+
+        Returns
+        -------
+
+        """
         self.element = pseudo_counter
 
     pseudo_counter = property(get_pseudo_counter, set_pseudo_counter)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolExpChannelDevice.delete_device(self)
         pseudo_counter = self.pseudo_counter
         if pseudo_counter is not None:
@@ -74,6 +110,7 @@ class PseudoCounter(PoolExpChannelDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolExpChannelDevice.init_device(self)
 
         self.Elements = list(map(int, self.Elements))
@@ -93,6 +130,21 @@ class PseudoCounter(PoolExpChannelDevice):
 
     def on_pseudo_counter_changed(self, event_source, event_type,
                                   event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_pseudo_counter_changed(event_source, event_type,
                                             event_value)
@@ -105,6 +157,21 @@ class PseudoCounter(PoolExpChannelDevice):
 
     def _on_pseudo_counter_changed(self, event_source, event_type,
                                    event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -160,13 +227,26 @@ class PseudoCounter(PoolExpChannelDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.pseudo_counter.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -193,6 +273,7 @@ class PseudoCounter(PoolExpChannelDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
@@ -206,6 +287,17 @@ class PseudoCounter(PoolExpChannelDevice):
                 self.set_change_event(attr_name, True, False)
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         pseudo_counter = self.pseudo_counter
         use_cache = pseudo_counter.is_in_operation() and not self.Force_HW_Read
         if not use_cache and self._first_read_cache:
@@ -229,7 +321,17 @@ class PseudoCounter(PoolExpChannelDevice):
     is_Value_allowed = _is_allowed
 
     def CalcPseudo(self, physical_values):
-        """Returns the pseudo counter value for the given physical counters"""
+        """Returns the pseudo counter value for the given physical counters
+
+        Parameters
+        ----------
+        physical_values :
+            
+
+        Returns
+        -------
+
+        """
         if not len(physical_values):
             physical_values = None
         result = self.pseudo_counter.calc(physical_values=physical_values)
@@ -238,7 +340,17 @@ class PseudoCounter(PoolExpChannelDevice):
         return result.value
 
     def CalcAllPseudo(self, physical_values):
-        """Returns the pseudo counter values for the given physical counters"""
+        """Returns the pseudo counter values for the given physical counters
+
+        Parameters
+        ----------
+        physical_values :
+            
+
+        Returns
+        -------
+
+        """
         if not len(physical_values):
             physical_values = None
         result = self.pseudo_counter.calc(physical_values=physical_values)
@@ -248,6 +360,7 @@ class PseudoCounter(PoolExpChannelDevice):
 
 
 class PseudoCounterClass(PoolExpChannelDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -273,6 +386,7 @@ class PseudoCounterClass(PoolExpChannelDeviceClass):
     standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "Pseudo counter device class"
         ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')

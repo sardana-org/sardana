@@ -44,6 +44,7 @@ Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
 
 
 class _ls(Macro):
+    """ """
     # TODO: duplication of the default value definition is a workaround
     # for #427. See commit message cc3331a for more details.
     param_def = [
@@ -53,6 +54,7 @@ class _ls(Macro):
     ]
 
     def get_column_names(self):
+        """ """
         cols = []
         for col in self.cols:
             if isinstance(col, tuple):
@@ -61,6 +63,7 @@ class _ls(Macro):
         return cols
 
     def get_column_members(self):
+        """ """
         cols = []
         for col in self.cols:
             if isinstance(col, tuple):
@@ -69,6 +72,17 @@ class _ls(Macro):
         return cols
 
     def run(self, *filter):
+        """
+
+        Parameters
+        ----------
+        *filter :
+            
+
+        Returns
+        -------
+
+        """
         self.warning('This macro is not intended to be executed directly by '
                      'the user')
         return
@@ -82,6 +96,17 @@ class lsdef(_ls):
     align = Right,    Right,                Left
 
     def run(self, filter):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+
+        Returns
+        -------
+
+        """
         # TODO: passing a list causes TypeError: unhashable type: 'list'
         # uncomment it when bug-473 is fixed:
         # https://sourceforge.net/p/sardana/tickets/473/
@@ -107,6 +132,7 @@ class lsdef(_ls):
 
 
 class _lsobj(_ls):
+    """ """
 
     subtype = Macro.All
 
@@ -117,10 +143,34 @@ class _lsobj(_ls):
     show_overwritten_msg = False
 
     def objs(self, filter):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+
+        Returns
+        -------
+
+        """
         return self.findObjs(filter, type_class=self.type, subtype=self.subtype,
                              reserve=False)
 
     def obj2Row(self, o, cols=None):
+        """
+
+        Parameters
+        ----------
+        o :
+            
+        cols :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         cols = cols or self.get_column_members()
         ret = []
         for col in cols:
@@ -141,6 +191,17 @@ class _lsobj(_ls):
         return ret
 
     def run(self, filter):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+
+        Returns
+        -------
+
+        """
         objs = self.objs(filter)
         nb = len(objs)
         if nb == 0:
@@ -262,12 +323,36 @@ class lsmeas(_lsobj):
     align = HCenter,  Right,   Right,                Left
 
     def prepare(self, filter, **opts):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self.mnt_grp = self.getEnv('ActiveMntGrp').lower() or None
         except:
             self.mnt_grp = None
 
     def obj2Row(self, o):
+        """
+
+        Parameters
+        ----------
+        o :
+            
+
+        Returns
+        -------
+
+        """
         if self.mnt_grp and (o.getName().lower() == self.mnt_grp):
             active = '*'
         else:

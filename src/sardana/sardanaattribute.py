@@ -43,7 +43,16 @@ from .sardanavalue import SardanaValue
 
 class SardanaAttribute(EventGenerator):
     """Class representing an atomic attribute like position of a motor or a
-    counter value"""
+    counter value
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    
+    """
 
     def __init__(self, obj, name=None, initial_value=None, **kwargs):
         super(SardanaAttribute, self).__init__(**kwargs)
@@ -64,70 +73,103 @@ class SardanaAttribute(EventGenerator):
         """Determines if the attribute's read value has been read at least once
         in the lifetime of the attribute.
 
-        :return: True if the attribute has a read value stored or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._has_value()
 
     def _has_value(self):
+        """ """
         return not self._r_value is None
 
     def has_write_value(self):
         """Determines if the attribute's write value has been read at least once
         in the lifetime of the attribute.
 
-        :return: True if the attribute has a write value stored or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._has_write_value()
 
     def _has_write_value(self):
+        """ """
         return self._w_value is not None
 
     def get_obj(self):
-        """Returns the object which *owns* this attribute
-
-        :return: the object which *owns* this attribute
-        :rtype: :obj:`object`
-        """
+        """Returns the object which *owns* this attribute"""
         return self._get_obj()
 
     def _get_obj(self):
+        """ """
         obj = self._obj
         if obj is not None:
             obj = obj()
         return obj
 
     def in_error(self):
-        """Determines if this attribute is in error state.
-
-        :return: True if the attribute is in error state or False otherwise
-        :rtype: bool"""
+        """Determines if this attribute is in error state."""
         return self._in_error()
 
     def _in_error(self):
+        """ """
         return self.has_value() and self._r_value.error
 
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
         """Sets the current read value and propagates the event (if
         propagate > 0).
 
-        :param value: the new read value for this attribute. If a SardanaValue
-                      is given, exc_info and timestamp are ignored (if given)
-        :type value: :obj:`object` or SardanaValue
-        :param exc_info: exception information as returned by
-                         :func:`sys.exc_info` [default: None, meaning no
-                         exception]
-        :type exc_info: tuple<3> or None
-        :param timestamp: timestamp of attribute readout [default: None, meaning
-                          create a 'now' timestamp]
-        :type timestamp: float or None
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        Parameters
+        ----------
+        value : obj:`object` or SardanaValue
+            the new read value for this attribute. If a SardanaValue
+            is given, exc_info and timestamp are ignored (if given)
+        exc_info : tuple<3> or None
+            exception information as returned by
+            :func:`sys.exc_info` [default: None, meaning no
+            exception]
+        timestamp : float or None
+            timestamp of attribute readout [default: None, meaning
+            create a 'now' timestamp]
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        
         """
         return self._set_value(value, exc_info=exc_info, timestamp=timestamp,
                                propagate=propagate)
 
     def _set_value(self, value, exc_info=None, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        exc_info :
+            (Default value = None)
+        timestamp :
+            (Default value = None)
+        propagate :
+            (Default value = 1)
+
+        Returns
+        -------
+
+        
+        """
         if isinstance(value, SardanaValue):
             rvalue = value
         else:
@@ -137,28 +179,19 @@ class SardanaAttribute(EventGenerator):
         self.fire_read_event(propagate=propagate)
 
     def get_value(self):
-        """Returns the last read value for this attribute.
-
-        :return: the last read value for this attribute
-        :rtype: :obj:`object`
-
-        :raises: :exc:`Exception` if no read value has been set yet
-        """
+        """Returns the last read value for this attribute."""
         return self._get_value()
 
     def _get_value(self):
+        """ """
         return self.get_value_obj().value
 
     def get_value_obj(self):
-        """Returns the last read value for this attribute.
-
-        :return: the last read value for this attribute
-        :rtype: :class:`~sardana.sardanavalue.SardanaValue`
-
-        :raises: :exc:`Exception` if no read value has been set yet"""
+        """Returns the last read value for this attribute."""
         return self._get_value_obj()
 
     def _get_value_obj(self):
+        """ """
         if not self.has_value():
             raise Exception("{0}.{1} doesn't have a read value yet".format(
                             self.obj.name, self.name))
@@ -167,19 +200,44 @@ class SardanaAttribute(EventGenerator):
     def set_write_value(self, w_value, timestamp=None, propagate=1):
         """Sets the current write value.
 
-        :param value: the new write value for this attribute. If a SardanaValue
-                      is given, timestamp is ignored (if given)
-        :type value: obj or SardanaValue
-        :param timestamp: timestamp of attribute write [default: None, meaning
-                          create a 'now' timestamp]
-        :type timestamp: float or None
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
+        Parameters
+        ----------
+        value : obj or SardanaValue
+            the new write value for this attribute. If a SardanaValue
+            is given, timestamp is ignored (if given)
+        timestamp : float or None
+            timestamp of attribute write [default: None, meaning
+            create a 'now' timestamp]
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        w_value :
+            
+
+        Returns
+        -------
+
+        
+        """
         return self._set_write_value(w_value, timestamp=timestamp,
                                      propagate=propagate)
 
     def _set_write_value(self, w_value, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        w_value :
+            
+        timestamp :
+            (Default value = None)
+        propagate :
+            (Default value = 1)
+
+        Returns
+        -------
+
+        
+        """
         if isinstance(w_value, SardanaValue):
             wvalue = w_value
         else:
@@ -188,35 +246,41 @@ class SardanaAttribute(EventGenerator):
         self.fire_write_event(propagate=propagate)
 
     def get_write_value(self):
-        """Returns the last write value for this attribute.
-
-        :return: the last write value for this attribute or None if value has
-                 not been written yet
-        :rtype: :obj:`object`
-        """
+        """Returns the last write value for this attribute."""
         return self._get_write_value()
 
     def _get_write_value(self):
+        """ """
         w_value = self.get_write_value_obj()
         if w_value is not None:
             return w_value.value
 
     def get_write_value_obj(self):
-        """Returns the last write value object for this attribute.
-
-        :return: the last write value for this attribute or None if value has
-                 not been written yet
-        :rtype: :class:`~sardana.sardanavalue.SardanaValue`"""
+        """Returns the last write value object for this attribute."""
         return self._get_write_value_obj()
 
     def _get_write_value_obj(self):
+        """ """
         if self.has_write_value():
             return self._w_value
 
     def get_quality(self):
+        """ """
         return self._quality
 
     def set_quality(self, quality):
+        """
+
+        Parameters
+        ----------
+        quality :
+            
+
+        Returns
+        -------
+
+        
+        """
         self._quality = quality
 
     def get_exc_info(self):
@@ -224,17 +288,36 @@ class SardanaAttribute(EventGenerator):
         last attribute readout or None if last read did not generate an
         exception.
 
-        :return: exception information or None
-        :rtype: tuple<3> or None"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._get_exc_info()
 
     def _get_exc_info(self):
+        """ """
         exc_info = None
         if self.has_value():
             exc_info = self._r_value.exc_info
         return exc_info
 
     def accepts(self, propagate):
+        """
+
+        Parameters
+        ----------
+        propagate :
+            
+
+        Returns
+        -------
+
+        
+        """
         if propagate < 1:
             return False
         if self._last_event_value is None:
@@ -245,11 +328,18 @@ class SardanaAttribute(EventGenerator):
         """Returns the timestamp of the last readout or None if the attribute
         has never been read before
 
-        :return: timestamp of the last readout or None
-        :rtype: float or None"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._get_timestamp()
 
     def _get_timestamp(self):
+        """ """
         if self.has_value():
             return self._r_value.timestamp
 
@@ -257,11 +347,18 @@ class SardanaAttribute(EventGenerator):
         """Returns the timestamp of the last write or None if the attribute
         has never been written before
 
-        :return: timestamp of the last write or None
-        :rtype: float or None"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        
+        """
         return self._get_write_timestamp()
 
     def _get_write_timestamp(self):
+        """ """
         if self.has_write_value():
             return self._w_value.timestamp
 
@@ -269,9 +366,16 @@ class SardanaAttribute(EventGenerator):
         """Fires an event to the listeners of the object which owns this
         attribute.
 
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
+        Parameters
+        ----------
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        
+        """
         if propagate < 1:
             return
         evt_type = EventType("w_" + self.name, priority=propagate)
@@ -281,9 +385,16 @@ class SardanaAttribute(EventGenerator):
         """Fires an event to the listeners of the object which owns this
         attribute.
 
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
+        Parameters
+        ----------
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        
+        """
         if self.accepts(propagate):
             obj = self.obj
             if obj is not None:
@@ -337,27 +448,41 @@ class SardanaAttribute(EventGenerator):
 class SardanaSoftwareAttribute(SardanaAttribute):
     """Class representing a software attribute. The difference between this and
     :class:`SardanaAttribute` is that, because it is a pure software attribute,
-    there is no difference ever between the read and write values."""
+    there is no difference ever between the read and write values.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    
+    """
 
     get_value = SardanaAttribute.get_value
 
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
-        """
-        Sets the current read value and propagates the event (if
+        """Sets the current read value and propagates the event (if
         propagate > 0).
 
-        :param value: the new read value for this attribute
-        :type value: :obj:`object`
-        :param exc_info: exception information as returned by
-                         :func:`sys.exc_info` [default: None, meaning no
-                         exception]
-        :type exc_info: tuple<3> or None
-        :param timestamp: timestamp of attribute readout [default: None, meaning
-                          create a 'now' timestamp]
-        :type timestamp: float or None
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int
+        Parameters
+        ----------
+        value : obj:`object`
+            the new read value for this attribute
+        exc_info : tuple<3> or None
+            exception information as returned by
+            :func:`sys.exc_info` [default: None, meaning no
+            exception]
+        timestamp : float or None
+            timestamp of attribute readout [default: None, meaning
+            create a 'now' timestamp]
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        
         """
         SardanaAttribute.set_value(self, value, exc_info=exc_info,
                                    timestamp=timestamp)

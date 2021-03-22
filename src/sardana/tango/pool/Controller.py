@@ -50,31 +50,68 @@ from .PoolDevice import PoolDevice, PoolDeviceClass
 
 
 def to_bool(s):
+    """
+
+    Parameters
+    ----------
+    s :
+        
+
+    Returns
+    -------
+
+    """
     return s.lower() == "true"
 
 
 class Controller(PoolDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolDevice.init(self, name)
 
     def get_ctrl(self):
+        """ """
         return self.element
 
     def set_ctrl(self, ctrl):
+        """
+
+        Parameters
+        ----------
+        ctrl :
+            
+
+        Returns
+        -------
+
+        """
         self.element = ctrl
 
     ctrl = property(get_ctrl, set_ctrl)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolDevice.delete_device(self)
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolDevice.init_device(self)
 
         detect_evts = "state", "status"
@@ -99,6 +136,7 @@ class Controller(PoolDevice):
             ctrl.re_init()
 
     def get_role_ids(self):
+        """ """
         db = Util.instance().get_database()
         if db is None:
             return []
@@ -114,6 +152,7 @@ class Controller(PoolDevice):
         return role_ids
 
     def _get_ctrl_properties(self):
+        """ """
         try:
             ctrl_info = self.pool.get_controller_class_info(self.Klass)
             prop_infos = ctrl_info.ctrl_properties
@@ -165,17 +204,31 @@ class Controller(PoolDevice):
         return ret
 
     def always_executed_hook(self):
+        """ """
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def dev_state(self):
+        """ """
         if self.ctrl is None or not self.ctrl.is_online():
             return DevState.FAULT
         return DevState.ON
 
     def dev_status(self):
+        """ """
         if self.ctrl is None or not self.ctrl.is_online():
             self._status = self.ctrl.get_ctrl_error_str()
         else:
@@ -183,19 +236,68 @@ class Controller(PoolDevice):
         return self._status
 
     def read_ElementList(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value(self.get_element_names())
 
     def CreateElement(self, argin):
+        """
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def DeleteElement(self, argin):
+        """
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_element_names(self):
+        """ """
         elements = self.ctrl.get_elements()
         return [elements[id].get_name() for id in sorted(elements)]
 
     def on_controller_changed(self, event_src, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_src :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -226,6 +328,7 @@ class Controller(PoolDevice):
                            synch=False)
 
     def get_dynamic_attributes(self):
+        """ """
         if hasattr(self, "_dynamic_attributes_cache"):
             return self._standard_attributes_cache, self._dynamic_attributes_cache
         info = self.ctrl.ctrl_info
@@ -241,24 +344,69 @@ class Controller(PoolDevice):
         return std_attrs, dyn_attrs
 
     def read_DynamicAttribute(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr_name = attr.get_name()
         attr.set_value(self.ctrl.get_ctrl_attr(attr_name))
 
     def write_DynamicAttribute(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         v = attr.get_write_value()
         attr_name = attr.get_name()
         self.ctrl.set_ctrl_attr(attr_name, v)
 
     def read_LogLevel(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         l = self.ctrl.get_log_level()
         self.debug(l)
         attr.set_value(l)
 
     def write_LogLevel(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.ctrl.set_log_level(attr.get_write_value())
 
 
 class ControllerClass(PoolDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -292,6 +440,7 @@ class ControllerClass(PoolDeviceClass):
     attr_list.update(PoolDeviceClass.attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolDeviceClass._get_class_properties(self)
         ret['Description'] = "Controller device class"
         ret['InheritedFrom'].insert(0, 'PoolDevice')

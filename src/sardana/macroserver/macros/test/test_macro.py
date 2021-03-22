@@ -35,8 +35,10 @@ from sardana.tango.macroserver.test import BaseMacroServerTestCase
 @testRun(macro_name="createMacro")
 @testRun(macro_name="execMacro")
 class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         macros_test_path = '../../test/res/macros'
         source = os.path.join(os.path.dirname(__file__), macros_test_path)
         path = os.path.abspath(source)
@@ -46,6 +48,7 @@ class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
         RunMacroTestCase.setUp(self)
 
     def tearDown(self):
+        """ """
         RunMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)

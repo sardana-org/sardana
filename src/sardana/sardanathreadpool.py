@@ -42,8 +42,10 @@ __thread_pool = None
 
 
 class OmniWorker(Worker):
+    """ """
 
     def run(self):
+        """ """
         try:
             import tango
         except ImportError:
@@ -67,8 +69,15 @@ class OmniWorker(Worker):
 def get_thread_pool():
     """Returns the global pool of threads for Sardana
 
-    :return: the global pool of threads object
-    :rtype: taurus.core.util.ThreadPool"""
+    Parameters
+    ----------
+
+    Returns
+    -------
+    taurus.core.util.ThreadPool
+        the global pool of threads object
+
+    """
 
     global __thread_pool
     global __thread_pool_lock

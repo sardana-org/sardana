@@ -33,6 +33,7 @@ from taurus.external.qt import Qt
 
 
 class SardanaBasePage(Qt.QWizardPage):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QWizardPage.__init__(self, parent)
@@ -45,10 +46,12 @@ class SardanaBasePage(Qt.QWizardPage):
         return self._item_funcs[name]
 
     def getPanelWidget(self):
+        """ """
         return self._panel
 
 
 class SardanaBaseWizard(Qt.QWizard):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QWizard.__init__(self, parent)
@@ -70,12 +73,37 @@ class SardanaBaseWizard(Qt.QWizard):
         return None
 
     def addPage(self, page):
+        """
+
+        Parameters
+        ----------
+        page :
+            
+
+        Returns
+        -------
+
+        """
         id = Qt.QWizard.addPage(self, page)
         self._pages[id] = page
 
     def setPage(self, id, page):
+        """
+
+        Parameters
+        ----------
+        id :
+            
+        page :
+            
+
+        Returns
+        -------
+
+        """
         Qt.QWizard.setPage(self, id, page)
         self._pages[id] = page
 
     def getPages(self):
+        """ """
         return self._pages

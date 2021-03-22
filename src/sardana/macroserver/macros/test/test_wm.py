@@ -35,12 +35,20 @@ _m1, _m2 = getMotors()[:2]
 
 class WBase(RunMacroTestCase):
 
-    """Base class for testing macros used to read position.
-    """
+    """Base class for testing macros used to read position."""
 
     def macro_runs(self, **kw):
         """Testing the execution of the 'wm' macro and verify that the log
         'output' exists.
+
+        Parameters
+        ----------
+        **kw :
+            
+
+        Returns
+        -------
+
         """
         RunMacroTestCase.macro_runs(self, **kw)
         self.logOutput = self.macro_executor.getLog("output")
@@ -55,5 +63,12 @@ class WmTest(WBase, unittest.TestCase):
     It inherits from WmBase and from unittest.TestCase.
     It tests the execution of the 'wm' macro and verifies that the log 'output'
     exists.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = "wm"

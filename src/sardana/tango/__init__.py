@@ -31,6 +31,17 @@ SERVER_NAME = "Sardana"
 
 
 def prepare_sardana(util):
+    """
+
+    Parameters
+    ----------
+    util :
+        
+
+    Returns
+    -------
+
+    """
     from . import pool
     from . import macroserver
     pool.prepare_pool(util)
@@ -38,6 +49,21 @@ def prepare_sardana(util):
 
 
 def main_sardana(args=None, start_time=None, mode=None):
+    """
+
+    Parameters
+    ----------
+    args :
+         (Default value = None)
+    start_time :
+         (Default value = None)
+    mode :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     from .core import util
     # pass server name so the scripts generated with setuptools work on Windows
     return util.run(prepare_sardana, args=args, start_time=start_time,
@@ -47,5 +73,6 @@ run = main_sardana
 
 
 def main():
+    """ """
     import datetime
     run(start_time=datetime.datetime.now())

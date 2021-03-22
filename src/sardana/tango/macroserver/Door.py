@@ -49,6 +49,7 @@ from sardana.macroserver.msexception import InputCancelled
 
 
 class TangoInputHandler(BaseInputHandler):
+    """ """
 
     def __init__(self, door, attr):
         self._value = None
@@ -58,6 +59,17 @@ class TangoInputHandler(BaseInputHandler):
         self._attr = attr
 
     def input(self, input_data=None):
+        """
+
+        Parameters
+        ----------
+        input_data :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if input_data is None:
             input_data = {}
         self.input_data = input_data
@@ -76,12 +88,34 @@ class TangoInputHandler(BaseInputHandler):
         return res['input']
 
     def input_received(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if not self._input_waitting:
             return
         self._value = json.loads(value)
         self._input_event.set()
 
     def input_wait(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         wait = self._input_event.wait(timeout)
         # if there was a timeout:
         # - set the value to the default value (if one exists)
@@ -95,6 +129,7 @@ class TangoInputHandler(BaseInputHandler):
         return self._value
 
     def send_input_timeout(self):
+        """ """
         idata = self.input_data
         input_data = dict(type="timeout", macro_id=idata['macro_id'])
         if 'default_value' in idata:
@@ -105,6 +140,7 @@ class TangoInputHandler(BaseInputHandler):
 
 
 class TangoFunctionHandler(object):
+    """ """
 
     def __init__(self, door, attr, module_name, format="bz2_pickle"):
         self.door = door
@@ -113,6 +149,21 @@ class TangoFunctionHandler(object):
         self.format = format
 
     def handle(self, func_name, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        func_name :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         codec = CodecFactory().getCodec(self.format)
         data = dict(type='function', func_name=func_name,
                     args=args, kwargs=kwargs)
@@ -121,6 +172,19 @@ class TangoFunctionHandler(object):
 
     def __getattr__(self, name):
         def f(*args, **kwargs):
+            """
+
+            Parameters
+            ----------
+            *args :
+                
+            **kwargs :
+                
+
+            Returns
+            -------
+
+            """
             full_name = self.module_name + "." + name
             return self.handle(full_name, *args, **kwargs)
         f.__name__ = name
@@ -128,6 +192,7 @@ class TangoFunctionHandler(object):
 
 
 class TangoPylabHandler(TangoFunctionHandler):
+    """ """
 
     def __init__(self, door, attr, format="bz2_pickle"):
         TangoFunctionHandler.__init__(self, door, attr, "pylab",
@@ -135,6 +200,7 @@ class TangoPylabHandler(TangoFunctionHandler):
 
 
 class TangoPyplotHandler(TangoFunctionHandler):
+    """ """
 
     def __init__(self, door, attr, format="bz2_pickle"):
         TangoFunctionHandler.__init__(self, door, attr, "pyplot",
@@ -142,6 +208,7 @@ class TangoPyplotHandler(TangoFunctionHandler):
 
 
 class Door(SardanaDevice):
+    """ """
 
     def __init__(self, dclass, name):
         SardanaDevice.__init__(self, dclass, name)
@@ -149,27 +216,53 @@ class Door(SardanaDevice):
         self._input_handler = None
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         SardanaDevice.init(self, name)
         self._door = None
         self._macro_server_device = None
 
     def get_door(self):
+        """ """
         return self._door
 
     def set_door(self, door):
+        """
+
+        Parameters
+        ----------
+        door :
+            
+
+        Returns
+        -------
+
+        """
         self._door = door
 
     door = property(get_door, set_door)
 
     @property
     def macro_server_device(self):
+        """ """
         return self._macro_server_device
 
     @property
     def macro_server(self):
+        """ """
         return self.door.macro_server
 
     def delete_device(self):
+        """ """
         if self.getRunningMacro():
             self.debug("aborting running macro")
             self.macro_executor.abort()
@@ -184,6 +277,7 @@ class Door(SardanaDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         SardanaDevice.init_device(self)
         levels = 'Critical', 'Error', 'Warning', 'Info', 'Output', 'Debug'
         detect_evts = ()
@@ -239,6 +333,17 @@ class Door(SardanaDevice):
         self.set_state(DevState.ON)
 
     def _setupLogHandlers(self, levels):
+        """
+
+        Parameters
+        ----------
+        levels :
+            
+
+        Returns
+        -------
+
+        """
         self._handler_dict = {}
         for level in levels:
             handler = AttributeLogHandler(self, level,
@@ -250,6 +355,21 @@ class Door(SardanaDevice):
             self._handler_dict[level] = handler, filter, format
 
     def on_door_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -289,15 +409,19 @@ class Door(SardanaDevice):
 
     @property
     def macro_executor(self):
+        """ """
         return self.door.macro_executor
 
     def getRunningMacro(self):
+        """ """
         return self.door.running_macro
 
     def always_executed_hook(self):
+        """ """
         pass
 
     def dev_status(self):
+        """ """
         self._status = SardanaDevice.dev_status(self)
         self._status += '\n Macro stack ([state] macro):'
         macro = self.getRunningMacro()
@@ -310,9 +434,31 @@ class Door(SardanaDevice):
         return self._status
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def readLogAttr(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         name = attr.get_name()
         handler, filter, format = self._handler_dict[name]
         handler.read(attr)
@@ -321,23 +467,91 @@ class Door(SardanaDevice):
         read_Debug = read_Trace = readLogAttr
 
     def read_Input(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value('')
 
     def write_Input(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value = attr.get_write_value()
         self.door.get_input_handler().input_received(value)
 
     def sendRecordData(self, format, data):
+        """
+
+        Parameters
+        ----------
+        format :
+            
+        data :
+            
+
+        Returns
+        -------
+
+        """
         self.push_change_event('RecordData', format, data)
 
     def getLogAttr(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self._handler_dict.get(name)
 
     def read_Result(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         #    Add your own code here
         attr.set_value(self._last_result)
 
     def read_RecordData(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         try:
             macro_data = self.door.get_macro_data()
             codec = CodecFactory().getCodec('bz2_pickle')
@@ -352,9 +566,21 @@ class Door(SardanaDevice):
         self.__buf_data = data
 
     def read_MacroStatus(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value('', '')
 
     def AbortMacro(self):
+        """ """
         macro = self.getRunningMacro()
         if macro is None:
             return
@@ -362,6 +588,7 @@ class Door(SardanaDevice):
         self.macro_executor.abort()
 
     def ReleaseMacro(self):
+        """ """
         macro = self.getRunningMacro()
         if macro is None:
             return
@@ -369,12 +596,14 @@ class Door(SardanaDevice):
         self.macro_executor.release()
 
     def is_ReleaseMacro_allowed(self):
+        """ """
         is_release_allowed = (self.get_state() == Macro.Running
                               or self.get_state() == Macro.Pause)
         return is_release_allowed
 
 
     def PauseMacro(self):
+        """ """
         macro = self.getRunningMacro()
         if macro is None:
             print("Unable to pause Null macro")
@@ -382,9 +611,11 @@ class Door(SardanaDevice):
         self.macro_executor.pause()
 
     def is_PauseMacro_allowed(self):
+        """ """
         return self.get_state() == Macro.Running
 
     def StopMacro(self):
+        """ """
         macro = self.getRunningMacro()
         if macro is None:
             return
@@ -392,11 +623,13 @@ class Door(SardanaDevice):
         self.macro_executor.stop()
 
     def is_StopMacro_allowed(self):
+        """ """
         is_stop_allowed = (self.get_state() == Macro.Running or
                            self.get_state() == Macro.Pause)
         return is_stop_allowed
 
     def ResumeMacro(self):
+        """ """
         macro = self.getRunningMacro()
         if macro is None:
             return
@@ -404,9 +637,21 @@ class Door(SardanaDevice):
         self.macro_executor.resume()
 
     def is_ResumeMacro_allowed(self):
+        """ """
         return self.get_state() == Macro.Pause
 
     def RunMacro(self, par_str_list):
+        """
+
+        Parameters
+        ----------
+        par_str_list :
+            
+
+        Returns
+        -------
+
+        """
         # first empty all the buffers
         for handler, filter, fmt in list(self._handler_dict.values()):
             handler.clearBuffer()
@@ -419,13 +664,36 @@ class Door(SardanaDevice):
                                pretty_print=False)]
 
     def is_RunMacro_allowed(self):
+        """ """
         return self.get_state() in [Macro.Finished, Macro.Abort,
                                     Macro.Exception]
 
     def SimulateMacro(self, par_str_list):
+        """
+
+        Parameters
+        ----------
+        par_str_list :
+            
+
+        Returns
+        -------
+
+        """
         raise Exception("Not implemented yet")
 
     def GetMacroEnv(self, argin):
+        """
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
+        """
         macro_name = argin[0]
         if len(argin) > 1:
             macro_env = argin[1:]
@@ -438,11 +706,13 @@ class Door(SardanaDevice):
         return ret
 
     def is_GetMacroEnv_allowed(self):
+        """ """
         return self.get_state() in [Macro.Finished, Macro.Abort,
                                     Macro.Exception]
 
 
 class DoorClass(SardanaDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {

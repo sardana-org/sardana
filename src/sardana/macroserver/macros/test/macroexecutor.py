@@ -31,6 +31,13 @@ class BaseMacroExecutor(object):
 
     """Abstract MacroExecutor class. Inherit from it if you want to create your
     own macro executor.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     log_levels = ['debug', 'output', 'info', 'warning', 'critical', 'error']
@@ -52,6 +59,13 @@ class BaseMacroExecutor(object):
         """In case of reuse of the macro executor object this method executes
         the necessary cleanups. Extend if you need to clean your particular
         setups.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         self._result = None
         self._exception = None
@@ -68,18 +82,28 @@ class BaseMacroExecutor(object):
             timeout=None):
         """Execute macro.
 
-        :param macro_name: (string) name of macro to be executed
-        :param macro_params: (list<string>) macro parameters
-                             (default is macro_params=None for macros without
-                             parameters or with the default values)
-        :param sync: (bool) whether synchronous or asynchronous call
-                     (default is sync=True)
-        :param timeout: (float) timeout (in s) that will be passed to the wait
-                        method, in case of synchronous execution; None means
-                        wait infinitely
-
+        Parameters
+        ----------
+        macro_name :
+            string) name of macro to be executed
+        macro_params :
+            list<string>) macro parameters
+            (default is macro_params=None for macros without
+            parameters or with the default values)
+        sync :
+            bool) whether synchronous or asynchronous call
+            (default is sync=True)
+        timeout :
+            float) timeout (in s) that will be passed to the wait
+            method, in case of synchronous execution; None means
+            wait infinitely
+            
             In asyncrhonous execution method :meth:`~wait` has to be explicitly
-            called.
+            called. (Default value = None)
+
+        Returns
+        -------
+
         """
         if macro_params is None:
             macro_params = []
@@ -94,20 +118,34 @@ class BaseMacroExecutor(object):
         """Method responsible for triggering the macro execution. Must be
         implemented in your macro executor.
 
-        :param macro_name: (string) name of macro to be executed
-        :param macro_params: (list<string>) macro parameters
-                             (default is macro_params=None for macros without
-                             parameters or with the default values)
+        Parameters
+        ----------
+        macro_name :
+            string) name of macro to be executed
+        macro_params :
+            list<string>) macro parameters
+            (default is macro_params=None for macros without
+            parameters or with the default values)
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _run not implemented in class %s' %
                                   self.__class__.__name__)
 
     def wait(self, timeout=None):
-        """
-        Wait until macro is done. Use it in asynchronous executions.
+        """Wait until macro is done. Use it in asynchronous executions.
 
-        :param timeout: (float) waiting timeout (in s); None means wait
-            infinitely
+        Parameters
+        ----------
+        timeout :
+            float) waiting timeout (in s); None means wait
+            infinitely (Default value = None)
+
+        Returns
+        -------
+
         """
         if timeout is not None and timeout <= 0:
             timeout = None
@@ -120,7 +158,14 @@ class BaseMacroExecutor(object):
         """Method responsible for waiting until macro is done. Must be
         implemented in your macro executor.
 
-        :param timeout: (float) waiting timeout (in s)
+        Parameters
+        ----------
+        timeout :
+            float) waiting timeout (in s)
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _wait not implemented in class %s' %
                                   self.__class__.__name__)
@@ -129,16 +174,29 @@ class BaseMacroExecutor(object):
         """Stop macro execution. Execute macro in synchronous way before using
         this method.
 
-        :param started_event_timeout: (float) waiting timeout for started event
+        Parameters
+        ----------
+        started_event_timeout :
+            float) waiting timeout for started event (Default value = 3.0)
+
+        Returns
+        -------
+
         """
         self._stop(started_event_timeout)
 
     def _stop(self, started_event_timeout=3.0):
-        """
-        Method responsible for stopping the macro execution. Must be
+        """Method responsible for stopping the macro execution. Must be
         implemented in your macro executor.
 
-        :param started_event_timeout: (float) waiting timeout for started event
+        Parameters
+        ----------
+        started_event_timeout :
+            float) waiting timeout for started event (Default value = 3.0)
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _stop not implemented in class %s' %
                                   self.__class__.__name__)
@@ -146,18 +204,31 @@ class BaseMacroExecutor(object):
     def registerLog(self, log_level):
         """Start registering log messages.
 
-        :param log_level: (str) string indicating the log level
+        Parameters
+        ----------
+        log_level :
+            str) string indicating the log level
+
+        Returns
+        -------
+
         """
         log_buffer_name = '_%s' % log_level
         setattr(self, log_buffer_name, [])
         self._registerLog(log_level)
 
     def _registerLog(self, log_level):
-        """
-        Method responsible for starting log registration. Must be
+        """Method responsible for starting log registration. Must be
         implemented in your macro executor.
 
-        :param log_level: (str) string indicating the log level
+        Parameters
+        ----------
+        log_level :
+            str) string indicating the log level
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _registerLog not implemented in '
                                   'class %s' % self.__class__.__name__)
@@ -165,7 +236,14 @@ class BaseMacroExecutor(object):
     def unregisterLog(self, log_level):
         """Stop registering log messages.
 
-        :param log_level: (str) string indicating the log level
+        Parameters
+        ----------
+        log_level :
+            str) string indicating the log level
+
+        Returns
+        -------
+
         """
         self._unregisterLog(log_level)
 
@@ -173,7 +251,14 @@ class BaseMacroExecutor(object):
         """Method responsible for stopping log registration. Must be
         implemented in your macro executor.
 
-        :param log_level: (str) string indicating the log level
+        Parameters
+        ----------
+        log_level :
+            str) string indicating the log level
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _unregisterLog not implemented in '
                                   'class %s' % self.__class__.__name__)
@@ -181,79 +266,116 @@ class BaseMacroExecutor(object):
     def getLog(self, log_level):
         """Get log messages.
 
-        :param log_level: (str) string indicating the log level
+        Parameters
+        ----------
+        log_level :
+            str) string indicating the log level
 
-        :return: (seq<str>) list of strings with log messages
+        Returns
+        -------
+        type
+            seq<str>) list of strings with log messages
+
         """
         log_buffer_name = '_%s' % log_level
         log = getattr(self, log_buffer_name)
         return log
 
     def registerAll(self):
-        """Register for macro result, all log levels and common buffer.
-        """
+        """Register for macro result, all log levels and common buffer."""
         for log_level in self.log_levels:
             self.registerLog(log_level)
         self.registerResult()
         self.createCommonBuffer()
 
     def unregisterAll(self):
-        """Unregister macro result, all log levels and common buffer.
-        """
+        """Unregister macro result, all log levels and common buffer."""
         for log_level in self.log_levels:
             self.unregisterLog(log_level)
         self.unregisterResult()
 
     def registerResult(self):
-        """Register for macro result
-        """
+        """Register for macro result"""
         self._registerResult()
 
     def _registerResult(self):
         """Method responsible for registering for macro result. Must be
         implemented in your macro executor.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _registerResult not implemented in '
                                   'class %s' % self.__class__.__name__)
 
     def unregisterResult(self):
-        """Unregister macro result.
-        """
+        """Unregister macro result."""
         self._unregisterResult()
 
     def _unregisterResult(self):
         """Method responsible for unregistering for macro result. Must be
         implemented in your macro executor.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         raise NotImplementedError('Method _unregisterResult not implemented in'
                                   ' class %s' % self.__class__.__name__)
 
     def getResult(self):
         """Get macro result.
-
+        
         :return: (seq<str>) list of strings with Result messages
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self._result
 
     def createCommonBuffer(self):
-        """Create a common buffer, where all the registered logs will be stored.
-        """
+        """Create a common buffer, where all the registered logs will be stored."""
         self._common = []
 
     def getCommonBuffer(self):
         """Get common buffer.
             Method getCommonBuffer can only be used if at least one buffer exists.
-
+        
         :return: (seq<str>) list of strings with messages from all log levels
-
+        
             .. seealso:: :meth:`~createCommonBuffer`
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self._common
 
     def getState(self):
         """Get macro execution state.
-
+        
         :return: (str)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         state = None
         if len(self._state_buffer) > 0:
@@ -262,16 +384,30 @@ class BaseMacroExecutor(object):
 
     def getStateBuffer(self):
         """Get buffer (history) of macro execution states.
-
+        
         :return: (seq<str>)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self._state_buffer
 
     def getExceptionStr(self):
         """Get macro exception type representation (None if the macro state
         is not exception).
-
+        
         :return: (str)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self._exception
 
@@ -279,19 +415,34 @@ class BaseMacroExecutor(object):
 class MacroExecutorFactory(Singleton):
 
     """A scheme-agnostic factory for MacroExecutor instances
-
+    
     Example::
-
+    
         f =  MacroExecutorFactory()
         f.getMacroExecutor('tango://my/door/name') #returns a TangoMacroExecutor
-
+    
     Note: For the moment, only TangoMacroExecutor is supported
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def getMacroExecutor(self, door_name=None):
-        """
-        Returns a macro executor instance (a subclass of
+        """Returns a macro executor instance (a subclass of
         :class:`BaseMacroExecutor`) depending on the door being used.
+
+        Parameters
+        ----------
+        door_name :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         if door_name is None:
             from sardana import sardanacustomsettings
@@ -313,6 +464,17 @@ class MacroExecutorFactory(Singleton):
                              scheme)
 
     def _getTangoMacroExecutor(self, door_name):
+        """
+
+        Parameters
+        ----------
+        door_name :
+            
+
+        Returns
+        -------
+
+        """
         from sardana.tango.macroserver.test import TangoMacroExecutor
         return TangoMacroExecutor(door_name=door_name)
 

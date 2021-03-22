@@ -32,12 +32,28 @@ __all__ = ['ViewOption']
 
 
 def ViewOptionMeta(name, bases, attrs):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+    bases :
+        
+    attrs :
+        
+
+    Returns
+    -------
+
+    """
     for k in attrs['_DEFAULT_VIEW_OPTIONS']:
         attrs[k] = k
     return type(name, bases, attrs)
 
 
 class ViewOption(object, metaclass=ViewOptionMeta):
+    """ """
     _DEFAULT_VIEW_OPTIONS = {
         'ShowDial': True,
         'ShowCtrlAxis': False,
@@ -48,8 +64,17 @@ class ViewOption(object, metaclass=ViewOptionMeta):
 
     @classmethod
     def init_options(cls, d):
-        '''Init missing options with the default values.
-        '''
+        """Init missing options with the default values.
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         diff = set(cls._DEFAULT_VIEW_OPTIONS).difference(d)
         if len(diff) > 0:
             for key in diff:
@@ -58,6 +83,19 @@ class ViewOption(object, metaclass=ViewOptionMeta):
 
     @classmethod
     def reset_option(cls, d, name):
+        """
+
+        Parameters
+        ----------
+        d :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if name in cls._DEFAULT_VIEW_OPTIONS:
             d[name] = cls._DEFAULT_VIEW_OPTIONS[name]
         else:

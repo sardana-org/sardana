@@ -45,12 +45,19 @@ from sardana.util.funcgenerator import FunctionGenerator
 class TGChannel(PoolActionItem):
     """An item involved in the trigger/gate generation.
     Maps directly to a trigger object
-
+    
     .. note::
         The TGChannel class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, trigger_gate, info=None):
@@ -67,10 +74,18 @@ class SynchDescription(list):
     of equidistant synchronization events. Each group is described by
     :class:`~sardana.pool.pooldefs.SynchParam` parameters which may have
     values in :class:`~sardana.pool.pooldefs.SynchDomain` domains.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     @property
     def repetitions(self):
+        """ """
         repetitions = 0
         for group in self:
             repetitions += group[SynchParam.Repeats]
@@ -78,29 +93,37 @@ class SynchDescription(list):
 
     @property
     def active_time(self):
+        """ """
         return self._get_param(SynchParam.Active)
 
     @property
     def total_time(self):
+        """ """
         return self._get_param(SynchParam.Total)
 
     @property
     def passive_time(self):
+        """ """
         return self.total_time - self.active_time
 
     def _get_param(self, param, domain=SynchDomain.Time):
-        """
-        Extract parameter from synchronization description and its groups. If
+        """Extract parameter from synchronization description and its groups. If
         there is only one group in the synchronization description then
         returns float with the value. Otherwise a list of floats with
         different values.
 
-        :param param: parameter type
-        :type param: :class:`~sardana.pool.pooldefs.SynchParam`
-        :param domain: domain
-        :type param: :class:`~sardana.pool.pooldefs.SynchDomain`
-        :return: parameter value(s)
-        :rtype float or [float]
+        Parameters
+        ----------
+        param : class:`~sardana.pool.pooldefs.SynchParam`
+            parameter type
+        domain :
+            domain (Default value = SynchDomain.Time)
+
+        Returns
+        -------
+        float or [float]
+            parameter value(s)
+
         """
 
         if len(self) == 1:
@@ -116,10 +139,17 @@ class SynchDescription(list):
 
 class PoolSynchronization(PoolAction):
     """Synchronization action.
-
+    
     It coordinates trigger/gate elements and software synchronizer.
-
+    
     .. todo: Think of moving the ready/busy mechanism to PoolAction
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name="Synchronization"):
@@ -137,40 +167,86 @@ class PoolSynchronization(PoolAction):
         self._ready.set()
 
     def _is_ready(self):
+        """ """
         return self._ready.is_set()
 
     def _wait(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self._ready.wait(timeout)
 
     def _set_ready(self, _=None):
+        """
+
+        Parameters
+        ----------
+        _ :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._ready.set()
 
     def _is_busy(self):
+        """ """
         return not self._ready.is_set()
 
     def _set_busy(self):
+        """ """
         self._ready.clear()
 
     def add_listener(self, listener):
+        """
+
+        Parameters
+        ----------
+        listener :
+            
+
+        Returns
+        -------
+
+        """
         self._listener = listener
 
     def start_action(self, ctrls, synch_description, moveable=None,
                      sw_synch_initial_domain=None, *args, **kwargs):
         """Start synchronization action.
 
-        :param ctrls: list of enabled trigger/gate controllers
-        :type ctrls: list
-        :param synch_description: synchronization description
-        :type synch_description:
-         :class:`~sardana.pool.poolsynchronization.SynchDescription`
-        :param moveable: (optional) moveable object used as the
-         synchronization source in the Position domain
-        :type moveable: :class:`~sardna.pool.poolmotor.PoolMotor` or
-         :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
-        :param sw_synch_initial_domain: (optional) - initial domain for
-         software synchronizer, can be either
-         :obj:`~sardana.pool.pooldefs.SynchDomain.Time` or
-         :obj:`~sardana.pool.pooldefs.SynchDomain.Position`
+        Parameters
+        ----------
+        ctrls : list
+            list of enabled trigger/gate controllers
+        synch_description : class:`~sardana.pool.poolsynchronization.SynchDescription`
+            synchronization description
+        moveable : class:`~sardna.pool.poolmotor.PoolMotor` or
+ :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
+            optional) moveable object used as the
+            synchronization source in the Position domain (Default value = None)
+        sw_synch_initial_domain :
+            optional) - initial domain for
+            software synchronizer, can be either
+            :obj:`~sardana.pool.pooldefs.SynchDomain.Time` or
+            :obj:`~sardana.pool.pooldefs.SynchDomain.Position` (Default value = None)
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
         """
         with ActionContext(self):
 
@@ -249,11 +325,17 @@ class PoolSynchronization(PoolAction):
         """Determines if we are synchronizing or not based on the states
         returned by the controller(s) and the software synchronizer.
 
-        :param states: a map containing state information as returned by
-                       read_state_info: ((state, status), exception_error)
-        :type states: dict<PoolElement, tuple(tuple(int, str), str))
-        :return: returns True if is triggering or False otherwise
-        :rtype: bool
+        Parameters
+        ----------
+        states : dict<PoolElement, tuple(tuple(int, str), str))
+            a map containing state information as returned by
+            read_state_info: ((state, status), exception_error)
+
+        Returns
+        -------
+        bool
+            returns True if is triggering or False otherwise
+
         """
         for elem in states:
             state_info_idx = 0
@@ -265,8 +347,7 @@ class PoolSynchronization(PoolAction):
 
     @DebugIt()
     def action_loop(self):
-        """action_loop method
-        """
+        """action_loop method"""
         states = {}
         for channel in self._channels:
             element = channel.element

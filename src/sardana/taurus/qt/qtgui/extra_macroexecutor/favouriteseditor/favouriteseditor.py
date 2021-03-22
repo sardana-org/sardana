@@ -35,6 +35,7 @@ from .model import MacrosListModel
 
 
 class FavouritesMacrosEditor(TaurusWidget):
+    """ """
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
     def __init__(self, parent=None, designMode=False):
@@ -45,6 +46,7 @@ class FavouritesMacrosEditor(TaurusWidget):
         self.initComponents()
 
     def initComponents(self):
+        """ """
         self.setLayout(Qt.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -59,6 +61,7 @@ class FavouritesMacrosEditor(TaurusWidget):
         self.layout().addLayout(actionBar)
 
     def createActionBar(self):
+        """ """
         layout = Qt.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         deleteButton = Qt.QToolButton()
@@ -79,12 +82,35 @@ class FavouritesMacrosEditor(TaurusWidget):
         return layout
 
     def addMacro(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         self.list.insertMacro(macroNode)
 
     def toXmlString(self):
+        """ """
         return self.list.toXmlString()
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.list.fromXmlString(xmlString)
         favouritesList = self.list.model().list
         macroServerObj = self.getModelObj()
@@ -97,10 +123,12 @@ class FavouritesMacrosEditor(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 
 
 class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
+    """ """
 
     favouriteSelected = Qt.pyqtSignal(compat.PY_OBJECT)
 
@@ -139,11 +167,37 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
         self.disableActions()
 
     def currentChanged(self, current, previous):
+        """
+
+        Parameters
+        ----------
+        current :
+            
+        previous :
+            
+
+        Returns
+        -------
+
+        """
         macro = copy.deepcopy(self.currentIndex().internalPointer())
         self.favouriteSelected.emit(macro)
         Qt.QListView.currentChanged(self, current, previous)
 
     def selectionChanged(self, old, new):
+        """
+
+        Parameters
+        ----------
+        old :
+            
+        new :
+            
+
+        Returns
+        -------
+
+        """
         macro = None
         if self.currentIndex().isValid():
             self.removeAllAction.setEnabled(True)
@@ -156,6 +210,7 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
             self.moveDownAction.setEnabled(False)
 
     def isIndexSelected(self):
+        """ """
         if len(self.selectedIndexes()) > 0:
             self.removeAction.setEnabled(True)
             self.moveUpAction.setEnabled(
@@ -168,6 +223,17 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
             self.moveDownAction.setEnabled(False)
 
     def mousePressEvent(self, e):
+        """
+
+        Parameters
+        ----------
+        e :
+            
+
+        Returns
+        -------
+
+        """
         clickedIndex = self.indexAt(e.pos())
         if clickedIndex.isValid():
             macro = copy.deepcopy(self.currentIndex().internalPointer())
@@ -175,16 +241,29 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
         Qt.QListView.mousePressEvent(self, e)
 
     def disableActions(self):
+        """ """
         self.removeAction.setEnabled(False)
         self.removeAllAction.setEnabled(False)
         self.moveUpAction.setEnabled(False)
         self.moveDownAction.setEnabled(False)
 
     def insertMacro(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         idx = self.model().insertRow(macroNode)
         self.setCurrentIndex(idx)
 
     def removeMacros(self):
+        """ """
         slist = sorted(self.selectedIndexes(),
                        key=lambda index: index.row(), reverse=True)
         for index in slist:
@@ -193,6 +272,7 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
         self.setCurrentIndex(idx)
 
     def removeAllMacros(self):
+        """ """
         self.selectAll()
         slist = sorted(self.selectedIndexes(),
                        key=lambda index: index.row(), reverse=True)
@@ -200,23 +280,38 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
             self.model().removeRow(index.row())
 
     def upMacro(self):
+        """ """
         row = self.currentIndex().row()
         idx = self.model().upRow(row)
         self.setCurrentIndex(idx)
 
     def downMacro(self):
+        """ """
         row = self.currentIndex().row()
         idx = self.model().downRow(row)
         self.setCurrentIndex(idx)
 
     def toXmlString(self):
+        """ """
         return self.model().toXmlString()
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.model().fromXmlString(xmlString)
 
 
 def test():
+    """ """
     import sys
     import taurus
     import time

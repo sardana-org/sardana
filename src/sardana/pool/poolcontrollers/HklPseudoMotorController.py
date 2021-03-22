@@ -72,6 +72,7 @@ logger.info("The diffractometer controller is at early stage. Controller attribu
 
 
 class AxisPar(object):
+    """ """
 
     def __init__(self, engine, name):
         self.engine = engine
@@ -80,30 +81,56 @@ class AxisPar(object):
 
     @property
     def mode(self):
+        """ """
         return self.engine.current_mode_get()
 
     @mode.setter
     def mode(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.engine.current_mode_set(value)
 
     @property
     def modes(self):
+        """ """
         if self._modes is None:
             self._modes = self.engine.modes_names_get()
         return self._modes
 
     @property
     def modeparameters(self):
+        """ """
         return self.engine.parameters_names_get()
 
     @property
     def modeparametersvalues(self):
+        """ """
         return [p.value_get(USER)
                 for p in [self.engine.parameter_get(n)
                           for n in self.modeparameters]]
 
     @modeparametersvalues.setter
     def modeparametersvalues(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         for parameter, v in zip(self.modeparameters,
                                 value):
             p = self.engine.parameter_get(parameter)
@@ -115,7 +142,7 @@ class AxisPar(object):
 
 class DiffracBasis(PseudoMotorController):
 
-    """ The PseudoMotor controller for the diffractometer"""
+    """The PseudoMotor controller for the diffractometer"""
 
     ctrl_properties = {
         'DiffractometerType': {
@@ -326,9 +353,37 @@ class DiffracBasis(PseudoMotorController):
     }
 
     def GetAxisExtraPar(self, axis, name):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return getattr(self.axispar[axis - 1], name.lower())
 
     def SetAxisExtraPar(self, axis, name, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         setattr(self.axispar[axis - 1], name.lower(), value)
 
     MaxDevice = 1
@@ -418,6 +473,19 @@ class DiffracBasis(PseudoMotorController):
         self.lambda_to_e = 12398.424  # Amstrong * eV
 
     def _solutions(self, values, curr_physical_position):
+        """
+
+        Parameters
+        ----------
+        values :
+            
+        curr_physical_position :
+            
+
+        Returns
+        -------
+
+        """
         # set all the motor min and max to restrain the solutions
         # with only valid positions.
         for role, current in zip(self.motor_roles, curr_physical_position):
@@ -436,12 +504,55 @@ class DiffracBasis(PseudoMotorController):
         return self.engine.pseudo_axis_values_set(values, USER)
 
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         return self.CalcAllPhysical(pseudo_pos, curr_physical_pos)[axis - 1]
 
     def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         return self.CalcAllPseudo(physical_pos, curr_pseudo_pos)[axis - 1]
 
     def CalcAllPhysical(self, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         # TODO it should work with all the kind of engine ? or only
         # with the hkl engine ? What I understand from this is that
         # the pseudos values contain all the values from all the
@@ -503,6 +614,19 @@ class DiffracBasis(PseudoMotorController):
         return tuple(angles)
 
     def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         # TODO howto avoid this nb_ph_axes, does the length of the
         # physical values are not equal to the expected len of the
         # geometry axes.
@@ -524,9 +648,21 @@ class DiffracBasis(PseudoMotorController):
         return tuple(values)
 
     def getCrystal(self):
+        """ """
         return self.sample.name_get()
 
     def setCrystal(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.sample = self.samples[value]
         # Used this part and comment the above one out if memorized crystal (memcrystal)
         # if self.first_crystal_set == 0:
@@ -546,6 +682,17 @@ class DiffracBasis(PseudoMotorController):
         self.engines.init(self.geometry, self.detector, self.sample)
 
     def setAffineCrystal(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         new_sample_name = self.sample.name_get() + " (affine)"
         if new_sample_name not in self.samples:
             sample = self.sample.copy()
@@ -554,6 +701,7 @@ class DiffracBasis(PseudoMotorController):
             self.sample = self.samples[new_sample_name] = sample
 
     def getWavelength(self):
+        """ """
         if self._energydevice != " " and self._autoenergyupdate:
             try:
                 if self.energy_device is None:
@@ -567,12 +715,35 @@ class DiffracBasis(PseudoMotorController):
         return self.geometry.wavelength_get(USER)
 
     def setWavelength(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.geometry.wavelength_set(value, USER)
 
     def getEngineMode(self):
+        """ """
         return self.engine.current_mode_get()
 
     def setEngineMode(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # TODO why not throw the exception when the mode name is
         # wrong. The hkl library return an usefull Exception for this.
         for mode in self.engine.modes_names_get():
@@ -580,9 +751,11 @@ class DiffracBasis(PseudoMotorController):
                 self.engine.current_mode_set(mode)
 
     def getEngineModeList(self):
+        """ """
         return self.engine.modes_names_get()
 
     def getHKLModeList(self):
+        """ """
         # TODO seems to me complicate... why this Hkl specific part.
         # It seems that this controleur mix all the engines and does
         # something special with the hkl one ???   neverthless I would
@@ -596,34 +769,82 @@ class DiffracBasis(PseudoMotorController):
         return hkl_engine.modes_names_get()
 
     def getUBMatrix(self):
+        """ """
         UB = self.sample.UB_get()
         return [[UB.get(i, j) for j in range(3)] for i in range(3)]
 
     def getUx(self):
+        """ """
         return self.sample.ux_get().value_get(USER)
 
     def setUx(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         ux = self.sample.ux_get()
         ux.value_set(value, USER)
         self.sample.ux_set(ux)
 
     def getUy(self):
+        """ """
         return self.sample.uy_get().value_get(USER)
 
     def setUy(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         uy = self.sample.uy_get()
         uy.value_set(value, USER)
         self.sample.uy_set(uy)
 
     def getUz(self):
+        """ """
         return self.sample.uz_get().value_get(USER)
 
     def setUz(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         uz = self.sample.uz_get()
         uz.value_set(value, USER)
         self.sample.uz_set(uz)
 
     def setComputeUB(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if len(value) < 2:
             return
         nb_reflections = len(self.sample.reflections_get())
@@ -639,17 +860,30 @@ class DiffracBasis(PseudoMotorController):
         self.sample.compute_UB_busing_levy(ref1, ref2)
 
     def getLatticeReciprocal(self):
+        """ """
         lattice = self.sample.lattice_get()
         reciprocal = lattice.copy()
         lattice.reciprocal(reciprocal)
         return reciprocal.get(USER)
 
     def getA(self):
+        """ """
         lattice = self.sample.lattice_get()
         a, _b, _c, _alpha, _beta, _gamma = lattice.get(USER)
         return a
 
     def setA(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(value, b, c, alpha, beta, gamma, USER)
@@ -657,11 +891,23 @@ class DiffracBasis(PseudoMotorController):
         self._a = value
 
     def getB(self):
+        """ """
         lattice = self.sample.lattice_get()
         _a, b, _c, _alpha, _beta, _gamma = lattice.get(USER)
         return b
 
     def setB(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(a, value, c, alpha, beta, gamma, USER)
@@ -669,11 +915,23 @@ class DiffracBasis(PseudoMotorController):
         self._b = value
 
     def getC(self):
+        """ """
         lattice = self.sample.lattice_get()
         _a, _b, c, _alpha, _beta, _gamma = lattice.get(USER)
         return c
 
     def setC(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(a, b, value, alpha, beta, gamma, USER)
@@ -681,11 +939,23 @@ class DiffracBasis(PseudoMotorController):
         self._c = value
 
     def getAlpha(self):
+        """ """
         lattice = self.sample.lattice_get()
         _a, _b, _c, alpha, _beta, _gamma = lattice.get(USER)
         return alpha
 
     def setAlpha(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(a, b, c, value, beta, gamma, USER)
@@ -693,11 +963,23 @@ class DiffracBasis(PseudoMotorController):
         self._alpha = value
 
     def getBeta(self):
+        """ """
         lattice = self.sample.lattice_get()
         _a, _b, _c, _alpha, beta, _gamma = lattice.get(USER)
         return beta
 
     def setBeta(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(a, b, c, alpha, value, gamma, USER)
@@ -705,11 +987,23 @@ class DiffracBasis(PseudoMotorController):
         self._beta = value
 
     def getGamma(self):
+        """ """
         lattice = self.sample.lattice_get()
         _a, _b, _c, _alpha, _beta, gamma = lattice.get(USER)
         return gamma
 
     def setGamma(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         lattice = self.sample.lattice_get()
         a, b, c, alpha, beta, gamma = lattice.get(USER)
         lattice.set(a, b, c, alpha, beta, value, USER)
@@ -717,57 +1011,141 @@ class DiffracBasis(PseudoMotorController):
         self._gamma = value
 
     def getAFit(self):
+        """ """
         apar = self.sample.lattice_get().a_get()
         return apar.fit_get()
 
     def setAFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         apar = self.sample.lattice_get().a_get()
         apar.fit_set(value)
 
     def getBFit(self):
+        """ """
         bpar = self.sample.lattice_get().b_get()
         return bpar.fit_get()
 
     def setBFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         bpar = self.sample.lattice_get().b_get()
         bpar.fit_set(value)
 
     def getCFit(self):
+        """ """
         cpar = self.sample.lattice_get().c_get()
         return cpar.fit_get()
 
     def setCFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         cpar = self.sample.lattice_get().c_get()
         cpar.fit_set(value)
 
     def getAlphaFit(self):
+        """ """
         alphapar = self.sample.lattice_get().alpha_get()
         return alphapar.fit_get()
 
     def setAlphaFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         alphapar = self.sample.lattice_get().alpha_get()
         alphapar.fit_set(value)
 
     def getBetaFit(self):
+        """ """
         betapar = self.sample.lattice_get().beta_get()
         return betapar.fit_get()
 
     def setBetaFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         betapar = self.sample.lattice_get().beta_get()
         betapar.fit_set(value)
 
     def getGammaFit(self):
+        """ """
         gammapar = self.sample.lattice_get().gamma_get()
         return gammapar.fit_get()
 
     def setGammaFit(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         gammapar = self.sample.lattice_get().gamma_get()
         gammapar.fit_set(value)
 
     def getComputeTrajectoriesSim(self):
+        """ """
         return self.lastpseudopos
 
     def setComputeTrajectoriesSim(self, values):
+        """
+
+        Parameters
+        ----------
+        values :
+            
+
+        Returns
+        -------
+
+        """
         # TODO the hkl library should return these informations
         # assert (len(values) == len(self.engine.pseudo_axis_names_get()),
         #         "Not the right number of parameters given (%d, %d expected)"
@@ -794,24 +1172,51 @@ class DiffracBasis(PseudoMotorController):
         self.lastpseudos = tuple(values)
 
     def getTrajectoryList(self):
+        """ """
         return self.trajectorylist
 
     def getSelectedTrajectory(self):
+        """ """
         return self.selected_trajectory
 
     def setSelectedTrajectory(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.selected_trajectory = value
 
     def getEngine(self):
+        """ """
         return self.engine.name_get()
 
     def setEngine(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.engine = self.engines.engine_get_by_name(value)
 
     def getEngineList(self):
+        """ """
         return self.engine_list
 
     def getEnginesConf(self):
+        """ """
         if self.engines_conf is None:
             elements = []
             for engine in self.engines.engines_get():
@@ -824,21 +1229,55 @@ class DiffracBasis(PseudoMotorController):
             self.engines_conf = conf
 
     def setAddCrystal(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if value not in self.samples:
             self.samples[value] = Hkl.Sample.new(value)
             # value returned when the attribute is read
             self._addcrystal = value
 
     def getCrystalList(self):
+        """ """
         return list(self.samples)
 
     def setDeleteCrystal(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if value in self.samples:
             self.samples.pop(value)
             # value returned when the attribute is read
             self._deletecrystal = value
 
     def setAddReflection(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # Parameters: h, k, l, [affinement], angles are the current ones
         # Read current motor positions
         motor_position = []
@@ -854,6 +1293,17 @@ class DiffracBasis(PseudoMotorController):
             newref.flag_set(value[3])
 
     def setSubstituteReflection(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # Parameters: index, h, k, l, [affinement], angles are the current ones
         # Read current reflections
         old_reflections = self.sample.reflections_get()
@@ -895,6 +1345,17 @@ class DiffracBasis(PseudoMotorController):
             self.setAddReflection(value[1:])
 
     def setSwapReflections01(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # Read current reflections
         reflections = self.sample.reflections_get()
         nb_ref = len(reflections)
@@ -946,6 +1407,7 @@ class DiffracBasis(PseudoMotorController):
         self.setAdjustAnglesToReflection(angles[0])
 
     def getReflectionList(self):
+        """ """
         reflectionslist = []
         i = 0
         for ref in self.sample.reflections_get():
@@ -962,6 +1424,17 @@ class DiffracBasis(PseudoMotorController):
         return reflectionslist
 
     def setRemoveReflection(self, value):  # value: reflexion index
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         i = 0
         for ref in self.sample.reflections_get():
             if i == value:
@@ -970,6 +1443,17 @@ class DiffracBasis(PseudoMotorController):
 
     # value: complete path of the file with the reflections to set
     def setLoadReflections(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # Read the file
         with open(value, 'r') as f:
             self._loadreflections = value
@@ -1003,8 +1487,14 @@ class DiffracBasis(PseudoMotorController):
     def setLoadCrystal(self, value):
         """Load crystal information from a file. Ignore wavelength information.
 
-        :param value: complete path of the file with the crystal to set
-        :type value: :obj:`str`
+        Parameters
+        ----------
+        value : obj:`str`
+            complete path of the file with the crystal to set
+
+        Returns
+        -------
+
         """
         # Read the file
         with open(value, 'r') as crystal_file:
@@ -1126,6 +1616,17 @@ class DiffracBasis(PseudoMotorController):
 
     # value: directory, the file would be given by the name of the sample
     def setSaveReflections(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         complete_file_name = value + str(self.sample.name_get()) + ".ref"
         complete_file_name = complete_file_name.replace(' ', '')
         complete_file_name = complete_file_name.replace('(', '_')
@@ -1148,6 +1649,17 @@ class DiffracBasis(PseudoMotorController):
                 ref_file.write(ref_str)
 
     def setSaveCrystal(self, value):  # value: not used
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         default_file_name = self._savedirectory + "/defaultcrystal.txt"
         crystal_file_name = self._savedirectory + "/" + self.sample.name_get() + ".txt"
 
@@ -1267,10 +1779,32 @@ class DiffracBasis(PseudoMotorController):
         os.system(cmd)
 
     def setSaveDirectory(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._savedirectory = value
 
     # value: reflexion index + new angles
     def setAdjustAnglesToReflection(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         ref_index = value[0]
         new_angles = value[1:]
         i = 0
@@ -1282,6 +1816,7 @@ class DiffracBasis(PseudoMotorController):
             i = i + 1
 
     def getReflectionAngles(self):
+        """ """
         reflectionsangles = []
         i = -1
         for ref1 in self.sample.reflections_get():
@@ -1301,20 +1836,44 @@ class DiffracBasis(PseudoMotorController):
         return reflectionsangles
 
     def getModeParametersNames(self):
+        """ """
         return self.engine.parameters_names_get()
 
     def getModeParametersValues(self):
+        """ """
         return [p.value_get(USER)
                 for p in [self.engine.parameter_get(n)
                           for n in self.engine.parameters_names_get()]]
 
     def setModeParametersValues(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         for parameter, v in zip(self.engine.parameters_names_get(), value):
             p = self.engine.parameter_get(parameter)
             p.value_set(v, USER)
             self.engine.parameter_set(parameter, p)
 
     def _getPsiRef(self, parameters):
+        """
+
+        Parameters
+        ----------
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         # TODO I do not understand this method. check that the
         # parameters names are ok. I changed one.
         value = -999
@@ -1324,15 +1883,31 @@ class DiffracBasis(PseudoMotorController):
         return value
 
     def getPsiRefH(self):
+        """ """
         return self._getPsiRef(["h1", "h2", "x"])
 
     def getPsiRefK(self):
+        """ """
         return self._getPsiRef(["k1", "k2", "y"])
 
     def getPsiRefL(self):
+        """ """
         return self._getPsiRef(["l1", "l2", "z"])
 
     def _setPsiRef(self, parameters, value):
+        """
+
+        Parameters
+        ----------
+        parameters :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         # TODO idem here :)
         value_set = False
         for parameter in self.engine.parameters_names_get():
@@ -1345,15 +1920,49 @@ class DiffracBasis(PseudoMotorController):
             raise Exception("psiref not available in this mode")
 
     def setPsiRefH(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._setPsiRef(["h1", "h2", "x"], value)
 
     def setPsiRefK(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._setPsiRef(["k1", "k2", "y"], value)
 
     def setPsiRefL(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._setPsiRef(["l1", "l2", "z"], value)
 
     def getMotorList(self):
+        """ """
         motor_names = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
@@ -1362,6 +1971,7 @@ class DiffracBasis(PseudoMotorController):
         return motor_names
 
     def getHKLPseudoMotorList(self):
+        """ """
         hkl_pm_names = []
         for i in range(0, 3):
             motor = self.GetPseudoMotor(i)
@@ -1370,10 +1980,22 @@ class DiffracBasis(PseudoMotorController):
         return hkl_pm_names
 
     def getMotorRoles(self):
+        """ """
         roles_names = tuple(self.geometry.axis_names_get())
         return roles_names
 
     def setEnergyDevice(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._energydevice = value
         try:
             self.energy_device = PyTango.DeviceProxy(self._energydevice)
@@ -1382,9 +2004,31 @@ class DiffracBasis(PseudoMotorController):
             self._log.warning("Not able to create proxy to energydevice")
 
     def setAutoEnergyUpdate(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._autoenergyupdate = value
 
     def setComputeHKL(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
 
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
@@ -1419,10 +2063,18 @@ class Diffrac6Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 6C"
     motor_roles = "omega_t", "mu", "omega", "chi", "phi", "gamma", "delta"
 
     def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
+    """Do the default init plus the specific diffractometer
         staff.
-        @param properties of the controller
-        """
+
+    Parameters
+    ----------
+    properties :
+        of the controller
+
+    Returns
+    -------
+
+    """
 
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
@@ -1434,17 +2086,25 @@ class Diffrac6C(DiffracBasis):  # DiffractometerType: "PETRA3 P09 EH2"
     motor_roles = "mu", "omega", "chi", "phi", "delta", "gamma"
 
     def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
+    """Do the default init plus the specific diffractometer
         staff.
-        @param properties of the controller
-        """
+
+    Parameters
+    ----------
+    properties :
+        of the controller
+
+    Returns
+    -------
+
+    """
 
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
 
 class DiffracE6C(DiffracBasis):
 
-    """ The PseudoMotor controller for the diffractometer"""
+    """The PseudoMotor controller for the diffractometer"""
 
     pseudo_motor_roles = "h", "k", "l", "psi", "q", "alpha", "qper", "qpar"
     motor_roles = "mu", "omega", "chi", "phi", "gamma", "delta"
@@ -1469,16 +2129,24 @@ class Diffrac4Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 4C"
     motor_roles = "omega_t", "mu", "gamma", "delta"
 
     def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
+    """Do the default init plus the specific diffractometer
         staff.
-        @param properties of the controller
-        """
+
+    Parameters
+    ----------
+    properties :
+        of the controller
+
+    Returns
+    -------
+
+    """
 
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
 class DiffracE4C(DiffracBasis):
 
-    """ The PseudoMotor controller for the diffractometer"""
+    """The PseudoMotor controller for the diffractometer"""
 
     pseudo_motor_roles = "h", "k", "l", "psi", "q"
     motor_roles = "omega", "chi", "phi", "tth"
@@ -1495,7 +2163,7 @@ class DiffracE4C(DiffracBasis):
 # wip Generic diffractometer
 
 class Diffractometer(DiffracBasis):
-    """ The PseudoMotor controller for the diffractometer"""
+    """The PseudoMotor controller for the diffractometer"""
 
     def __init__(self, inst, props, *args, **kwargs):
         """ Do the default init plus the specific diffractometer

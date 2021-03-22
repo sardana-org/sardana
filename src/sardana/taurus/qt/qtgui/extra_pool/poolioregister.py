@@ -43,14 +43,32 @@ import taurus
 
 
 class PoolIORegisterReadWidget(TaurusLabel):
-    ''' This class is intended to be used as a read widget of a TaurusValue with IORegister devices.
+    """This class is intended to be used as a read widget of a TaurusValue with IORegister devices.
     After setting the model, it gets the Labels and creates a filter to show them instead of the values.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusLabel.__init__(self, parent, designMode)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         # @todo: change this (it assumes tango naming!)
         TaurusLabel.setModel(self, '%s/value' % model)
 
@@ -76,6 +94,17 @@ class PoolIORegisterReadWidget(TaurusLabel):
     # SO I RE-IMPLEMENT getFormatedToolTip for this purpose
     ##########################################################
     def getFormatedToolTip(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         taurus_label_tooltip = TaurusLabel.getFormatedToolTip(self, cache)
         try:
             display_value = int(self.getDisplayValue())
@@ -95,19 +124,38 @@ class PoolIORegisterReadWidget(TaurusLabel):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 
 
 class PoolIORegisterWriteWidget(TaurusValueComboBox):
-    ''' This class is intended to be used as a write widget of a TaurusValue with IORegister devices.
+    """This class is intended to be used as a write widget of a TaurusValue with IORegister devices.
     After setting the model, it gets the Labels and populates the combobox. It has AutoApply set to True.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusValueComboBox.__init__(self, parent, designMode)
         TaurusValueComboBox.setForcedApply(self, True)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         # @todo: change this (it assumes tango naming!)
         TaurusValueComboBox.setModel(self, '%s/value' % model)
 
@@ -129,13 +177,21 @@ class PoolIORegisterWriteWidget(TaurusValueComboBox):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 
 
 class PoolIORegisterTV(TaurusValue):
-    ''' A widget that displays and controls a pool IORegister device.  It
+    """A widget that displays and controls a pool IORegister device.  It
     behaves as a TaurusValue.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
@@ -146,6 +202,17 @@ class PoolIORegisterTV(TaurusValue):
         self.ioreg_dev = None
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         TaurusValue.setModel(self, model)
         try:
             self.ioreg_dev = taurus.Device(model)
@@ -153,22 +220,51 @@ class PoolIORegisterTV(TaurusValue):
             return
 
     def showEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusValue.showEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').enablePolling(force=True)
 
     def hideEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusValue.hideEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').disablePolling()
 
 
 class PoolIORegister(TaurusWidget):
-    ''' A widget that displays and controls a pool IORegister device.
+    """A widget that displays and controls a pool IORegister device.
     It reads the value and provides a combobox to write it.
     NOTE: It would be nice to provide 'ABORT' button if the device allows it.
     NOTE: It would be nice to set icons for each possible value label.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -190,6 +286,17 @@ class PoolIORegister(TaurusWidget):
         self.layout().addWidget(self.write_widget)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self.ioreg_dev = taurus.Device(model)
         except:
@@ -200,11 +307,33 @@ class PoolIORegister(TaurusWidget):
         self.write_widget.setModel(model)
 
     def showEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusWidget.showEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').enablePolling(force=True)
 
     def hideEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusWidget.hideEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').disablePolling()
@@ -212,11 +341,18 @@ class PoolIORegister(TaurusWidget):
 
 @UILoadable(with_ui='ui')
 class PoolIORegisterButtons(TaurusWidget):
-    ''' A widget that displays and controls a pool IORegister device.
+    """A widget that displays and controls a pool IORegister device.
     It reads the value and provides buttons to switch between values.
     NOTE: It would be nice to provide 'ABORT' button if the device allows it.
     NOTE: It would be nice to set icons for each possible value label.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -237,6 +373,17 @@ class PoolIORegisterButtons(TaurusWidget):
         self.ui.lo_state_read.addWidget(self.value_label)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self.ioreg_dev = taurus.Device(model)
         except:
@@ -263,6 +410,7 @@ class PoolIORegisterButtons(TaurusWidget):
             self.button.clicked.connect(self.writeValue)
 
     def writeValue(self):
+        """ """
         if self.ioreg_dev is None:
             return
         button = self.sender()
@@ -270,17 +418,40 @@ class PoolIORegisterButtons(TaurusWidget):
         self.ioreg_dev.getAttribute('Value').write(value)
 
     def showEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusWidget.showEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').enablePolling(force=True)
 
     def hideEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         TaurusWidget.hideEvent(self, event)
         if self.ioreg_dev is not None:
             self.ioreg_dev.getAttribute('Value').disablePolling()
 
 
 def test_form():
+    """ """
     from taurus.qt.qtgui.panel import TaurusForm
     tgclass_map = {'IORegister': PoolIORegisterTV}
     form = TaurusForm()
@@ -294,6 +465,7 @@ def test_form():
 
 
 def test_widget():
+    """ """
     w = PoolIORegister()
     model = 'tango://controls02:10000/ioregister/gc_tgiorctrl/1'
     if len(sys.argv) > 1:
@@ -304,6 +476,7 @@ def test_widget():
 
 
 def test_buttons():
+    """ """
     w = PoolIORegisterButtons()
     model = 'tango://controls02:10000/ioregister/gc_tgiorctrl/1'
     if len(sys.argv) > 1:

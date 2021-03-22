@@ -98,16 +98,7 @@ MaxDimSize = "maxdimsize"
 
 
 class Controller(object):
-    """
-    Base controller class. Do **NOT** inherit from this class directly
-
-    :param :obj:`str` inst: controller instance name
-    :param dict props: a dictionary containing pairs of property name,
-    property value
-
-    :arg args:
-    :keyword kwargs:
-    """
+    """Base controller class. Do **NOT** inherit from this class directly"""
 
     #: A sequence of :obj:`str` representing the controller features
     ctrl_features = []
@@ -305,7 +296,15 @@ class Controller(object):
 
     def _findAPIVersion(self):
         """*Internal*. By default return the Pool Controller API
-        version of the pool where the controller is running"""
+        version of the pool where the controller is running
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return ControllerAPI
 
     def _getPoolController(self):
@@ -321,32 +320,68 @@ class Controller(object):
         """**Controller API**. Override if necessary. Default implementation
         does nothing.
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def DeleteDevice(self, axis):
         """**Controller API**. Override if necessary. Default implementation
         does nothing.
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def GetName(self):
         """**Controller API**. The controller instance name.
 
-        :return: the controller instance name
-        :rtype: :obj:`str`
+        Parameters
+        ----------
 
-        .. versionadded:: 1.0"""
+        Returns
+        -------
+        obj:`str`
+
+.. versionadded:: 1.0
+            the controller instance name
+
+        """
         return self._inst_name
 
     def GetAxisName(self, axis):
         """**Controller API**. The axis name.
 
-        :return: the axis name
-        :rtype: :obj:`str`
+        Parameters
+        ----------
+        axis :
+            
 
-        .. versionadded:: 1.0"""
+        Returns
+        -------
+        obj:`str`
+
+.. versionadded:: 1.0
+            the axis name
+
+        """
         ctrl = self._getPoolController()
         if ctrl is not None:
             return ctrl.get_element(axis=axis).name
@@ -355,7 +390,15 @@ class Controller(object):
     def PreStateAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare a read of the state of all axis.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreStateOne(self, axis):
@@ -363,43 +406,107 @@ class Controller(object):
         Called to prepare a read of the state of a single axis.
         Default implementation does nothing.
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def StateAll(self):
         """**Controller API**. Override if necessary.
         Called to read the state of all selected axis.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def StateOne(self, axis):
         """**Controller API**. Override is MANDATORY.
         Called to read the state of one axis.
-        Default implementation raises :exc:`NotImplementedError`."""
+        Default implementation raises :exc:`NotImplementedError`.
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("StateOne must be defined in the controller")
 
     def SetCtrlPar(self, parameter, value):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation sets
         this object member named '_'+parameter with the given value.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        parameter :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         setattr(self, '_' + parameter, value)
 
     def GetCtrlPar(self, parameter):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation returns
         the value contained in this object's member named '_'+parameter.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         return getattr(self, '_' + parameter)
 
     def SetAxisPar(self, axis, parameter, value):
         """**Controller API**. Override is MANDATORY.
         Called to set a parameter with a value on the given axis. Default
         implementation raises :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("SetAxisPar must be defined in the "
                                   "controller")
 
@@ -407,8 +514,20 @@ class Controller(object):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis. Default
         implementation raises :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("GetAxisPar must be defined in the "
                                   "controller")
 
@@ -416,8 +535,22 @@ class Controller(object):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value on the given axis. Default
         implementation raises :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("SetAxisExtraPar must be defined in the "
                                   "controller")
 
@@ -425,8 +558,20 @@ class Controller(object):
         """**Controller API**. Override if necessary.
         Called to get a parameter value on the given axis. Default
         implementation raises :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.0
 
-        .. versionadded:: 1.0"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("GetAxisExtraPar must be defined in the "
                                   "controller")
 
@@ -436,11 +581,22 @@ class Controller(object):
         Default implementation returns a new :class:`dict` with the standard
         attributes plus the :attr:`~Controller.axis_attributes`
 
-        :param int axis: axis number
-        :return: a dict containing attribute information as defined in
-                 :attr:`~Controller.axis_attributes`
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
 
-        .. versionadded:: 1.0"""
+        Returns
+        -------
+        type
+            a dict containing attribute information as defined in
+            :attr:`~Controller.axis_attributes`
+            
+            .. versionadded:: 1.0
+
+        """
         ret = copy.deepcopy(self.standard_axis_attributes)
         axis_attrs = copy.deepcopy(self.axis_attributes)
         ret.update(axis_attrs)
@@ -451,22 +607,46 @@ class Controller(object):
         Sends a string to the controller.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param :obj:`str` stream: stream to be sent
-        :return: any relevant information e.g. response of the controller
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+        stream :
+            
+
+        Returns
+        -------
+        obj:`str`
+            any relevant information e.g. response of the controller
+
+        """
         raise NotImplementedError("SendToCtrl not implemented")
 
 
 class Startable(object):
     """A Startable interface. A controller for which it's axis are 'startable'
     (like a motor, for example) should implement this interface
+    
+    .. note: Do not inherit directly from :class:`Startable`.
 
-    .. note: Do not inherit directly from :class:`Startable`."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def PreStartAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare a start of all axis (whatever pre-start means).
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreStartOne(self, axis, value):
@@ -474,10 +654,23 @@ class Startable(object):
         Called to prepare a start of the given axis (whatever pre-start means).
         Default implementation returns True.
 
-        :param int axis: axis number
-        :param float value: new value
-        :return: True means a successfull pre-start or False for a failure
-        :rtype: bool"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        float :
+            value: new value
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+        bool
+            True means a successfull pre-start or False for a failure
+
+        """
         return True
 
     def StartOne(self, axis, value):
@@ -485,26 +678,63 @@ class Startable(object):
         Called to do a start of the given axis (whatever start means).
         Default implementation raises :exc:`NotImplementedError`
 
-        :param int axis: axis number
-        :param float value: new value"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        float :
+            value: new valu
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("StartOne must be defined in the controller")
 
     def StartAll(self):
         """**Controller API**. Override is MANDATORY!
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class Stopable(object):
     """A Stopable interface. A controller for which it's axis are 'stoppable'
     (like a motor, for example) should implement this interface
+    
+    .. note: Do not inherit directly from :class:`Stopable`.
 
-    .. note: Do not inherit directly from :class:`Stopable`."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def PreAbortAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare a abort of all axis (whatever pre-abort means).
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreAbortOne(self, axis):
@@ -512,9 +742,19 @@ class Stopable(object):
         Called to prepare a abort of the given axis (whatever pre-abort means).
         Default implementation returns True.
 
-        :param int axis: axis number
-        :return: True means a successfull pre-abort or False for a failure
-        :rtype: bool"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
+
+        Returns
+        -------
+        bool
+            True means a successfull pre-abort or False for a failure
+
+        """
         return True
 
     def AbortOne(self, axis):
@@ -522,19 +762,45 @@ class Stopable(object):
         Default implementation raises :exc:`NotImplementedError`.
         Aborts one of the axis
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("AbortOne must be defined in the controller")
 
     def AbortAll(self):
         """**Controller API**. Override if necessary.
         Aborts all active axis of this controller.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreStopAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare a stop of all axis (whatever pre-stop means).
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreStopOne(self, axis):
@@ -542,9 +808,19 @@ class Stopable(object):
         Called to prepare a stop of the given axis (whatever pre-stop means).
         Default implementation returns True.
 
-        :param int axis: axis number
-        :return: True means a successfull pre-stop or False for a failure
-        :rtype: bool"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
+
+        Returns
+        -------
+        bool
+            True means a successfull pre-stop or False for a failure
+
+        """
         return True
 
     def StopOne(self, axis):
@@ -553,28 +829,62 @@ class Stopable(object):
         *This method is reserved for future implementation.*
         Default implementation calls :meth:`~Controller.AbortOne`.
 
-        :param int axis: axis number
+        Parameters
+        ----------
+        int :
+            axis: axis number
+            
+            .. versionadded:: 1.
+        axis :
+            
 
-        .. versionadded:: 1.0"""
+        Returns
+        -------
+
+        """
         self.AbortOne(axis)
 
     def StopAll(self):
         """**Controller API**. Override if necessary.
         Stops all active axis of this controller.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class Readable(object):
     """A Readable interface. A controller for which it's axis are 'readable'
     (like a motor, counter or 1D for example) should implement this interface
+    
+    .. note: Do not inherit directly from Readable.
 
-    .. note: Do not inherit directly from Readable."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def PreReadAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare a read of the value of all axis.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreReadOne(self, axis):
@@ -582,22 +892,49 @@ class Readable(object):
         Called to prepare a read of the value of a single axis.
         Default implementation does nothing.
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def ReadAll(self):
         """**Controller API**. Override if necessary.
         Called to read the value of all selected axis
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def ReadOne(self, axis):
         """**Controller API**. Override is MANDATORY!
         Default implementation raises :exc:`NotImplementedError`
 
-        :param int axis: axis number
-        :return: the axis value
-        :rtype: object
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
+
+        Returns
+        -------
+        object
+            the axis value
+
         """
         raise NotImplementedError("ReadOne must be defined in the controller")
 
@@ -605,8 +942,16 @@ class Readable(object):
 class Loadable(object):
     """A Loadable interface. A controller for which it's axis are 'loadable'
     (like a counter, 1D or 2D for example) should implement this interface
+    
+    .. note: Do not inherit directly from Loadable.
 
-    .. note: Do not inherit directly from Loadable."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     #: axis of the default timer
     default_timer = None
@@ -617,18 +962,47 @@ class Loadable(object):
         parameters.
         Default implementation does nothing.
 
-        :param int axis: axis number
-        :param int repetitions: number of repetitions
-        :param float value: integration time / monitor count
-        :param float latency: latency time
-        :param int nb_starts: number of starts
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        int :
+            repetitions: number of repetitions
+        float :
+            value: integration time / monitor count
+        float :
+            latency: latency time
+        int :
+            nb_starts: number of starts
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
         """
         pass
 
     def PreLoadAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare loading the integration time / monitor value.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreLoadOne(self, axis, value, repetitions, latency):
@@ -637,18 +1011,45 @@ class Loadable(object):
         acquisition parameters.
         Default implementation returns True.
 
-        :param int axis: axis number
-        :param float value: integration time /monitor value
-        :param int repetitions: number of repetitions
-        :param float latency: latency time
-        :return: True means a successful PreLoadOne or False for a failure
-        :rtype: bool"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        float :
+            value: integration time /monitor value
+        int :
+            repetitions: number of repetitions
+        float :
+            latency: latency time
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+
+        Returns
+        -------
+        bool
+            True means a successful PreLoadOne or False for a failure
+
+        """
         return True
 
     def LoadAll(self):
         """**Controller API**. Override if necessary.
         Called to load the integration time / monitor value.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def LoadOne(self, axis, value, repetitions, latency):
@@ -656,11 +1057,31 @@ class Loadable(object):
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param int axis: axis number
-        :param float value: integration time /monitor value
-        :param int repetitions: number of repetitions
-        :param float latency: latency time
-        :param float value: integration time /monitor value"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        float :
+            value: integration time /monitor value
+        int :
+            repetitions: number of repetitions
+        float :
+            latency: latency time
+        float :
+            value: integration time /monitor valu
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("LoadOne must be defined in the controller")
 
 
@@ -668,23 +1089,39 @@ class Referable(object):
     """A Referable interface. A controller for which it's axis can
     report data references (like a 1D or 2D for example) should implement
     this interface
-
+    
     .. note: Inherit from Referable together with either OneDController or
         TwoDController
-
+    
     .. note::
         The Referable class has been included in Sardana on a provisional
         basis. Backwards incompatible changes (up to and including removal
         of the class) may occur if deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def RefOne(self, axis):
         """**Controller API**. Override is MANDATORY!
         Default implementation raises :exc:`NotImplementedError`
 
-        :param int axis: axis number
-        :return: the axis value
-        :rtype: object
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
+
+        Returns
+        -------
+        object
+            the axis value
+
         """
         raise NotImplementedError("RefOne must be defined in the controller")
 
@@ -692,13 +1129,29 @@ class Referable(object):
 class Synchronizer(object):
     """A Synchronizer interface. A controller for which its axis are 'Able to
     Synchronize' should implement this interface
+    
+    .. note: Do not inherit directly from Synchronizer.
 
-    .. note: Do not inherit directly from Synchronizer."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def PreSynchAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare loading the synchronization description.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def PreSynchOne(self, axis, description):
@@ -706,16 +1159,37 @@ class Synchronizer(object):
         Called to prepare loading the axis with the synchronization description.
         Default implementation returns True.
 
-        :param int axis: axis number
-        :param list<dict>: synchronization description
-        :return: True means a successfull PreSynchOne or False for a failure
-        :rtype: bool"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        list :
+            dict>: synchronization description
+        axis :
+            
+        description :
+            
+
+        Returns
+        -------
+        bool
+            True means a successfull PreSynchOne or False for a failure
+
+        """
         return True
 
     def SynchAll(self):
         """**Controller API**. Override if necessary.
         Called to load the synchronization description.
-        Default implementation does nothing."""
+        Default implementation does nothing.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pass
 
     def SynchOne(self, axis, description):
@@ -723,25 +1197,45 @@ class Synchronizer(object):
         Called to load the axis with the synchronization description.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param int axis: axis number
-        :param list<dict> description: synchronization description"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        list :
+            dict> description: synchronization descriptio
+        axis :
+            
+        description :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("SynchOne must be defined in the controller")
 
 
 class MotorController(Controller, Startable, Stopable, Readable):
     """Base class for a motor controller. Inherit from this class to implement
     your own motor controller for the device pool.
-
+    
     A motor controller should support these axis parameters:
-
+    
         - acceleration
         - deceleration
         - velocity
         - base_rate
         - step_per_unit
-
+    
     These parameters are configured through the
     :meth:`~Controller.GetAxisPar`/:meth:`~Controller.SetAxisPar` API.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     #: A constant representing no active switch.
@@ -809,7 +1303,7 @@ class MotorController(Controller, Startable, Stopable, Readable):
         """**Motor Controller API**. Override if necessary.
         Returns a sequence of all attributes per axis.
         Default implementation returns a :class:`dict` containning:
-
+        
         - Position
         - DialPosition
         - Offset
@@ -821,14 +1315,14 @@ class MotorController(Controller, Startable, Stopable, Readable):
         - Velocity
         - Backlash
         - Limit_switches
-
+        
         plus all attributes contained in :attr:`~Controller.axis_attributes`
-
+        
         .. note::
             Normally you don't need to Override this method. You just implement
             the class member :attr:`~Controller.axis_attributes`. Typically,
             you will need to Override this method in two cases:
-
+        
                 - certain axes contain a different set of extra attributes
                   which cannot be simply defined in
                   :attr:`~Controller.axis_attributes`
@@ -837,17 +1331,39 @@ class MotorController(Controller, Startable, Stopable, Readable):
                   control a power supply, it may have a position (current) and
                   a velocity (ramp speed) but it may not have acceleration)
 
-        :param int axis: axis number
-        :return: a dict containing attribute information as defined in
-                 :attr:`~Controller.axis_attributes`
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        axis :
+            
 
-        .. versionadded:: 1.0"""
+        Returns
+        -------
+        type
+            a dict containing attribute information as defined in
+            :attr:`~Controller.axis_attributes`
+            
+            .. versionadded:: 1.0
+
+        """
         return Controller.GetAxisAttributes(self, axis)
 
     def DefinePosition(self, axis, position):
         """**Motor Controller API**. Override is recommended!
            This method is called to load a new motor position.
            Default implementation does nothing.
+
+        Parameters
+        ----------
+        axis :
+            
+        position :
+            
+
+        Returns
+        -------
+
         """
 #        raise NotImplementedError("DefinePosition must be defined in the "
 #                                  "controller")
@@ -858,11 +1374,18 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
                              Loadable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
-
+    
     A counter timer controller should support these controller parameters:
-
+    
         - timer
         - monitor
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     #: A :class:`dict` containing the standard attributes present on each axis
@@ -898,14 +1421,34 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         """**Controller API**. Override if necessary.
         Called to do a start of the given axis (whatever start means).
 
-        :param int axis: axis number
-        :param float value: new value"""
+        Parameters
+        ----------
+        int :
+            axis: axis number
+        float :
+            value: new valu
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
     """Base class for a trigger/gate controller. Inherit from this class to
     implement your own trigger/gate controller for the device pool.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     #: A :obj:`str` representing the controller gender
@@ -922,15 +1465,35 @@ class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
         parameters.
         Default implementation does nothing.
 
-        :param int axis: axis
-        :param int nb_starts: number of starts
+        Parameters
+        ----------
+        int :
+            axis: axis
+        int :
+            nb_starts: number of starts
+        axis :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
         """
         pass
 
 
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to
-    implement your own 0D controller for the device pool."""
+    implement your own 0D controller for the device pool.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
@@ -955,15 +1518,33 @@ class ZeroDController(Controller, Readable, Stopable):
         """This method is not executed by the system.
         Default implementation does nothing.
 
-        :param int axis: axis number"""
+        Parameters
+        ----------
+        int :
+            axis: axis numbe
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     """Base class for a 1D controller. Inherit from this class to
     implement your own 1D controller for the device pool.
+    
+    .. versionadded:: 1.2
 
-    .. versionadded:: 1.2"""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     standard_axis_attributes = {
         'IntegrationTime': {'type': float,
@@ -994,16 +1575,28 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-
+        
         ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
         Inherit from :class:`~Referable` class in order to report value
         references.
-
+        
         Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.2
 
-        .. versionadded:: 1.2"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         if parameter.lower() == 'data_source':
             return None
         return self.GetPar(axis, parameter)
@@ -1011,7 +1604,15 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
 
 class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     """Base class for a 2D controller. Inherit from this class to
-    implement your own 2D controller for the device pool."""
+    implement your own 2D controller for the device pool.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     standard_axis_attributes = {
         'IntegrationTime': {'type': float,
@@ -1041,16 +1642,28 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-
+        
         ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
         Inherit from :class:`~Referable` class in order to report value
         references.
-
+        
         Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
+        
+        .. versionadded:: 1.2
 
-        .. versionadded:: 1.2"""
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         if parameter.lower() == 'data_source':
             return None
         return self.GetPar(axis, parameter)
@@ -1058,11 +1671,35 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
 
 class PseudoController(Controller):
     """Base class for all pseudo controllers.
+    
+    .. note: Do not inherit directly from :class:`PseudoController`.
 
-    .. note: Do not inherit directly from :class:`PseudoController`."""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def _getElem(self, index_or_role, roles, local_cache, ids):
-        """*Iternal*."""
+        """*Iternal*.
+
+        Parameters
+        ----------
+        index_or_role :
+            
+        roles :
+            
+        local_cache :
+            
+        ids :
+            
+
+        Returns
+        -------
+
+        """
         elem = local_cache.get(index_or_role)
         if elem is None:
             pool = self._getPoolController().pool
@@ -1081,10 +1718,10 @@ class PseudoController(Controller):
 class PseudoMotorController(PseudoController):
     """Base class for a pseudo motor controller. Inherit from this class to
     implement your own pseudo motor controller for the device pool.
-
+    
     Every Pseudo Motor implementation must be a subclass of this class.
     Current procedure for a correct implementation of a Pseudo Motor class:
-
+    
     - mandatory:
         - define the class level attributes
           :attr:`~PseudoMotorController.pseudo_motor_roles`,
@@ -1094,7 +1731,15 @@ class PseudoMotorController(PseudoController):
     - optional:
         - write :meth:`~PseudoMotorController.CalcAllPseudo` and
           :meth:`~PseudoMotorController.CalcAllPhysical` if great performance
-          gain can be achived"""
+          gain can be achived
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     #: a sequence of strings describing the role of each pseudo motor axis in
     #: this controller
@@ -1126,16 +1771,29 @@ class PseudoMotorController(PseudoController):
            Default implementation does a loop calling
            :meth:`PseudoMotorController.calc_pseudo` for each pseudo motor role.
 
-           :param sequence<float> physical_pos: a sequence containing physical
-                                                motor positions
-           :param sequence<float> curr_pseudo_pos: a sequence containing the
-                                                   current pseudo motor
-                                                   positions
-           :return: a sequece of pseudo motor positions (one for each pseudo
-                    motor role)
-           :rtype: sequence<float>
+        Parameters
+        ----------
+        sequence :
+            float> physical_pos: a sequence containing physical
+            motor positions
+        sequence :
+            float> curr_pseudo_pos: a sequence containing the
+            current pseudo motor
+            positions
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
 
-           .. versionadded:: 1.0"""
+        Returns
+        -------
+        sequence<float>
+
+   .. versionadded:: 1.0
+            a sequece of pseudo motor positions (one for each pseudo
+            motor role)
+
+        """
         ret = []
         for i in range(len(self.pseudo_motor_roles)):
             ret.append(self.CalcPseudo(i + 1, physical_pos, curr_pseudo_pos))
@@ -1148,15 +1806,28 @@ class PseudoMotorController(PseudoController):
            Default implementation does a loop calling
            :meth:`PseudoMotorController.calc_physical` for each motor role.
 
-           :param sequence<float> pseudo_pos: a sequence containing pseudo motor
-                                              positions
-           :param sequence<float> curr_physical_pos: a sequence containing the
-                                                     current physical motor
-                                                     positions
-           :return: a sequece of motor positions (one for each motor role)
-           :rtype: sequence<float>
+        Parameters
+        ----------
+        sequence :
+            float> pseudo_pos: a sequence containing pseudo motor
+            positions
+        sequence :
+            float> curr_physical_pos: a sequence containing the
+            current physical motor
+            positions
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
 
-           .. versionadded:: 1.0"""
+        Returns
+        -------
+        sequence<float>
+
+   .. versionadded:: 1.0
+            a sequece of motor positions (one for each motor role)
+
+        """
         ret = []
         for i in range(len(self.motor_roles)):
             pos = self.CalcPhysical(i + 1, pseudo_pos, curr_physical_pos)
@@ -1167,17 +1838,33 @@ class PseudoMotorController(PseudoController):
         """**Pseudo Motor Controller API**. Override is **MANDATORY**.
            Calculate pseudo motor position given the physical motor positions
 
-           :param int axis: the pseudo motor role axis
-           :param sequence<float> physical_pos: a sequence containing motor
-                                                positions
-           :param sequence<float> curr_pseudo_pos: a sequence containing the
-                                                   current pseudo motor
-                                                   positions
-           :return: a pseudo motor position corresponding to the given axis
-                    pseudo motor role
-           :rtype: float
+        Parameters
+        ----------
+        int :
+            axis: the pseudo motor role axis
+        sequence :
+            float> physical_pos: a sequence containing motor
+            positions
+        sequence :
+            float> curr_pseudo_pos: a sequence containing the
+            current pseudo motor
+            positions
+        axis :
+            
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
 
-           .. versionadded:: 1.0"""
+        Returns
+        -------
+        float
+
+   .. versionadded:: 1.0
+            a pseudo motor position corresponding to the given axis
+            pseudo motor role
+
+        """
         raise NotImplementedError("CalcPseudo must be defined in the "
                                   "controller")
 
@@ -1185,52 +1872,73 @@ class PseudoMotorController(PseudoController):
         """**Pseudo Motor Controller API**. Override is **MANDATORY**.
            Calculate physical motor position given the pseudo motor positions.
 
-           :param axis: the motor role axis
-           :type axis: int
-           :param pseudo_pos: a sequence containing pseudo motor positions
-           :type pseudo_pos: sequence<float>
-           :param curr_physical_pos: a sequence containing the current physical
-                                     motor positions
-           :type curr_physical_pos: sequence<float>
-           :return: a motor position corresponding to the given axis motor role
-           :rtype: float
+        Parameters
+        ----------
+        axis : int
+            the motor role axis
+        pseudo_pos : sequence<float>
+            a sequence containing pseudo motor positions
+        curr_physical_pos : sequence<float>
+            a sequence containing the current physical
+            motor positions
 
-           .. versionadded:: 1.0"""
+        Returns
+        -------
+        float
+
+   .. versionadded:: 1.0
+            a motor position corresponding to the given axis motor role
+
+        """
         raise NotImplementedError("CalcPhysical must be defined in the "
                                   "controller")
 
     def GetMotor(self, index_or_role):
         """Returns the motor for a given role/index.
-
+        
         .. warning::
             * Use with care: Executing motor methods can be dangerous!
-
+        
             * Since the controller is built before any element (including
               motors), this method will **FAIL** when called from the controller
               constructor
 
-        :param index_or_role: index number or role name
-        :type index_or_role: int or str
-        :return: Motor object for the given role/index
-        :rtype: :class:`~sardana.pool.poolmotor.PoolMotor`"""
+        Parameters
+        ----------
+        index_or_role : int or str
+            index number or role name
+
+        Returns
+        -------
+        class:`~sardana.pool.poolmotor.PoolMotor`
+            Motor object for the given role/index
+
+        """
         return self._getElem(index_or_role, self.motor_roles,
                              self.__motor_role_elements,
                              self._kwargs['motor_ids'])
 
     def GetPseudoMotor(self, index_or_role):
         """Returns the pseudo motor for a given role/index.
-
+        
         .. warning::
             * Use with care: Executing pseudo motor methods can be dangerous!
-
+        
             * Since the controller is built before any element (including pseudo
               motors), this method will **FAIL** when called from the controller
               constructor
 
-        :param index_or_role: index number or role name
-        :type index_or_role: int or str
-        :return: PseudoMotor object for the given role/index
-        :rtype: :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`"""
+        Parameters
+        ----------
+        index_or_role : int or str
+            index number or role name
+
+        Returns
+        -------
+        class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
+            PseudoMotor object for the given role/index
+
+        """
         dict_ids = self._getPoolController().get_element_ids()
         dict_axis = self._getPoolController().get_element_axis()
         pseudo_motor_ids = []
@@ -1246,14 +1954,22 @@ class PseudoMotorController(PseudoController):
 class PseudoCounterController(Controller):
     """Base class for a pseudo counter controller. Inherit from this class to
     implement your own pseudo counter controller for the device pool.
-
+    
     Every Pseudo Counter implementation must be a subclass of this class.
     Current procedure for a correct implementation of a Pseudo Counter class:
-
+    
     - mandatory:
         - define the class level attributes
           :attr:`~PseudoCounterController.counter_roles`,
-        - write :meth:`~PseudoCounterController.Calc` method"""
+        - write :meth:`~PseudoCounterController.Calc` method
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     #: a sequence of strings describing the role of each pseudo counter axis in
     #: this controller
@@ -1285,14 +2001,27 @@ class PseudoCounterController(Controller):
         """**Pseudo Counter Controller API**. Override is **MANDATORY**.
            Calculate pseudo counter position given the counter values.
 
-           :param int axis: the pseudo counter role axis
-           :param sequence<float> values: a sequence containing current values
-                                          of underlying elements
-           :return: a pseudo counter value corresponding to the given axis
-                    pseudo counter role
-           :rtype: float
+        Parameters
+        ----------
+        int :
+            axis: the pseudo counter role axis
+        sequence :
+            float> values: a sequence containing current values
+            of underlying elements
+        axis :
+            
+        values :
+            
 
-           .. versionadded:: 1.0"""
+        Returns
+        -------
+        float
+
+   .. versionadded:: 1.0
+            a pseudo counter value corresponding to the given axis
+            pseudo counter role
+
+        """
         raise NotImplementedError("Calc must be defined in the controller")
 
     def CalcAll(self, values):
@@ -1301,13 +2030,23 @@ class PseudoCounterController(Controller):
            Default implementation does a loop calling
            :meth:`PseudoCounterController.Calc` for each pseudo counter role.
 
-           :param sequence<float> values: a sequence containing current values
-                                          of underlying elements
-           :return: a sequece of pseudo counter values (one for each pseudo
-                    counter role)
-           :rtype: sequence<float>
+        Parameters
+        ----------
+        sequence :
+            float> values: a sequence containing current values
+            of underlying elements
+        values :
+            
 
-           .. versionadded:: 1.2"""
+        Returns
+        -------
+        sequence<float>
+
+   .. versionadded:: 1.2
+            a sequece of pseudo counter values (one for each pseudo
+            counter role)
+
+        """
         f, n = self.Calc, len(self.pseudo_counter_roles)
         return [f(i + 1, values) for i in range(n)]
 
@@ -1315,6 +2054,13 @@ class PseudoCounterController(Controller):
 class IORegisterController(Controller, Readable):
     """Base class for a IORegister controller. Inherit from this class to
     implement your own IORegister controller for the device pool.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     #: A :class:`dict` containing the standard attributes present on each axis
@@ -1332,5 +2078,17 @@ class IORegisterController(Controller, Readable):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
     def WriteOne(self, axis, value):
-        """**IORegister Controller API**. Override if necessary."""
+        """**IORegister Controller API**. Override if necessary.
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         pass

@@ -29,12 +29,19 @@ from threading import Condition
 class CountLatch(object):
     """Synchronization primitive with the capacity to count and latch.
     Counting up latches, while reaching zero when counting down un-latches.
-
+    
     .. note::
         The CountLatch class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self):
@@ -48,7 +55,17 @@ class CountLatch(object):
         self.condition.release()
 
     def count_down(self, _=None):
-        """Count down."""
+        """Count down.
+
+        Parameters
+        ----------
+        _ :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.condition.acquire()
         self.count -= 1
         if self.count <= 0:
@@ -71,11 +88,21 @@ _asyncexc.argtypes = (ctypes.c_long, ctypes.py_object)
 
 def raise_in_thread(exception, thread, logger=None):
     """Raise exception in a thread.
-
+    
     Inspired on :meth:sardana.macroserver.macro.Macro.abort
 
-    :param exception: Exception to be raised
-    :param thread: thread in which raise the exception.
+    Parameters
+    ----------
+    exception :
+        Exception to be raised
+    thread :
+        thread in which raise the exception.
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
     """
     ret, i = 0, 0
     while ret != 1:

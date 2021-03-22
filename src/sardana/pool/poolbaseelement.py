@@ -43,10 +43,18 @@ from sardana.pool.poolobject import PoolObject
 class PoolBaseElement(PoolObject):
     """A Pool object that besides the name, reference to the pool, ID, full_name
     and user_full_name has:
-
+    
        - _simulation_mode : boolean telling if in simulation mode
        - _state : element state
-       - _status : element status"""
+       - _status : element status
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         self._simulation_mode = False
@@ -81,13 +89,20 @@ class PoolBaseElement(PoolObject):
     def lock(self, blocking=True):
         """Acquires the this element lock
 
-        :param blocking:
+        Parameters
+        ----------
+        blocking : boo
             whether or not to block if lock is already acquired [default: True]
-        :type blocking: bool"""
+
+        Returns
+        -------
+
+        """
         ret = self._lock.acquire(blocking)
         return ret
 
     def unlock(self):
+        """ """
         ret = self._lock.release()
         return ret
 
@@ -96,6 +111,19 @@ class PoolBaseElement(PoolObject):
         return self._action_cache
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         ret = PoolObject.serialize(self, *args, **kwargs)
         return ret
 
@@ -106,15 +134,35 @@ class PoolBaseElement(PoolObject):
     def get_simulation_mode(self, cache=True, propagate=1):
         """Returns the simulation mode for this object.
 
-        :param cache: not used [default: True]
-        :type cache: bool
-        :param propagate: [default: 1]
-        :type propagate: int
-        :return: the current simulation mode
-        :rtype: bool"""
+        Parameters
+        ----------
+        cache : bool
+            not used [default: True]
+        propagate : int
+            default: 1]
+
+        Returns
+        -------
+        bool
+            the current simulation mode
+
+        """
         return self._simulation_mode
 
     def set_simulation_mode(self, simulation_mode, propagate=1):
+        """
+
+        Parameters
+        ----------
+        simulation_mode :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._simulation_mode = simulation_mode
         if not propagate:
             return
@@ -125,6 +173,17 @@ class PoolBaseElement(PoolObject):
                         simulation_mode)
 
     def put_simulation_mode(self, simulation_mode):
+        """
+
+        Parameters
+        ----------
+        simulation_mode :
+            
+
+        Returns
+        -------
+
+        """
         self._simulation_mode = simulation_mode
 
     simulation_mode = property(get_simulation_mode, set_simulation_mode,
@@ -140,17 +199,22 @@ class PoolBaseElement(PoolObject):
         cache is empty). If propagate > 0 and if the state changed since last
         read, it will propagate the state event to all listeners.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             tells if return value from local cache or update from HW read
             [default: True]
-        :type cache: bool
-        :param propagate:
+        propagate : int
             if > 0 propagates the event in case it changed since last HW read.
             Values bigger that mean the event if sent should be a priority event
             [default: 1]
-        :type propagate: int
-        :return: the current object state
-        :rtype: :obj:`sardana.State`"""
+
+        Returns
+        -------
+        obj:`sardana.State`
+            the current object state
+
+        """
         if not cache or self._state is None:
             state_info = self.read_state_info()
             self._set_state_info(state_info, propagate=propagate)
@@ -159,14 +223,47 @@ class PoolBaseElement(PoolObject):
     def inspect_state(self):
         """Looks at the current cached value of state
 
-        :return: the current object state
-        :rtype: :obj:`sardana.State`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`sardana.State`
+            the current object state
+
+        """
         return self._state
 
     def set_state(self, state, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._set_state(state, propagate=propagate)
 
     def _set_state(self, state, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._state = state
         if not propagate:
             return
@@ -177,6 +274,17 @@ class PoolBaseElement(PoolObject):
         self.fire_event(EventType("state", priority=propagate), state)
 
     def put_state(self, state):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+
+        """
         self._state = state
 
     state = property(get_state, set_state, doc="element state")
@@ -188,8 +296,14 @@ class PoolBaseElement(PoolObject):
     def inspect_status(self):
         """Looks at the current cached value of status
 
-        :return: the current object status
-        :rtype: :obj:`str`
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            the current object status
+
         """
         return self._status
 
@@ -199,17 +313,21 @@ class PoolBaseElement(PoolObject):
         cache is empty). If propagate > 0 and if the status changed since last
         read, it will propagate the status event to all listeners.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             tells if return value from local cache or update from HW read
             [default: True]
-        :type cache: bool
-        :param propagate:
+        propagate : int
             if > 0 propagates the event in case it changed since last HW read.
             Values bigger that mean the event if sent should be a priority event
             [default: 1]
-        :type propagate: int
-        :return: the current object status
-        :rtype: :obj:`str`
+
+        Returns
+        -------
+        obj:`str`
+            the current object status
+
         """
         if not cache or self._status is None:
             state_info = self.read_state_info()
@@ -217,9 +335,35 @@ class PoolBaseElement(PoolObject):
         return self._status
 
     def set_status(self, status, propagate=1):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._set_status(status, propagate=propagate)
 
     def _set_status(self, status, propagate=1):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._status = status
         if not propagate:
             return
@@ -231,6 +375,17 @@ class PoolBaseElement(PoolObject):
         self.fire_event(EventType("status", priority=propagate), status)
 
     def put_status(self, status):
+        """
+
+        Parameters
+        ----------
+        status :
+            
+
+        Returns
+        -------
+
+        """
         self._status = status
 
     status = property(get_status, set_status, doc="element status")
@@ -249,12 +404,18 @@ class PoolBaseElement(PoolObject):
         It is assumed that the given status comes directly from the controller
         status information.
 
-        :param status_info:
+        Parameters
+        ----------
+        status_info : tuple<State, str>
             given status information [default: None, meaning use current state
             status.
-        :type status_info: tuple<State, str>
-        :return: a transformed state information
-        :rtype: tuple<State, str>"""
+
+        Returns
+        -------
+        tuple<State, str>
+            a transformed state information
+
+        """
         if status_info is None:
             status_info = self._state, self._status
         state, status = status_info
@@ -265,6 +426,21 @@ class PoolBaseElement(PoolObject):
         return status_info[0], new_status
 
     def set_state_info(self, state_info, propagate=1, safe=False):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+        propagate :
+             (Default value = 1)
+        safe :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if safe:
             with self:
                 self._set_state_info(state_info, propagate=propagate)
@@ -272,20 +448,56 @@ class PoolBaseElement(PoolObject):
             self._set_state_info(state_info, propagate=propagate)
 
     def _set_state_info(self, state_info, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         state_info = self.calculate_state_info(state_info)
         state, status = state_info[:2]
         self._set_status(status, propagate=propagate)
         self._set_state(state, propagate=propagate)
 
     def read_state_info(self):
+        """ """
         action_cache = self.get_action_cache()
         ctrl_state_info = action_cache.read_state_info(serial=True)[self]
         return self._from_ctrl_state_info(ctrl_state_info)
 
     def put_state_info(self, state_info):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+
+        Returns
+        -------
+
+        """
         self.set_state_info(state_info, propagate=0)
 
     def _from_ctrl_state_info(self, state_info):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+
+        Returns
+        -------
+
+        """
         state_info, _ = state_info  # ignoring exc_info
         state, status = state_info
         return int(state), status
@@ -295,6 +507,7 @@ class PoolBaseElement(PoolObject):
     # --------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return NotImplementedError("%s doesn't have default attribute" % self.__class__.__name__)
 
     # --------------------------------------------------------------------------
@@ -302,6 +515,7 @@ class PoolBaseElement(PoolObject):
     # --------------------------------------------------------------------------
 
     def get_default_acquisition_channel(self):
+        """ """
         return self.get_default_attribute().name
 
     # --------------------------------------------------------------------------
@@ -309,9 +523,11 @@ class PoolBaseElement(PoolObject):
     # --------------------------------------------------------------------------
 
     def stop(self):
+        """ """
         self._stopped = True
 
     def was_stopped(self):
+        """ """
         return self._stopped
 
     # --------------------------------------------------------------------------
@@ -319,9 +535,11 @@ class PoolBaseElement(PoolObject):
     # --------------------------------------------------------------------------
 
     def abort(self):
+        """ """
         self._aborted = True
 
     def was_aborted(self):
+        """ """
         return self._aborted
 
     # --------------------------------------------------------------------------
@@ -345,12 +563,25 @@ class PoolBaseElement(PoolObject):
         return self.get_operation() is not None
 
     def is_in_local_operation(self):
+        """ """
         return self.get_operation() == self.get_action_cache()
 
     def get_operation(self):
+        """ """
         return self._operation
 
     def set_operation(self, operation):
+        """
+
+        Parameters
+        ----------
+        operation :
+            
+
+        Returns
+        -------
+
+        """
         if self.is_in_operation() and operation is not None:
             raise Exception("%s is already involved in an operation"
                             % self.name)
@@ -360,4 +591,5 @@ class PoolBaseElement(PoolObject):
         self._operation = operation
 
     def clear_operation(self):
+        """ """
         return self.set_operation(None)

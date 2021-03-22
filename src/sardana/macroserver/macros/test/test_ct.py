@@ -44,8 +44,16 @@ class CtTest(RunStopMacroTestCase, unittest.TestCase):
     """Test of ct macro. It verifies that macro ct can be executed.
     It inherits from RunStopMacroTestCase and from unittest.TestCase.
     It tests two executions of the ct macro with two different input
-    parameters.
-    Then it does another execution and it tests if the execution can be
-    aborted.
+
+    Parameters
+    ----------
+    Then :
+        it does another execution and it tests if the execution can be
+    aborted :
+        
+
+    Returns
+    -------
+
     """
     pass

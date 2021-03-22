@@ -29,7 +29,17 @@
 
 def translate_version_str2list(version_str):
     """Translates a version string in format 'x[.y[.z[...]]]' into a list of
-    numbers"""
+    numbers
+
+    Parameters
+    ----------
+    version_str :
+        
+
+    Returns
+    -------
+
+    """
     if version_str is None:
         ver = [0, 0]
     else:
@@ -55,6 +65,7 @@ def get_ipython_version():
 
 
 def get_ipython_version_list():
+    """ """
     ipv_str = get_ipython_version()
     return translate_version_str2list(ipv_str)
 

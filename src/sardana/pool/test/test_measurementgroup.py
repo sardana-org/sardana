@@ -37,14 +37,36 @@ from sardana.pool.test import BasePoolTestCase, createPoolMeasurementGroup,\
 
 
 class BaseAcquisition(object):
+    """ """
 
     def setUp(self, pool):
+        """
+
+        Parameters
+        ----------
+        pool :
+            
+
+        Returns
+        -------
+
+        """
         self.pool = pool
         self.pmg = None
         self.attr_listener = None
 
     def prepare_meas(self, config):
-        """ Prepare measurement group and returns the channel names"""
+        """Prepare measurement group and returns the channel names
+
+        Parameters
+        ----------
+        config :
+            
+
+        Returns
+        -------
+
+        """
         pool = self.pool
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
@@ -59,6 +81,7 @@ class BaseAcquisition(object):
         return channel_names
 
     def prepare_attribute_listener(self):
+        """ """
         self.attr_listener = AttributeListener()
         # Add data listener
         attributes = self.pmg.get_user_elements()
@@ -66,14 +89,14 @@ class BaseAcquisition(object):
             attr.add_listener(self.attr_listener)
 
     def remove_attribute_listener(self):
+        """ """
         # Remove data listener
         attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
 
     def acquire(self):
-        """ Run acquisition
-        """
+        """Run acquisition"""
         self.pmg.prepare()
         self.pmg.start_acquisition()
         acq = self.pmg.acquisition
@@ -81,6 +104,19 @@ class BaseAcquisition(object):
             time.sleep(.1)
 
     def acq_asserts(self, channel_names, repetitions):
+        """
+
+        Parameters
+        ----------
+        channel_names :
+            
+        repetitions :
+            
+
+        Returns
+        -------
+
+        """
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
@@ -104,8 +140,21 @@ class BaseAcquisition(object):
 
     def meas_double_acquisition(self, config, synch_description,
                                 moveable=None):
-        """ Run two acquisition with the same measurement group, first with
+        """Run two acquisition with the same measurement group, first with
         multiple repetitions and then one repetition.
+
+        Parameters
+        ----------
+        config :
+            
+        synch_description :
+            
+        moveable :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         channel_names = self.prepare_meas(config)
         # setting measurement parameters
@@ -128,7 +177,20 @@ class BaseAcquisition(object):
 
     def meas_double_acquisition_samemode(self, config, synch_description,
                                          moveable=None):
-        """ Run two acquisition with the same measurement group.
+        """Run two acquisition with the same measurement group.
+
+        Parameters
+        ----------
+        config :
+            
+        synch_description :
+            
+        moveable :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         channel_names = self.prepare_meas(config)
         self.pmg.set_synch_description(synch_description)
@@ -147,6 +209,21 @@ class BaseAcquisition(object):
         # TODO: implement asserts of Timer acquisition
 
     def consecutive_acquisitions(self, pool, config, synch_description):
+        """
+
+        Parameters
+        ----------
+        pool :
+            
+        config :
+            
+        synch_description :
+            
+
+        Returns
+        -------
+
+        """
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = createMGUserConfiguration(
             pool, config)
@@ -164,6 +241,21 @@ class BaseAcquisition(object):
                               second_config=None):
         """Executes measurement using the measurement group.
         Checks the lengths of the acquired data.
+
+        Parameters
+        ----------
+        config :
+            
+        synch_description :
+            
+        moveable :
+             (Default value = None)
+        second_config :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(config)
@@ -194,6 +286,19 @@ class BaseAcquisition(object):
                                    moveable=None):
         """Executes measurement using the measurement group and tests that the
         acquisition can be stopped.
+
+        Parameters
+        ----------
+        config :
+            
+        synch_description :
+            
+        moveable :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         self.prepare_meas(config)
         self.pmg.synch_description = synch_description
@@ -224,6 +329,23 @@ class BaseAcquisition(object):
 
     def meas_contpos_acquisition(self, config, synch_description, moveable,
                                  second_config=None):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+        synch_description :
+            
+        moveable :
+            
+        second_config :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # TODO: this code is ready only for one group configuration
         initial = \
             synch_description[0][SynchParam.Initial][SynchDomain.Position]
@@ -252,6 +374,7 @@ class BaseAcquisition(object):
         self.acq_asserts(channel_names, repetitions)
 
     def tearDown(self):
+        """ """
         self.attr_listener = None
         self.pmg = None
 
@@ -407,13 +530,13 @@ class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
     def setUp(self):
-        """
-        """
+        """ """
         BasePoolTestCase.setUp(self)
         BaseAcquisition.setUp(self, self.pool)
         unittest.TestCase.setUp(self)
 
     def tearDown(self):
+        """ """
         BasePoolTestCase.tearDown(self)
         BaseAcquisition.tearDown(self)
         unittest.TestCase.tearDown(self)

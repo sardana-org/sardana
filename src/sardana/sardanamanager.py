@@ -43,9 +43,21 @@ class SardanaElementManager(object):
     SerializationProtocol = 'json'
 
     def get_serialization_protocol(self):
+        """ """
         return self.SerializationProtocol
 
     def set_serialization_protocol(self, protocol):
+        """
+
+        Parameters
+        ----------
+        protocol :
+            
+
+        Returns
+        -------
+
+        """
         self.SerializationProtocol = protocol
 
     serialization_protocol = property(get_serialization_protocol,
@@ -53,18 +65,78 @@ class SardanaElementManager(object):
                                       doc="the serialization protocol")
 
     def serialize_element(self, element, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         obj = element.serialize(*args, **kwargs)
         return self.serialize_object(obj)
 
     def serialize_object(self, obj, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         return CodecFactory().encode(self.serialization_protocol, ('', obj),
                                      *args, **kwargs)[1]
 
     def str_element(self, element, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         obj = element.serialize(*args, **kwargs)
         return self.str_object(obj)
 
     def str_object(self, obj, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # TODO: use the active codec instead of hardcoded json
         return CodecFactory().encode('json', ('', obj), *args, **kwargs)[1]
 
@@ -77,8 +149,15 @@ class SardanaIDManager(object):
     def get_new_id(self):
         """Returns a new ID. The ID becomes reserved at this moment.
 
-        :return: a new ID
-        :rtype: int"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        int
+            a new ID
+
+        """
         self._last_id += 1
         return self._last_id
 
@@ -89,8 +168,17 @@ class SardanaIDManager(object):
     def reserve_id(self, nid):
         """Marks the given ID as reserved
 
-        :param id: the ID to be reserved
-        :type id: int"""
+        Parameters
+        ----------
+        id : in
+            the ID to be reserved
+        nid :
+            
+
+        Returns
+        -------
+
+        """
         assert isinstance(nid, int)
         if nid > self._last_id:
             self._last_id = nid

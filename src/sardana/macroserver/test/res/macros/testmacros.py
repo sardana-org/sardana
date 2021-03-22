@@ -4,11 +4,28 @@ FAIL_MSG = "Parsing or decoding failed (result: %r; expected: %r)"
 
 
 class runMacro(Macro):
-    """
-    Macro to test the parameters parsing/decoding using the macro API,
+    """Macro to test the parameters parsing/decoding using the macro API,
     'runMacro'
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         params = expected_params = (99, [1., 2.])
         macro, _ = self.prepareMacro("pt6_base", *params)
         self.runMacro(macro)
@@ -73,11 +90,28 @@ class runMacro(Macro):
 
 
 class createMacro(Macro):
-    """
-    Macro to test the parameters parsing/decoding using the macro API,
+    """Macro to test the parameters parsing/decoding using the macro API,
     'createMacro'
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
 
         params = expected_params = (99, [1., 2.])
         macro, pars = self.createMacro('pt6_base', *params)
@@ -143,11 +177,28 @@ class createMacro(Macro):
 
 
 class execMacro(Macro):
-    """
-    Macro to test the parameters parsing/decoding using the macro API,
+    """Macro to test the parameters parsing/decoding using the macro API,
     'execMacro'
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         params = expected_params = (99, [1., 2.])
         macro = self.execMacro('pt6_base', *params)
         result = macro.data
@@ -213,6 +264,13 @@ class pt6_base(Macro):
     Usages from Spock, ex.:
     pt6_base 99 [1 3]
     pt6_base 99 1 3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -222,6 +280,19 @@ class pt6_base(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.data = args
 
 
@@ -230,6 +301,13 @@ class pt10_base(Macro):
     Usages from Spock, ex.:
     pt10_base [1] True
     pt10_base 1 True
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -240,4 +318,17 @@ class pt10_base(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.data = args

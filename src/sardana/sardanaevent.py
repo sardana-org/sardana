@@ -40,7 +40,19 @@ from taurus.core.util.event import CallableRef, BoundMethodWeakref
 
 
 def _get_callable_ref(listener, callback=None):
-    """Returns a callable reference for the given listener"""
+    """Returns a callable reference for the given listener
+
+    Parameters
+    ----------
+    listener :
+        
+    callback :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     meth = getattr(listener, 'event_received', None)
     if meth is not None and is_callable(meth):
         return weakref.ref(listener, callback)
@@ -61,7 +73,17 @@ class EventGenerator(object):
                 self.add_listener(listener)
 
     def _listener_died(self, weak_listener):
-        """Callback executed when a listener dies"""
+        """Callback executed when a listener dies
+
+        Parameters
+        ----------
+        weak_listener :
+            
+
+        Returns
+        -------
+
+        """
         if self._listeners is None:
             return
         try:
@@ -72,7 +94,15 @@ class EventGenerator(object):
     def add_listener(self, listener):
         """Adds a new listener for this object.
 
-        :param listener: a listener"""
+        Parameters
+        ----------
+        listener :
+            a listene
+
+        Returns
+        -------
+
+        """
         if self._listeners is None or listener is None:
             return False
 
@@ -85,8 +115,17 @@ class EventGenerator(object):
     def remove_listener(self, listener):
         """Removes an existing listener for this object.
 
-        :param listener: the listener to be removed
-        :return: True is succeeded or False otherwise"""
+        Parameters
+        ----------
+        listener :
+            the listener to be removed
+
+        Returns
+        -------
+        type
+            True is succeeded or False otherwise
+
+        """
         if self._listeners is None:
             return
         weak_listener = _get_callable_ref(listener)
@@ -98,19 +137,55 @@ class EventGenerator(object):
 
     def has_listeners(self):
         """Returns True if anybody is listening to events from this object
-
+        
         :return: True is at least one listener is listening or False otherwise
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if self._listeners is None:
             return False
         return len(self._listeners) > 0
 
     def fire_event(self, event_type, event_value, listeners=None):
+        """
+
+        Parameters
+        ----------
+        event_type :
+            
+        event_value :
+            
+        listeners :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.flush_queue()
         self._fire_event(event_type, event_value, listeners=listeners)
 
     def _fire_event(self, event_type, event_value, listeners=None):
-        """Sends an event to all listeners or a specific one"""
+        """Sends an event to all listeners or a specific one
+
+        Parameters
+        ----------
+        event_type :
+            
+        event_value :
+            
+        listeners :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if listeners is None:
             listeners = self._listeners
         if listeners is None:
@@ -132,10 +207,26 @@ class EventGenerator(object):
                 real_listener(self, event_type, event_value)
 
     def queue_event(self, event_type, event_value, listeners=None):
+        """
+
+        Parameters
+        ----------
+        event_type :
+            
+        event_value :
+            
+        listeners :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         queue = self._event_queue
         queue.append((event_type, event_value, listeners))
 
     def flush_queue(self):
+        """ """
         queue = self._event_queue
         n = len(queue)
         while n > 0:
@@ -147,18 +238,29 @@ class EventReceiver(object):
     """A simple class that implements useful features for a class which is
     an event receiver. The actual class may inherit from this EventReceiver class
     and may choose to use just a part of the API provided by this class, the
-    whole API or none of the API."""
+    whole API or none of the API.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self):
         self._events_blocked = False
 
     def block_events(self):
+        """ """
         self._events_blocked = True
 
     def unblock_events(self):
+        """ """
         self._events_blocked = False
 
     def are_events_blocked(self):
+        """ """
         return self._events_blocked
 
 
@@ -178,13 +280,27 @@ class EventType(object):
     def get_name(self):
         """Returns this event name
 
-        :return: this event name
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            this event name
+
+        """
         return self.name
 
     def get_priority(self):
         """Returns this event priority
 
-        :return: this event priority
-        :rtype: :obj:`str`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        obj:`str`
+            this event priority
+
+        """
         return self.priority

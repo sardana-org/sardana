@@ -36,14 +36,35 @@ from sardana.pool.poolbaseobject import PoolBaseObject
 
 class PoolObject(SardanaObjectID, PoolBaseObject):
     """A Pool object that besides the name and reference to the pool has:
+    
+       - _id : the internal identifier
 
-       - _id : the internal identifier"""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         SardanaObjectID.__init__(self, id=kwargs.pop('id'))
         PoolBaseObject.__init__(self, **kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolBaseObject.serialize(self, *args, **kwargs)
         kwargs = SardanaObjectID.serialize(self, *args, **kwargs)
         return kwargs

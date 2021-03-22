@@ -48,23 +48,48 @@ from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
 
 
 class ZeroDExpChannel(PoolExpChannelDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolExpChannelDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolExpChannelDevice.init(self, name)
 
     def get_zerod(self):
+        """ """
         return self.element
 
     def set_zerod(self, zerod):
+        """
+
+        Parameters
+        ----------
+        zerod :
+            
+
+        Returns
+        -------
+
+        """
         self.element = zerod
 
     zerod = property(get_zerod, set_zerod)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolExpChannelDevice.delete_device(self)
         zerod = self.zerod
         if zerod is not None:
@@ -72,6 +97,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolExpChannelDevice.init_device(self)
         zerod = self.zerod
         if zerod is None:
@@ -88,6 +114,21 @@ class ZeroDExpChannel(PoolExpChannelDevice):
         self.set_state(DevState.ON)
 
     def on_zerod_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -128,13 +169,26 @@ class ZeroDExpChannel(PoolExpChannelDevice):
                            synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.zerod.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -158,6 +212,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
@@ -171,6 +226,17 @@ class ZeroDExpChannel(PoolExpChannelDevice):
                 self.set_change_event(attr_name, True, False)
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         zerod = self.zerod
         value = zerod.get_accumulated_value()
         quality = None
@@ -180,6 +246,17 @@ class ZeroDExpChannel(PoolExpChannelDevice):
                            quality=quality, priority=0)
 
     def read_CurrentValue(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         zerod = self.zerod
         #use_cache = ct.is_action_running() and not self.Force_HW_Read
         use_cache = self.get_state() == State.Moving and not self.Force_HW_Read
@@ -194,21 +271,77 @@ class ZeroDExpChannel(PoolExpChannelDevice):
                            priority=0, timestamp=value.timestamp)
 
     def Start(self):
+        """ """
         self.zerod.start_acquisition()
 
     def read_AccumulationBuffer(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value(self.zerod.get_accumulation_buffer())
 
     def read_TimeBuffer(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value(self.zerod.get_time_buffer())
 
     def read_AccumulationType(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value(self.zerod.get_accumulation_type())
 
     def write_AccumulationType(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.zerod.set_accumulation_type(attr.get_write_value())
 
     def _is_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return PoolExpChannelDevice._is_allowed(self, req_type)
 
     is_Value_allowed = _is_allowed
@@ -224,6 +357,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
 
 
 class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -258,6 +392,7 @@ class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
     standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "0D experimental channel device class"
         ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')

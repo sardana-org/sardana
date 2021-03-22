@@ -42,6 +42,7 @@ from PyTango import AttributeProxy
 
 
 class Position(SardanaAttribute):
+    """ """
 
     def __init__(self, *args, **kwargs):
         self._w_value_map = None
@@ -50,42 +51,82 @@ class Position(SardanaAttribute):
             pos_attr.add_listener(self.on_change)
 
     def _has_value(self):
+        """ """
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
             if not pos_attr.has_value():
                 return False
         return True
 
     def _in_error(self):
+        """ """
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
             if pos_attr.in_error():
                 return True
         return False
 
     def get_elements(self):
+        """ """
         return self.obj.get_user_elements()
 
     def get_element_nb(self):
+        """ """
         return len(self.get_user_elements())
 
     def _get_exc_info(self):
+        """ """
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if position_attr.error:
                 return position_attr.get_exc_info()
 
     def _get_timestamp(self):
+        """ """
         return max([pos_attr.timestamp for pos_attr in self.obj.get_physical_position_attribute_iterator()])
 
     def _set_value(self, value, exc_info=None, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        exc_info :
+             (Default value = None)
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         raise Exception(
             "Cannot set position value for motor group %s" % self.obj.name)
 
     def _get_value(self):
+        """ """
         return [position.value for position in self.obj.get_physical_position_attribute_iterator()]
 
     def _get_write_value(self):
+        """ """
         return [position.w_value for position in self.obj.get_physical_position_attribute_iterator()]
 
     def _set_write_value(self, w_value, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        w_value :
+            
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         assert len(w_value) == self.get_element_nb()
         if isinstance(w_value, collections.Sequence):
             w_value_map = {}
@@ -101,9 +142,37 @@ class Position(SardanaAttribute):
                                               propagate=propagate)
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         self.fire_read_event(propagate=evt_type.priority)
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if cache:
             for phy_elem_pos in self.obj.get_low_level_physical_position_attribute_iterator():
                 if not phy_elem_pos.has_value():
@@ -119,6 +188,7 @@ class Position(SardanaAttribute):
 
 
 class PoolMotorGroup(PoolGroupElement):
+    """ """
 
     def __init__(self, **kwargs):
         self._physical_elements = []
@@ -129,6 +199,7 @@ class PoolMotorGroup(PoolGroupElement):
         self._position = Position(self, listeners=on_change)
 
     def _create_action_cache(self):
+        """ """
         motion_name = "%s.Motion" % self._name
         return PoolMotion(self, motion_name)
 
@@ -137,10 +208,40 @@ class PoolMotorGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # forward all events coming from attributes to the listeners
         self.fire_event(evt_type, evt_value)
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         name = evt_type.name.lower()
         if name in ('state', 'position'):
             state, status = self._calculate_states()
@@ -152,6 +253,19 @@ class PoolMotorGroup(PoolGroupElement):
             self.set_status(status, propagate=propagate_state)
 
     def add_user_element(self, element, index=None):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        index :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         elem_type = element.get_type()
         if elem_type == ElementType.Motor:
             pass
@@ -168,36 +282,42 @@ class PoolMotorGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def get_position_attribute(self):
+        """ """
         return self._position
 
     def get_low_level_physical_position_attribute_iterator(self):
+        """ """
         return self.get_physical_elements_attribute_iterator()
 
     def get_physical_position_attribute_iterator(self):
+        """ """
         return self.get_user_elements_attribute_iterator()
 
     def get_physical_positions_attribute_sequence(self):
+        """ """
         return self.get_user_elements_attribute_sequence()
 
     def get_physical_positions_attribute_map(self):
+        """ """
         return self.get_user_elements_attribute_map()
 
     def get_position(self, cache=True, propagate=1):
         """Returns the user position.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the user position
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         position = self._position
         position.update(cache=cache, propagate=propagate)
         return position
@@ -205,22 +325,33 @@ class PoolMotorGroup(PoolGroupElement):
     def set_position(self, positions):
         """Moves the motor group to the specified user positions
 
-        :param positions:
+        Parameters
+        ----------
+        positions : sequence< :class:`~numbers.Number`
             the user positions to move to
-        :type positions:
-            sequence< :class:`~numbers.Number` >"""
+
+        Returns
+        -------
+
+        """
         self.start_move(positions)
 
     def set_write_position(self, w_position, timestamp=None, propagate=1):
         """Sets a new write value for the user position.
 
-        :param w_position:
+        Parameters
+        ----------
+        w_position : sequence< :class:`~numbers.Number` >
             the new write value for user position
-        :type w_position:
-            sequence< :class:`~numbers.Number` >
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._position.set_write_value(w_position, timestamp=timestamp,
                                        propagate=propagate)
 
@@ -232,6 +363,7 @@ class PoolMotorGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_position_attribute()
 
     # --------------------------------------------------------------------------
@@ -239,6 +371,7 @@ class PoolMotorGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def get_motion(self):
+        """ """
         return self.get_action_cache()
 
     motion = property(get_motion, doc="motion object")
@@ -248,6 +381,19 @@ class PoolMotorGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def calculate_motion(self, new_positions, items=None):
+        """
+
+        Parameters
+        ----------
+        new_positions :
+            
+        items :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         user_elements = self.get_user_elements()
         if items is None:
             items = {}
@@ -276,6 +422,17 @@ class PoolMotorGroup(PoolGroupElement):
         return items
 
     def start_move(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         self._in_start_move = True
         try:
             return self._start_move(new_position)
@@ -283,6 +440,17 @@ class PoolMotorGroup(PoolGroupElement):
             self._in_start_move = False
 
     def _start_move(self, new_positions):
+        """
+
+        Parameters
+        ----------
+        new_positions :
+            
+
+        Returns
+        -------
+
+        """
         self._aborted = False
         items = self.calculate_motion(new_positions)
         timestamp = time.time()

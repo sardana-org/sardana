@@ -37,6 +37,17 @@ class PoolContainer(SardanaContainer):
     """A container class for pool elements"""
 
     def get_controller_class(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         eid = kwargs.get("id")
         if eid is not None:
             return self.get_controller_class_by_id(eid, **kwargs)
@@ -45,7 +56,33 @@ class PoolContainer(SardanaContainer):
         self.get_controller_class_by_name(name, **kwargs)
 
     def get_controller_class_by_id(self, eid, **kwargs):
+        """
+
+        Parameters
+        ----------
+        eid :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError
 
     def get_controller_class_by_name(self, name, **kwargs):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError

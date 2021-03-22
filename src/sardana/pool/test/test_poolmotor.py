@@ -32,14 +32,47 @@ from sardana.pool.test import (FakePool, createPoolController,
 
 
 def StateOne_state(self, axis):
+    """
+
+    Parameters
+    ----------
+    axis :
+        
+
+    Returns
+    -------
+
+    """
     return State.On
 
 
 def StateOne_state_status(self, axis):
+    """
+
+    Parameters
+    ----------
+    axis :
+        
+
+    Returns
+    -------
+
+    """
     return State.On, "Status"
 
 
 def StateOne_state_status_limits(self, axis):
+    """
+
+    Parameters
+    ----------
+    axis :
+        
+
+    Returns
+    -------
+
+    """
     return State.On, "Status", 0
 
 
@@ -51,6 +84,17 @@ def test_state(monkeypatch, mock_StateOne):
     - state
     - state, status
     - state, status, limit_switches
+
+    Parameters
+    ----------
+    monkeypatch :
+        
+    mock_StateOne :
+        
+
+    Returns
+    -------
+
     """
     pool = FakePool()
     # when SEP19 gets implemented it should be possible to mock directly

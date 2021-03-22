@@ -45,6 +45,23 @@ from sardana.taurus.qt.qtgui.macrolistener import (
 
 
 def set_text(label, field=None, data=None, default='---'):
+    """
+
+    Parameters
+    ----------
+    label :
+        
+    field :
+         (Default value = None)
+    data :
+         (Default value = None)
+    default :
+         (Default value = '---')
+
+    Returns
+    -------
+
+    """
     if field is None and data is None:
         value = default
     elif field is None:
@@ -65,6 +82,19 @@ def set_text(label, field=None, data=None, default='---'):
 
 
 def resize_form(form, new_size):
+    """
+
+    Parameters
+    ----------
+    form :
+        
+    new_size :
+        
+
+    Returns
+    -------
+
+    """
     layout = form.layout()
     curr_size = layout.rowCount()
     nb = new_size - curr_size
@@ -77,6 +107,21 @@ def resize_form(form, new_size):
 
 
 def fill_form(form, fields, offset=0):
+    """
+
+    Parameters
+    ----------
+    form :
+        
+    fields :
+        
+    offset :
+         (Default value = 0)
+
+    Returns
+    -------
+
+    """
     resize_form(form, len(fields) + offset)
     layout = form.layout()
     result = []
@@ -93,6 +138,17 @@ def fill_form(form, fields, offset=0):
 
 
 def load_scan_info_form(widget):
+    """
+
+    Parameters
+    ----------
+    widget :
+        
+
+    Returns
+    -------
+
+    """
     ui_name = pkg_resources.resource_filename(__package__ + '.ui',
                                               'ScanInfoForm.ui')
     uic.loadUi(ui_name, baseinstance=widget)
@@ -100,12 +156,24 @@ def load_scan_info_form(widget):
 
 
 class ScanInfoForm(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__(parent)
         load_scan_info_form(self)
 
     def setModel(self, doorname):
+        """
+
+        Parameters
+        ----------
+        doorname :
+            
+
+        Returns
+        -------
+
+        """
         super().setModel(doorname)
         if not doorname:
             return
@@ -113,11 +181,33 @@ class ScanInfoForm(Qt.QWidget, TaurusBaseWidget):
         door.recordDataUpdated.connect(self.onRecordDataUpdated)
 
     def onRecordDataUpdated(self, record_data):
+        """
+
+        Parameters
+        ----------
+        record_data :
+            
+
+        Returns
+        -------
+
+        """
         data = record_data[1]
         handler = self.event_handler.get(data.get("type"))
         handler and handler(self, data['data'])
 
     def onStart(self, meta):
+        """
+
+        Parameters
+        ----------
+        meta :
+            
+
+        Returns
+        -------
+
+        """
         set_text(self.title_value, 'title', meta)
         set_text(self.scan_nb_value, 'serialno', meta)
         set_text(self.start_value, 'starttime', meta)
@@ -136,6 +226,17 @@ class ScanInfoForm(Qt.QWidget, TaurusBaseWidget):
         fill_form(self.directory_groupbox, files)
 
     def onEnd(self, meta):
+        """
+
+        Parameters
+        ----------
+        meta :
+            
+
+        Returns
+        -------
+
+        """
         set_text(self.end_value, 'endtime', meta)
         set_text(self.status_value, 'Finished')
 
@@ -146,6 +247,17 @@ class ScanInfoForm(Qt.QWidget, TaurusBaseWidget):
 
 
 def load_scan_point_form(widget):
+    """
+
+    Parameters
+    ----------
+    widget :
+        
+
+    Returns
+    -------
+
+    """
     ui_name = pkg_resources.resource_filename(__package__ + '.ui',
                                               'ScanPointForm.ui')
     uic.loadUi(ui_name, baseinstance=widget)
@@ -153,6 +265,7 @@ def load_scan_point_form(widget):
 
 
 class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -160,6 +273,17 @@ class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
         self._in_scan = False
 
     def setModel(self, doorname):
+        """
+
+        Parameters
+        ----------
+        doorname :
+            
+
+        Returns
+        -------
+
+        """
         super().setModel(doorname)
         if not doorname:
             return
@@ -167,11 +291,33 @@ class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
         door.recordDataUpdated.connect(self.onRecordDataUpdated)
 
     def onRecordDataUpdated(self, record_data):
+        """
+
+        Parameters
+        ----------
+        record_data :
+            
+
+        Returns
+        -------
+
+        """
         data = record_data[1]
         handler = self.event_handler.get(data.get("type"))
         handler and handler(self, data['data'])
 
     def onStart(self, meta):
+        """
+
+        Parameters
+        ----------
+        meta :
+            
+
+        Returns
+        -------
+
+        """
         set_text(self.scan_nb_value, 'serialno', meta)
         cols = meta['column_desc']
         col_labels = [(c['label']+':', '') for c in cols]
@@ -180,11 +326,33 @@ class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
         self._in_scan = True
 
     def onPoint(self, point):
+        """
+
+        Parameters
+        ----------
+        point :
+            
+
+        Returns
+        -------
+
+        """
         if self._in_scan:
             for name, value in point.items():
                 set_text(self.fields[name][1], value)
 
     def onEnd(self, meta):
+        """
+
+        Parameters
+        ----------
+        meta :
+            
+
+        Returns
+        -------
+
+        """
         self._in_scan = False
 
     event_handler = {
@@ -195,6 +363,7 @@ class ScanPointForm(Qt.QWidget, TaurusBaseWidget):
 
 
 class ScanPlotWidget(MultiPlotWidget):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -204,6 +373,7 @@ class ScanPlotWidget(MultiPlotWidget):
 
 
 class ScanPlotWindow(Qt.QMainWindow):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__()
@@ -218,6 +388,17 @@ class ScanPlotWindow(Qt.QMainWindow):
 
 
 def load_scan_window(widget):
+    """
+
+    Parameters
+    ----------
+    widget :
+        
+
+    Returns
+    -------
+
+    """
     ui_name = pkg_resources.resource_filename(__package__ + '.ui',
                                               'ScanWindow.ui')
     uic.loadUi(ui_name, baseinstance=widget)
@@ -225,6 +406,7 @@ def load_scan_window(widget):
 
 
 class ScanWindow(Qt.QMainWindow):
+    """ """
 
     def __init__(self, parent=None):
         super().__init__()
@@ -234,6 +416,17 @@ class ScanWindow(Qt.QMainWindow):
         self.plot_widget.manager.newShortMessage.connect(sbar.showMessage)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.plot_widget.setModel(model)
         self.info_form.setModel(model)
         self.point_form.setModel(model)
@@ -241,42 +434,99 @@ class ScanWindow(Qt.QMainWindow):
 
 
 class ShowScanOnline(DynamicPlotManager):
+    """ """
 
     def __init__(self, parent):
         DynamicPlotManager.__init__(self, parent=parent)
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
     def onExpConfChanged(self, expconf):
+        """
+
+        Parameters
+        ----------
+        expconf :
+            
+
+        Returns
+        -------
+
+        """
         DynamicPlotManager.onExpConfChanged(self, expconf)
         activeMntGrp = expconf['ActiveMntGrp']
         msg = 'Plotting scans for "%s" Measurement Group' % activeMntGrp
         self.parent().newShortMessage.emit(msg)
 
     def createPanel(self, widget, name, **kwargs):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        widget :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         return mainwindow.createPanel(widget, name, **kwargs)
 
     def getPanelWidget(self, name):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         return mainwindow.getPanel(name).widget()
 
     def removePanel(self, name):
-        ''' Reimplemented from :class:`DynamicPlotManager` to delegate panel
-        management to the parent widget (a TaurusGui)'''
+        """Reimplemented from :class:`DynamicPlotManager` to delegate panel
+        management to the parent widget (a TaurusGui)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         mainwindow = self.parent()
         mainwindow.removePanel(name)
 
     def removeTemporaryPanels(self, names=None):
-        '''Remove temporary panels managed by this widget'''
+        """Remove temporary panels managed by this widget
+
+        Parameters
+        ----------
+        names :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # for now, the only temporary panels are the plots
         DynamicPlotManager.removePanels(self, names=names)
 
 
 class TaurusGuiLite(TaurusGui):
+    """ """
     HEARTBEAT = None
     FILE_MENU_ENABLED = False
     VIEW_MENU_ENABLED = False
@@ -303,6 +553,21 @@ class TaurusGuiLite(TaurusGui):
               help='Show only logs with priority LEVEL or above')
 @click.argument('door')
 def main(group, taurus_log_level, door):
+    """
+
+    Parameters
+    ----------
+    group :
+        
+    taurus_log_level :
+        
+    door :
+        
+
+    Returns
+    -------
+
+    """
     import taurus
     taurus.setLogLevel(getattr(taurus, taurus_log_level.capitalize()))
 

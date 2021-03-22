@@ -36,7 +36,7 @@ class PoolMotionTestCase(unittest.TestCase):
     """Unittest of PoolMotion class"""
 
     def setUp(self):
-        """Create a Controller, and Motor objects from dummy configurations """
+        """Create a Controller, and Motor objects from dummy configurations"""
         unittest.TestCase.setUp(self)
         try:
             from mock import Mock
@@ -116,6 +116,7 @@ class PoolMotionTestCase(unittest.TestCase):
                                              call.AbortAll()])
 
     def tearDown(self):
+        """ """
         self.motionaction = None
         self.mock_mot_ctrl = None
         self.cfg = None

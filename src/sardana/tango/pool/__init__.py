@@ -32,6 +32,17 @@ SERVER_NAME = "Pool"
 
 
 def prepare_pool(util):
+    """
+
+    Parameters
+    ----------
+    util :
+        
+
+    Returns
+    -------
+
+    """
 
     import PyTango
     from sardana.pool.poolextension import ControllerValueTranslator, \
@@ -41,8 +52,20 @@ def prepare_pool(util):
     from sardana.tango.core.util import from_deviceattribute
 
     class TangoControllerValueTranslator(ControllerValueTranslator):
+        """ """
 
         def translate(self, value):
+            """
+
+            Parameters
+            ----------
+            value :
+                
+
+            Returns
+            -------
+
+            """
             if not isinstance(value, PyTango.DeviceAttribute):
                 return super(TangoControllerValueTranslator, self).translate(value)
             ret = from_deviceattribute(value)
@@ -51,8 +74,20 @@ def prepare_pool(util):
     register_controller_value_translator(TangoControllerValueTranslator)
 
     class TangoControllerStateTranslator(ControllerStateTranslator):
+        """ """
 
         def translate(self, value):
+            """
+
+            Parameters
+            ----------
+            value :
+                
+
+            Returns
+            -------
+
+            """
             if not isinstance(value, PyTango.DeviceAttribute):
                 return super(TangoControllerValueTranslator, self).translate(value)
             if value.type != PyTango.DevState:
@@ -93,6 +128,21 @@ def prepare_pool(util):
 
 
 def main_pool(args=None, start_time=None, mode=None):
+    """
+
+    Parameters
+    ----------
+    args :
+         (Default value = None)
+    start_time :
+         (Default value = None)
+    mode :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     import sardana.tango.core.util
     # pass server name so the scripts generated with setuptools work on Windows
     return sardana.tango.core.util.run(prepare_pool, args=args,
@@ -103,5 +153,6 @@ run = main_pool
 
 
 def main():
+    """ """
     import datetime
     run(start_time=datetime.datetime.now())

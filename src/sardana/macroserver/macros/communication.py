@@ -41,6 +41,19 @@ class put(Macro):
     ]
 
     def run(self, comch, data):
+        """
+
+        Parameters
+        ----------
+        comch :
+            
+        data :
+            
+
+        Returns
+        -------
+
+        """
         name = comch.getName()
         nb = comch.write(data)
         o = str(nb) + " bytes sent to " + name
@@ -57,6 +70,19 @@ class get(Macro):
     ]
 
     def run(self, comch, maxlen):
+        """
+
+        Parameters
+        ----------
+        comch :
+            
+        maxlen :
+            
+
+        Returns
+        -------
+
+        """
         name = comch.getName()
         data = comch.command_inout("read", maxlen)
 

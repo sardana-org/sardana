@@ -35,6 +35,7 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.common import MSAttrListComboBo
 
 
 class SenvEditor(Qt.QWidget, MacroParametersEditor):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QWidget.__init__(self, parent)
@@ -42,6 +43,7 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
         self.valueWidget = None
 
     def initComponents(self):
+        """ """
         self.setLayout(Qt.QFormLayout())
 
         self.layout().addRow(Qt.QLabel("Setting environment variable:", self))
@@ -58,21 +60,56 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
         self.nameComboBox.setIndex(nameIndex)
 
     def setRootIndex(self, rootIndex):
+        """
+
+        Parameters
+        ----------
+        rootIndex :
+            
+
+        Returns
+        -------
+
+        """
         self._rootIndex = rootIndex
         self.initComponents()
 
     def rootIndex(self):
+        """ """
         return self._rootIndex
 
     def model(self):
+        """ """
         return self._model
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self._model = model
         if isinstance(model, ParamEditorModel):
             self.setRootIndex(Qt.QModelIndex())
 
     def onNameComboBoxChanged(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         # note that the index parameter is ignored!
         text = str(self.nameComboBox.currentText())
         if self.valueWidget is not None:
@@ -106,8 +143,20 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
 def getSenvValueEditor(envName, parent):
     """Factory method, requires: string, and QWidget as a parent for returned editor.
     Factory returns a tuple of widget and a label for it.
+    
+    :return: (Qt.QWidget, str)
 
-    :return: (Qt.QWidget, str) """
+    Parameters
+    ----------
+    envName :
+        
+    parent :
+        
+
+    Returns
+    -------
+
+    """
     label = "value:"
     if envName == "ActiveMntGrp":
         editor = MSAttrListComboBoxParam(parent)
@@ -126,6 +175,7 @@ def getSenvValueEditor(envName, parent):
 
 
 class ExtraColumnsEditor(ParamBase, Qt.QWidget):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         ParamBase.__init__(self, paramModel)
@@ -157,9 +207,21 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
         self.extraColumnsModel.modelReset.connect(self.onExtraColumnsChanged)
 
     def getValue(self):
+        """ """
         return repr(self.extraColumnsTable.model().columns())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             columns = eval(value)
         except:
@@ -167,18 +229,22 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
         self.extraColumnsTable.setColumns(columns)
 
     def onAddNewColumn(self):
+        """ """
         self.extraColumnsTable.insertRows()
         self.onModelChanged()
 
     def onRemoveSelectedColumns(self):
+        """ """
         self.extraColumnsTable.removeRows()
         self.onModelChanged()
 
     def onExtraColumnsChanged(self):
+        """ """
         self.onModelChanged()
 
 
 class ExtraColumnsTable(Qt.QTableView):
+    """ """
 
     def __init__(self, parent):
         Qt.QTableView.__init__(self, parent)
@@ -186,15 +252,28 @@ class ExtraColumnsTable(Qt.QTableView):
         self.setSelectionMode(Qt.QAbstractItemView.ExtendedSelection)
 
     def setColumns(self, columns):
+        """
+
+        Parameters
+        ----------
+        columns :
+            
+
+        Returns
+        -------
+
+        """
         if columns is None:
             columns = []
         self.model().setColumns(columns)
         self.resizeColumnsToContents()
 
     def insertRows(self):
+        """ """
         self.model().insertRows(self.model().rowCount())
 
     def removeRows(self):
+        """ """
         rows = [index.row() for index in self.selectedIndexes()]
         rows = list(set(rows))
         rows.sort(reverse=True)
@@ -203,6 +282,7 @@ class ExtraColumnsTable(Qt.QTableView):
 
 
 class ExtraColumnsDelegate(Qt.QItemDelegate):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QItemDelegate.__init__(self, parent)
@@ -210,6 +290,21 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
         self.host = db.getNormalName()
 
     def createEditor(self, parent, option, index):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             self.combo_attr_tree_widget = TaurusDbTreeWidget(
                 perspective=TaurusElementType.Device)
@@ -229,6 +324,19 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
         return editor
 
     def setEditorData(self, editor, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 2:
             text = index.model().data(index, Qt.Qt.DisplayRole)
             editor.setCurrentText(text)
@@ -236,6 +344,21 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             Qt.QItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        model :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         column = index.column()
         if column == 1:
             selectedItems = self.combo_attr_tree_widget.selectedItems()
@@ -251,6 +374,19 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             Qt.QItemDelegate.setModelData(self, editor, model, index)
 
     def sizeHint(self, option, index):
+        """
+
+        Parameters
+        ----------
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 0:
             fm = option.fontMetrics
             text = index.model().data(index, Qt.Qt.DisplayRole)
@@ -273,6 +409,7 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
 
 
 class ExtraColumnsModel(Qt.QAbstractTableModel):
+    """ """
 
     def __init__(self, columns=None):
         if columns is None:
@@ -281,20 +418,67 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         self.__columns = columns
 
     def setColumns(self, columns):
+        """
+
+        Parameters
+        ----------
+        columns :
+            
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         self.__columns = columns
         self.endResetModel()
 
     def columns(self):
+        """ """
         return self.__columns
 
     def rowCount(self, index=Qt.QModelIndex()):
+        """
+
+        Parameters
+        ----------
+        index :
+             (Default value = Qt.QModelIndex())
+
+        Returns
+        -------
+
+        """
         return len(self.__columns)
 
     def columnCount(self, index=Qt.QModelIndex()):
+        """
+
+        Parameters
+        ----------
+        index :
+             (Default value = Qt.QModelIndex())
+
+        Returns
+        -------
+
+        """
         return 3
 
     def data(self, index, role=Qt.Qt.DisplayRole):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+             (Default value = Qt.Qt.DisplayRole)
+
+        Returns
+        -------
+
+        """
         if not index.isValid() or not (0 <= index.row() < self.rowCount()):
             return None
         row = index.row()
@@ -310,6 +494,21 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return None
 
     def headerData(self, section, orientation, role=Qt.Qt.DisplayRole):
+        """
+
+        Parameters
+        ----------
+        section :
+            
+        orientation :
+            
+        role :
+             (Default value = Qt.Qt.DisplayRole)
+
+        Returns
+        -------
+
+        """
         if role == Qt.Qt.TextAlignmentRole:
             if orientation == Qt.Qt.Horizontal:
                 return int(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
@@ -329,6 +528,17 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
             return str(section + 1)
 
     def flags(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         flags = Qt.Qt.ItemIsEnabled | Qt.Qt.ItemIsSelectable
         if index.isValid():
             column = index.column()
@@ -337,6 +547,21 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return flags
 
     def setData(self, index, value=None, role=Qt.Qt.EditRole):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        value :
+             (Default value = None)
+        role :
+             (Default value = Qt.Qt.EditRole)
+
+        Returns
+        -------
+
+        """
         if index.isValid() and (0 <= index.row() < self.rowCount()):
             row = index.row()
             column = index.column()
@@ -351,6 +576,21 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return False
 
     def insertRows(self, row, rows=1, parentindex=None):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        rows :
+             (Default value = 1)
+        parentindex :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if parentindex is None:
             parentindex = Qt.QModelIndex()
         first = row
@@ -362,10 +602,38 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return True
 
     def insertRow(self, row, parentIndex=None):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        parentIndex :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.__columns.insert(
             row, {'label': '', 'model': '', 'instrument': ''})
 
     def removeRows(self, row, rows=1, parentindex=None):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        rows :
+             (Default value = 1)
+        parentindex :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if parentindex is None:
             parentindex = Qt.QModelIndex()
         first = row
@@ -377,6 +645,19 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return True
 
     def removeRow(self, row, parentIndex=None):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        parentIndex :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.__columns.pop(row)
 
 CUSTOM_EDITOR = SenvEditor

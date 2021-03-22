@@ -28,6 +28,7 @@ from sardana.pool.controller import ZeroDController
 
 
 class Channel:
+    """ """
 
     def __init__(self, idx):
         self.idx = idx            # 1 based index
@@ -51,28 +52,96 @@ class DummyZeroDController(ZeroDController):
         self.read_channels = {}
 
     def AddDevice(self, ind):
+        """
+
+        Parameters
+        ----------
+        ind :
+            
+
+        Returns
+        -------
+
+        """
         self.channels[ind].active = True
 
     def DeleteDevice(self, ind):
+        """
+
+        Parameters
+        ----------
+        ind :
+            
+
+        Returns
+        -------
+
+        """
         self.channels[ind].active = False
 
     def StateOne(self, ind):
+        """
+
+        Parameters
+        ----------
+        ind :
+            
+
+        Returns
+        -------
+
+        """
         return State.On, "OK"
 
     def _setChannelValue(self, channel):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+
+        Returns
+        -------
+
+        """
         channel.value = 100 * channel.idx + 10 * (random.random() - 0.5)
 
     def PreReadAll(self):
+        """ """
         self.read_channels = {}
 
     def PreReadOne(self, ind):
+        """
+
+        Parameters
+        ----------
+        ind :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[ind - 1]
         self.read_channels[ind] = channel
 
     def ReadAll(self):
+        """ """
         for channel in list(self.read_channels.values()):
             self._setChannelValue(channel)
 
     def ReadOne(self, ind):
+        """
+
+        Parameters
+        ----------
+        ind :
+            
+
+        Returns
+        -------
+
+        """
         v = self.read_channels[ind].value
         return v

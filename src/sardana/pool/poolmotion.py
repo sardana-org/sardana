@@ -93,25 +93,51 @@ class PoolMotionItem(PoolActionItem):
         self.state_info = State.On, "Uninitialized", (False, False, False)
 
     def has_instability_time(self):
+        """ """
         return self.instability_time is not None
 
     def in_motion(self):
+        """ """
         return self.motion_state in MovingStates
 
     def get_moveable(self):
+        """ """
         return self.element
 
     moveable = property(fget=get_moveable)
 
     def get_state_info(self):
+        """ """
         si = self.state_info
         return MotionMap.get(self.motion_state, si[0]), si[1], si[2]
 
     def start(self, new_state):
+        """
+
+        Parameters
+        ----------
+        new_state :
+            
+
+        Returns
+        -------
+
+        """
         self.old_state_info = self.state_info
         self.state_info = new_state, self.state_info[1], self.state_info[2]
 
     def stopped(self, timestamp):
+        """
+
+        Parameters
+        ----------
+        timestamp :
+            
+
+        Returns
+        -------
+
+        """
         self.stop_time = timestamp
         if self.instability_time is None:
             self.stop_final_time = timestamp
@@ -121,6 +147,17 @@ class PoolMotionItem(PoolActionItem):
         return new_ms
 
     def handle_instability(self, timestamp):
+        """
+
+        Parameters
+        ----------
+        timestamp :
+            
+
+        Returns
+        -------
+
+        """
         new_ms = MS.MovingInstability
         dt = timestamp - self.stop_time
         if dt >= self.instability_time:
@@ -129,6 +166,19 @@ class PoolMotionItem(PoolActionItem):
         return new_ms
 
     def on_state_switch(self, state_info, timestamp=None):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if timestamp is None:
             timestamp = time.time()
         self.old_state_info = self.state_info
@@ -177,6 +227,21 @@ class PoolMotion(PoolAction):
         self._nb_states_per_position = None
 
     def _recover_start_error(self, ctrl, meth_name, read_state=False):
+        """
+
+        Parameters
+        ----------
+        ctrl :
+            
+        meth_name :
+            
+        read_state :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         self.error("%s throws exception on %s. Stopping...", ctrl, meth_name)
         self.debug("Details:", exc_info=1)
 
@@ -190,6 +255,17 @@ class PoolMotion(PoolAction):
                 moveable._set_state_info(state_info)
 
     def pre_start_all(self, pool_ctrls):
+        """
+
+        Parameters
+        ----------
+        pool_ctrls :
+            
+
+        Returns
+        -------
+
+        """
         # PreStartAll on all controllers
         for pool_ctrl in pool_ctrls:
             try:
@@ -199,6 +275,19 @@ class PoolMotion(PoolAction):
                 raise
 
     def pre_start_one(self, moveables, items):
+        """
+
+        Parameters
+        ----------
+        moveables :
+            
+        items :
+            
+
+        Returns
+        -------
+
+        """
         # PreStartOne on all elements
         for moveable in moveables:
             pool_ctrl = moveable.controller
@@ -215,6 +304,19 @@ class PoolMotion(PoolAction):
                     raise
 
     def start_one(self, moveables, motion_info):
+        """
+
+        Parameters
+        ----------
+        moveables :
+            
+        motion_info :
+            
+
+        Returns
+        -------
+
+        """
         # StartOne on all elements
         for moveable in moveables:
             pool_ctrl = moveable.controller
@@ -228,6 +330,21 @@ class PoolMotion(PoolAction):
                 raise
 
     def start_all(self, pool_ctrls, moveables, motion_info):
+        """
+
+        Parameters
+        ----------
+        pool_ctrls :
+            
+        moveables :
+            
+        motion_info :
+            
+
+        Returns
+        -------
+
+        """
         # Change the state to Moving
         for moveable in moveables:
             moveable_info = motion_info[moveable]
@@ -248,6 +365,17 @@ class PoolMotion(PoolAction):
 
     def start_action(self, *args, **kwargs):
         """kwargs['items'] is a dict<moveable, (pos, dial, do_backlash, backlash)
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
         """
         items = kwargs.pop("items")
 
@@ -278,6 +406,17 @@ class PoolMotion(PoolAction):
             self.start_all(pool_ctrls, moveables, motion_info)
 
     def backlash_item(self, motion_item):
+        """
+
+        Parameters
+        ----------
+        motion_item :
+            
+
+        Returns
+        -------
+
+        """
         moveable = motion_item.moveable
         controller = moveable.controller
         axis = moveable.axis
@@ -290,6 +429,7 @@ class PoolMotion(PoolAction):
 
     @DebugIt()
     def action_loop(self):
+        """ """
         i = 0
         states, positions = {}, {}
         for k in self.get_elements():
@@ -450,6 +590,17 @@ class PoolMotion(PoolAction):
             time.sleep(nap)
 
     def _state_error_occured(self, d):
+        """
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         for _, (state_info, exc_info) in list(d.items()):
             state = state_info[0]
             if exc_info is not None or state not in _NON_ERROR_STATES:
@@ -457,11 +608,35 @@ class PoolMotion(PoolAction):
         return False
 
     def _position_error_occured(self, positions):
+        """
+
+        Parameters
+        ----------
+        positions :
+            
+
+        Returns
+        -------
+
+        """
         for _, value in list(positions.items()):
             if value.error:
                 return True
 
     def _recover_moving_error(self, location, emergency_stop):
+        """
+
+        Parameters
+        ----------
+        location :
+            
+        emergency_stop :
+            
+
+        Returns
+        -------
+
+        """
         emergency_names = [moveable.name for moveable in emergency_stop]
         self.error("%s: error on %s", location, emergency_names)
 
@@ -470,6 +645,21 @@ class PoolMotion(PoolAction):
 
     def _recover_position_moving_error(self, location, emergency_stop,
                                        positions):
+        """
+
+        Parameters
+        ----------
+        location :
+            
+        emergency_stop :
+            
+        positions :
+            
+
+        Returns
+        -------
+
+        """
         self._recover_moving_error(location, emergency_stop)
 
         # send state
@@ -485,6 +675,21 @@ class PoolMotion(PoolAction):
                 moveable.set_state_info(real_state_info, propagate=2)
 
     def _recover_state_moving_error(self, location, emergency_stop, states):
+        """
+
+        Parameters
+        ----------
+        location :
+            
+        emergency_stop :
+            
+        states :
+            
+
+        Returns
+        -------
+
+        """
         self._recover_moving_error(location, emergency_stop)
 
         # send positions
@@ -504,7 +709,33 @@ class PoolMotion(PoolAction):
                 moveable.set_state_info(real_state_info, propagate=2)
 
     def read_dial_position(self, ret=None, serial=False):
+        """
+
+        Parameters
+        ----------
+        ret :
+             (Default value = None)
+        serial :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self.read_value(ret=ret, serial=serial)
 
     def raw_read_dial_position(self, ret=None, serial=False):
+        """
+
+        Parameters
+        ----------
+        ret :
+             (Default value = None)
+        serial :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self.raw_read_value(ret=ret, serial=serial)

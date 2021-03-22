@@ -42,36 +42,45 @@ from sardana.sardanaexception import SardanaException, SardanaExceptionList, \
 
 
 class MacroServerException(SardanaException):
+    """ """
     pass
 
 
 class MacroServerExceptionList(SardanaExceptionList):
+    """ """
     pass
 
 
 class MissingEnv(MacroServerException):
+    """ """
     pass
 
 
 class UnknownEnv(MacroServerException):
+    """ """
     pass
 
 
 class UnknownMacro(UnknownCode):
+    """ """
     pass
 
 
 class UnknownRecorder(UnknownCode):
+    """ """
     pass
 
 
 class UnknownMacroLibrary(UnknownLibrary):
+    """ """
     pass
 
 
 class MacroWrongParameterType(MacroServerException):
+    """ """
     pass
 
 
 class InputCancelled(MacroServerException):
+    """ """
     pass

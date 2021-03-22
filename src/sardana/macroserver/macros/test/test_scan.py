@@ -35,10 +35,20 @@ _m1, _m2 = getMotors()[:2]
 
 def parsing_log_output(log_output):
     """A helper method to parse log output of an executed scan macro.
-    :params log_output: (seq<str>) Result of macro_executor.getLog('output')
-    (see description in :class:`.BaseMacroExecutor`).
 
-    :return: (seq<number>) The numeric data of a scan.
+    Parameters
+    ----------
+    s :
+        log_output: (seq<str>) Result of macro_executor.getLog('output')
+        (see description in :class:`.BaseMacroExecutor`).
+    log_output :
+        
+
+    Returns
+    -------
+    type
+        seq<number>) The numeric data of a scan.
+
     """
     first_data_line = 1
     scan_index = 0
@@ -58,6 +68,13 @@ class ANscanTest(RunStopMacroTestCase):
 
     """Not yet implemented. Once implemented it will test anscan.
     See :class:`.RunStopMacroTestCase` for requirements.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     pass
 
@@ -66,6 +83,13 @@ class DNscanTest(ANscanTest):
 
     """Not yet implemented. Once implemented it will test the macro dnscanc.
     See :class:`ANscanTest` for requirements.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     pass
 
@@ -74,6 +98,13 @@ class DNscancTest(DNscanTest):
 
     """Not yet implemented. Once implemented it will test the macro dnscanc.
     See :class:`DNscanTest` for requirements.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     pass
 
@@ -85,6 +116,13 @@ class AscanTest(ANscanTest, unittest.TestCase):
     """Test of ascan macro. See :class:`ANscanTest` for requirements.
     It verifies that macro ascan can be executed and stoped and tests
     the output of the ascan using data from log system and macro data.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'ascan'
 
@@ -92,12 +130,23 @@ class AscanTest(ANscanTest, unittest.TestCase):
         """Reimplementation of macro_runs method for ascan macro.
         It verifies using double checking, with log output and data from
         the macro:
-
+        
             - The motor initial and final positions of the scan are the
               ones given as input.
-
+        
             - Intervals in terms of motor position between one point and
               the next one are equidistant.
+
+        Parameters
+        ----------
+        macro_params :
+             (Default value = None)
+        wait_timeout :
+             (Default value = 30.0)
+
+        Returns
+        -------
+
         """
         # call the parent class implementation
         ANscanTest.macro_runs(self, macro_params=macro_params,
@@ -151,6 +200,13 @@ class DscanTest(DNscanTest, unittest.TestCase):
 
     """Test of dscan macro. It verifies that macro dscan can be executed and
     stoped. See :class:`DNscanTest` for requirements.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'dscan'
 
@@ -165,12 +221,20 @@ class MeshTest(RunStopMacroTestCase, unittest.TestCase):
 
     """Test of mesh macro. It verifies that macro mesh can be executed and
     stoped. See :class:`.RunStopMacroTestCase` for requirements.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'mesh'
 
 
 @testRun(macro_params=['10', '0.1'], wait_timeout=30)
 class TimescanTest(RunStopMacroTestCase, unittest.TestCase):
+    """ """
 
     macro_name = 'timescan'
 
@@ -178,5 +242,6 @@ class TimescanTest(RunStopMacroTestCase, unittest.TestCase):
 @testRun(macro_params=["'x=[1,2]'", "0.1", _m1, "x**2"], wait_timeout=30)
 @testStop(macro_params=["'x=[1,2]'", "0.1", _m1, "x**2"], wait_timeout=30)
 class FscanTest(RunStopMacroTestCase, unittest.TestCase):
+    """ """
 
     macro_name = 'fscan'

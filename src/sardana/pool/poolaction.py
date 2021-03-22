@@ -56,7 +56,17 @@ class PoolActionItem(object):
         return self._element()
 
     def set_element(self, element):
-        """Sets the element for this item"""
+        """Sets the element for this item
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         self._element = weakref.ref(element)
 
     element = property(get_element)
@@ -73,14 +83,34 @@ class OperationInfo(object):
         self.state_event = threading.Event()
 
     def init(self, count):
-        """Initializes this operation with a certain count"""
+        """Initializes this operation with a certain count
+
+        Parameters
+        ----------
+        count :
+            
+
+        Returns
+        -------
+
+        """
         self.state_count = count
         self.state_event.clear()
         if count == 0:
             self.state_event.set()
 
     def wait(self, timeout=None):
-        """waits for the operation to finish"""
+        """waits for the operation to finish
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.state_event.wait(timeout)
 
     def finish_one(self):
@@ -143,11 +173,13 @@ class OperationContext(BaseOperationContext):
     """Concrete operation context"""
 
     def enter(self):
+        """ """
         pool_action = self._pool_action
         for element in pool_action.get_elements():
             element.set_operation(pool_action)
 
     def exit(self):
+        """ """
         pool_action = self._pool_action
         for element in reversed(pool_action.get_elements()):
             element.clear_operation()
@@ -193,7 +225,15 @@ class ActionContext(object):
 
 class PoolAction(Logger):
     """A generic class to handle any type of operation (like motion or
-    acquisition)"""
+    acquisition)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     OperationContextClass = OperationContext
 
@@ -214,16 +254,32 @@ class PoolAction(Logger):
 
     def get_main_element(self):
         """Returns the main element for this action
+        
+        :return: sardana.pool.poolelement.PoolElement
 
-        :return: sardana.pool.poolelement.PoolElement"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self._main_element()
 
     main_element = property(get_main_element)
 
     def get_pool(self):
         """Returns the pool object for this action
+        
+        :return: sardana.pool.pool.Pool
 
-        :return: sardana.pool.pool.Pool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self.main_element.pool
 
     pool = property(get_pool)
@@ -237,8 +293,15 @@ class PoolAction(Logger):
     def add_element(self, element):
         """Adds a new element to this action.
 
-        :param element: the new element to be added
-        :type element: sardana.pool.poolelement.PoolElement"""
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElemen
+            the new element to be added
+
+        Returns
+        -------
+
+        """
         ctrl = element.controller
         ctrl_items = self._pool_ctrl_dict.get(ctrl)
         if ctrl_items is None:
@@ -258,10 +321,15 @@ class PoolAction(Logger):
         """Removes an element from this action. If the element is not part of
         this action, a ValueError is raised.
 
-        :param element: the new element to be removed
-        :type element: sardana.pool.poolelement.PoolElement
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElement
+            the new element to be removed
 
-        :raises: ValueError"""
+        Returns
+        -------
+
+        """
         ctrl = element.controller
         #element = weakref.ref(element)
         try:
@@ -278,12 +346,19 @@ class PoolAction(Logger):
     def get_elements(self, copy_of=False):
         """Returns a sequence of all elements involved in this action.
 
-        :param copy_of: If False (default) the internal container of elements is
-                        returned. If True, a copy of the internal container is
-                        returned instead
-        :type copy_of: bool
-        :return: a sequence of all elements involved in this action.
-        :rtype: seq<sardana.pool.poolelement.PoolElement>"""
+        Parameters
+        ----------
+        copy_of : bool
+            If False (default) the internal container of elements is
+            returned. If True, a copy of the internal container is
+            returned instead
+
+        Returns
+        -------
+        seq<sardana.pool.poolelement.PoolElement>
+            a sequence of all elements involved in this action.
+
+        """
         elements = self._elements
         if copy_of:
             elements = tuple(elements)
@@ -292,46 +367,95 @@ class PoolAction(Logger):
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
 
-        :return: a list of all controller elements involved in this action.
-        :rtype: list<sardana.pool.poolelement.PoolController>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<sardana.pool.poolelement.PoolController>
+            a list of all controller elements involved in this action.
+
+        """
         return self._pool_ctrl_list
 
     def get_pool_controllers(self):
         """Returns a dict of all controller elements involved in this action.
 
-        :return: a dict of all controller elements involved in this action.
-        :rtype: dict<sardana.pool.poolelement.PoolController,
-                     seq<sardana.pool.poolelement.PoolElement>>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        dict<sardana.pool.poolelement.PoolController,
+             seq<sardana.pool.poolelement.PoolElement>>
+            a dict of all controller elements involved in this action.
+
+        """
         return self._pool_ctrl_dict
 
     def _is_in_action(self, state):
         """Determines if the given state is a busy state (Moving or Running) or
         not.
 
-        :return: True if state is a busy state or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+        bool
+            True if state is a busy state or False otherwise
+
+        """
         return state == State.Moving or state == State.Running
 
     def is_running(self):
         """Determines if this action is running or not
 
-        :return: True if action is running or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True if action is running or False otherwise
+
+        """
         return self._running
 
     def _is_started(self):
         """Determines if this action is started or not.
 
-        :return: True if action is started or False otherwise
-        :rtype: bool
+        Parameters
+        ----------
 
-        ..warning:: This method was added as a workaround for the lack of proper
-        synchronization between the software synchronizer and the acquisition
-        actions."""
+        Returns
+        -------
+        bool
+
+..warning:: This method was added as a workaround for the lack of proper
+synchronization between the software synchronizer and the acquisition
+actions.
+            True if action is started or False otherwise
+
+        """
         return self._started
 
     def run(self, *args, **kwargs):
-        """Runs this action"""
+        """Runs this action
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
 
         self._running = True
         synch = kwargs.pop("synch", False)
@@ -363,38 +487,77 @@ class PoolAction(Logger):
         """Start procedure for this action. Default implementation raises
         NotImplementedError
 
-        :raises: NotImplementedError"""
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError("start_action must be implemented in "
                                   "subclass")
 
     def set_finish_hooks(self, hooks):
         """Set finish hooks for this action.
 
-        :param hooks: an ordered dictionary where keys are the hooks and values
+        Parameters
+        ----------
+        hooks : OrderedDict or None
+            an ordered dictionary where keys are the hooks and values
             is a flag if the hook is permanent (not removed after the execution)
-        :type hooks: OrderedDict or None
+
+        Returns
+        -------
+
         """
         self._finish_hooks = hooks
 
     def add_finish_hook(self, hook, permanent=True):
         """Append one finish hook to this action.
 
-        :param hook: hook to be appended
-        :type hook: callable
-        :param permanent: flag if the hook is permanent (not removed after the
-            execution)
-        :type permanent: boolean
+        Parameters
+        ----------
+        hook : callable
+            hook to be appended
+        permanent : boolean
+            flag if the hook is permanent (not removed after the
+            execution) (Default value = True)
+
+        Returns
+        -------
+
         """
         self._finish_hooks[hook] = permanent
 
     def remove_finish_hook(self, hook):
         """Remove finish hook.
+
+        Parameters
+        ----------
+        hook :
+            
+
+        Returns
+        -------
+
         """
         self._finish_hooks.pop(hook)
 
     def finish_action(self):
         """Finishes the action execution. If a finish hook is defined it safely
-        executes it. Otherwise nothing happens"""
+        executes it. Otherwise nothing happens
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         hooks = self._finish_hooks
         for hook, permanent in list(hooks.items()):
             try:
@@ -407,13 +570,37 @@ class PoolAction(Logger):
                     hooks.pop(hook)
 
     def stop_action(self, *args, **kwargs):
-        """Stop procedure for this action."""
+        """Stop procedure for this action.
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._stopped = True
         for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
             pool_ctrl.stop_elements(elements)
 
     def abort_action(self, *args, **kwargs):
-        """Aborts procedure for this action"""
+        """Aborts procedure for this action
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._aborted = True
         for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
             pool_ctrl.abort_elements(elements)
@@ -427,28 +614,59 @@ class PoolAction(Logger):
     def was_stopped(self):
         """Determines if the action has been stopped from outside
 
-        :return: True if action has been stopped from outside or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True if action has been stopped from outside or False otherwise
+
+        """
         return self._stopped
 
     def was_aborted(self):
         """Determines if the action has been aborted from outside
 
-        :return: True if action has been aborted from outside or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True if action has been aborted from outside or False otherwise
+
+        """
         return self._aborted
 
     def was_action_interrupted(self):
         """Determines if the action has been interruped from outside (either
         from an abort or a stop).
 
-        :return: True if action has been interruped from outside or False
-                 otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True if action has been interruped from outside or False
+            otherwise
+
+        """
         return self.was_aborted() or self.was_stopped()
 
     def _asynch_action_loop(self, context):
-        """Internal method. Asynchronous action loop"""
+        """Internal method. Asynchronous action loop
+
+        Parameters
+        ----------
+        context :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self.action_loop()
         finally:
@@ -459,22 +677,35 @@ class PoolAction(Logger):
         """Action loop for this action. Default implementation raises
         NotImplementedError
 
-        :raises: NotImplementedError"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError(
             "action_loop must be implemented in subclass")
 
     def read_state_info(self, ret=None, serial=False):
         """Reads state information of all elements involved in this action
 
-        :param ret: output map parameter that should be filled with state
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW state requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing state information per element
-        :rtype: dict<sardana.pool.poolelement.PoolElement, stateinfo>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with state
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW state requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<sardana.pool.poolelement.PoolElement, stateinfo>
+            a map containing state information per element
+
+        """
         with ActionContext(self):
             return self.raw_read_state_info(ret=ret, serial=serial)
 
@@ -482,15 +713,22 @@ class PoolAction(Logger):
         """**Unsafe**. Reads state information of all elements involved in this
         action
 
-        :param ret: output map parameter that should be filled with state
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW state requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing state information per element
-        :rtype: dict<sardana.pool.poolelement.PoolElement, stateinfo>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with state
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW state requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<sardana.pool.poolelement.PoolElement, stateinfo>
+            a map containing state information per element
+
+        """
         if ret is None:
             ret = {}
         read = self._raw_read_state_info_concurrent
@@ -505,13 +743,33 @@ class PoolAction(Logger):
         return ret
 
     def _raw_read_state_info_serial(self, ret):
-        """Internal method. Read state in a serial mode"""
+        """Internal method. Read state in a serial mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         for pool_ctrl in self._pool_ctrl_dict:
             self._raw_read_ctrl_state_info(ret, pool_ctrl)
         return ret
 
     def _raw_read_state_info_concurrent(self, ret):
-        """Internal method. Read state in a concurrent mode"""
+        """Internal method. Read state in a concurrent mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         th_pool = get_thread_pool()
         for pool_ctrl in self._pool_ctrl_dict:
             th_pool.add(self._raw_read_ctrl_state_info, None, ret, pool_ctrl)
@@ -519,7 +777,17 @@ class PoolAction(Logger):
 
     def _get_ctrl_error_state_info(self, pool_ctrl):
         """Internal method. Returns the controller error in form of a
-        tuple<sardana.State, str>"""
+        tuple<sardana.State, str>
+
+        Parameters
+        ----------
+        pool_ctrl :
+            
+
+        Returns
+        -------
+
+        """
         exc_t, exc_v, trb = sys.exc_info()
         if exc_t is None:
             if pool_ctrl.is_online():
@@ -533,7 +801,19 @@ class PoolAction(Logger):
 
     def _raw_read_ctrl_state_info(self, ret, pool_ctrl):
         """Internal method. Read controller information and store it in ret
-        parameter"""
+        parameter
+
+        Parameters
+        ----------
+        ret :
+            
+        pool_ctrl :
+            
+
+        Returns
+        -------
+
+        """
         try:
             axes = [elem.axis for elem in self._pool_ctrl_dict[pool_ctrl]]
             state_infos, error = pool_ctrl.raw_read_axis_states(axes)
@@ -555,21 +835,29 @@ class PoolAction(Logger):
             self._state_info.finish_one()
 
     def get_read_value_ctrls(self):
+        """ """
         return self._pool_ctrl_dict
 
     def read_value(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
-                     (value object, Exception or None)>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement`,
+             (value object, Exception or None)>
+            a map containing value information per element
+
+        """
         with ActionContext(self):
             return self.raw_read_value(ret=ret, serial=serial)
 
@@ -577,16 +865,23 @@ class PoolAction(Logger):
         """**Unsafe**. Reads value information of all elements involved in this
         action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
-                :class:`sardana.sardanavalue.SardanaValue` >"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement,
+        :class:`sardana.sardanavalue.SardanaValue` >
+            a map containing value information per element
+
+        """
 
         if ret is None:
             ret = {}
@@ -604,13 +899,33 @@ class PoolAction(Logger):
         return ret
 
     def _raw_read_value_serial(self, ret):
-        """Internal method. Read value in a serial mode"""
+        """Internal method. Read value in a serial mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         for pool_ctrl in self.get_read_value_ctrls():
             self._raw_read_ctrl_value(ret, pool_ctrl)
         return ret
 
     def _raw_read_value_concurrent(self, ret):
-        """Internal method. Read value in a concurrent mode"""
+        """Internal method. Read value in a concurrent mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         th_pool = get_thread_pool()
         for pool_ctrl in self.get_read_value_ctrls():
             th_pool.add(self._raw_read_ctrl_value, None, ret, pool_ctrl)
@@ -618,7 +933,19 @@ class PoolAction(Logger):
 
     def _raw_read_ctrl_value(self, ret, pool_ctrl):
         """Internal method. Read controller value information and store it in
-        ret parameter"""
+        ret parameter
+
+        Parameters
+        ----------
+        ret :
+            
+        pool_ctrl :
+            
+
+        Returns
+        -------
+
+        """
         try:
             axes = [elem.axis for elem in self._pool_ctrl_dict[pool_ctrl]]
             value_infos = pool_ctrl.raw_read_axis_values(axes)
@@ -627,21 +954,29 @@ class PoolAction(Logger):
             self._value_info.finish_one()
 
     def get_read_value_loop_ctrls(self):
+        """ """
         return self._pool_ctrl_dict
 
     def read_value_loop(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
-                     (value object, Exception or None)>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement`,
+             (value object, Exception or None)>
+            a map containing value information per element
+
+        """
         with ActionContext(self):
             return self.raw_read_value_loop(ret=ret, serial=serial)
 
@@ -649,16 +984,23 @@ class PoolAction(Logger):
         """**Unsafe**. Reads value information of all elements involved in this
         action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
-                :class:`sardana.sardanavalue.SardanaValue` >"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement,
+        :class:`sardana.sardanavalue.SardanaValue` >
+            a map containing value information per element
+
+        """
 
         if ret is None:
             ret = {}
@@ -676,13 +1018,33 @@ class PoolAction(Logger):
         return ret
 
     def _raw_read_value_serial_loop(self, ret):
-        """Internal method. Read value in a serial mode"""
+        """Internal method. Read value in a serial mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         for pool_ctrl in self.get_read_value_loop_ctrls():
             self._raw_read_ctrl_value(ret, pool_ctrl)
         return ret
 
     def _raw_read_value_concurrent_loop(self, ret):
-        """Internal method. Read value in a concurrent mode"""
+        """Internal method. Read value in a concurrent mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         th_pool = get_thread_pool()
         for pool_ctrl in self.get_read_value_loop_ctrls():
             th_pool.add(self._raw_read_ctrl_value, None, ret, pool_ctrl)

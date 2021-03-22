@@ -72,6 +72,17 @@ AcquisitionMap = {
 
 
 def is_value_error(value):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+
+    Returns
+    -------
+
+    """
     if isinstance(value, SardanaValue) and value.error:
         return True
     return False
@@ -79,19 +90,25 @@ def is_value_error(value):
 
 def get_acq_ctrls(ctrls):
     """Converts configuration controllers into acquisition controllers.
-
+    
     Takes care about converting their internals as well.
 
-    :param ctrls: sequence of configuration controllers objects
-    :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
-    :return: sequence of acquisition controllers
-    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+    Parameters
+    ----------
+    ctrls : sardana.pool.poolmeasurementgroup.ControllerConfiguration
+        sequence of configuration controllers objects
 
-    .. note::
-        The get_acq_ctrls function has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including removal of the class) may occur if
-        deemed necessary by the core developers.
+    Returns
+    -------
+    class:`~sardana.pool.poolacquisition.AcqController`
+
+.. note::
+    The get_acq_ctrls function has been included in Sardana
+    on a provisional basis. Backwards incompatible changes
+    (up to and including removal of the class) may occur if
+    deemed necessary by the core developers.
+        sequence of acquisition controllers
+
     """
     action_ctrls = []
     for ctrl in ctrls:
@@ -103,22 +120,28 @@ def get_acq_ctrls(ctrls):
 def get_timerable_ctrls(ctrls, acq_mode):
     """Converts timerable configuration controllers into acquisition
     controllers.
-
+    
     Take care about converting their internals as well.
     Take care about assigning master according to acq_mode.
 
-    :param ctrls: sequence of configuration controllers objects
-    :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
-    :param acq_mode: acquisition mode (timer/monitor)
-    :type acq_mode: :class:`sardana.pool.AcqMode`
-    :return: sequence of acquisition controllers
-    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+    Parameters
+    ----------
+    ctrls : sardana.pool.poolmeasurementgroup.ControllerConfiguration
+        sequence of configuration controllers objects
+    acq_mode : class:`sardana.pool.AcqMode`
+        acquisition mode (timer/monitor)
 
-    .. note::
-        The get_timerable_ctrls function has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including removal of the class) may occur if
-        deemed necessary by the core developers.
+    Returns
+    -------
+    class:`~sardana.pool.poolacquisition.AcqController`
+
+.. note::
+    The get_timerable_ctrls function has been included in Sardana
+    on a provisional basis. Backwards incompatible changes
+    (up to and including removal of the class) may occur if
+    deemed necessary by the core developers.
+        sequence of acquisition controllers
+
     """
     action_ctrls = []
     for ctrl in ctrls:
@@ -137,27 +160,33 @@ def get_timerable_ctrls(ctrls, acq_mode):
 
 def get_timerable_items(ctrls, master, acq_mode=AcqMode.Timer):
     """Converts timerable configuration items into acquisition items.
-
+    
     The timerable items are controllers and master. Convert these into
     the corresponding acquisition items.
-
+    
     Take care about converting their internals as well.
     Take care about assigning master according to acq_mode.
 
-    :param ctrls: sequence of configuration controllers objects
-    :type ctrls: :obj:list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
-    :param master: master configuration object
-    :type master: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
-    :param acq_mode: acquisition mode (timer/monitor)
-    :type acq_mode: :class:`sardana.pool.AcqMode`
-    :return: sequence of acquisition controllers
-    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+    Parameters
+    ----------
+    ctrls : obj:list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+        sequence of configuration controllers objects
+    master : class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+        master configuration object
+    acq_mode : class:`sardana.pool.AcqMode`
+        acquisition mode (timer/monitor) (Default value = AcqMode.Timer)
 
-    .. note::
-        The get_timerable_ctrls function has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including removal of the class) may occur if
-        deemed necessary by the core developers.
+    Returns
+    -------
+    class:`~sardana.pool.poolacquisition.AcqController`
+
+.. note::
+    The get_timerable_ctrls function has been included in Sardana
+    on a provisional basis. Backwards incompatible changes
+    (up to and including removal of the class) may occur if
+    deemed necessary by the core developers.
+        sequence of acquisition controllers
+
     """
     ctrls = get_timerable_ctrls(ctrls, acq_mode)
     # Search master AcqConfigurationItem obj
@@ -170,6 +199,7 @@ def get_timerable_items(ctrls, master, acq_mode=AcqMode.Timer):
 
 
 class ActionArgs(object):
+    """ """
 
     def __init__(self, args, kwargs=None):
         self.args = args
@@ -180,12 +210,19 @@ class ActionArgs(object):
 
 class AcqConfigurationItem(object):
     """Wrapper for configuration item that will be used in an action.
-
+    
     .. note::
         The AcqConfigurationItem function has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, configuration, attrs=None):
@@ -213,7 +250,17 @@ class AcqConfigurationItem(object):
         return self._configuration()
 
     def set_configuration(self, configuration):
-        """Sets the element for this item"""
+        """Sets the element for this item
+
+        Parameters
+        ----------
+        configuration :
+            
+
+        Returns
+        -------
+
+        """
         self._configuration = weakref.ref(configuration)
 
     configuration = property(get_configuration)
@@ -221,12 +268,19 @@ class AcqConfigurationItem(object):
 
 class AcqController(AcqConfigurationItem):
     """Wrapper for controller configuration that will be used in an action.
-
+    
     .. note::
         The AcqController function has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, configuration, attrs=None):
@@ -262,6 +316,17 @@ class AcqController(AcqConfigurationItem):
         AcqConfigurationItem.__init__(self, configuration, attrs)
 
     def get_channels(self, enabled=None):
+        """
+
+        Parameters
+        ----------
+        enabled :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if enabled is None:
             return list(self._channels)
         elif enabled:
@@ -271,8 +336,10 @@ class AcqController(AcqConfigurationItem):
 
 
 class AcquisitionBaseContext(OperationContext):
+    """ """
 
     def exit(self):
+        """ """
         pool_action = self._pool_action
         pool_action._reset_ctrl_dicts()
         return OperationContext.exit(self)
@@ -280,13 +347,20 @@ class AcquisitionBaseContext(OperationContext):
 
 class PoolAcquisition(PoolAction):
     """Acquisition action which is internally composed for sub-actions.
-
+    
     Handle acquisition of experimental channels of the following types:
     * timerable (C/T, 1D and 2D) synchronized by software or hardware
     trigger/gate/start
     * 0D
-
+    
     Synchronized by T/G elements or sofware synchronizer.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name="Acquisition"):
@@ -312,8 +386,19 @@ class PoolAcquisition(PoolAction):
 
     def event_received(self, *args, **kwargs):
         """Callback executed on event of software synchronizer.
-
+        
         Reacts on start, active, passive or end type of events
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
         """
         timestamp = time.time()
         _, type_, index = args
@@ -385,9 +470,32 @@ class PoolAcquisition(PoolAction):
                 moveable=None, sw_synch_initial_domain=None,
                 nb_starts=1, **kwargs):
         """Prepare measurement process.
-
+        
         Organize sub-action arguments and loads configuration parameters to
         the hardware controllers.
+
+        Parameters
+        ----------
+        config :
+            
+        acq_mode :
+            
+        value :
+            
+        synch_description :
+             (Default value = None)
+        moveable :
+             (Default value = None)
+        sw_synch_initial_domain :
+             (Default value = None)
+        nb_starts :
+             (Default value = 1)
+        **kwargs :
+            
+
+        Returns
+        -------
+
         """
         self._sw_acq_args = None
         self._sw_start_acq_args = None
@@ -516,6 +624,25 @@ class PoolAcquisition(PoolAction):
 
     @staticmethod
     def _prepare_ctrls(ctrls, value, repetitions, latency, nb_starts):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
+        """
         for ctrl in ctrls:
             axis = ctrl.master.axis
             pool_ctrl = ctrl.element
@@ -524,6 +651,19 @@ class PoolAcquisition(PoolAction):
 
     @staticmethod
     def _prepare_synch_ctrls(ctrls, nb_starts):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
+        """
         for ctrl in ctrls:
             for chn in ctrl.get_channels():
                 axis = chn.axis
@@ -532,8 +672,15 @@ class PoolAcquisition(PoolAction):
 
     def is_running(self):
         """Checks if acquisition is running.
-
+        
         Acquisition is runnin if any of its sub-actions is running.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return self._sw_start_acq.is_running()\
             or self._0d_acq.is_running()\
@@ -542,7 +689,19 @@ class PoolAcquisition(PoolAction):
             or self._synch.is_running()
 
     def run(self, *args, **kwargs):
-        """Runs acquisition according to previous preparation."""
+        """Runs acquisition according to previous preparation.
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         for elem in self.get_elements():
             elem.put_state(None)
             # TODO: temporarily clear value buffers at the beginning of the
@@ -582,6 +741,17 @@ class PoolAcquisition(PoolAction):
                             cb=self._synch._set_ready)
 
     def _get_action_for_element(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             config = self.main_element.configuration
@@ -616,8 +786,15 @@ class PoolAcquisition(PoolAction):
     def add_element(self, element):
         """Adds a new element to this action.
 
-        :param element: the new element to be added
-        :type element: sardana.pool.poolelement.PoolElement"""
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElemen
+            the new element to be added
+
+        Returns
+        -------
+
+        """
         action = self._get_action_for_element(element)
         action.add_element(element)
 
@@ -625,22 +802,34 @@ class PoolAcquisition(PoolAction):
         """Removes an element from this action. If the element is not part of
         this action, a ValueError is raised.
 
-        :param element: the new element to be removed
-        :type element: sardana.pool.poolelement.PoolElement
+        Parameters
+        ----------
+        element : sardana.pool.poolelement.PoolElement
+            the new element to be removed
 
-        :raises: ValueError"""
+        Returns
+        -------
+
+        """
         for action in self._get_acq_for_element(element):
             action.remove_element(element)
 
     def get_elements(self, copy_of=False):
         """Returns a sequence of all elements involved in this action.
 
-        :param copy_of: If False (default) the internal container of
-                        elements is returned. If True, a copy of the
-                        internal container is returned instead
-        :type copy_of: bool
-        :return: a sequence of all elements involved in this action.
-        :rtype: seq<sardana.pool.poolelement.PoolElement>"""
+        Parameters
+        ----------
+        copy_of : bool
+            If False (default) the internal container of
+            elements is returned. If True, a copy of the
+            internal container is returned instead
+
+        Returns
+        -------
+        seq<sardana.pool.poolelement.PoolElement>
+            a sequence of all elements involved in this action.
+
+        """
         return (self._hw_acq.get_elements() + self._sw_acq.get_elements()
                 + self._sw_start_acq.get_elements()
                 + self._0d_acq.get_elements() + self._synch.get_elements())
@@ -648,16 +837,30 @@ class PoolAcquisition(PoolAction):
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
 
-        :return: a list of all controller elements involved in this action.
-        :rtype: list<sardana.pool.poolelement.PoolController>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list<sardana.pool.poolelement.PoolController>
+            a list of all controller elements involved in this action.
+
+        """
         return self._pool_ctrl_list
 
     def get_pool_controllers(self):
         """Returns a dict of all controller elements involved in this action.
 
-        :return: a dict of all controller elements involved in this action.
-        :rtype: dict<sardana.pool.poolelement.PoolController,
-                seq<sardana.pool.poolelement.PoolElement>>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        dict<sardana.pool.poolelement.PoolController,
+        seq<sardana.pool.poolelement.PoolElement>>
+            a dict of all controller elements involved in this action.
+
+        """
         ret = {}
         ret.update(self._hw_acq.get_pool_controllers())
         ret.update(self._sw_acq.get_pool_controllers())
@@ -668,16 +871,23 @@ class PoolAcquisition(PoolAction):
     def read_value(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
-                     :class:~`sardana.sardanavalue.SardanaValue`>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement`,
+             :class:~`sardana.sardanavalue.SardanaValue`>
+            a map containing value information per element
+
+        """
         # TODO: this is broken now - fix it
         ret = self._ct_acq.read_value(ret=ret, serial=serial)
         ret.update(self._0d_acq.read_value(ret=ret, serial=serial))
@@ -686,14 +896,21 @@ class PoolAcquisition(PoolAction):
 
 class PoolAcquisitionBase(PoolAction):
     """Base class for sub-acquisition.
-
+    
     .. note::
         The PoolAcquisitionBase class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
-
+    
     .. todo: Think of moving the ready/busy mechanism to PoolAction
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name):
@@ -704,32 +921,64 @@ class PoolAcquisitionBase(PoolAction):
         self._ready.set()
 
     def _is_ready(self):
+        """ """
         return self._ready.is_set()
 
     def _wait(self, timeout=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self._ready.wait(timeout)
 
     def _set_ready(self, _=None):
+        """
+
+        Parameters
+        ----------
+        _ :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._ready.set()
 
     def _is_busy(self):
+        """ """
         return not self._ready.is_set()
 
     def _set_busy(self):
+        """ """
         self._ready.clear()
 
 
 class PoolAcquisitionTimerable(PoolAcquisitionBase):
     """Base class for acquisitions of timerable channels.
-
+    
      Implements a generic start_action method. action_loop method must be
      implemented by the sub-class.
-
+    
     .. note::
         The PoolAcquisitionTimerable class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     OperationContextClass = AcquisitionBaseContext
@@ -753,21 +1002,29 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         # self.add_finish_hook(self.clear_value_buffers, True)
 
     def get_read_value_ref_ctrls(self):
+        """ """
         return self._pool_ctrl_dict_ref
 
     def read_value_ref(self, ret=None, serial=False):
         """Reads value ref information of all elements involved in this action
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
-                     (value object, Exception or None)>"""
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement`,
+             (value object, Exception or None)>
+            a map containing value information per element
+
+        """
         with ActionContext(self):
             return self.raw_read_value_ref(ret=ret, serial=serial)
 
@@ -775,16 +1032,22 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         """**Unsafe**. Reads value ref information of all referable elements
         involved in this acquisition
 
-        :param ret: output map parameter that should be filled with value
-                    information. If None is given (default), a new map is
-                    created an returned
-        :type ret: dict
-        :param serial: If False (default) perform controller HW value requests
-                       in parallel. If True, access is serialized.
-        :type serial: bool
-        :return: a map containing value information per element
-        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
-                :class:`sardana.sardanavalue.SardanaValue`>
+        Parameters
+        ----------
+        ret : dict
+            output map parameter that should be filled with value
+            information. If None is given (default), a new map is
+            created an returned
+        serial : bool
+            If False (default) perform controller HW value requests
+            in parallel. If True, access is serialized.
+
+        Returns
+        -------
+        dict<:class:~`sardana.pool.poolelement.PoolElement,
+        :class:`sardana.sardanavalue.SardanaValue`>
+            a map containing value information per element
+
         """
         if ret is None:
             ret = {}
@@ -802,13 +1065,33 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         return ret
 
     def _raw_read_value_ref_serial(self, ret):
-        """Internal method. Read value ref in a serial mode"""
+        """Internal method. Read value ref in a serial mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         for pool_ctrl in self.get_read_value_ref_ctrls():
             self._raw_read_ctrl_value_ref(ret, pool_ctrl)
         return ret
 
     def _raw_read_value_ref_concurrent(self, ret):
-        """Internal method. Read value ref in a concurrent mode"""
+        """Internal method. Read value ref in a concurrent mode
+
+        Parameters
+        ----------
+        ret :
+            
+
+        Returns
+        -------
+
+        """
         th_pool = get_thread_pool()
         for pool_ctrl in self.get_read_value_ref_ctrls():
             th_pool.add(self._raw_read_ctrl_value_ref, None, ret, pool_ctrl)
@@ -816,7 +1099,19 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
 
     def _raw_read_ctrl_value_ref(self, ret, pool_ctrl):
         """Internal method. Read controller value ref information and store
-        it in ret parameter"""
+        it in ret parameter
+
+        Parameters
+        ----------
+        ret :
+            
+        pool_ctrl :
+            
+
+        Returns
+        -------
+
+        """
         try:
             axes = [elem.axis for elem in self._pool_ctrl_dict_ref[pool_ctrl]]
             value_infos = pool_ctrl.raw_read_axis_value_refs(axes)
@@ -825,6 +1120,21 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
             self._value_info.finish_one()
 
     def _process_value_buffer(self, acquirable, value, final=False):
+        """
+
+        Parameters
+        ----------
+        acquirable :
+            
+        value :
+            
+        final :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         final_str = "final " if final else ""
         if is_value_error(value):
             self.error("Loop %sread value error for %s" % (final_str,
@@ -837,6 +1147,21 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
             acquirable.extend_value_buffer(value, propagate=2)
 
     def _process_value_ref_buffer(self, acquirable, value_ref, final=False):
+        """
+
+        Parameters
+        ----------
+        acquirable :
+            
+        value_ref :
+            
+        final :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         final_str = "final " if final else ""
         if is_value_error(value_ref):
             self.error("Loop read ref %svalue error for %s" %
@@ -853,11 +1178,18 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         based on the current unit trigger modes and states returned by the
         controller(s)
 
-        :param states: a map containing state information as returned by
-                       read_state_info
-        :type states: dict<PoolElement, State>
-        :return: returns True if in acquisition or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+        states : dict<PoolElement, State>
+            a map containing state information as returned by
+            read_state_info
+
+        Returns
+        -------
+        bool
+            returns True if in acquisition or False otherwise
+
+        """
         for elem in states:
             s = states[elem][0][0]
             if self._is_in_action(s):
@@ -867,27 +1199,34 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
     def start_action(self, ctrls, value, master, repetitions, latency,
                      index, acq_sleep_time, nb_states_per_value,
                      **kwargs):
-        """
-        Prepares everything for acquisition and starts it
-        :param ctrls: List of enabled pool acquisition controllers
-        :type ctrls: list
-        :param value: integration time/monitor counts
-        :type value: float/int or seq<float/int>
-        :param repetitions: repetitions
-        :type repetitions: int
-        :param latency:
-        :type latency: float
-        :param master: master channel is the last one to start
-        :type master: Channel
-        :param index:
-        :type index: int
-        :param acq_sleep_time: sleep time between state queries
-        :type acq_sleep_time: float
-        :param nb_states_per_value: how many state queries between readouts
-        :type nb_states_per_value: int
-        :param args:
-        :param kwargs:
-        :return:
+        """Prepares everything for acquisition and starts it
+
+        Parameters
+        ----------
+        ctrls : list
+            List of enabled pool acquisition controllers
+        value : float/int or seq<float/int>
+            integration time/monitor counts
+        repetitions : int
+            repetitions
+        latency :
+            type latency: float
+        master : Channel
+            master channel is the last one to start
+        index :
+            type index: int
+        acq_sleep_time : float
+            sleep time between state queries
+        nb_states_per_value : int
+            how many state queries between readouts
+        args :
+            param kwargs:
+        **kwargs :
+            
+
+        Returns
+        -------
+
         """
 
         pool = self.pool
@@ -918,6 +1257,23 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         self._channels = []
 
         def load(channel, value, repetitions, latency=0):
+            """
+
+            Parameters
+            ----------
+            channel :
+                
+            value :
+                
+            repetitions :
+                
+            latency :
+                 (Default value = 0)
+
+            Returns
+            -------
+
+            """
             axis = channel.axis
             pool_ctrl = channel.controller
             ctrl = pool_ctrl.ctrl
@@ -993,6 +1349,17 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
                     raise Exception(msg)
 
     def _set_pool_ctrl_dict_loop(self, ctrls):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_channels = {}
         for ctrl in ctrls:
             pool_channels = []
@@ -1006,6 +1373,17 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         self._pool_ctrl_dict_loop = ctrl_channels
 
     def _split_ctrl(self, ctrls):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_channels_value = {}
         ctrl_channels_ref = {}
         for ctrl in ctrls:
@@ -1035,26 +1413,35 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         self._pool_ctrl_dict_ref = ctrl_channels_ref
 
     def _reset_ctrl_dicts(self):
+        """ """
         self._pool_ctrl_dict_loop = None
         self._pool_ctrl_dict_value = None
         self._pool_ctrl_dict_ref = None
 
     def clear_value_buffers(self):
+        """ """
         for channel in self._channels:
             channel.clear_value_buffer()
 
 
 class PoolAcquisitionHardware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by hardware
-
+    
     .. note::
         The PoolAcquisitionHardware class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
-
+    
     .. todo:: Try to move the action loop logic to base class it is
     basically the same as in PoolAcquisitionSoftwareStart.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name="AcquisitionHardware"):
@@ -1063,16 +1450,41 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
     def start_action(self, ctrls, value, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+        acq_sleep_time :
+             (Default value = None)
+        nb_states_per_value :
+             (Default value = None)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         PoolAcquisitionTimerable.start_action(self, ctrls, value, None,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
 
     def get_read_value_ctrls(self):
+        """ """
         return self._pool_ctrl_dict_value
 
     @DebugIt()
     def action_loop(self):
+        """ """
         i = 0
 
         states, values, value_refs = {}, {}, {}
@@ -1122,12 +1534,19 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
 
 class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software
-
+    
     .. note::
         The PoolAcquisitionSoftware class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name="AcquisitionSoftware", slaves=None):
@@ -1138,6 +1557,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
         self._slaves = slaves
 
     def get_read_value_ctrls(self):
+        """ """
         # technical debt in order to work both in case of meas group and
         # single channel
         if self._pool_ctrl_dict_value is not None:
@@ -1146,6 +1566,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
             return self._pool_ctrl_dict
 
     def get_read_value_ref_ctrls(self):
+        """ """
         # technical debt in order to work both in case of meas group and
         # single channel
         if self._pool_ctrl_dict_ref is not None:
@@ -1154,16 +1575,41 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
             return self._pool_ctrl_dict
 
     def get_read_value_loop_ctrls(self):
+        """ """
         return self._pool_ctrl_dict_loop
 
     def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        value :
+            
+        master :
+            
+        index :
+            
+        acq_sleep_time :
+             (Default value = None)
+        nb_states_per_value :
+             (Default value = None)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         PoolAcquisitionTimerable.start_action(self, ctrls, value, master, 1, 0,
                                          index, acq_sleep_time,
                                          nb_states_per_value, **kwargs)
 
     @DebugIt()
     def action_loop(self):
+        """ """
         states, values, value_refs = {}, {}, {}
         for channel in self._channels:
             element = channel.element
@@ -1231,21 +1677,29 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
 
 class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
     """Acquisition action for controllers synchronized by software start
-
+    
     .. note::
         The PoolAcquisitionSoftwareStart class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
-
+    
     .. todo:: Try to move the action loop logic to base class it is
     basically the same as in PoolAcquisitionHardware.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
         PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_ctrls(self):
+        """ """
         # technical debt in order to work both in case of meas group and
         # single channel
         return self._pool_ctrl_dict_value
@@ -1253,6 +1707,31 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
     def start_action(self, ctrls, value, master, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        value :
+            
+        master :
+            
+        repetitions :
+            
+        latency :
+            
+        acq_sleep_time :
+             (Default value = None)
+        nb_states_per_value :
+             (Default value = None)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         PoolAcquisitionTimerable.start_action(self, ctrls, value, master,
                                          repetitions, latency, None,
                                          acq_sleep_time, nb_states_per_value,
@@ -1260,6 +1739,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
 
     @DebugIt()
     def action_loop(self):
+        """ """
         i = 0
 
         states, values, value_refs = {}, {}, {}
@@ -1350,6 +1830,7 @@ class PoolCTAcquisition(PoolAcquisitionTimerable):
         PoolAcquisitionTimerable.__init__(self, main_element, name)
 
     def get_read_value_loop_ctrls(self):
+        """ """
         return self._pool_ctrl_dict_loop
 
     def in_acquisition(self, states):
@@ -1357,11 +1838,18 @@ class PoolCTAcquisition(PoolAcquisitionTimerable):
         based on the current unit trigger modes and states returned by the
         controller(s)
 
-        :param states: a map containing state information as returned by
-                       read_state_info
-        :type states: dict<PoolElement, State>
-        :return: returns True if in acquisition or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+        states : dict<PoolElement, State>
+            a map containing state information as returned by
+            read_state_info
+
+        Returns
+        -------
+        bool
+            returns True if in acquisition or False otherwise
+
+        """
         for elem in states:
             s = states[elem][0][0]
             if self._is_in_action(s):
@@ -1369,6 +1857,7 @@ class PoolCTAcquisition(PoolAcquisitionTimerable):
 
     @DebugIt()
     def action_loop(self):
+        """ """
         i = 0
 
         states, values = {}, {}
@@ -1427,6 +1916,7 @@ class PoolCTAcquisition(PoolAcquisitionTimerable):
 
 
 class Pool0DAcquisition(PoolAcquisitionBase):
+    """ """
 
     def __init__(self, main_element, name="0DAcquisition"):
         PoolAcquisitionBase.__init__(self, main_element, name)
@@ -1435,7 +1925,23 @@ class Pool0DAcquisition(PoolAcquisitionBase):
                      nb_states_per_value=None, **kwargs):
         """Prepares everything for acquisition and starts it.
 
-           :param: config"""
+        Parameters
+        ----------
+        conf_ctrls :
+            
+        index :
+            
+        acq_sleep_time :
+             (Default value = None)
+        nb_states_per_value :
+             (Default value = None)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
 
         pool = self.pool
         # TODO: rollback this change when a proper synchronization between
@@ -1470,17 +1976,25 @@ class Pool0DAcquisition(PoolAcquisitionBase):
         based on the current unit trigger modes and states returned by the
         controller(s)
 
-        :param states: a map containing state information as returned by
-                       read_state_info
-        :type states: dict<PoolElement, State>
-        :return: returns True if in acquisition or False otherwise
-        :rtype: bool"""
+        Parameters
+        ----------
+        states : dict<PoolElement, State>
+            a map containing state information as returned by
+            read_state_info
+
+        Returns
+        -------
+        bool
+            returns True if in acquisition or False otherwise
+
+        """
         for state in states:
             s = states[state][0]
             if self._is_in_action(s):
                 return True
 
     def action_loop(self):
+        """ """
         states, values = {}, {}
         for conf_channel in self._channels:
             element = conf_channel.element
@@ -1512,29 +2026,79 @@ class Pool0DAcquisition(PoolAcquisitionBase):
             self.add_finish_hook(set_state_info, False)
 
     def stop_action(self, *args, **kwargs):
-        """Stop procedure for this action."""
+        """Stop procedure for this action.
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._stopped = True
 
     def abort_action(self, *args, **kwargs):
-        """Aborts procedure for this action"""
+        """Aborts procedure for this action
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._aborted = True
 
 
 class PoolIORAcquisition(PoolAction):
+    """ """
 
     def __init__(self, pool, name="IORAcquisition"):
         self._channels = None
         PoolAction.__init__(self, pool, name)
 
     def start_action(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def in_acquisition(self, states):
+        """
+
+        Parameters
+        ----------
+        states :
+            
+
+        Returns
+        -------
+
+        """
         return True
         pass
 
     @DebugIt()
     def action_loop(self):
+        """ """
         i = 0
 
         states, values = {}, {}
@@ -1575,6 +2139,19 @@ class PoolIORAcquisition(PoolAction):
         # which is executed outside the OperationContext
 
         def finish_hook(*args, **kwargs):
+            """
+
+            Parameters
+            ----------
+            *args :
+                
+            **kwargs :
+                
+
+            Returns
+            -------
+
+            """
             # read values and propagate the change to all listeners
             self.read_value(ret=values)
             for acquirable, value in list(values.items()):

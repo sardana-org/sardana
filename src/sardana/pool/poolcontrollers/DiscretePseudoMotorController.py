@@ -38,9 +38,16 @@ from sardana.pool.controller import Type, Access, Description
 
 
 class DiscretePseudoMotorController(PseudoMotorController):
+    """A discrete pseudo motor controller which converts physical motor
+    positions to discrete values
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
-    A discrete pseudo motor controller which converts physical motor
-    positions to discrete values"""
 
     gender = "DiscretePseudoMotorController"
     model = "PseudoMotor"
@@ -69,12 +76,38 @@ class DiscretePseudoMotorController(PseudoMotorController):
         self._labels_cfg = None
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = PseudoMotorController.GetAxisAttributes(self, axis)
         axis_attrs = dict(axis_attrs)
         axis_attrs['Position']['type'] = float
         return axis_attrs
 
     def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         positions = self._positions_cfg
         calibration = self._calibration_cfg
         labels = self._labels_cfg
@@ -108,6 +141,21 @@ class DiscretePseudoMotorController(PseudoMotorController):
             raise Exception("Bad configuration on axis attributes.")
 
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         positions = self._positions_cfg
         calibration = self._calibration_cfg
         labels = self._labels_cfg
@@ -143,9 +191,33 @@ class DiscretePseudoMotorController(PseudoMotorController):
             return calibrated_position
 
     def getConfiguration(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return json.dumps(self._configuration)
 
     def setConfiguration(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             mapping = json.loads(value)
             labels = []

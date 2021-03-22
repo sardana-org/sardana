@@ -40,6 +40,13 @@ class PoolTriggerGateTestCase(unittest.TestCase):
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         unittest.TestCase.setUp(self)
         try:
@@ -105,6 +112,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.assertNotEqual(element_state, State.Moving, msg)
 
     def tearDown(self):
+        """ """
         self.tgaction = None
         self.mock_tg_ctrl = None
         self.cfg = None

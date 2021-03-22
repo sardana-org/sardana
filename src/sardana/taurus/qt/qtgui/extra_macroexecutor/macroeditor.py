@@ -34,6 +34,7 @@ except Exception as e:
 
 
 class MacroEditor(Qsci.QsciScintilla):
+    """ """
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
     def __init__(self, parent=None, designMode=False):
@@ -108,6 +109,17 @@ class MacroEditor(Qsci.QsciScintilla):
         self.setCurrentFile("")
 
     def closeEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         if self.maybeSave():
             #            self.writeSettings()
             event.accept()
@@ -115,17 +127,20 @@ class MacroEditor(Qsci.QsciScintilla):
             event.ignore()
 
     def newFile(self):
+        """ """
         if self.maybeSave():
             self.textEdit.clear()
             self.setCurrentFile("")
 
     def openFile(self):
+        """ """
         if self.maybeSave():
             fileName, _ = compat.getOpenFileName(self)
         if not fileName is None and file != "":
             self.loadFile(fileName)
 
     def saveFile(self):
+        """ """
         if self.curFile == "":
             return self.__saveAs()
         else:
@@ -138,13 +153,16 @@ class MacroEditor(Qsci.QsciScintilla):
         return self.__saveFile(self.fileName)
 
     def about(self):
+        """ """
         Qt.QMessageBox.about(self, "About MacroEditor",
                              "The MacroEditor by Zbigniew Reszela")
 
     def documentWasModified(self):
+        """ """
         self.setWindowModified(self.textEdit.isModified())
 
     def createMenus(self):
+        """ """
         fileMenu = self.menuBar().addMenu("File")
         fileMenu.addAction(self.newAction)
         fileMenu.addAction(self.openAction)
@@ -176,9 +194,11 @@ class MacroEditor(Qsci.QsciScintilla):
 #        editToolBar.addAction(self.pasteAction)
 
     def createStatusBar(self):
+        """ """
         self.statusBar().showMessage("Ready")
 
     def maybeSave(self):
+        """ """
         if self.textEdit.isModified():
             ret = Qt.QMessageBox.warning(self, "MacroEditor",
                                          "The document has been modified\nDo you want to save your changes?",
@@ -192,6 +212,17 @@ class MacroEditor(Qsci.QsciScintilla):
         return True
 
     def loadFile(self, fileName):
+        """
+
+        Parameters
+        ----------
+        fileName :
+            
+
+        Returns
+        -------
+
+        """
         try:
             fileHandle = open(fileName, 'r')
         except IOError as e:
@@ -221,6 +252,17 @@ class MacroEditor(Qsci.QsciScintilla):
         return True
 
     def setCurrentFile(self, fileName):
+        """
+
+        Parameters
+        ----------
+        fileName :
+            
+
+        Returns
+        -------
+
+        """
         self.curFile = fileName
         self.textEdit.setModified(False)
         self.setWindowModified(False)
@@ -232,19 +274,34 @@ class MacroEditor(Qsci.QsciScintilla):
         self.setWindowTitle("%s[*] - %s" % (shownName, "MacroExecutor"))
 
     def strippedName(self, fullFileName):
+        """
+
+        Parameters
+        ----------
+        fullFileName :
+            
+
+        Returns
+        -------
+
+        """
         return Qt.QFileInfo(fullFileName).fileName()
 
     def cut(self):
+        """ """
         pass
 
     def copy(self):
+        """ """
         pass
 
     def paste(self):
+        """ """
         pass
 
 
 def test():
+    """ """
     import sys
     app = Qt.QApplication(sys.argv)
     macroEditor = MacroEditor()

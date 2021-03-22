@@ -39,10 +39,44 @@ from sardana.pool.controller import TwoDController, Referable, \
 
 
 def gauss(x, mean, ymax, fwhm, yoffset=0):
+    """
+
+    Parameters
+    ----------
+    x :
+        
+    mean :
+        
+    ymax :
+        
+    fwhm :
+        
+    yoffset :
+         (Default value = 0)
+
+    Returns
+    -------
+
+    """
     return yoffset + ymax * numpy.power(2, -4 * ((x - mean) / fwhm)**2)
 
 
 def generate_img(x_size, y_size, amplitude):
+    """
+
+    Parameters
+    ----------
+    x_size :
+        
+    y_size :
+        
+    amplitude :
+        
+
+    Returns
+    -------
+
+    """
     x = numpy.linspace(-10, 10, x_size)
     y = numpy.linspace(-10, 10, y_size)
     x, y = numpy.meshgrid(x, y)
@@ -51,6 +85,19 @@ def generate_img(x_size, y_size, amplitude):
 
 
 def generate_ref(pattern, idx):
+    """
+
+    Parameters
+    ----------
+    pattern :
+        
+    idx :
+        
+
+    Returns
+    -------
+
+    """
     if pattern is None or pattern == "":
         pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
     msg = None
@@ -82,6 +129,21 @@ def generate_ref(pattern, idx):
 
 
 def save_img(img, path, dataset_name):
+    """
+
+    Parameters
+    ----------
+    img :
+        
+    path :
+        
+    dataset_name :
+        
+
+    Returns
+    -------
+
+    """
     msg = None
     if "h5py" not in sys.modules:
         msg = "Not able to store h5 file (h5py is not available)"
@@ -94,6 +156,7 @@ def save_img(img, path, dataset_name):
 
 
 class Channel:
+    """ """
 
     def __init__(self, idx):
         self.idx = idx            # 1 based index
@@ -111,28 +174,35 @@ class Channel:
 
 
 class BaseValue(object):
+    """ """
 
     def __init__(self, value):
         self.raw_value = value
         self.init()
 
     def init(self):
+        """ """
         self.value = float(self.raw_value)
 
     def get(self):
+        """ """
         return self.value
 
     def get_value_name(self):
+        """ """
         return self.raw_value
 
 
 class TangoValue(BaseValue):
+    """ """
 
     def init(self):
+        """ """
         import PyTango
         self.attr_proxy = PyTango.AttributeProxy(self.raw_value)
 
     def get(self):
+        """ """
         return self.attr_proxy.read().value
 
 
@@ -198,6 +268,17 @@ class BasicDummyTwoDController(TwoDController):
         self._armed = False
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         # the default max shape for 'value' is (16*1024,).
         # We don't need so much so we set it to BufferSize
         attrs = super(BasicDummyTwoDController, self).GetAxisAttributes(axis)
@@ -205,18 +286,76 @@ class BasicDummyTwoDController(TwoDController):
         return attrs
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = channel = Channel(axis)
         channel.value = numpy.zeros(self.BufferSize, dtype=numpy.float64)
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = None
 
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
+        """
         self.start_idx = -1
 
     def LoadOne(self, axis, integ_time, repetitions, latency_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        integ_time :
+            
+        repetitions :
+            
+        latency_time :
+            
+
+        Returns
+        -------
+
+        """
         self.integ_time = integ_time
         self.repetitions = repetitions
         self.latency_time = latency_time
@@ -224,11 +363,25 @@ class BasicDummyTwoDController(TwoDController):
         self.estimated_duration = acq_cycle_time * repetitions - latency_time
 
     def PreStartAll(self):
+        """ """
         self.counting_channels = {}
         self.read_channels = {}
         self.start_idx += 1
 
     def PreStartOne(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         channel.value = None
@@ -239,11 +392,25 @@ class BasicDummyTwoDController(TwoDController):
         return True
 
     def StartOne(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if self._synchronization in (AcqSynch.SoftwareStart,
                                      AcqSynch.SoftwareTrigger):
             self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
+        """ """
         if self._synchronization in (AcqSynch.HardwareStart,
                                      AcqSynch.HardwareTrigger,
                                      AcqSynch.HardwareGate):
@@ -253,6 +420,19 @@ class BasicDummyTwoDController(TwoDController):
             self.start_time = time.time()
 
     def _updateChannelState(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         if self._synchronization == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 # counting in time
@@ -268,6 +448,17 @@ class BasicDummyTwoDController(TwoDController):
                     self._finish(elapsed_time)
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         sta = State.On
         status = "Stopped"
@@ -287,6 +478,19 @@ class BasicDummyTwoDController(TwoDController):
         return sta, status
 
     def _updateChannelValue(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
         if channel.acq_idx == self.repetitions:
             return
@@ -320,6 +524,17 @@ class BasicDummyTwoDController(TwoDController):
             channel.acq_idx += nb_new_acq
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('ReadOne(%d): entering...' % axis)
         try:
             channel = self.read_channels[axis]
@@ -341,6 +556,19 @@ class BasicDummyTwoDController(TwoDController):
         return ret
 
     def _finish(self, elapsed_time, axis=None):
+        """
+
+        Parameters
+        ----------
+        elapsed_time :
+            
+        axis :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if axis is None:
             for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
@@ -358,6 +586,17 @@ class BasicDummyTwoDController(TwoDController):
         self.start_time = None
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         if axis not in self.counting_channels:
             return
         now = time.time()
@@ -368,11 +607,35 @@ class BasicDummyTwoDController(TwoDController):
         self._finish(elapsed_time, axis)
 
     def getAmplitude(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         return channel.amplitude.get_value_name()
 
     def setAmplitude(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
 
@@ -382,11 +645,35 @@ class BasicDummyTwoDController(TwoDController):
         channel.amplitude = klass(value)
 
     def getRoI(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         return channel.roi
 
     def setRoI(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         try:
@@ -421,16 +708,53 @@ class BasicDummyTwoDController(TwoDController):
         channel.roi = value
 
     def GetCtrlPar(self, par):
+        """
+
+        Parameters
+        ----------
+        par :
+            
+
+        Returns
+        -------
+
+        """
         if par == "synchronization":
             return self._synchronization
         elif par == "latency_time":
             return self.default_latency_time
 
     def SetCtrlPar(self, par, value):
+        """
+
+        Parameters
+        ----------
+        par :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if par == "synchronization":
             self._synchronization = value
 
     def GetAxisPar(self, axis, par):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        par :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         if par == "shape":
@@ -440,6 +764,7 @@ class BasicDummyTwoDController(TwoDController):
             return [roi[1] - roi[0], roi[3] - roi[2]]
 
     def getSynchronizer(self):
+        """ """
         if self._synchronizer is None:
             return "None"
         else:
@@ -448,6 +773,17 @@ class BasicDummyTwoDController(TwoDController):
             return self._synchronizer
 
     def setSynchronizer(self, synchronizer):
+        """
+
+        Parameters
+        ----------
+        synchronizer :
+            
+
+        Returns
+        -------
+
+        """
         if synchronizer == "None":
             synchronizer = None
         self._synchronizer = synchronizer
@@ -456,8 +792,16 @@ class BasicDummyTwoDController(TwoDController):
     @property
     def _synchronizer_obj(self):
         """Get synchronizer object with cache mechanism.
+        
+        If synchronizer object is not cached (
 
-        If synchronizer object is not cached ("""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         if self.__synchronizer_obj is not None:
             return self.__synchronizer_obj
         synchronizer = self._synchronizer
@@ -479,6 +823,7 @@ class BasicDummyTwoDController(TwoDController):
         return synchronizer_obj
 
     def _connect_hardware_synchronization(self):
+        """ """
         # obtain dummy trigger/gate controller (plugin) instance - hack
         tg_ctrl = self._synchronizer_obj.controller.ctrl
         idx = self._synchronizer_obj.axis - 1
@@ -486,6 +831,7 @@ class BasicDummyTwoDController(TwoDController):
         func_generator.add_listener(self)
 
     def _disconnect_hardware_synchronization(self):
+        """ """
         # obtain dummy trigger/gate controller (plugin) instance - hack
         tg_ctrl = self._synchronizer_obj.controller.ctrl
         idx = self._synchronizer_obj.axis - 1
@@ -495,6 +841,19 @@ class BasicDummyTwoDController(TwoDController):
     def event_received(self, src, type_, value):
         """Callback for dummy trigger/gate function generator events
         e.g. start, active passive
+
+        Parameters
+        ----------
+        src :
+            
+        type_ :
+            
+        value :
+            
+
+        Returns
+        -------
+
         """
         # for the moment only react on first trigger
         if type_.name.lower() == "active" and value == 0:
@@ -528,6 +887,25 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
         BasicDummyTwoDController.__init__(self, inst, props, *args, **kwargs)
 
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
+        """
         BasicDummyTwoDController.PrepareOne(self, axis, value, repetitions,
                                             latency, nb_starts)
         idx = axis - 1
@@ -542,6 +920,19 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             raise Exception("only h5file saving is supported")
 
     def _updateChannelValue(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
         if channel.acq_idx == self.repetitions:
             return
@@ -608,6 +999,17 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             channel.acq_idx += nb_new_acq
 
     def RefOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug("RefOne(%s)", axis)
         channel = self.read_channels[axis]
         ret = None
@@ -624,6 +1026,21 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
         return ret
 
     def SetAxisPar(self, axis, parameter, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         if parameter == "value_ref_pattern":
@@ -632,11 +1049,35 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             channel.value_ref_enabled = value
 
     def isSavingEnabled(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         return channel.saving_enabled
 
     def setSavingEnabled(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         channel.saving_enabled = value

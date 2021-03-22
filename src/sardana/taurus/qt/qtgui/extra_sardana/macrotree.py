@@ -43,6 +43,17 @@ MacroView = Enumeration("MacroView", ("MacroModule", "Macro", "Unknown"))
 
 
 def getElementTypeIcon(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == MacroView.MacroModule:
         return Qt.QIcon(":python-file.png")
     elif t == MacroView.Macro:
@@ -51,11 +62,32 @@ def getElementTypeIcon(t):
 
 
 def getElementTypeSize(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     return Qt.QSize(200, 24)
 
 
 def getElementTypeToolTip(t):
-    """Wrapper to prevent loading qtgui when this module is imported"""
+    """Wrapper to prevent loading qtgui when this module is imported
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == MacroView.MacroModule:
         return "Macro module"
     elif t == MacroView.Macro:
@@ -68,60 +100,146 @@ class MacroTreeBaseItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         return self._itemData
 
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-
+        
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
+        
+        :return: (MacroView) the role in form of element type
 
-        :return: (MacroView) the role in form of element type"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return MacroView.Unknown
 
 
 class MacroModuleTreeItem(MacroTreeBaseItem):
+    """ """
 
     def role(self):
+        """ """
         return MacroView.MacroModule
 
     def toolTip(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return "The macro module '%s'" % self.display()
 
     def icon(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return Qt.QIcon(":python-file.png")
 
 
 class MacroTreeItem(MacroTreeBaseItem):
+    """ """
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         return self._itemData.name
 
     def role(self):
+        """ """
         return MacroView.Macro
 
     def toolTip(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return self._itemData.doc
 
     def icon(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return Qt.QIcon(":python.png")
 
 
 class MacroBaseModel(TaurusBaseModel):
+    """ """
 
     ColumnNames = "Macros",
     ColumnRoles = (MacroView.MacroModule,
                    MacroView.MacroModule, MacroView.Macro),
 
     def setDataSource(self, ms):
+        """
+
+        Parameters
+        ----------
+        ms :
+            
+
+        Returns
+        -------
+
+        """
         if self._data_src is not None:
             self._data_src.macrosUpdated.disconnect(
                 self.macrosUpdated)
@@ -131,35 +249,115 @@ class MacroBaseModel(TaurusBaseModel):
         TaurusBaseModel.setDataSource(self, ms)
 
     def macrosUpdated(self):
+        """ """
         self.refresh()
 
     def createNewRootItem(self):
+        """ """
         return MacroTreeBaseItem(self, self.ColumnNames)
 
     def roleIcon(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeIcon(role)
 
     def columnIcon(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleIcon(self.role(column))
 
     def roleToolTip(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeToolTip(role)
 
     def columnToolTip(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleToolTip(self.role(column))
 
     def roleSize(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeSize(role)
 
     def columnSize(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         role = self.role(column)
         s = self.roleSize(role)
         return s
 
     def mimeTypes(self):
+        """ """
         return ["text/plain", TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_MODEL_MIME_TYPE]
 
     def mimeData(self, indexes):
+        """
+
+        Parameters
+        ----------
+        indexes :
+            
+
+        Returns
+        -------
+
+        """
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
@@ -177,6 +375,17 @@ class MacroBaseModel(TaurusBaseModel):
         return ret
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         ms = self.dataSource()
         if ms is None:
             return
@@ -195,15 +404,28 @@ class MacroBaseModel(TaurusBaseModel):
 
 
 class MacroModuleModel(MacroBaseModel):
+    """ """
     pass
 
 
 class MacroPlainMacroModel(MacroBaseModel):
+    """ """
 
     ColumnNames = "Macros",
     ColumnRoles = (MacroView.Macro, MacroView.Macro),
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         ms = self.dataSource()
         if ms is None:
             return
@@ -218,18 +440,22 @@ class MacroPlainMacroModel(MacroBaseModel):
 
 
 class MacroBaseModelProxy(TaurusBaseProxyModel):
+    """ """
     pass
 
 
 class MacroModuleModelProxy(MacroBaseModelProxy):
+    """ """
     pass
 
 
 class MacroPlainMacroModelProxy(MacroBaseModelProxy):
+    """ """
     pass
 
 
 class MacroTreeWidget(TaurusBaseTreeWidget):
+    """ """
 
     KnownPerspectives = {MacroView.MacroModule: {
         "label": "By module",
@@ -247,10 +473,12 @@ class MacroTreeWidget(TaurusBaseTreeWidget):
     DftPerspective = MacroView.MacroModule
 
     def getModelClass(self):
+        """ """
         return TaurusDevice
 
 
 class MacroSelectionDialog(Qt.QDialog):
+    """ """
 
     def __init__(self, parent=None, designMode=False, model_name=None, perspective=None):
         Qt.QDialog.__init__(self, parent)
@@ -274,13 +502,28 @@ class MacroSelectionDialog(Qt.QDialog):
         self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
+        """ """
         return self._panel.selectedItems()
 
     def getSelectedMacros(self):
+        """ """
         return [i.itemData() for i in self.selectedItems()]
 
 
 def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
+    """
+
+    Parameters
+    ----------
+    ms :
+        
+    perspective :
+         (Default value = MacroView.MacroModule)
+
+    Returns
+    -------
+
+    """
     w = MacroSelectionDialog(model_name=ms, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
@@ -289,6 +532,19 @@ def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
 
 
 def main_MacroTreeWidget(ms, perspective=MacroView.MacroModule):
+    """
+
+    Parameters
+    ----------
+    ms :
+        
+    perspective :
+         (Default value = MacroView.MacroModule)
+
+    Returns
+    -------
+
+    """
     w = MacroTreeWidget(perspective=perspective, with_navigation_bar=False)
     w.setModel(ms)
     w.show()
@@ -302,6 +558,7 @@ def demo():
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

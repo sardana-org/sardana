@@ -39,6 +39,19 @@ import traceback
 
 
 def format_exception_only(etype, value):
+    """
+
+    Parameters
+    ----------
+    etype :
+        
+    value :
+        
+
+    Returns
+    -------
+
+    """
     msg = traceback.format_exception_only(etype, value)
     if msg[-1].endswith("\n"):
         msg[-1] = msg[-1][:-1]
@@ -46,14 +59,29 @@ def format_exception_only(etype, value):
 
 
 def format_exception_only_str(etype, value):
+    """
+
+    Parameters
+    ----------
+    etype :
+        
+    value :
+        
+
+    Returns
+    -------
+
+    """
     return "".join(format_exception_only(etype, value))
 
 
 class AbortException(Exception):
+    """ """
     pass
 
 
 class SardanaException(Exception):
+    """ """
 
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args)
@@ -89,6 +117,7 @@ class SardanaException(Exception):
 
 
 class SardanaExceptionList(SardanaException):
+    """ """
 
     def __init__(self, *args):
         SardanaException.__init__(self, *args)
@@ -96,12 +125,15 @@ class SardanaExceptionList(SardanaException):
 
 
 class UnknownCode(SardanaException):
+    """ """
     pass
 
 
 class UnknownLibrary(SardanaException):
+    """ """
     pass
 
 
 class LibraryError(SardanaException):
+    """ """
     pass

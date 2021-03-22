@@ -30,6 +30,7 @@ from sardana.pool.controller import CounterTimerController, Type, Description
 
 
 class Channel(object):
+    """ """
 
     def __init__(self, idx):
         self.idx = idx            # 1 based index
@@ -81,14 +82,53 @@ class DummyCounterTimerController(CounterTimerController):
         self._armed = False
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = Channel(axis)
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = None
 
     def LoadOne(self, axis, value, repetitions, latency_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency_time :
+            
+
+        Returns
+        -------
+
+        """
         if value > 0:
             self.integ_time = integ_time = value
             self.monitor_count = None
@@ -103,9 +143,23 @@ class DummyCounterTimerController(CounterTimerController):
         self.latency_time = latency_time
 
     def PreStartAll(self):
+        """ """
         self.counting_channels = {}
 
     def PreStartOne(self, axis, value=None):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._log.debug('PreStartOne(%d): entering...' % axis)
         idx = axis - 1
         channel = self.channels[idx]
@@ -116,6 +170,19 @@ class DummyCounterTimerController(CounterTimerController):
         return True
 
     def StartOne(self, axis, value=None):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._log.debug('StartOne(%d): entering...' % axis)
         if self._synchronization in (AcqSynch.SoftwareStart,
                                      AcqSynch.SoftwareTrigger,
@@ -123,6 +190,7 @@ class DummyCounterTimerController(CounterTimerController):
             self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
+        """ """
         if self._synchronization in (AcqSynch.HardwareStart,
                                      AcqSynch.HardwareTrigger,
                                      AcqSynch.HardwareGate):
@@ -132,6 +200,17 @@ class DummyCounterTimerController(CounterTimerController):
             self.start_time = time.time()
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('StateOne(%d): entering...' % axis)
         idx = axis - 1
         sta = State.On
@@ -152,6 +231,19 @@ class DummyCounterTimerController(CounterTimerController):
         return sta, status
 
     def _updateChannelState(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         if self._synchronization == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 # counting in time
@@ -172,13 +264,26 @@ class DummyCounterTimerController(CounterTimerController):
                     self._finish(elapsed_time)
 
     def PreReadAll(self):
+        """ """
         self.read_channels = {}
 
     def PreReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
         self.read_channels[axis] = channel
 
     def ReadAll(self):
+        """ """
         if self._armed:
             return  # still armed - no trigger/gate arrived yet
         # if in acquisition then calculate the values to return
@@ -191,6 +296,17 @@ class DummyCounterTimerController(CounterTimerController):
                     self._updateChannelValue(axis, elapsed_time)
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('ReadOne(%d): entering...' % axis)
         channel = self.read_channels[axis]
         ret = None
@@ -207,6 +323,19 @@ class DummyCounterTimerController(CounterTimerController):
         return ret
 
     def _updateChannelValue(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
 
         if self._synchronization == AcqSynch.SoftwareTrigger:
@@ -249,6 +378,19 @@ class DummyCounterTimerController(CounterTimerController):
             channel.acq_idx = channel.acq_idx + nb_new_acq
 
     def _finish(self, elapsed_time, axis=None):
+        """
+
+        Parameters
+        ----------
+        elapsed_time :
+            
+        axis :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if axis is None:
             for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
@@ -266,6 +408,17 @@ class DummyCounterTimerController(CounterTimerController):
         self.start_time = None
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         if axis not in self.counting_channels:
             return
         now = time.time()
@@ -276,16 +429,41 @@ class DummyCounterTimerController(CounterTimerController):
         self._finish(elapsed_time, axis)
 
     def GetCtrlPar(self, par):
+        """
+
+        Parameters
+        ----------
+        par :
+            
+
+        Returns
+        -------
+
+        """
         if par == 'synchronization':
             return self._synchronization
         elif par == 'latency_time':
             return self.default_latency_time
 
     def SetCtrlPar(self, par, value):
+        """
+
+        Parameters
+        ----------
+        par :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if par == 'synchronization':
             self._synchronization = value
 
     def getSynchronizer(self):
+        """ """
         if self._synchronizer is None:
             return "None"
         else:
@@ -294,6 +472,17 @@ class DummyCounterTimerController(CounterTimerController):
             return self._synchronizer
 
     def setSynchronizer(self, synchronizer):
+        """
+
+        Parameters
+        ----------
+        synchronizer :
+            
+
+        Returns
+        -------
+
+        """
         if synchronizer == "None":
             synchronizer = None
         self._synchronizer = synchronizer
@@ -302,8 +491,16 @@ class DummyCounterTimerController(CounterTimerController):
     @property
     def _synchronizer_obj(self):
         """Get synchronizer object with cache mechanism.
+        
+        If synchronizer object is not cached (
 
-        If synchronizer object is not cached ("""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         if self.__synchronizer_obj is not None:
             return self.__synchronizer_obj
         synchronizer = self._synchronizer
@@ -325,6 +522,7 @@ class DummyCounterTimerController(CounterTimerController):
         return synchronizer_obj
 
     def _connect_hardware_synchronization(self):
+        """ """
         # obtain dummy trigger/gate controller (plugin) instance - hack
         tg_ctrl = self._synchronizer_obj.controller.ctrl
         idx = self._synchronizer_obj.axis - 1
@@ -332,6 +530,7 @@ class DummyCounterTimerController(CounterTimerController):
         func_generator.add_listener(self)
 
     def _disconnect_hardware_synchronization(self):
+        """ """
         # obtain dummy trigger/gate controller (plugin) instance - hack
         tg_ctrl = self._synchronizer_obj.controller.ctrl
         idx = self._synchronizer_obj.axis - 1
@@ -341,6 +540,19 @@ class DummyCounterTimerController(CounterTimerController):
     def event_received(self, src, type_, value):
         """Callback for dummy trigger/gate function generator events
         e.g. start, active passive
+
+        Parameters
+        ----------
+        src :
+            
+        type_ :
+            
+        value :
+            
+
+        Returns
+        -------
+
         """
         # for the moment only react on first trigger
         if type_.name.lower() == "start":

@@ -32,8 +32,16 @@ from sardana.pool.controller import PseudoCounterController
 
 
 class IoverI0(PseudoCounterController):
-    """ A simple pseudo counter which receives two counter values (I and I0)
-        and returns I/I0"""
+    """A simple pseudo counter which receives two counter values (I and I0)
+        and returns I/I0
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     gender = "IoverI0"
     model = "Default I/I0"
@@ -42,6 +50,19 @@ class IoverI0(PseudoCounterController):
     counter_roles = "I", "I0"
 
     def Calc(self, axis, counter_values):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        counter_values :
+            
+
+        Returns
+        -------
+
+        """
         i, i0 = counter_values
         try:
             i = i / i0

@@ -40,6 +40,7 @@ from sardana.pool.poolobject import PoolObject
 
 
 class PoolMonitor(Logger, threading.Thread):
+    """ """
 
     MIN_THREADS = 1
     MAX_THREADS = 10
@@ -63,6 +64,21 @@ class PoolMonitor(Logger, threading.Thread):
         self.start()
 
     def on_pool_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         evt_name = evt_type.name.lower()
         if "created" in evt_name or "deleted" in evt_name:
             pool = self._pool
@@ -123,10 +139,34 @@ class PoolMonitor(Logger, threading.Thread):
                 elem.unlock()
 
     def _update_state_info_serial(self, pool_ctrls):
+        """
+
+        Parameters
+        ----------
+        pool_ctrls :
+            
+
+        Returns
+        -------
+
+        """
         for pool_ctrl, elems in list(pool_ctrls.items()):
             self._update_ctrl_state_info(pool_ctrl, elems)
 
     def _update_ctrl_state_info(self, pool_ctrl, elems):
+        """
+
+        Parameters
+        ----------
+        pool_ctrl :
+            
+        elems :
+            
+
+        Returns
+        -------
+
+        """
         axes = [elem.axis for elem in elems]
         state_infos, exc_info = pool_ctrl.raw_read_axis_states(axes)
         if len(exc_info):
@@ -136,19 +176,24 @@ class PoolMonitor(Logger, threading.Thread):
             elem.set_state_info(state_info)
 
     def stop(self):
+        """ """
         self.resume()
         self._stop = True
 
     def pause(self):
+        """ """
         self._pause.clear()
 
     def resume(self):
+        """ """
         self._pause.set()
 
     def monitor(self):
+        """ """
         ret = self.update_state_info()
 
     def run(self):
+        """ """
         nap_time = period = self._period
         i, startup = 0, time.time()
         while True:

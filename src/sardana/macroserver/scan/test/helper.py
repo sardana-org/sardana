@@ -25,6 +25,7 @@ from sardana.macroserver.scan.scandata import (ScanData, ScanDataEnvironment,
 
 
 class DummyEventSource(threading.Thread):
+    """ """
 
     def __init__(self, name, scanData, values, intervals=None):
         threading.Thread.__init__(self, name=name)
@@ -33,6 +34,7 @@ class DummyEventSource(threading.Thread):
         self.intervals = intervals or numpy.random.rand(len(self.values))
 
     def run(self):
+        """ """
         i = 0
         for v, t in zip(self.values, self.intervals):
             try:
@@ -51,11 +53,27 @@ class DummyEventSource(threading.Thread):
             self.scan_data.addData(_dict)
 
     def get_obj(self):
+        """ """
         return self
 
 
 def createScanDataEnvironment(columns, scanDir='/tmp/',
                               scanFile='data_nxs.hdf5'):
+    """
+
+    Parameters
+    ----------
+    columns :
+        
+    scanDir :
+         (Default value = '/tmp/')
+    scanFile :
+         (Default value = 'data_nxs.hdf5')
+
+    Returns
+    -------
+
+    """
 
     serialno = 1
     env = ScanDataEnvironment(
@@ -90,6 +108,7 @@ def createScanDataEnvironment(columns, scanDir='/tmp/',
 
 
 def main():
+    """ """
     data_handler = DataHandler()
     file_name = "/tmp/data_nxs.hdf5"
     nx_recorder = NXscan_FileRecorder(filename=file_name,

@@ -34,6 +34,7 @@ from sardana.taurus.core.tango.sardana import macro
 
 
 class MacrosListModel(Qt.QAbstractListModel):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QAbstractListModel.__init__(self, parent)
@@ -41,12 +42,47 @@ class MacrosListModel(Qt.QAbstractListModel):
         self._max_len = None
 
     def setMaxLen(self, max_len):
+        """
+
+        Parameters
+        ----------
+        max_len :
+            
+
+        Returns
+        -------
+
+        """
         self._max_len = max_len
 
     def rowCount(self, parent=Qt.QModelIndex()):
+        """
+
+        Parameters
+        ----------
+        parent :
+             (Default value = Qt.QModelIndex())
+
+        Returns
+        -------
+
+        """
         return len(self.list)
 
     def data(self, index, role):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if index.isValid() and role == Qt.Qt.DisplayRole:
             macroNode = self.list[index.row()]
             return self.list[index.row()].toSpockCommand()
@@ -54,12 +90,40 @@ class MacrosListModel(Qt.QAbstractListModel):
             return None
 
     def index(self, row, column=0, parent=Qt.QModelIndex()):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        column :
+             (Default value = 0)
+        parent :
+             (Default value = Qt.QModelIndex())
+
+        Returns
+        -------
+
+        """
         if self.rowCount():
             return self.createIndex(row, column, self.list[row])
         else:
             return Qt.QModelIndex()
 
     def insertRow(self, macroNode, row=0):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+        row :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         self.beginInsertRows(Qt.QModelIndex(), row, row)
         if self._max_len is not None and len(self.list) == self._max_len:
             self.list.pop()
@@ -68,6 +132,17 @@ class MacrosListModel(Qt.QAbstractListModel):
         return self.index(row)
 
     def removeRow(self, row):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+
+        Returns
+        -------
+
+        """
         self.beginRemoveRows(Qt.QModelIndex(), row, row)
         self.list.pop(row)
         self.endRemoveRows()
@@ -76,24 +151,77 @@ class MacrosListModel(Qt.QAbstractListModel):
         return self.index(row)
 
     def isUpRowAllowed(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return index.row() > 0
 
     def upRow(self, row):
-        """This method move macro up and returns index with its new position"""
+        """This method move macro up and returns index with its new position
+
+        Parameters
+        ----------
+        row :
+            
+
+        Returns
+        -------
+
+        """
         macroNode = self.list[row]
         self.removeRow(row)
         return self.insertRow(macroNode, row - 1)
 
     def isDownRowAllowed(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return index.row() < self.rowCount() - 1
 
     def downRow(self, row):
-        """This method move macro down and returns index with its new position"""
+        """This method move macro down and returns index with its new position
+
+        Parameters
+        ----------
+        row :
+            
+
+        Returns
+        -------
+
+        """
         macroNode = self.list[row]
         self.removeRow(row)
         return self.insertRow(macroNode, row + 1)
 
     def toXmlString(self, pretty=False):
+        """
+
+        Parameters
+        ----------
+        pretty :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         listElement = etree.Element("list")
         for macroNode in self.list:
             listElement.append(macroNode.toXml(withId=False))
@@ -103,6 +231,17 @@ class MacrosListModel(Qt.QAbstractListModel):
         return xmlString
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         listElement = etree.fromstring(xmlString)
         for childElement in listElement.iterchildren("macro"):

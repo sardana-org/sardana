@@ -41,6 +41,17 @@ PoolControllerView = Enumeration(
 
 
 def getElementTypeIcon(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == PoolControllerView.ControllerModule:
         return Qt.QIcon(":python-file.png")
     elif t == PoolControllerView.ControllerClass:
@@ -49,11 +60,32 @@ def getElementTypeIcon(t):
 
 
 def getElementTypeSize(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     return Qt.QSize(200, 24)
 
 
 def getElementTypeToolTip(t):
-    """Wrapper to prevent loading qtgui when this module is imported"""
+    """Wrapper to prevent loading qtgui when this module is imported
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == PoolControllerView.ControllerModule:
         return "Controller module"
     elif t == PoolControllerView.ControllerClass:
@@ -65,60 +97,106 @@ class ControllerBaseTreeItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         return self._itemData
 
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-
+        
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
+        
+        :return: (PoolControllerView) the role in form of element type
 
-        :return: (PoolControllerView) the role in form of element type"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return PoolControllerView.Unknown
 
 
 class ControllerModuleTreeItem(ControllerBaseTreeItem):
+    """ """
 
     def role(self):
+        """ """
         return PoolControllerView.ControllerModule
 
     def toolTip(self):
+        """ """
         return "The controller module '%s'" % self.display()
 
     def icon(self):
+        """ """
         return Qt.QIcon(":python-file.png")
 
 
 class ControllerTreeItem(ControllerBaseTreeItem):
+    """ """
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         return self._itemData.name
 
     def role(self):
+        """ """
         return PoolControllerView.ControllerClass
 
     def toolTip(self):
+        """ """
         return self._itemData.doc
 
     def icon(self):
+        """ """
         return Qt.QIcon(":python.png")
 
 
 class ControllerBaseModel(TaurusBaseModel):
+    """ """
 
     ColumnNames = "Controllers",
     ColumnRoles = (PoolControllerView.ControllerModule,
                    PoolControllerView.ControllerModule, PoolControllerView.ControllerClass),
 
     def setDataSource(self, pool):
+        """
+
+        Parameters
+        ----------
+        pool :
+            
+
+        Returns
+        -------
+
+        """
         if self._data_src is not None:
             self._data_src.controllerClassesUpdated.disconnect(
                 self.controllerClassesUpdated)
@@ -128,35 +206,115 @@ class ControllerBaseModel(TaurusBaseModel):
         TaurusBaseModel.setDataSource(self, pool)
 
     def controllerClassesUpdated(self):
+        """ """
         self.refresh()
 
     def createNewRootItem(self):
+        """ """
         return ControllerBaseTreeItem(self, self.ColumnNames)
 
     def roleIcon(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeIcon(role)
 
     def columnIcon(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleIcon(self.role(column))
 
     def roleToolTip(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeToolTip(role)
 
     def columnToolTip(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleToolTip(self.role(column))
 
     def roleSize(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeSize(role)
 
     def columnSize(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         role = self.role(column)
         s = self.roleSize(role)
         return s
 
     def mimeTypes(self):
+        """ """
         return ["text/plain", TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_MODEL_MIME_TYPE]
 
     def mimeData(self, indexes):
+        """
+
+        Parameters
+        ----------
+        indexes :
+            
+
+        Returns
+        -------
+
+        """
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
@@ -174,6 +332,19 @@ class ControllerBaseModel(TaurusBaseModel):
         return ret
 
     def pyData(self, index, role):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if not index.isValid():
             return None
 
@@ -195,6 +366,17 @@ class ControllerBaseModel(TaurusBaseModel):
         return ret
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pool = self.dataSource()
         if pool is None:
             return
@@ -214,16 +396,29 @@ class ControllerBaseModel(TaurusBaseModel):
 
 
 class ControllerModuleModel(ControllerBaseModel):
+    """ """
     pass
 
 
 class PlainControllerModel(ControllerBaseModel):
+    """ """
 
     ColumnNames = "Controller classes",
     ColumnRoles = (PoolControllerView.ControllerClass,
                    PoolControllerView.ControllerClass),
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pool = self.dataSource()
         if pool is None:
             return
@@ -240,18 +435,22 @@ class PlainControllerModel(ControllerBaseModel):
 
 
 class ControllerBaseModelProxy(TaurusBaseProxyModel):
+    """ """
     pass
 
 
 class ControllerModuleModelProxy(ControllerBaseModelProxy):
+    """ """
     pass
 
 
 class PlainControllerModelProxy(ControllerBaseModelProxy):
+    """ """
     pass
 
 
 class ControllerClassTreeWidget(TaurusBaseTreeWidget):
+    """ """
 
     KnownPerspectives = {PoolControllerView.ControllerModule: {
         "label": "By module",
@@ -269,10 +468,12 @@ class ControllerClassTreeWidget(TaurusBaseTreeWidget):
     DftPerspective = PoolControllerView.ControllerModule
 
     def getModelClass(self):
+        """ """
         return taurus.core.taurusdevice.TaurusDevice
 
 
 class ControllerClassSelectionDialog(Qt.QDialog):
+    """ """
 
     __pyqtSignals__ = ["accepted",
                        "rejected"]
@@ -300,13 +501,28 @@ class ControllerClassSelectionDialog(Qt.QDialog):
         self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
+        """ """
         return self._panel.selectedItems()
 
     def getSelectedMacros(self):
+        """ """
         return [i.itemData() for i in self.selectedItems()]
 
 
 def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.ControllerClass):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+    perspective :
+         (Default value = PoolControllerView.ControllerClass)
+
+    Returns
+    -------
+
+    """
     w = ControllerClassSelectionDialog(
         model_name=pool, perspective=perspective)
 
@@ -316,6 +532,19 @@ def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.Cont
 
 
 def main_ControllerClassTreeWidget(pool, perspective=PoolControllerView.ControllerClass):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+    perspective :
+         (Default value = PoolControllerView.ControllerClass)
+
+    Returns
+    -------
+
+    """
     w = ControllerClassTreeWidget(
         perspective=perspective, with_navigation_bar=False)
     w.setModel(pool)
@@ -324,13 +553,24 @@ def main_ControllerClassTreeWidget(pool, perspective=PoolControllerView.Controll
 
 
 def demo(poolname="Pool_BL98"):
-    """ControllerClassTreeWidget"""
+    """ControllerClassTreeWidget
+
+    Parameters
+    ----------
+    poolname :
+         (Default value = "Pool_BL98")
+
+    Returns
+    -------
+
+    """
     w = main_ControllerClassSelecionDialog(
         poolname, PoolControllerView.ControllerClass)
     return w
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

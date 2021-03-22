@@ -53,6 +53,7 @@ configuration_positive = [{SynchParam.Initial: {SynchDomain.Position: 0.},
 
 
 class Position(EventGenerator):
+    """ """
 
     def __init__(self):
         EventGenerator.__init__(self)
@@ -60,6 +61,23 @@ class Position(EventGenerator):
         self.error = False
 
     def run(self, start=0, end=2, step=0.01, sleep=0.01):
+        """
+
+        Parameters
+        ----------
+        start :
+             (Default value = 0)
+        end :
+             (Default value = 2)
+        step :
+             (Default value = 0.01)
+        sleep :
+             (Default value = 0.01)
+
+        Returns
+        -------
+
+        """
         for position in numpy.arange(start, end, step):
             self.value = position
             self.fire_event(EventType("Position"), self)
@@ -67,18 +85,33 @@ class Position(EventGenerator):
 
 
 class Listener(EventReceiver):
+    """ """
 
     def __init__(self):
         EventReceiver.__init__(self)
         self.init()
 
     def init(self):
+        """ """
         self.start = False
         self.active_event_ids = list()
         self.passive_event_ids = list()
         self.end = False
 
     def event_received(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         _, type_, value = args
         name = type_.name
         if name == "active":
@@ -94,8 +127,10 @@ class Listener(EventReceiver):
 
 
 class FuncGeneratorTestCase(TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         self.thread_pool = ThreadPool("TestThreadPool", Psize=2)
         self.func_generator = FunctionGenerator()
         self.event = Event()
@@ -103,10 +138,22 @@ class FuncGeneratorTestCase(TestCase):
         self.func_generator.add_listener(self.listener)
 
     def _done(self, _):
+        """
+
+        Parameters
+        ----------
+        _ :
+            
+
+        Returns
+        -------
+
+        """
         self.event.set()
         self.event.clear()
 
     def test_sleep(self):
+        """ """
         delta = 0
         if os.name == "nt":
             delta = 0.02
@@ -121,6 +168,7 @@ class FuncGeneratorTestCase(TestCase):
             self.assertAlmostEqual(period, period_ok, delta=0.02, msg=msg)
 
     def test_run_time(self):
+        """ """
         self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         self.func_generator.start()
@@ -135,6 +183,7 @@ class FuncGeneratorTestCase(TestCase):
         self.assertTrue(self.listener.end, "End event is missing")
 
     def test_stop_time(self):
+        """ """
         self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         self.func_generator.start()
@@ -149,6 +198,7 @@ class FuncGeneratorTestCase(TestCase):
         self.test_run_time()
 
     def test_run_position_negative(self):
+        """ """
         position = Position()
         position.add_listener(self.func_generator)
         self.func_generator.initial_domain = SynchDomain.Position
@@ -169,6 +219,7 @@ class FuncGeneratorTestCase(TestCase):
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
     def test_run_position_positive(self):
+        """ """
         position = Position()
         position.add_listener(self.func_generator)
         self.func_generator.initial_domain = SynchDomain.Position
@@ -189,6 +240,7 @@ class FuncGeneratorTestCase(TestCase):
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
     def test_configuration_position(self):
+        """ """
         self.func_generator.initial_domain = SynchDomain.Position
         self.func_generator.active_domain = SynchDomain.Position
         self.func_generator.set_configuration(configuration_negative)
@@ -204,6 +256,7 @@ class FuncGeneratorTestCase(TestCase):
             self.assertAlmostEqual(a, b, 10, msg)
 
     def test_configuration_time(self):
+        """ """
         self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.active_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
@@ -221,6 +274,7 @@ class FuncGeneratorTestCase(TestCase):
             self.assertAlmostEqual(a, b, 10, msg)
 
     def test_configuration_default(self):
+        """ """
         self.func_generator.set_configuration(configuration_positive)
         active_events = self.func_generator.active_events
         active_events_ok = numpy.arange(0, 2, 0.2).tolist()
@@ -236,4 +290,5 @@ class FuncGeneratorTestCase(TestCase):
             self.assertAlmostEqual(a, b, 10, msg)
 
     def tearDown(self):
+        """ """
         self.func_generator.remove_listener(self.listener)

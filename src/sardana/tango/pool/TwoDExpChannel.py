@@ -47,6 +47,7 @@ from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
 
 
 class TwoDExpChannel(PoolTimerableDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolTimerableDevice.__init__(self, dclass, name)
@@ -54,18 +55,42 @@ class TwoDExpChannel(PoolTimerableDevice):
         self._first_read_ref_cache = False
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolTimerableDevice.init(self, name)
 
     def get_twod(self):
+        """ """
         return self.element
 
     def set_twod(self, twod):
+        """
+
+        Parameters
+        ----------
+        twod :
+            
+
+        Returns
+        -------
+
+        """
         self.element = twod
 
     twod = property(get_twod, set_twod)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolTimerableDevice.delete_device(self)
         twod = self.twod
         if twod is not None:
@@ -73,6 +98,7 @@ class TwoDExpChannel(PoolTimerableDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolTimerableDevice.init_device(self)
         twod = self.twod
         if twod is None:
@@ -91,6 +117,21 @@ class TwoDExpChannel(PoolTimerableDevice):
         self.set_state(DevState.ON)
 
     def on_twod_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_twod_changed(event_source, event_type, event_value)
         except not DevFailed:
@@ -101,6 +142,21 @@ class TwoDExpChannel(PoolTimerableDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_twod_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -157,13 +213,26 @@ class TwoDExpChannel(PoolTimerableDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.twod.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -183,6 +252,7 @@ class TwoDExpChannel(PoolTimerableDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         # referable channels
@@ -195,6 +265,17 @@ class TwoDExpChannel(PoolTimerableDevice):
                 self.set_change_event(attr_name, True, False)
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         twod = self.twod
         # TODO: decide if we force the controller developers to store the
         # last acquired value in the controllers or we always will use
@@ -221,11 +302,33 @@ class TwoDExpChannel(PoolTimerableDevice):
                            timestamp=value.timestamp, priority=0)
 
     def is_Value_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
 
     def read_ValueRef(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         twod = self.twod
         value_ref = twod.get_value_ref()
         if value_ref.error:
@@ -239,6 +342,17 @@ class TwoDExpChannel(PoolTimerableDevice):
                            timestamp=value_ref.timestamp, priority=0)
 
     def read_ValueRefPattern(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value_ref_pattern = self.twod.get_value_ref_pattern()
         if value_ref_pattern is None:
             value_ref_pattern = "None"
@@ -246,12 +360,34 @@ class TwoDExpChannel(PoolTimerableDevice):
 
     @memorize_write_attribute
     def write_ValueRefPattern(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value_ref_pattern = attr.get_write_value()
         if value_ref_pattern == "None":
             value_ref_pattern = None
         self.twod.value_ref_pattern = value_ref_pattern
 
     def read_ValueRefEnabled(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value_ref_enabled = self.twod.is_value_ref_enabled()
         if value_ref_enabled is None:
             raise Exception("value reference enabled flag is unknown")
@@ -259,12 +395,34 @@ class TwoDExpChannel(PoolTimerableDevice):
 
     @memorize_write_attribute
     def write_ValueRefEnabled(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value_ref_enabled = attr.get_write_value()
         if value_ref_enabled == "None":
             value_ref_enabled = None
         self.twod.value_ref_enabled = value_ref_enabled
 
     def read_DataSource(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data_source = self.twod.get_data_source()
         if data_source is None:
             full_name = self.get_full_name()
@@ -275,6 +433,7 @@ class TwoDExpChannel(PoolTimerableDevice):
         attr.set_value(data_source)
 
     def Start(self):
+        """ """
         self.twod.start_acquisition()
 
 
@@ -285,6 +444,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
 
 
 class TwoDExpChannelClass(PoolTimerableDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -319,6 +479,7 @@ class TwoDExpChannelClass(PoolTimerableDeviceClass):
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "2D device class"
         ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')

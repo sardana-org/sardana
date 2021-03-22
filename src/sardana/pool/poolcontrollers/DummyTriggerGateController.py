@@ -29,8 +29,7 @@ from sardana.pool.pooldefs import SynchDomain
 
 
 class DummyTriggerGateController(TriggerGateController):
-    """Basic controller intended for demonstration purposes only.
-    """
+    """Basic controller intended for demonstration purposes only."""
     gender = "Simulation"
     organization = "ALBA-Cells"
     MaxDevice = 1
@@ -42,12 +41,36 @@ class DummyTriggerGateController(TriggerGateController):
         self.conf = {}
 
     def SynchOne(self, axis, conf):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        conf :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         tg = self.tg[idx]
         tg.set_configuration(conf)
         self.conf[idx] = conf
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
         func_generator = FunctionGenerator()
@@ -56,7 +79,17 @@ class DummyTriggerGateController(TriggerGateController):
         self.tg[idx] = func_generator
 
     def StateOne(self, axis):
-        """Get the dummy trigger/gate state"""
+        """Get the dummy trigger/gate state
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._log.debug('StateOne(%d): entering...' % axis)
             sta = State.On
@@ -73,19 +106,56 @@ class DummyTriggerGateController(TriggerGateController):
         return sta, status
 
     def PrepareOne(self, axis, nb_starts):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        nb_starts :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug('PrepareOne(%d): entering...' % axis)
 
     def PreStartAll(self):
+        """ """
         pass
 
     def StartAll(self):
+        """ """
         pass
 
     def PreStartOne(self, axis, value=None):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return True
 
     def StartOne(self, axis):
         """Start the specified trigger
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
         """
         self._log.debug('StartOne(%d): entering...' % axis)
         idx = axis - 1
@@ -95,6 +165,15 @@ class DummyTriggerGateController(TriggerGateController):
 
     def AbortOne(self, axis):
         """Start the specified trigger
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
         """
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1

@@ -7,8 +7,29 @@ from sardana.macroserver.macro import macro, Type
 
 
 def j0i(x):
-    """Integral form of J_0(x)"""
+    """Integral form of J_0(x)
+
+    Parameters
+    ----------
+    x :
+        
+
+    Returns
+    -------
+
+    """
     def integrand(phi):
+        """
+
+        Parameters
+        ----------
+        phi :
+            
+
+        Returns
+        -------
+
+        """
         return math.cos(x * math.sin(phi))
     return (1 / math.pi) * quad(integrand, 0, math.pi)[0]
 
@@ -45,6 +66,19 @@ import numpy
 @macro([["interactions", Type.Integer, None, ""],
         ["density", Type.Integer, None, ""]])
 def mandelbrot(self, interactions, density):
+    """
+
+    Parameters
+    ----------
+    interactions :
+        
+    density :
+        
+
+    Returns
+    -------
+
+    """
 
     x_min, x_max = -2, 1
     y_min, y_max = -1.5, 1.5

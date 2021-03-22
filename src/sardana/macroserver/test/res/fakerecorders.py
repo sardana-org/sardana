@@ -27,5 +27,5 @@ from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
 
 
 class FakeScanRecorder(BaseFileRecorder):
-    """ Fake ScanRecorder class for test purpose"""
+    """Fake ScanRecorder class for test purpose"""
     pass

@@ -42,21 +42,36 @@ from sardana.macroserver.msparameter import ParamType, AttrParamType, \
 
 
 class Any(ParamType):
+    """ """
     type_class = lambda p: p
 
 
 class Integer(ParamType):
+    """ """
     type_class = int
 
 
 class Float(ParamType):
+    """ """
     type_class = float
 
 
 class Boolean(ParamType):
+    """ """
     type_class = bool
 
     def getObj(self, str_repr):
+        """
+
+        Parameters
+        ----------
+        str_repr :
+            
+
+        Returns
+        -------
+
+        """
         str_repr = str_repr.lower()
         if str_repr in ['true', '1']:
             value = True
@@ -68,18 +83,22 @@ class Boolean(ParamType):
 
 
 class String(ParamType):
+    """ """
     type_class = str
 
 
 class User(ParamType):
+    """ """
     type_class = str
 
 
 class Filename(ParamType):
+    """ """
     type_class = str
 
 
 class File(ParamType):
+    """ """
     type_class = str
 
     def __init__(self, macro_server, name):
@@ -89,31 +108,81 @@ class File(ParamType):
         self.data = None
 
     def set(self, filename, data):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+        data :
+            
+
+        Returns
+        -------
+
+        """
         self.filename = filename
         self.data = data
 
 
 class JSON(ParamType):
+    """ """
 
     def getObj(self, str_repr):
+        """
+
+        Parameters
+        ----------
+        str_repr :
+            
+
+        Returns
+        -------
+
+        """
         import json
         return json.loads(str_repr)
 
 
 class Env(ParamType):
+    """ """
     type_class = str
 
 
 class TangoDevice(ParamType):
+    """ """
 
     def getObj(self, str_repr):
+        """
+
+        Parameters
+        ----------
+        str_repr :
+            
+
+        Returns
+        -------
+
+        """
         import PyTango
         return PyTango.DeviceProxy(str_repr)
 
 
 class Device(ParamType):
+    """ """
 
     def getObj(self, str_repr):
+        """
+
+        Parameters
+        ----------
+        str_repr :
+            
+
+        Returns
+        -------
+
+        """
         import taurus
         return taurus.Device(str_repr)
 
@@ -122,7 +191,15 @@ class Device(ParamType):
 
 class MotorParam(AttrParamType):
     """Class designed to represent a motor parameter name. Usual values
-    are acceleration,deceleration,velocity,backlash,steps_per_unit,etc"""
+    are acceleration,deceleration,velocity,backlash,steps_per_unit,etc
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, macro_server, name):
         AttrParamType.__init__(self, macro_server, name)
@@ -131,12 +208,15 @@ class MotorParam(AttrParamType):
         self.non_attr_item_list = ["Controller"]
 
     def getItemList(self):
+        """ """
         return self.non_attr_item_list + self.attr_item_list
 
     def getAttrItemList(self):
+        """ """
         return self.attr_item_list
 
     def getNonAttrItemList(self):
+        """ """
         return self.non_attr_item_list
 
 
@@ -145,6 +225,7 @@ def __build_base_types():
         _, doc = info
 
         class _I(ElementParamInterface):
+            """ """
             __doc__ = doc
             __name__ = sardana_type
         globals()[sardana_type] = _I

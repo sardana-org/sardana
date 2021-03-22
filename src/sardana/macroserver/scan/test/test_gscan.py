@@ -51,8 +51,10 @@ from taurus.test import insertTest
             expected={"initial_pos": -2.5,
                       "final_pos": 17.5})
 class CTScanTestCase(unittest.TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         self.skipTest("CTScanTest is not ready to be run as part of testsuite")
 #         modules = []
 #         for mod in sys.modules.iterkeys():
@@ -66,6 +68,17 @@ class CTScanTestCase(unittest.TestCase):
 
     @staticmethod
     def getEnv(name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if name == "ActiveMntGrp":
             return "MockMntGrp"
         elif name == "ScanID":
@@ -78,6 +91,19 @@ class CTScanTestCase(unittest.TestCase):
         raise UnknownEnv
 
     def prepare_waypoint(self, conf, expected):
+        """
+
+        Parameters
+        ----------
+        conf :
+            
+        expected :
+            
+
+        Returns
+        -------
+
+        """
         try:
             from mock import MagicMock, patch
         except ImportError:

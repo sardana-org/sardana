@@ -37,6 +37,7 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.delegate 
 
 
 class MacroParametersEditor(object):
+    """ """
 
     def __init__(self):
         pass
@@ -55,12 +56,14 @@ class MacroParametersEditor(object):
 
 
 class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
+    """ """
 
     def __init__(self, parent=None, macroNode=None):
         Qt.QWidget.__init__(self, parent)
         self.initComponents()
 
     def initComponents(self):
+        """ """
         self.setLayout(Qt.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -95,17 +98,41 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
         self.layout().addLayout(actionLayout)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.tree.setModel(model)
         self.tree.expandAll()
 
     def macroNode(self):
+        """ """
         return self.tree.macroNode()
 
     def setMacroNode(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         self.tree.setMacroNode(macroNode)
 
 
 class MacroParametersTree(Qt.QTreeView):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         Qt.QTreeView.__init__(self, parent)
@@ -147,6 +174,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.disableActions()
 
     def disableActions(self):
+        """ """
         self.addAction.setEnabled(False)
         self.deleteAction.setEnabled(False)
         self.moveUpAction.setEnabled(False)
@@ -154,6 +182,17 @@ class MacroParametersTree(Qt.QTreeView):
         self.duplicateAction.setEnabled(False)
 
     def manageActions(self, currentIndex):
+        """
+
+        Parameters
+        ----------
+        currentIndex :
+            
+
+        Returns
+        -------
+
+        """
         self.disableActions()
         if currentIndex is None:
             return
@@ -170,6 +209,19 @@ class MacroParametersTree(Qt.QTreeView):
             self.duplicateAction.setEnabled(False)
 
     def currentChanged(self, current, previous):
+        """
+
+        Parameters
+        ----------
+        current :
+            
+        previous :
+            
+
+        Returns
+        -------
+
+        """
         self.manageActions(current)
         Qt.QTreeView.currentChanged(self, current, previous)
 
@@ -311,6 +363,7 @@ class MacroParametersTree(Qt.QTreeView):
     #        self.resizeColumnToContents(column)
 
     def onAddRepeat(self):
+        """ """
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             sourceIndex = self.model().mapToSource(index)
@@ -322,6 +375,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.expandAll()
 
     def onDelRepeat(self):
+        """ """
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             index = self.model().mapToSource(index)
@@ -329,6 +383,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.expandAll()
 
     def onUpRepeat(self):
+        """ """
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             sourceIndex = self.model().mapToSource(index)
@@ -340,6 +395,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.expandAll()
 
     def onDownRepeat(self):
+        """ """
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             sourceIndex = self.model().mapToSource(index)
@@ -351,6 +407,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.expandAll()
 
     def onDuplicateRepeat(self):
+        """ """
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             sourceIndex = self.model().mapToSource(index)
@@ -361,24 +418,61 @@ class MacroParametersTree(Qt.QTreeView):
 
 
 class ParamEditorManager(Singleton):
+    """ """
 
     def init(self):
+        """ """
         self._paths = []
         self._macroEditorsDict = {}
 
     def paths(self):
+        """ """
         return self._paths
 
     def setPaths(self, paths):
+        """
+
+        Parameters
+        ----------
+        paths :
+            
+
+        Returns
+        -------
+
+        """
         self._paths = paths
 
     def appendPath(self, path):
+        """
+
+        Parameters
+        ----------
+        path :
+            
+
+        Returns
+        -------
+
+        """
         self._paths.append()
 
     def parsePaths(self, pathsString):
+        """
+
+        Parameters
+        ----------
+        pathsString :
+            
+
+        Returns
+        -------
+
+        """
         self.setPaths(pathsString.split(":"))
 
     def browsePaths(self):
+        """ """
         for path in self.paths():
             modulePaths = glob.glob("%s/*.py" % path)
             if not modulePaths:
@@ -402,6 +496,19 @@ class ParamEditorManager(Singleton):
                 self._macroEditorsDict[moduleName] = klass
 
     def getMacroEditor(self, macroName=None, parent=None):
+        """
+
+        Parameters
+        ----------
+        macroName :
+             (Default value = None)
+        parent :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         editorClass = self._macroEditorsDict.get(macroName, None)
         try:
             return editorClass(parent=parent)

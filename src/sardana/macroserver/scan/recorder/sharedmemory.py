@@ -33,6 +33,7 @@ from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
 
 
 class BaseSharedMemoryRecorder(DataRecorder):
+    """ """
 
     def __init__(self, **pars):
         DataRecorder.__init__(self, **pars)
@@ -42,6 +43,19 @@ _SharedMemoryRecorder = BaseSharedMemoryRecorder  # for backwards compatibility
 
 def SharedMemoryRecorder(type, macro, **pars):
     """Factory to create shared memory recorders based on the type
+
+    Parameters
+    ----------
+    type :
+        
+    macro :
+        
+    **pars :
+        
+
+    Returns
+    -------
+
     """
     rec_manager = macro.getMacroServer().recorder_manager
     if type == 'sps':

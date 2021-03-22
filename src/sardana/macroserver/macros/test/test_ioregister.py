@@ -35,6 +35,5 @@ IOR_NAME = getIORs()[0]
          wait_timeout=1)
 @testRun(macro_name="read_ioreg", macro_params=[IOR_NAME], wait_timeout=1)
 class IORegisterTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for ioregister macros
-    """
+    """Test case for ioregister macros"""
     pass

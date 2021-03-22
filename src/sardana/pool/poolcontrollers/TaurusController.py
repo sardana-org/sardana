@@ -28,9 +28,7 @@ from taurus import Attribute
 
 
 class TaurusCounterTimerController(CounterTimerController):
-    """
-    This controller provides interface to use Taurus Attributes.
-    """
+    """This controller provides interface to use Taurus Attributes."""
 
     axis_attributes = {
         "TaurusAttribute": {Type: str,
@@ -43,34 +41,144 @@ class TaurusCounterTimerController(CounterTimerController):
         self._axes_taurus_attr = {}
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._axes_taurus_attr[axis] = ''
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._axes_taurus_attr.pop(axis)
 
     def LoadOne(self, axis, value, repetitions, latency):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         state = State.On
         status_string = 'The state is ON.'
         return state, status_string
 
     def StartOne(self, axis, _):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        _ :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def StartAll(self):
+        """ """
         pass
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         attr = Attribute(self._axes_taurus_attr[axis])
         return attr.read().value
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getTaurusAttribute(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return self._axes_taurus_attr[axis]
 
     def setTaurusAttribute(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._axes_taurus_attr[axis] = value

@@ -48,27 +48,63 @@ from sardana.tango.pool.PoolDevice import PoolElementDevice, \
 
 
 class PseudoMotor(PoolElementDevice):
+    """ """
 
     def __init__(self, dclass, name):
         self.in_write_position = False
         PoolElementDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolElementDevice.init(self, name)
 
     def _is_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return PoolElementDevice._is_allowed(self, req_type)
 
     def get_pseudo_motor(self):
+        """ """
         return self.element
 
     def set_pseudo_motor(self, pseudo_motor):
+        """
+
+        Parameters
+        ----------
+        pseudo_motor :
+            
+
+        Returns
+        -------
+
+        """
         self.element = pseudo_motor
 
     pseudo_motor = property(get_pseudo_motor, set_pseudo_motor)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolElementDevice.delete_device(self)
         pseudo_motor = self.pseudo_motor
         if pseudo_motor is not None:
@@ -76,6 +112,7 @@ class PseudoMotor(PoolElementDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolElementDevice.init_device(self)
 
         self.Elements = list(map(int, self.Elements))
@@ -95,6 +132,21 @@ class PseudoMotor(PoolElementDevice):
         self.set_state(DevState.ON)
 
     def on_pseudo_motor_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_pseudo_motor_changed(event_source, event_type,
                                           event_value)
@@ -106,6 +158,21 @@ class PseudoMotor(PoolElementDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_pseudo_motor_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -147,13 +214,26 @@ class PseudoMotor(PoolElementDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.pseudo_motor.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -170,6 +250,7 @@ class PseudoMotor(PoolElementDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "position",
@@ -184,6 +265,17 @@ class PseudoMotor(PoolElementDevice):
         return
 
     def read_Position(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         pseudo_motor = self.pseudo_motor
         use_cache = pseudo_motor.is_in_operation() and not self.Force_HW_Read
         position = pseudo_motor.get_position(cache=use_cache, propagate=0)
@@ -198,6 +290,17 @@ class PseudoMotor(PoolElementDevice):
                            timestamp=position.timestamp)
 
     def write_Position(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.in_write_position = True
         try:
             position = attr.get_write_value()
@@ -215,7 +318,17 @@ class PseudoMotor(PoolElementDevice):
             self.in_write_position = False
 
     def CalcPseudo(self, physical_positions):
-        """Returns the pseudo motor position for the given physical positions"""
+        """Returns the pseudo motor position for the given physical positions
+
+        Parameters
+        ----------
+        physical_positions :
+            
+
+        Returns
+        -------
+
+        """
         if not len(physical_positions):
             physical_positions = None
         result = self.pseudo_motor.calc_pseudo(
@@ -227,7 +340,17 @@ class PseudoMotor(PoolElementDevice):
     def CalcPhysical(self, pseudo_position):
         """Returns the physical motor positions for the given pseudo motor
         position assuming the current pseudo motor write positions for all the
-        other sibling pseudo motors"""
+        other sibling pseudo motors
+
+        Parameters
+        ----------
+        pseudo_position :
+            
+
+        Returns
+        -------
+
+        """
         result = self.pseudo_motor.calc_physical(pseudo_position)
         if result.error:
             throw_sardana_exception(result)
@@ -235,23 +358,55 @@ class PseudoMotor(PoolElementDevice):
 
     def CalcAllPhysical(self, pseudo_positions):
         """Returns the physical motor positions for the given pseudo motor
-        position(s)"""
+        position(s)
+
+        Parameters
+        ----------
+        pseudo_positions :
+            
+
+        Returns
+        -------
+
+        """
         result = self.pseudo_motor.calc_physical(pseudo_positions)
         if result.error:
             throw_sardana_exception(result)
         return result.value
 
     def CalcAllPseudo(self, physical_positions):
-        """Returns the pseudo motor position(s) for the given physical positions"""
+        """Returns the pseudo motor position(s) for the given physical positions
+
+        Parameters
+        ----------
+        physical_positions :
+            
+
+        Returns
+        -------
+
+        """
         result = self.pseudo_motor.calc_all_pseudo(physical_positions)
         if result.error:
             throw_sardana_exception(result)
         return result.value
 
     def MoveRelative(self, argin):
+        """
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError
 
     def is_MoveRelative_allowed(self):
+        """ """
         if self.get_state() in (DevState.FAULT, DevState.MOVING,
                                 DevState.UNKNOWN):
             return False
@@ -261,6 +416,7 @@ class PseudoMotor(PoolElementDevice):
 
 
 class PseudoMotorClass(PoolElementDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -296,6 +452,7 @@ class PseudoMotorClass(PoolElementDeviceClass):
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolElementDeviceClass._get_class_properties(self)
         ret['Description'] = "Pseudo motor device class"
         ret['InheritedFrom'].insert(0, 'PoolElementDevice')

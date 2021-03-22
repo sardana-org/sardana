@@ -51,23 +51,48 @@ from sardana.tango.pool.PoolDevice import PoolElementDevice, \
 
 
 class IORegister(PoolElementDevice):
+    """ """
 
     def __init__(self, dclass, name):
         self.in_write_value = False
         PoolElementDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolElementDevice.init(self, name)
 
     def get_ior(self):
+        """ """
         return self.element
 
     def set_ior(self, ior):
+        """
+
+        Parameters
+        ----------
+        ior :
+            
+
+        Returns
+        -------
+
+        """
         self.element = ior
 
     ior = property(get_ior, set_ior)
 
     def set_write_value_to_db(self):
+        """ """
         value_attr = self.ior.get_value_attribute()
         if value_attr.has_write_value():
             data = dict(Value=dict(__value=value_attr.w_value,
@@ -76,6 +101,7 @@ class IORegister(PoolElementDevice):
             db.put_device_attribute_property(self.get_name(), data)
 
     def get_write_value_from_db(self):
+        """ """
         name = 'Value'
         db = self.get_database()
         val_props = db.get_device_attribute_property(
@@ -92,6 +118,7 @@ class IORegister(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolElementDevice.delete_device(self)
         ior = self.ior
         if ior is not None:
@@ -99,6 +126,7 @@ class IORegister(PoolElementDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolElementDevice.init_device(self)
 
         ior = self.ior
@@ -118,6 +146,21 @@ class IORegister(PoolElementDevice):
         self.set_state(DevState.ON)
 
     def on_ior_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_ior_changed(event_source, event_type, event_value)
         except not DevFailed:
@@ -128,6 +171,21 @@ class IORegister(PoolElementDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_ior_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -173,13 +231,26 @@ class IORegister(PoolElementDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.ior.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -196,6 +267,7 @@ class IORegister(PoolElementDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
@@ -210,6 +282,17 @@ class IORegister(PoolElementDevice):
         return
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         value = self.ior.get_value(cache=False)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
@@ -217,6 +300,17 @@ class IORegister(PoolElementDevice):
                            priority=0, timestamp=value.timestamp)
 
     def write_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.in_write_value = True
         value = attr.get_write_value()
         try:
@@ -229,15 +323,28 @@ class IORegister(PoolElementDevice):
             self.in_write_value = False
 
     def is_Value_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
 
     def Start(self):
+        """ """
         self.ior.start_acquisition()
 
 
 class IORegisterClass(PoolElementDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -265,6 +372,7 @@ class IORegisterClass(PoolElementDeviceClass):
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolElementDeviceClass._get_class_properties(self)
         ret['Description'] = "IORegister device class"
         ret['InheritedFrom'].insert(0, 'PoolElementDevice')

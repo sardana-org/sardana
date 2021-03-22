@@ -39,7 +39,17 @@ from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
 
 def expconf(self, parameter_s=''):
     """Launches a GUI for configuring the environment variables
-    for the experiments (scans)"""
+    for the experiments (scans)
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
 
     try:
         from taurus.external.qt import Qt
@@ -80,15 +90,24 @@ def expconf(self, parameter_s=''):
 
 def showscan(self, parameter_s=''):
     """Shows a scan in a GUI.
-
+    
     Accepts one optional argument:
-
+    
     * ``online`` - plot scans online
     * <ScanID> - plot scan of the given ID offline
     * no argument - plot the last scan offline
-
+    
     Where *online* means plot the scan as it runs and *offline* means -
     extract the scan data from the file - works only with HDF5 files.
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
     """
 
     try:
@@ -112,6 +131,17 @@ def showscan(self, parameter_s=''):
 
 
 def spsplot(self, parameter_s=''):
+    """
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
     try:
         from taurus.external.qt import Qt
     except ImportError:
@@ -122,6 +152,17 @@ def spsplot(self, parameter_s=''):
 
 
 def debug_completer(self, event):
+    """
+
+    Parameters
+    ----------
+    event :
+        
+
+    Returns
+    -------
+
+    """
     # calculate parameter index
     param_idx = len(event.line.split()) - 1
     if not event.line.endswith(' '):
@@ -131,7 +172,17 @@ def debug_completer(self, event):
 
 
 def debug(self, parameter_s=''):
-    """Activate/Deactivate macro server debug output"""
+    """Activate/Deactivate macro server debug output
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
     params = parameter_s.split()
     door = get_door()
     if len(params) == 0:
@@ -150,9 +201,17 @@ def debug(self, parameter_s=''):
 
 
 def www(self, parameter_s=''):
-    """
-    What went wrong.
+    """What went wrong.
     Prints the error message from the last macro execution
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
     """
 
     door = get_door()
@@ -180,7 +239,19 @@ def www(self, parameter_s=''):
 def post_mortem(self, parameter_s='', from_www=False):
     """Post mortem analysis. Prints the local stream buffer. If no stream is
     specified, it reads 'debug' stream. Valid values are output, critical,
-    error, warning, info, debug, result"""
+    error, warning, info, debug, result
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+    from_www :
+         (Default value = False)
+
+    Returns
+    -------
+
+    """
     params = parameter_s.split() or ['debug']
     door = get_door()
     logger = door.getLogObj(params[0])
@@ -203,8 +274,18 @@ def post_mortem(self, parameter_s='', from_www=False):
 
 def macrodata(self, parameter_s=''):
     """macrodata
+    
+    Returns the data produced by the last macro
 
-    Returns the data produced by the last macro"""
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
     door = get_door()
     macro_data = door.read_attribute("RecordData")
 
@@ -221,7 +302,17 @@ def edmac(self, parameter_s=''):
     the given macro name. If the module is given and it does not exist a new
     one is created. If the given module is a simple module name and it does
     not exist, it will be created on the first directory mentioned in the
-    MacroPath"""
+    MacroPath
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
     import os
     import tempfile
     import PyTango
@@ -303,6 +394,7 @@ def edmac(self, parameter_s=''):
 
 
 def spock_late_startup_hook(self):
+    """ """
     try:
         get_door().setConsoleReady(True)
     except:
@@ -313,6 +405,7 @@ def spock_late_startup_hook(self):
 
 
 def spock_pre_prompt_hook(self):
+    """ """
     try:
         get_door().pre_prompt_hook(self)
     except:

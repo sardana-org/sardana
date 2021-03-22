@@ -33,6 +33,7 @@ from sardana.macroserver.mstypemanager import TypeManager
 
 
 class FakeMacroServer(object):
+    """ """
     name = "FakeMacroServer"
 
 macro_server = FakeMacroServer()
@@ -100,8 +101,10 @@ doc4 = "Decode macro with one simple repeat parameter with min=0 and no values"
             test_method_doc=doc4, params_def=params_def3,
             params_raw=params_raw3, expected_params=expected_params3)
 class TestParamDecoder(unittest.TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         self.type_manager = TYPE_MANAGER
         # use this code to parameter types of sardana interfaces e.g. Motor
@@ -114,14 +117,24 @@ class TestParamDecoder(unittest.TestCase):
         comparing the result with either of the expected_params or the
         expcted_exception result, not both of them.
 
-        :param params_def: list(dict) where each dict represents one parameter
+        Parameters
+        ----------
+        params_def :
+            list(dict) where each dict represents one parameter
             definition (required keys: name, type, default_value, description
             and min & max in case of the repeat parameters)
-        :param params_raw: list of parameter values or XML strucutre with
+        params_raw :
+            list of parameter values or XML strucutre with
             parameter values
-        :param expected_params: list of the expected parameter values after the
-            decoding process
-        :param expected_exception: expected exception class
+        expected_params :
+            list of the expected parameter values after the
+            decoding process (Default value = None)
+        expected_exception :
+            expected exception class (Default value = None)
+
+        Returns
+        -------
+
         """
         if expected_params is None and expected_exception is None:
             raise ValueError("missing expected_params or expected_exception")
@@ -149,4 +162,5 @@ class TestParamDecoder(unittest.TestCase):
             self.assertIsInstance(exception, expected_exception, msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)

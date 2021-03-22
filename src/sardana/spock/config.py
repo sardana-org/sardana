@@ -40,6 +40,7 @@ except ImportError:
 
 
 class Spock(Configurable):
+    """ """
     macro_server_name = Unicode(config=True)
     door_name = Unicode(config=True)
     macro_server_alias = Unicode(config=True)

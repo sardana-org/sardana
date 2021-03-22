@@ -44,11 +44,31 @@ class MSBaseObject(SardanaBaseObject):
         """Return the :class:`sardana.macroserver.macroserver.MacroServer`
         which *owns* this macro server object.
 
-        :return: the macro server which *owns* this macro server object.
-        :rtype: :class:`sardana.macroserver.macroserver.MacroServer`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`sardana.macroserver.macroserver.MacroServer`
+            the macro server which *owns* this macro server object.
+
+        """
         return self.get_manager()
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaBaseObject.serialize(self, *args, **kwargs)
         kwargs['macro_server'] = self.macro_server.name
         return kwargs
@@ -60,14 +80,35 @@ class MSBaseObject(SardanaBaseObject):
 class MSObject(SardanaObjectID, MSBaseObject):
     """A macro server object that besides the name and reference to the
        macro server base object has:
+    
+           - _id : the internal identifier
 
-           - _id : the internal identifier"""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         SardanaObjectID.__init__(self, id=kwargs.pop('id'))
         MSBaseObject.__init__(self, **kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = MSBaseObject.serialize(self, *args, **kwargs)
         kwargs = SardanaObjectID.serialize(self, *args, **kwargs)
         return kwargs

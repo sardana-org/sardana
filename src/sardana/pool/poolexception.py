@@ -35,12 +35,15 @@ from sardana.sardanaexception import SardanaException, UnknownCode, \
 
 
 class PoolException(SardanaException):
+    """ """
     pass
 
 
 class UnknownController(UnknownCode):
+    """ """
     pass
 
 
 class UnknownControllerLibrary(UnknownLibrary):
+    """ """
     pass

@@ -53,12 +53,24 @@ class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def loadSignals(self, signals):
+        """
+
+        Parameters
+        ----------
+        signals :
+            
+
+        Returns
+        -------
+
+        """
         self.clear()
         self.addItems(signals)
 
 
 @UILoadable(with_ui="_ui")
 class SelectSignal(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent=None, designMode=designMode)
@@ -79,6 +91,7 @@ class SelectSignal(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'selectsignal'
         ret['group'] = 'Taurus Containers'
@@ -87,6 +100,17 @@ class SelectSignal(TaurusWidget):
         return ret
 
     def update_signals(self, doorname=''):
+        """
+
+        Parameters
+        ----------
+        doorname :
+             (Default value = '')
+
+        Returns
+        -------
+
+        """
         if self.doorName != doorname:
             self.doorName = doorname
             self.door_device = taurus.Device(self.doorName)
@@ -101,10 +125,22 @@ class SelectSignal(TaurusWidget):
             self.signalComboBox.loadSignals(signals)
 
     def onSignalChanged(self, signalname):
+        """
+
+        Parameters
+        ----------
+        signalname :
+            
+
+        Returns
+        -------
+
+        """
         self._ui.SignallineEdit.setText(signalname)
 
 
 def main():
+    """ """
     app = Qt.QApplication(sys.argv)
     w = SelectSignal()
     w.show()

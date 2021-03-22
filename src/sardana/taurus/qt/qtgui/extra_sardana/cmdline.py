@@ -32,10 +32,12 @@ from taurus.external.qt import Qt
 
 
 class CommandLineHistory(list):
+    """ """
     pass
 
 
 class CommandLine(Qt.QComboBox):
+    """ """
 
     def __init__(self, qt_parent=None, designMode=False):
         Qt.QComboBox.__init__(self, qt_parent)
@@ -44,6 +46,7 @@ class CommandLine(Qt.QComboBox):
 
 
 class TaurusCommandLineWidget(Qt.QWidget):
+    """ """
 
     def __init__(self, qt_parent=None, designMode=False):
         Qt.QWidget.__init__(self, qt_parent)
@@ -77,14 +80,17 @@ class TaurusCommandLineWidget(Qt.QWidget):
         l.addWidget(self._clearButton, 0)
 
     def run(self):
+        """ """
         pass
 
 
 def demo():
+    """ """
     pass
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

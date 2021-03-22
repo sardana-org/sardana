@@ -37,9 +37,19 @@ from sardana.tango.macroserver.test import BaseMacroServerTestCase
 
 
 class UtilsForTests():
+    """ """
 
     def parsingOutputPoints(self, log_output):
         """A helper method to know if points are ordered based on log_output.
+
+        Parameters
+        ----------
+        log_output :
+            
+
+        Returns
+        -------
+
         """
         first_data_line = 1
         scan_index = 0
@@ -65,6 +75,15 @@ class UtilsForTests():
 
     def orderPointsData(self, data):
         """A helper method to know if points are ordered based on getData.
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
         """
         obtained_nb_points_data = len(list(data.keys()))
         ordered_points_data = 0
@@ -81,17 +100,36 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                  RunStopMacroTestCase):
     """Base class for the continuous scans (ct-like) tests. Implements
     methods for preparation of the elements and validation of the results.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     utils = UtilsForTests()
 
     def setUp(self):
+        """ """
         MeasSarTestTestCase.setUp(self)
         properties = {'PoolNames': self.pool_name}
         BaseMacroServerTestCase.setUp(self, properties)
         RunStopMacroTestCase.setUp(self)
 
     def configure_motors(self, motor_names):
+        """
+
+        Parameters
+        ----------
+        motor_names :
+            
+
+        Returns
+        -------
+
+        """
         # TODO: workaround for bug with velocity<base_rate: Sdn#38
         for name in motor_names:
             mot = PyTango.DeviceProxy(name)
@@ -100,6 +138,17 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
             mot.write_attribute('deceleration', 0.1)
 
     def configure_mntgrp(self, meas_config):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+
+        Returns
+        -------
+
+        """
         # creating MEAS
         self.create_meas(meas_config)
         # Set ActiveMntGrp
@@ -108,6 +157,17 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                                 sync=True, timeout=1.)
 
     def check_using_output(self, expected_nb_points):
+        """
+
+        Parameters
+        ----------
+        expected_nb_points :
+            
+
+        Returns
+        -------
+
+        """
         # Test data from log_output
         log_output = self.macro_executor.getLog('output')
         (aa, bb) = self.utils.parsingOutputPoints(log_output)
@@ -130,6 +190,17 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         self.assertTrue(ordered_points, msg)
 
     def check_using_data(self, expected_nb_points):
+        """
+
+        Parameters
+        ----------
+        expected_nb_points :
+            
+
+        Returns
+        -------
+
+        """
         # Test data from macro (macro_executor.getData())
         data = self.macro_executor.getData()
         order_points_data = self.utils.orderPointsData(data)
@@ -150,6 +221,7 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         self.assertTrue(order_points_data, msg)
 
     def check_stopped(self):
+        """ """
         self.assertStopped('Macro %s did not stop' % self.macro_name)
         for name in self.expchan_names + self.tg_names:
             channel = PyTango.DeviceProxy(name)
@@ -160,6 +232,7 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
             self.assertEqual(state, desired_state, msg)
 
     def tearDown(self):
+        """ """
         RunStopMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)
         MeasSarTestTestCase.tearDown(self)
@@ -240,16 +313,39 @@ ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 class AscanctTest(ScanctTest, unittest.TestCase):
     """Checks that ascanct works and generates the exact number of records
     by parsing the door output.
-
+    
     .. todo:: check the macro data instead of the door output
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'ascanct'
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
     def macro_runs(self, meas_config, macro_params, wait_timeout=None):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -265,6 +361,23 @@ class AscanctTest(ScanctTest, unittest.TestCase):
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+        stop_delay :
+             (Default value = 0.1)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -279,6 +392,7 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_stopped(self)
 
     def tearDown(self):
+        """ """
         ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)
 
@@ -292,18 +406,41 @@ a2scanct_params_1 = ['_test_mt_1_1', '0', '10', '_test_mt_1_2', '0', '20',
 class A2scanctTest(ScanctTest, unittest.TestCase):
     """Checks that a2scanct works and generates the exact number of records
     by parsing the door output.
-
+    
     .. todo:: check the macro data instead of the door output
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'a2scanct'
     MOT1 = 0
     MOT2 = 3
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
     def macro_runs(self, meas_config, macro_params, wait_timeout=None):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -319,6 +456,23 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+        stop_delay :
+             (Default value = 0.1)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -333,6 +487,7 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_stopped(self)
 
     def tearDown(self):
+        """ """
         ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)
 
@@ -346,8 +501,15 @@ meshct_params_1 = ['_test_mt_1_1', '0', '10', '2', '_test_mt_1_2', '0', '20',
 class MeshctTest(ScanctTest, unittest.TestCase):
     """Checks that meshct works and generates the exact number of records
     by parsing the door output.
-
+    
     .. todo:: check the macro data instead of the door output
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     macro_name = 'meshct'
     MOT1 = 0
@@ -356,10 +518,26 @@ class MeshctTest(ScanctTest, unittest.TestCase):
     INTERVALS_MOT2 = 7
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
     def macro_runs(self, meas_config, macro_params, wait_timeout=None):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -375,6 +553,23 @@ class MeshctTest(ScanctTest, unittest.TestCase):
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
+        """
+
+        Parameters
+        ----------
+        meas_config :
+            
+        macro_params :
+            
+        wait_timeout :
+             (Default value = None)
+        stop_delay :
+             (Default value = 0.1)
+
+        Returns
+        -------
+
+        """
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -388,5 +583,6 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_stopped(self)
 
     def tearDown(self):
+        """ """
         ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)

@@ -69,6 +69,7 @@ from sardana.macroserver.macro import macro, Macro, Type
 _MACRO_CLASS_TEMPLATE = """
 
 class {macro_name}(Macro):
+    """ """
     \"\"\"{macro_name} description.\"\"\"
 
     # uncomment the following lines as necessary. Otherwise you may delete them
@@ -82,6 +83,7 @@ class {macro_name}(Macro):
     #    pass
 
     def run(self):
+        """ """
         pass
 
 """
@@ -90,16 +92,19 @@ _MACRO_FUNCTION_TEMPLATE = """
 
 @macro()
 def {macro_name}(self):
+    """ """
     self.output("Running {macro_name}...")
 
 """
 
 
 class NewElementWizard(SardanaBaseWizard):
+    """ """
     pass
 
 
 class ChooseElementTypePage(SardanaBasePage):
+    """ """
 
     def __init__(self, parent=None):
         SardanaBasePage.__init__(self, parent)
@@ -110,10 +115,24 @@ class ChooseElementTypePage(SardanaBasePage):
 
 
 class SardanaLibProxyModel(SardanaBaseProxyModel):
+    """ """
 
     ALLOWED_TYPES = 'MacroLibrary',  # 'ControllerLibrary',
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
+        """
+
+        Parameters
+        ----------
+        sourceRow :
+            
+        sourceParent :
+            
+
+        Returns
+        -------
+
+        """
         sourceModel = self.sourceModel()
         idx = sourceModel.index(sourceRow, 0, sourceParent)
         treeItem = idx.internalPointer()
@@ -126,6 +145,7 @@ class SardanaLibProxyModel(SardanaBaseProxyModel):
 
 
 class SardanaLibTreeWidget(SardanaElementTreeWidget):
+    """ """
 
     KnownPerspectives = {"Type": {
         "label": "By lib",
@@ -138,6 +158,7 @@ class SardanaLibTreeWidget(SardanaElementTreeWidget):
 
 
 class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=None):
         name = self.__class__.__name__
@@ -156,13 +177,26 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         self.setAutoTooltip(False)
 
     def setTemporaryDirectory(self, tmp_dir):
+        """
+
+        Parameters
+        ----------
+        tmp_dir :
+            
+
+        Returns
+        -------
+
+        """
         self._base_tmp_dir = tmp_dir
         self._is_filesystem_prepared = False
 
     def getTemporaryDirectory(self):
+        """ """
         return self._base_tmp_dir
 
     def createMenuActions(self):
+        """ """
         on_save = functools.partial(self.on_save, apply=False)
         on_save_apply = functools.partial(self.on_save, apply=True)
 
@@ -201,14 +235,39 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return actions, io_actions
 
     def register_editorstack(self, editorstack):
+        """
+
+        Parameters
+        ----------
+        editorstack :
+            
+
+        Returns
+        -------
+
+        """
         TaurusBaseEditor.register_editorstack(self, editorstack)
         editorstack.refresh_save_all_action.connect(
             self.refresh_save_and_apply_action)
 
     def refresh_save_and_apply_action(self):
+        """ """
         self.save_and_apply_action.setEnabled(self.save_action.isEnabled())
 
     def on_element_clicked(self, item, item_column):
+        """
+
+        Parameters
+        ----------
+        item :
+            
+        item_column :
+            
+
+        Returns
+        -------
+
+        """
         item_data = item.itemData()
         if isinstance(item_data, str):
             return
@@ -220,6 +279,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     @ProtectTaurusMessageBox(title="A error occured trying to create a class")
     def on_new(self, checked):
+        """
+
+        Parameters
+        ----------
+        checked :
+            
+
+        Returns
+        -------
+
+        """
 
         elem_types = "Macro function", "Macro class", "Macro library", \
             "Motor controller class", "Counter/Timer controller class", \
@@ -241,6 +311,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         raise NotImplementedError("Sorry! Not implemented yet.")
 
     def new_macro(self, template):
+        """
+
+        Parameters
+        ----------
+        template :
+            
+
+        Returns
+        -------
+
+        """
         macro_server = self.getModelObj()
 
         msg = "Please select the library where you want to place the new macro"
@@ -303,18 +384,21 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return macro_lib, macro_name
 
     def new_macro_class(self):
+        """ """
         macro_info = self.new_macro(_MACRO_CLASS_TEMPLATE)
         if macro_info is None:
             return
         macro_lib, macro_name = macro_info
 
     def new_macro_function(self):
+        """ """
         macro_info = self.new_macro(_MACRO_FUNCTION_TEMPLATE)
         if macro_info is None:
             return
         macro_lib, macro_name = macro_info
 
     def new_macro_library(self):
+        """ """
         ms = self.getModelObj()
         ms_path = ms.getMacroPathObj()
         directory, ok = Qt.QInputDialog.getItem(self, "New macro module",
@@ -359,6 +443,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     @ProtectTaurusMessageBox(title="An error occured trying to open a macro class")
     def on_open(self, checked):
+        """
+
+        Parameters
+        ----------
+        checked :
+            
+
+        Returns
+        -------
+
+        """
         ms = self.getModelObj()
         ms_tree = MacroSelectionDialog(self, model_name=ms.getNormalName())
         ms_tree.exec_()
@@ -368,6 +463,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     @ProtectTaurusMessageBox(title="An error occured trying to open macro(s)")
     def open_macros(self, macros):
+        """
+
+        Parameters
+        ----------
+        macros :
+            
+
+        Returns
+        -------
+
+        """
         editorstack = self.editorStack()
 
         all_any = Qt.QMessageBox.YesToAll, Qt.QMessageBox.NoToAll
@@ -421,6 +527,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     @ProtectTaurusMessageBox(title="An error occured trying to open macro(s)")
     def open_macro_libraries(self, macro_libraries):
+        """
+
+        Parameters
+        ----------
+        macro_libraries :
+            
+
+        Returns
+        -------
+
+        """
         editorstack = self.editorStack()
 
         all_any = Qt.QMessageBox.YesToAll, Qt.QMessageBox.NoToAll
@@ -474,6 +591,19 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     @ProtectTaurusMessageBox(msg="A error occured trying to save")
     def on_save(self, checked, apply=True):
+        """
+
+        Parameters
+        ----------
+        checked :
+            
+        apply :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         editorstack = self.editorStack()
         # Save the currently edited file
         if not editorstack.get_stack_count():
@@ -491,12 +621,49 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         self.set_macro_code(remote_filename, code, apply)
 
     def on_revert(self, checked):
+        """
+
+        Parameters
+        ----------
+        checked :
+            
+
+        Returns
+        -------
+
+        """
         self.editorStack().revert()
 
     def reload_macro_lib(self, module_name):
+        """
+
+        Parameters
+        ----------
+        module_name :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def set_macro_code(self, filename, code, apply=True):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+        code :
+            
+        apply :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         ms = self.getModelObj()
         if apply:
             apply = "true"
@@ -505,6 +672,19 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return ms.SetMacroCode((filename, code, apply))
 
     def get_macro_code(self, module_name, macro_name=None):
+        """
+
+        Parameters
+        ----------
+        module_name :
+            
+        macro_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         ms = self.getModelObj()
         pars = [module_name]
         if macro_name is not None:
@@ -512,12 +692,34 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return ms.GetMacroCode(pars)
 
     def setModel(self, model_name):
+        """
+
+        Parameters
+        ----------
+        model_name :
+            
+
+        Returns
+        -------
+
+        """
         TaurusBaseWidget.setModel(self, model_name)
         self._elementTree.setModel(model_name)
         self._is_filesystem_prepared = False
         self.prepare_filesystem()
 
     def _prepare_path(self, p):
+        """
+
+        Parameters
+        ----------
+        p :
+            
+
+        Returns
+        -------
+
+        """
         if not self.prepare_filesystem():
             return False
         p = p[p.index(osp.sep) + 1:]  # transform into relative path
@@ -541,12 +743,34 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return True
 
     def closeEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         if self._is_filesystem_prepared:
             shutil.rmtree(self._tmp_dir)
         TaurusBaseEditor.closeEvent(self, event)
 
 
 def demo(model_name="MS_BL98"):
+    """
+
+    Parameters
+    ----------
+    model_name :
+         (Default value = "MS_BL98")
+
+    Returns
+    -------
+
+    """
     test = SardanaEditor()
     test.resize(1000, 800)
     # test.load(__file__)
@@ -556,6 +780,7 @@ def demo(model_name="MS_BL98"):
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

@@ -53,8 +53,24 @@ from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 
 class Graph(dict):
+    """ """
 
     def find_path(self, start, end, path=[]):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        end :
+            
+        path :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
         path = path + [start]
         if start == end:
             return path
@@ -68,6 +84,21 @@ class Graph(dict):
         return None
 
     def find_all_paths(self, start, end, path=[]):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        end :
+            
+        path :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
         path = path + [start]
         if start == end:
             return [path]
@@ -82,6 +113,21 @@ class Graph(dict):
         return paths
 
     def find_shortest_path(self, start, end, path=[]):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        end :
+            
+        path :
+             (Default value = [])
+
+        Returns
+        -------
+
+        """
         path = path + [start]
         if start == end:
             return path
@@ -144,6 +190,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     # TODO: not ready to use. path must be the same as the one calculated in
     # sardana.tango.core.util:prepare_logging
     def init_local_logging(self):
+        """ """
         log = logging.getLogger("Controller")
         log.propagate = 0
         path = os.path.join(os.sep, "tmp", "tango")
@@ -163,6 +210,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             self.debug("Details:", exc_info=1)
 
     def clear_remote_logging(self):
+        """ """
         rh = self._remote_log_handler
         if rh is None:
             return
@@ -173,11 +221,19 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     def init_remote_logging(self, host=None, port=None):
         """Initializes remote logging.
 
-        :param host: host name [default: None, meaning use the machine host name
-                     as returned by :func:`socket.gethostname`].
-        :type host: :obj:`str`
-        :param port: port number [default: None, meaning use
-                     :data:`logging.handlers.DEFAULT_TCP_LOGGING_PORT`"""
+        Parameters
+        ----------
+        host : obj:`str`
+            host name [default: None, meaning use the machine host name
+            as returned by :func:`socket.gethostname`].
+        port :
+            port number [default: None, meaning use
+            :data:`logging.handlers.DEFAULT_TCP_LOGGING_PORT
+
+        Returns
+        -------
+
+        """
         log = logging.getLogger("Controller")
 
         # port 0 means no remote logging
@@ -205,6 +261,19 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                   host, port)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolObject.serialize(self, *args, **kwargs)
         kwargs['type'] = self.__class__.__name__
         kwargs['id'] = InvalidId
@@ -212,9 +281,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return kwargs
 
     def set_motion_loop_sleep_time(self, motion_loop_sleep_time):
+        """
+
+        Parameters
+        ----------
+        motion_loop_sleep_time :
+            
+
+        Returns
+        -------
+
+        """
         self._motion_loop_sleep_time = motion_loop_sleep_time
 
     def get_motion_loop_sleep_time(self):
+        """ """
         return self._motion_loop_sleep_time
 
     motion_loop_sleep_time = property(get_motion_loop_sleep_time,
@@ -222,9 +303,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                                       doc="motion sleep time (s)")
 
     def set_motion_loop_states_per_position(self, motion_loop_states_per_position):
+        """
+
+        Parameters
+        ----------
+        motion_loop_states_per_position :
+            
+
+        Returns
+        -------
+
+        """
         self._motion_loop_states_per_position = motion_loop_states_per_position
 
     def get_motion_loop_states_per_position(self):
+        """ """
         return self._motion_loop_states_per_position
 
     motion_loop_states_per_position = property(get_motion_loop_states_per_position,
@@ -233,9 +326,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                                                "motion loop")
 
     def set_acq_loop_sleep_time(self, acq_loop_sleep_time):
+        """
+
+        Parameters
+        ----------
+        acq_loop_sleep_time :
+            
+
+        Returns
+        -------
+
+        """
         self._acq_loop_sleep_time = acq_loop_sleep_time
 
     def get_acq_loop_sleep_time(self):
+        """ """
         return self._acq_loop_sleep_time
 
     acq_loop_sleep_time = property(get_acq_loop_sleep_time,
@@ -243,9 +348,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                                    doc="acquisition sleep time (s)")
 
     def set_acq_loop_states_per_value(self, acq_loop_states_per_value):
+        """
+
+        Parameters
+        ----------
+        acq_loop_states_per_value :
+            
+
+        Returns
+        -------
+
+        """
         self._acq_loop_states_per_value = acq_loop_states_per_value
 
     def get_acq_loop_states_per_value(self):
+        """ """
         return self._acq_loop_states_per_value
 
     acq_loop_states_per_value = property(get_acq_loop_states_per_value,
@@ -254,9 +371,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                                          "acquisition loop")
 
     def set_drift_correction(self, drift_correction):
+        """
+
+        Parameters
+        ----------
+        drift_correction :
+            
+
+        Returns
+        -------
+
+        """
         self._drift_correction = drift_correction
 
     def get_drift_correction(self):
+        """ """
         return self._drift_correction
 
     drift_correction = property(get_drift_correction,
@@ -265,40 +394,91 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     @property
     def monitor(self):
+        """ """
         return self._monitor
 
     @property
     def ctrl_manager(self):
+        """ """
         return ControllerManager()
 
     def set_python_path(self, path):
+        """
+
+        Parameters
+        ----------
+        path :
+            
+
+        Returns
+        -------
+
+        """
         mod_man = ModuleManager()
         if self._path_id is not None:
             mod_man.remove_python_path(self._path_id)
         self._path_id = mod_man.add_python_path(path)
 
     def set_path(self, path):
+        """
+
+        Parameters
+        ----------
+        path :
+            
+
+        Returns
+        -------
+
+        """
         self.ctrl_manager.setControllerPath(path, reload=False)
 
     def get_controller_libs(self):
+        """ """
         return self.ctrl_manager.getControllerLibs()
 
     def get_controller_lib_names(self):
+        """ """
         return self.ctrl_manager.getControllerLibNames()
 
     def get_controller_class_names(self):
+        """ """
         return self.ctrl_manager.getControllerNames()
 
     def get_controller_classes(self):
+        """ """
         return self.ctrl_manager.getControllers()
 
     def get_controller_class_info(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl_manager.getControllerMetaClass(name)
 
     def get_controller_classes_info(self, names):
+        """
+
+        Parameters
+        ----------
+        names :
+            
+
+        Returns
+        -------
+
+        """
         return self.ctrl_manager.getControllerMetaClasses(names)
 
     def get_controller_libs_summary_info(self):
+        """ """
         libs = self.get_controller_libs()
         ret = []
         for ctrl_lib_info in libs:
@@ -308,6 +488,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def get_controller_classes_summary_info(self):
+        """ """
         ctrl_classes = self.get_controller_classes()
         ret = []
         for ctrl_class_info in ctrl_classes:
@@ -321,6 +502,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def get_elements_str_info(self, obj_type=None):
+        """
+
+        Parameters
+        ----------
+        obj_type :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if obj_type is None:
             objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
@@ -335,6 +527,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return [obj.str(pool=name) for obj in objs]
 
     def get_elements_info(self, obj_type=None):
+        """
+
+        Parameters
+        ----------
+        obj_type :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if obj_type is None:
             objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
@@ -350,6 +553,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return [obj.serialize(pool=name) for obj in objs]
 
     def get_acquisition_elements_info(self):
+        """ """
         ret = []
         for _, element in list(self.get_element_name_map().items()):
             if element.get_type() not in TYPE_ACQUIRABLE_ELEMENTS:
@@ -362,9 +566,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def get_acquisition_elements_str_info(self):
+        """ """
         return list(map(self.str_object, self.get_acquisition_elements_info()))
 
     def create_controller(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_type = kwargs['type']
         lib = kwargs['library']
         class_name = kwargs['klass']
@@ -420,6 +636,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def create_element(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         etype = kwargs['type']
         ctrl_id = kwargs['ctrl_id']
         axis = kwargs['axis']
@@ -470,6 +697,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def create_motor_group(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         name = kwargs['name']
         elem_ids = kwargs["user_elements"]
 
@@ -501,6 +739,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def create_measurement_group(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         name = kwargs['name']
         elem_ids = kwargs["user_elements"]
 
@@ -538,6 +787,19 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def rename_element(self, old_name, new_name):
+        """
+
+        Parameters
+        ----------
+        old_name :
+            
+        new_name :
+            
+
+        Returns
+        -------
+
+        """
         elem = self.get_element_by_name(old_name)
         if type(elem) == PoolMeasurementGroup:
             elem.rename_element(old_name, new_name)
@@ -548,6 +810,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.fire_event(EventType("ElementChanged"), elem)
 
     def delete_element(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             elem = self.get_element(name=name)
         except:
@@ -584,6 +857,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             elem.set_deleted(True)
 
     def create_instrument(self, full_name, klass_name, id=None):
+        """
+
+        Parameters
+        ----------
+        full_name :
+            
+        klass_name :
+            
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         is_root = full_name.count('/') == 1
 
         if is_root:
@@ -618,6 +906,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def stop(self):
+        """ """
         msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
@@ -641,6 +930,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             raise Exception(msg_init + msg)
 
     def abort(self):
+        """ """
         msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
@@ -668,6 +958,17 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     # --------------------------------------------------------------------------
 
     def reload_controller_lib(self, lib_name):
+        """
+
+        Parameters
+        ----------
+        lib_name :
+            
+
+        Returns
+        -------
+
+        """
         manager = self.ctrl_manager
 
         old_lib = manager.getControllerLib(lib_name)
@@ -712,11 +1013,23 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 pool_ctrl.re_init()
 
     def reload_controller_class(self, class_name):
+        """
+
+        Parameters
+        ----------
+        class_name :
+            
+
+        Returns
+        -------
+
+        """
         ctrl_info = self.ctrl_manager.getControllerMetaClass(class_name)
         lib_name = ctrl_info.module_name
         self.reload_controller_lib(lib_name)
 
     def get_element_id_graph(self):
+        """ """
         physical_elems_id_map = {}
         elem_type_map = self.get_element_type_map()
         for elem_type in TYPE_PHYSICAL_ELEMENTS:
@@ -724,6 +1037,19 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         # TODO
 
     def _build_element_id_dependencies(self, elem_id, graph=None):
+        """
+
+        Parameters
+        ----------
+        elem_id :
+            
+        graph :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if graph is None:
             graph = Graph()
         elem = self.get_element_by_id(elem_id)
@@ -733,6 +1059,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return graph
 
     def get_moveable_id_graph(self):
+        """ """
         moveable_elems_id_map = {}
         elem_type_map = self.get_element_type_map()
         for elem_type in TYPE_MOVEABLE_ELEMENTS:
@@ -743,6 +1070,19 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return graph
 
     def _build_element_dependencies(self, elem, graph=None):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+        graph :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if graph is None:
             graph = Graph()
         if elem.get_id() in graph or elem.get_type() in TYPE_PHYSICAL_ELEMENTS:
@@ -751,6 +1091,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return graph
 
     def get_moveable_graph(self):
+        """ """
         moveable_elems_map = {}
         elem_type_map = self.get_element_type_map()
         for elem_type in TYPE_MOVEABLE_ELEMENTS:
