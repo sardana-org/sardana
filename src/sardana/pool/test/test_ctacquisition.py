@@ -37,6 +37,13 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
     """Class used for an acquisition done by a Measurement Group with a
     dummyCounterTimer channel. The Measurement Group runs with a freshly created
     fake Pool which does not depends on the Sardana Pool.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def setUp(self):
@@ -44,6 +51,13 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         - Use resources for Controller, CounterTimer and MeasurementGroup
         features.
         - Create Controller, CounterTimer and MeasurementGroup.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         pool = FakePool()
 
@@ -66,7 +80,15 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
 
     def test_acquisition(self):
         """Test acquisition using the created measurement group without
-        using a Sardana pool."""
+        using a Sardana pool.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         msg = 'Pool Measurement Group does not acquire'
         integ_time = .1
         self.pmg.integration_time = integ_time
@@ -80,6 +102,7 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         self.assertEqual(self._pct.value.value, integ_time, msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)
         self.pmg = None
         self._pct = None

@@ -35,12 +35,24 @@ from sardana.spock import genutils
 
 
 class SpockInputHandler(BaseInputHandler):
+    """ """
 
     def __init__(self):
         # don't call super __init__ on purpose
         self._input = genutils.spock_input
 
     def input(self, input_data=None):
+        """
+
+        Parameters
+        ----------
+        input_data :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if input_data is None:
             input_data = {}
         prompt = input_data.get('prompt')
@@ -58,4 +70,15 @@ class SpockInputHandler(BaseInputHandler):
         return ret
 
     def input_timeout(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         print("SpockInputHandler input timeout")

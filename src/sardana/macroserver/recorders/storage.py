@@ -49,7 +49,7 @@ from taurus.core.util.containers import chunks
 
 
 class FIO_FileRecorder(BaseFileRecorder):
-    """ Saves data to a file """
+    """Saves data to a file"""
 
     formats = {'fio': '.fio'}
 
@@ -62,6 +62,17 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.setFileName(self.base_filename)
 
     def setFileName(self, filename):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+
+        Returns
+        -------
+
+        """
         if self.fd is not None:
             self.fd.close()
 
@@ -89,9 +100,21 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.filename = "%s_%s.%s" % (tpl[0], "[ScanId]", tpl[2])
 
     def getFormat(self):
+        """ """
         return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
 
         if self.base_filename is None:
             return
@@ -177,6 +200,17 @@ class FIO_FileRecorder(BaseFileRecorder):
         os.fsync(self.fd.fileno())
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
         nan, ctNames, fd = float('nan'), self.ctNames, self.fd
@@ -199,6 +233,17 @@ class FIO_FileRecorder(BaseFileRecorder):
             self._writeMcaFile(record)
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
 
@@ -209,6 +254,17 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.fd.close()
 
     def _writeMcaFile(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.mcaDirName is None:
             return
 
@@ -273,7 +329,7 @@ class FIO_FileRecorder(BaseFileRecorder):
 
 
 class SPEC_FileRecorder(BaseFileRecorder):
-    """ Saves data to a file """
+    """Saves data to a file"""
 
     formats = {'Spec': '.spec'}
     supported_dtypes = ('float32', 'float64', 'int8',
@@ -287,9 +343,31 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self._expectedlabels = pars.get('labels', None)
 
     def setLabels(self, labels):
+        """
+
+        Parameters
+        ----------
+        labels :
+            
+
+        Returns
+        -------
+
+        """
         self._expectedlabels = labels
 
     def setFileName(self, filename):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+
+        Returns
+        -------
+
+        """
         if self.fd is not None:
             self.fd.close()
 
@@ -305,10 +383,21 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def getFormat(self):
+        """ """
         return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
-        '''Prepares and writes the scan header.'''
+        """Prepares and writes the scan header.
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
 
@@ -397,13 +486,24 @@ class SPEC_FileRecorder(BaseFileRecorder):
         os.fsync(self.fd.fileno())
 
     def _prepareMultiLines(self, character, sep, items_list):
-        '''Translate list of lists of items into multiple line string
+        """Translate list of lists of items into multiple line string
 
-        :param character (string): each line will start #<character><line_nr>
-        :sep: separator (string): separator to use between items
-        :param items_list (list):list of lists of items
+        Parameters
+        ----------
+        character :
+            string): each line will start #<character><line_nr>
+            :sep: separator (string): separator to use between items
+        items_list :
+            list):list of lists of items
+            
+            :return multi_lines (string): string with all the item
+        sep :
+            
 
-        :return multi_lines (string): string with all the items'''
+        Returns
+        -------
+
+        """
         multi_lines = ''
         for nr, items in enumerate(items_list):
             start = '#%s%d ' % (character, nr)
@@ -414,15 +514,22 @@ class SPEC_FileRecorder(BaseFileRecorder):
         return multi_lines
 
     def _preparePreScanSnapshot(self, env):
-        '''Extract pre-scan snapshot, filters elements of shape different
+        """Extract pre-scan snapshot, filters elements of shape different
         than scalar and split labels and values into chunks of 8 items.
 
-        :param: env (dict) scan environment
+        Parameters
+        ----------
+        env :
+            
 
-        :return: labels, values (tuple<list,list>)
-                 labels - list of chunks with 8 elements containing labels
-                 values - list of chunks with 8 elements containing values
-        '''
+        Returns
+        -------
+        type
+            labels, values (tuple<list,list>)
+            labels - list of chunks with 8 elements containing labels
+            values - list of chunks with 8 elements containing values
+
+        """
         # preScanSnapShot is a list o ColumnDesc objects
         pre_scan_snapshot = env.get('preScanSnapShot', [])
         labels = []
@@ -452,6 +559,17 @@ class SPEC_FileRecorder(BaseFileRecorder):
         return labels_chunks, values_chunks
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
         nan, names, fd = float('nan'), self.names, self.fd
@@ -487,6 +605,17 @@ class SPEC_FileRecorder(BaseFileRecorder):
         os.fsync(self.fd.fileno())
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
 
@@ -497,13 +626,25 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.fd.close()
 
     def _addCustomData(self, value, name, **kwargs):
-        '''
-        The custom data will be added as a comment line in the form::
-
+        """The custom data will be added as a comment line in the form::
+        
         #C name : value
-
+        
         ..note:: non-scalar values (or name/values containing end-of-line) will not be written
-        '''
+
+        Parameters
+        ----------
+        value :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             self.info(
                 'Custom data "%s" will not be stored in SPEC file. Reason: uninitialized file', name)
@@ -533,15 +674,24 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
 
 class NXscan_FileRecorder(BaseNAPI_FileRecorder):
-    """saves data to a nexus file that follows the NXscan application definition
-
-        """
+    """saves data to a nexus file that follows the NXscan application definition"""
 
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
         BaseNAPI_FileRecorder.__init__(
             self, filename=filename, macro=macro, overwrite=overwrite, **pars)
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         nxs = self.nxs
         nxfilemode = self.getFormat()
 
@@ -661,6 +811,17 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.fd.flush()
 
     def _createPreScanSnapshot(self, env):
+        """
+
+        Parameters
+        ----------
+        env :
+            
+
+        Returns
+        -------
+
+        """
         # write the pre-scan snapshot in the
         # "measurement:NXcollection/pre_scan_snapshot:NXcollection" group
         self.preScanSnapShot = env.get('preScanSnapShot', [])
@@ -693,6 +854,17 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 self.fd.makelink(nid)
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
         # most used variables in the loop
@@ -733,6 +905,17 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         fd.flush()
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
 
         if self.filename is None:
             return
@@ -752,7 +935,17 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.currentlist = None
 
     def writeRecordList(self, recordlist):
-        """Called when in BLOCK writing mode"""
+        """Called when in BLOCK writing mode
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self._startRecordList(recordlist)
         for dd in self.datadesc:
             self._makedata(dd.label, dd.dtype, [
@@ -779,6 +972,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self._endRecordList(recordlist)
 
     def _populateInstrumentInfo(self):
+        """ """
         measurementpath = "/%s:NXentry/measurement:NXcollection" % self.entryname
         # create a link for each
         for dd in self.datadesc:
@@ -808,8 +1002,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
     def _createNXData(self):
-        '''Creates groups of type NXdata by making links to the corresponding datasets
-        '''
+        """Creates groups of type NXdata by making links to the corresponding datasets"""
         # classify by type of plot:
         plots1d = {}
         plots1d_names = {}
@@ -858,19 +1051,30 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     self.warning("cannot create link for '%s'. Skipping", axis)
 
     def _addCustomData(self, value, name, nxpath=None, dtype=None, **kwargs):
-        '''
-        apart from value and name, this recorder can use the following optional parameters:
+        """apart from value and name, this recorder can use the following optional parameters:
 
-        :param nxpath: (str) a nexus path (optionally using name:nxclass notation for
-                       the group names). See the rules for automatic nxclass
-                       resolution used by
-                       :meth:`NXscan_FileRecorder._createBranch`.
-                       If None given, it defaults to
-                       nxpath='custom_data:NXcollection'
+        Parameters
+        ----------
+        nxpath :
+            str) a nexus path (optionally using name:nxclass notation for
+            the group names). See the rules for automatic nxclass
+            resolution used by
+            :meth:`NXscan_FileRecorder._createBranch`.
+            If None given, it defaults to
+            nxpath='custom_data:NXcollection'
+        dtype :
+            name of data type (it is inferred from value if not given) (Default value = None)
+        value :
+            
+        name :
+            
+        **kwargs :
+            
 
-        :param dtype: name of data type (it is inferred from value if not given)
+        Returns
+        -------
 
-        '''
+        """
         if nxpath is None:
             nxpath = 'custom_data:NXcollection'
         if dtype is None:

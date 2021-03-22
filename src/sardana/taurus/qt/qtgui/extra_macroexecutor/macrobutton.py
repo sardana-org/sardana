@@ -49,15 +49,37 @@ from sardana.util.parser import ParamParser
 
 
 class DoorStateListener(Qt.QObject):
-    '''A listener of Change and periodic events from a Door State attribute.
+    """A listener of Change and periodic events from a Door State attribute.
     It converts the received Tango events and emits a Qt signal
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     __pyqtSignals__ = ["doorStateChanged"]
 
     doorStateChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def eventReceived(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type not in (TaurusEventType.Change, TaurusEventType.Periodic):
             return
         door_state = evt_value.value
@@ -66,13 +88,20 @@ class DoorStateListener(Qt.QObject):
 
 @UILoadable(with_ui='ui')
 class MacroButton(TaurusWidget):
-    ''' A button to execute/pause/stop macros. The model must be a valid door.
-
+    """A button to execute/pause/stop macros. The model must be a valid door.
+    
     .. todo:: Not implemented but will be needed: set an icon
-
+    
     .. todo:: It may be useful to have all the streams from qdoor available
              somehow (right-click?)
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     __pyqtSignals__ = ['statusUpdated', 'resultUpdated']
 
@@ -98,20 +127,51 @@ class MacroButton(TaurusWidget):
     # in order to avoid button's text being lost on the MS restart.
     # More detais in #293 and taurus-org/taurus#635
     def handleEvent(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def showProgress(self, visible):
-        '''Set whether the progress bar is shown
+        """Set whether the progress bar is shown
 
-        :param visible: (bool) If True, the progress bar is shown. Otherwise it
-                        is hidden'''
+        Parameters
+        ----------
+        visible :
+            bool) If True, the progress bar is shown. Otherwise it
+            is hidde
+
+        Returns
+        -------
+
+        """
         self.ui.progress.setVisible(visible)
 
     def setModel(self, model):
-        '''
-        reimplemented from :class:`TaurusWidget`. A door device name is
+        """reimplemented from :class:`TaurusWidget`. A door device name is
         expected as the model
-        '''
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         TaurusWidget.setModel(self, model)
         if self.door is not None:
             self.door.macroStatusUpdated.disconnect(self._statusUpdated)
@@ -139,7 +199,17 @@ class MacroButton(TaurusWidget):
         self.door.getAttribute('State').addListener(self.door_state_listener)
 
     def _doorStateChanged(self, state):
-        '''slot called on door state changes'''
+        """slot called on door state changes
+
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+
+        """
         color = '#' + DEVICE_STATE_PALETTE.hex(state)
         stylesheet = 'QFrame{border: 4px solid %s;}' % color
         self.ui.frame.setStyleSheet(stylesheet)
@@ -154,7 +224,17 @@ class MacroButton(TaurusWidget):
         self.ui.progress.setEnabled(door_available)
 
     def _statusUpdated(self, *args):
-        '''slot called on status changes'''
+        """slot called on status changes
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         # SHOULD SEE THE DOCUMENTATION ABOUT THE ARGS AND ALSO THE STATUS STATE MACHINE
         # ARGS FORMAT IS (GUESSING WITH PRINT STATEMENTS)
         # e.g. ((<sardana.taurus.core.tango.sardana.macro.Macro object at 0x7f29300bc210>, [{u'step': 100.0, u'state': u'stop', u'range': [0.0, 100.0], u'id': u'b226f5e8-c807-11e0-8abe-001d0969db5b'}]),)
@@ -191,7 +271,17 @@ class MacroButton(TaurusWidget):
         self.statusUpdated.emit(status_dict)
 
     def _resultUpdated(self, *args):
-        '''slot called on result changes'''
+        """slot called on result changes
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         # ARGS APPEAR TO BE EMPTY... SHOULD THEY CONTAIN THE RESULT ?!?!?!
         # I have to rely on the 'macro object' received in the last status
         # update
@@ -201,33 +291,64 @@ class MacroButton(TaurusWidget):
         self.resultUpdated.emit(result)
 
     def setText(self, text):
-        '''set the button text
+        """set the button text
 
-        :param text: (str) text for the button
-        '''
+        Parameters
+        ----------
+        text :
+            str) text for the button
+
+        Returns
+        -------
+
+        """
         self.setButtonText(text)
 
     def setButtonText(self, text):
-        '''same as :meth:`setText`
-        '''
+        """same as :meth:`setText`
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
         self.ui.button.setText("Run/Stop:\n" + text)
 
     def setMacroName(self, name):
-        '''set the name of the macro to be executed
+        """set the name of the macro to be executed
 
-        :param name: (str) text for the button
-        '''
+        Parameters
+        ----------
+        name :
+            str) text for the button
+
+        Returns
+        -------
+
+        """
         self.macro_name = str(name)
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
     def updateMacroArgument(self, index, value):
-        '''change a given argument
+        """change a given argument
 
-        :param index: (int) positional index for this argument
-        :param value: value for this argument
-        '''
+        Parameters
+        ----------
+        index :
+            int) positional index for this argument
+        value :
+            value for this argument
+
+        Returns
+        -------
+
+        """
         # make sure that the macro_args is at least as long as index
         while len(self.macro_args) < index + 1:
             self.macro_args.append('')
@@ -253,6 +374,7 @@ class MacroButton(TaurusWidget):
         return True
 
     def _onButtonClicked(self):
+        """ """
         if self.ui.button.isChecked():
             self.runMacro()
         else:
@@ -260,7 +382,7 @@ class MacroButton(TaurusWidget):
 
     @ProtectTaurusMessageBox(msg='Error while executing the macro.')
     def runMacro(self):
-        '''execute the macro with the current arguments'''
+        """execute the macro with the current arguments"""
         if self.door is None:
             return
         param_defs = self.door.macro_server.getMacroInfoObj(
@@ -278,11 +400,12 @@ class MacroButton(TaurusWidget):
 
     # For backward compatibility
     def abort(self):
+        """ """
         self.warning("abort is not implemented, stop is being called instead")
         self.stop()
 
     def stop(self):
-        '''stop the macro.'''
+        """stop the macro."""
         if self.door is None:
             return
         self.door.PauseMacro()
@@ -305,7 +428,7 @@ class MacroButton(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
-        '''reimplemented from :class:`TaurusWidget`'''
+        """reimplemented from :class:`TaurusWidget`"""
         return {'container': False,
                 'group': 'Taurus Sardana',
                 'module': 'taurus.qt.qtgui.extra_macroexecutor',
@@ -313,9 +436,16 @@ class MacroButton(TaurusWidget):
 
 
 class MacroButtonAbortDoor(Qt.QPushButton, TaurusBaseWidget):
-    '''Deprecated class. Instead use TaurusCommandButton.
+    """Deprecated class. Instead use TaurusCommandButton.
     A button for aborting macros on a door
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     # todo: why not inheriting from (TaurusBaseComponent, Qt.QPushButton)?
 
     def __init__(self, parent=None, designMode=False):
@@ -330,12 +460,12 @@ class MacroButtonAbortDoor(Qt.QPushButton, TaurusBaseWidget):
         self.clicked.connect(self.abort)
 
     def getModelClass(self):
-        '''reimplemented from :class:`TaurusBaseWidget`'''
+        """reimplemented from :class:`TaurusBaseWidget`"""
         return TaurusDevice
 
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the macro.')
     def abort(self):
-        '''stops macros'''
+        """stops macros"""
         door = self.getModelObj()
         if door is not None:
             door.stopMacro()
@@ -371,6 +501,7 @@ if __name__ == '__main__':
     door_name = args[0]
 
     class TestWidget(Qt.QWidget):
+        """ """
 
         def __init__(self, door, macro):
             Qt.QWidget.__init__(self)
@@ -381,16 +512,60 @@ if __name__ == '__main__':
             self.create_layout(macro)
 
         def update_macro_name(self, macro_name):
+            """
+
+            Parameters
+            ----------
+            macro_name :
+                
+
+            Returns
+            -------
+
+            """
             self.macro_name = macro_name
 
         def update_result(self, result):
+            """
+
+            Parameters
+            ----------
+            result :
+                
+
+            Returns
+            -------
+
+            """
             self.result_label.setText(str(result))
 
         def toggle_progress(self, toggle):
+            """
+
+            Parameters
+            ----------
+            toggle :
+                
+
+            Returns
+            -------
+
+            """
             visible = self.show_progress.isChecked()
             self.mb.showProgress(visible or toggle)
 
         def getMacroInfo(self, macro_name):
+            """
+
+            Parameters
+            ----------
+            macro_name :
+                
+
+            Returns
+            -------
+
+            """
 
             door = taurus.Device(self.door_name)
             try:
@@ -416,6 +591,17 @@ if __name__ == '__main__':
             return param_names, default_values
 
         def clean_layout(self, layout):
+            """
+
+            Parameters
+            ----------
+            layout :
+                
+
+            Returns
+            -------
+
+            """
 
             while layout.count():
                 child = layout.takeAt(0)
@@ -423,6 +609,17 @@ if __name__ == '__main__':
                     child.widget().deleteLater()
 
         def create_layout(self, macro_name):
+            """
+
+            Parameters
+            ----------
+            macro_name :
+                
+
+            Returns
+            -------
+
+            """
             p_names, d_values = self.getMacroInfo(macro_name)
             # Create TOP layout
             self.w_arg = Qt.QWidget()
@@ -488,6 +685,7 @@ if __name__ == '__main__':
             self.w_macro_name.setText(macro_name)
 
         def update_layout(self):
+            """ """
             if self.getMacroInfo(self.macro_name):
                 self.clean_layout(self.layout())
                 self.create_layout(self.macro_name)

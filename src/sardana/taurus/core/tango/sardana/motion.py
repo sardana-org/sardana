@@ -36,10 +36,16 @@ from taurus.core.util.containers import CaselessDict
 
 
 def _get_tango_devstate_match(states):
-    """
-    Retrieve PyTango.DevState match
-    :param states:
-    :return:
+    """Retrieve PyTango.DevState match
+
+    Parameters
+    ----------
+    states :
+        return:
+
+    Returns
+    -------
+
     """
 
     import PyTango
@@ -56,77 +62,180 @@ def _get_tango_devstate_match(states):
 
 
 class Moveable:
-    """ An item that can 'move'. In order to move it you need to provide a list
+    """An item that can 'move'. In order to move it you need to provide a list
     of values (normally interpreted as motor positions).
-    Therefore this Moveable can represent a single motor, a group of motors"""
+    Therefore this Moveable can represent a single motor, a group of motors
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self):
         pass
 
     def startMove(self, new_pos, timeout=None):
-        """ startMove(sequence<float> new_pos, double timeout=None) -> sequence<id>
-
+        """startMove(sequence<float> new_pos, double timeout=None) -> sequence<id>
+        
         Calling this method will trigger a movement off all components of
-        the movement."""
+        the movement.
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def waitMove(self, timeout=None, id=None):
-        """ waitMove(float timeout=None, sequence<id> id=None) -> None
-
+        """waitMove(float timeout=None, sequence<id> id=None) -> None
+        
         Waits for the movement to end. If no movement is active the method
-        returns immediately."""
+        returns immediately.
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def move(self, new_pos, timeout=None):
-        """ move(list<double> new_pos, timeout=None) -> None
-
+        """move(list<double> new_pos, timeout=None) -> None
+        
         Triggers a movement and waits for it to end.
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
 
         """
         self.waitMove(id=self.startMove(new_pos, timeout=timeout))
 
     def iterMove(self, new_pos, timeout=None):
-        """ generator for motor positions"""
+        """generator for motor positions
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def getLastMotionTime(self):
+        """ """
         raise NotImplementedError
 
     def getTotalLastMotionTime(self):
+        """ """
         raise NotImplementedError
 
     def abort(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         pass
 
     def getMoveableSource(self):
+        """ """
         return None
 
     def getSize(self):
+        """ """
         return 0
 
     def getIndex(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class MoveableSource:
-    """ A container of Moveable items. """
+    """A container of Moveable items."""
 
     def __init__(self):
         pass
 
     def getMoveable(self, names):
-        """ getMoveable(list<string> names) -> Moveable
-
+        """getMoveable(list<string> names) -> Moveable
+        
         Returns a Moveable object that handles all the moveable items given in
         names.
+
+        Parameters
+        ----------
+        names :
+            
+
+        Returns
+        -------
+
         """
         pass
 
 
 class BaseMotion(Moveable):
+    """ """
 
     def __init__(self, elements, moveable_srcs, allow_repeat=False,
                  allow_unknown=False, read_only=False):
@@ -145,6 +254,19 @@ class BaseMotion(Moveable):
                                   allow_unknown)
 
     def getMoveable(self, sources, name):
+        """
+
+        Parameters
+        ----------
+        sources :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         for source in sources:
             moveable = source.getMoveable(name)
             if moveable is not None:
@@ -152,7 +274,7 @@ class BaseMotion(Moveable):
 
 
 class MotionGroup(BaseMotion):
-    """ A virtual motion group object """
+    """A virtual motion group object"""
 
     def __init__(self, elements, moveable_srcs, allow_repeat=False,
                  allow_unknown=False, read_only=False):
@@ -162,22 +284,71 @@ class MotionGroup(BaseMotion):
         self.__total_motion_time = 0
 
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+        moveable_srcs :
+            
+        allow_repeat :
+            
+        allow_unknown :
+            
+
+        Returns
+        -------
+
+        """
         self.moveable_list = elements
 
     def init_by_names(self, names, moveable_srcs, allow_repeat, allow_unknown):
+        """
+
+        Parameters
+        ----------
+        names :
+            
+        moveable_srcs :
+            
+        allow_repeat :
+            
+        allow_unknown :
+            
+
+        Returns
+        -------
+
+        """
         moveables = [self.getMoveable(moveable_srcs, name) for name in names]
         self.init_by_movables(moveables, moveable_srcs, allow_repeat,
                               allow_unknown)
 
     def getLastMotionTime(self):
+        """ """
         times = [moveable.getLastMotionTime()
                  for moveable in self.moveable_list]
         return max(times)
 
     def getTotalLastMotionTime(self):
+        """ """
         return self.__total_motion_time
 
     def startMove(self, pos_list, timeout=None):
+        """
+
+        Parameters
+        ----------
+        pos_list :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if self.read_only:
             raise Exception("Trying to move read only motion")
 
@@ -190,12 +361,38 @@ class MotionGroup(BaseMotion):
         return ids
 
     def waitMove(self, timeout=None, id=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if id is None:
             id = len(self.moveable_list) * [None]
         for i, moveable in enumerate(self.moveable_list):
             moveable.waitMove(timeout=timeout, id=id[i])
 
     def move(self, new_pos, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         start_time = time.time()
         states, positions = [], []
         for moveable, pos in zip(self.moveable_list, new_pos):
@@ -207,10 +404,23 @@ class MotionGroup(BaseMotion):
         return state, positions
 
     def iterMove(self, new_pos, timeout=None):
-        """ generator for motor positions"""
+        """generator for motor positions
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError
 
     def getStatus(self):
+        """ """
         #        res = []
         #        for moveable in self.moveable_list:
         #            status = moveable.status.split('\n')
@@ -221,14 +431,49 @@ class MotionGroup(BaseMotion):
         return "\n".join([m.status() for m in self.moveable_list])
 
     def readState(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if len(self.moveable_list) == 1:
             return self.moveable_list[0].getState()
         return [m.getState() for m in self.moveable_list]
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return [m.readPosition(force=force) for m in self.moveable_list]
 
     def abort(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         for moveable in self.moveable_list:
             try:
                 moveable.abort(wait_ready=wait_ready, timeout=timeout)
@@ -236,6 +481,19 @@ class MotionGroup(BaseMotion):
                 pass
 
     def stop(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         for moveable in self.moveable_list:
             try:
                 moveable.stop(wait_ready=wait_ready, timeout=timeout)
@@ -243,11 +501,12 @@ class MotionGroup(BaseMotion):
                 pass
 
     def read(self):
+        """ """
         pass
 
 
 class Motion(BaseMotion):
-    """ A motion object """
+    """A motion object"""
 
     def __init__(self, elements, moveable_srcs, allow_repeat=False,
                  allow_unknown=False, read_only=False):
@@ -260,12 +519,46 @@ class Motion(BaseMotion):
         return self.__class__.__name__ + "(" + str(self.names) + ")"
 
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+        moveable_srcs :
+            
+        allow_repeat :
+            
+        allow_unknown :
+            
+
+        Returns
+        -------
+
+        """
         # TODO: Optimize this. Dont call init_by_names. It its possible to do it
         # manually with some performance gain
         names = [elem.getName() for elem in elements]
         self.init_by_names(names, moveable_srcs, allow_repeat, allow_unknown)
 
     def init_by_names(self, names, moveable_srcs, allow_repeat, allow_unknown):
+        """
+
+        Parameters
+        ----------
+        names :
+            
+        moveable_srcs :
+            
+        allow_repeat :
+            
+        allow_unknown :
+            
+
+        Returns
+        -------
+
+        """
 
         ms_elem_names = self.getElemNamesByMoveableSource(names, moveable_srcs,
                                                           allow_repeat=allow_repeat, allow_unknown=allow_unknown)
@@ -322,13 +615,28 @@ class Motion(BaseMotion):
     def getElemNamesByMoveableSource(self, names, moveable_sources,
                                      allow_repeat,
                                      allow_unknown):
-        """ getElemNamesByMoveableSource(list<str>names,
+        """getElemNamesByMoveableSource(list<str>names,
                                         list<MoveableSource> moveable_sources,
                                         bool allow_repeat, bool allow_unknown)
-
+        
         Organizes the elements by moveable source. The result is a dictionary
         with key being the MoveableSource and data a list of the names that
         belong to the that motion source.
+
+        Parameters
+        ----------
+        names :
+            
+        moveable_sources :
+            
+        allow_repeat :
+            
+        allow_unknown :
+            
+
+        Returns
+        -------
+
         """
 
         ms_elems = OrderedDict()
@@ -354,14 +662,29 @@ class Motion(BaseMotion):
         return ms_elems
 
     def getLastMotionTime(self):
+        """ """
         times = [moveable.getLastMotionTime()
                  for moveable in self.moveable_list]
         return max(times)
 
     def getTotalLastMotionTime(self):
+        """ """
         return self.__total_motion_time
 
     def startMove(self, pos_list, timeout=None):
+        """
+
+        Parameters
+        ----------
+        pos_list :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if self.read_only:
             raise Exception("Trying to move read only motion")
 
@@ -379,12 +702,38 @@ class Motion(BaseMotion):
         return ids
 
     def waitMove(self, timeout=None, id=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if id is None:
             id = len(self.moveable_list) * [None]
         for i, moveable in enumerate(self.moveable_list):
             moveable.waitMove(timeout=timeout, id=id[i])
 
     def move(self, new_pos, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         start_time = time.time()
         if len(self.moveable_list) == 1:
             moveable = self.moveable_list[0]
@@ -406,7 +755,19 @@ class Motion(BaseMotion):
         return ret
 
     def iterMove(self, new_pos, timeout=None):
-        """ generator for motor positions"""
+        """generator for motor positions
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         assert len(
             self.moveable_list) == 1, "for now we support only 'simple' motions!!!!"
 
@@ -415,14 +776,37 @@ class Motion(BaseMotion):
             yield p
 
     def getStatus(self):
+        """ """
         return "\n".join([m.status() for m in self.moveable_list])
 
     def readState(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if len(self.moveable_list) == 1:
             return self.moveable_list[0].getState()
         return [m.getState() for m in self.moveable_list]
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         moveable_pos_list = [m.readPosition(
             force=force) for m in self.moveable_list]
         pos = [moveable_pos_list[pair[0]][pair[1]]
@@ -430,14 +814,41 @@ class Motion(BaseMotion):
         return pos
 
     def abort(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         for moveable in self.moveable_list:
             moveable.abort(wait_ready=wait_ready, timeout=timeout)
 
     def stop(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         for moveable in self.moveable_list:
             moveable.stop(wait_ready=wait_ready, timeout=timeout)
 
     def read(self):
+        """ """
         pass
 
 #-------------------------------------------------------------------------
@@ -446,6 +857,7 @@ class Motion(BaseMotion):
 
 
 class PoolMoveableTest(Moveable):
+    """ """
 
     def __init__(self, name, elems, moveable_src, mov_items=None):
         self.name = name
@@ -454,26 +866,89 @@ class PoolMoveableTest(Moveable):
         self.pos = len(elems) * [0.0, ]
 
     def startMove(self, new_pos, timeout=None):
+        """
+
+        Parameters
+        ----------
+        new_pos :
+            
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.pos = new_pos
         # return the id as time_stamp
         return len(self.elem_names) * [time.time()]
 
     def waitMove(self, timeout=None, id=None):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = None)
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def abort(self, wait_ready=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        wait_ready :
+             (Default value = True)
+        timeout :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         pass
 
     def readPosition(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return self.pos
 
     def getMoveableSource(self):
+        """ """
         return self.moveable_src
 
     def getSize(self):
+        """ """
         return len(self.elem_names)
 
     def getIndex(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self.elem_names.index(name)
         except:
@@ -481,6 +956,7 @@ class PoolMoveableTest(Moveable):
 
 
 class PoolMSTest(MoveableSource):
+    """ """
 
     def __init__(self, initial_elems):
         MoveableSource.__init__(self)
@@ -494,6 +970,17 @@ class PoolMSTest(MoveableSource):
         self.motor_group = None
 
     def getMoveable(self, names):
+        """
+
+        Parameters
+        ----------
+        names :
+            
+
+        Returns
+        -------
+
+        """
         if len(names) == 1:
             return self.motors.get(names[0])
         l = [name for name in self.elem_names if name in names]
@@ -504,6 +991,7 @@ class PoolMSTest(MoveableSource):
 
 
 def test():
+    """ """
     ms1 = PoolMSTest(["m1", "m2", "m3", "m4"])
     ms2 = PoolMSTest(["m5", "m6", "m7", "m8"])
     ms3 = PoolMSTest(["m9", "m10", "m11", "m12"])

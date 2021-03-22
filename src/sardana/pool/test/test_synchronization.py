@@ -45,10 +45,33 @@ __docformat__ = "restructuredtext"
 class SynchronizationTestCase(object):
     """Base class for integration tests of PoolSynchronization class and any
     PoolTriggerGateController. Test is parameterized using trigger parameters.
+    
+    .. seealso:: :meth:`taurus.test.base.insertTest`
 
-    .. seealso:: :meth:`taurus.test.base.insertTest`"""
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def createElements(self, ctrl_klass, ctrl_lib, ctrl_props):
+        """
+
+        Parameters
+        ----------
+        ctrl_klass :
+            
+        ctrl_lib :
+            
+        ctrl_props :
+            
+
+        Returns
+        -------
+
+        """
         # create controller and element
         ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass,
                                    ctrl_lib, ctrl_props)
@@ -68,8 +91,7 @@ class SynchronizationTestCase(object):
         self.tgaction.add_element(self.tg_elem)
 
     def setUp(self):
-        """Create a FakePool object.
-        """
+        """Create a FakePool object."""
         self.pool = FakePool()
 
     def tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
@@ -77,19 +99,29 @@ class SynchronizationTestCase(object):
         """Helper method to verify trigger element states before and after
         trigger/gate generation.
 
-       :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: :obj:`str`
-       :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: :obj:`str`
-       :param offset: temporal offset before beginning the trigger generation
-       :type offset: float
-       :param active_interval: signal at which triggers will be generated
-       :type active_interval: float
-       :param passive_interval: temporal passive period between two active
-                                periods
-       :type passive_interval: float
-       :param repetitions: number of generated triggers
-       :type repetitions: int
+        Parameters
+        ----------
+        ctrl_lib : obj:`str`
+            controller library used for the test
+        ctrl_klass : obj:`str`
+            controller class used for the test
+        offset : float
+            temporal offset before beginning the trigger generation
+        active_interval : float
+            signal at which triggers will be generated
+        passive_interval : float
+            temporal passive period between two active
+            periods
+        repetitions : int
+            number of generated triggers
+        ctrl_props :
+            
+        synchronization :
+            
+
+        Returns
+        -------
+
         """
 
         # create controller and trigger element
@@ -121,21 +153,31 @@ class SynchronizationTestCase(object):
         """Helper method to verify trigger element states before and after
         trigger/gate generation when aborting the trigger generation.
 
-       :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: :obj:`str`
-       :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: :obj:`str`
-       :param offset: temporal offset before beginning the trigger generation
-       :type offset: float
-       :param active_interval: signal at which triggers will be generated
-       :type active_interval: float
-       :param passive_interval: temporal passive period between two active
-                                periods
-       :type passive_interval: float
-       :param repetitions: number of generated triggers
-       :type repetitions: int
-       :param abort_time: wait this time before stopping the trigger generation
-       :type abort_time: float
+        Parameters
+        ----------
+        ctrl_lib : obj:`str`
+            controller library used for the test
+        ctrl_klass : obj:`str`
+            controller class used for the test
+        offset : float
+            temporal offset before beginning the trigger generation
+        active_interval : float
+            signal at which triggers will be generated
+        passive_interval : float
+            temporal passive period between two active
+            periods
+        repetitions : int
+            number of generated triggers
+        abort_time : float
+            wait this time before stopping the trigger generation
+        ctrl_props :
+            
+        synchronization :
+            
+
+        Returns
+        -------
+
         """
 
         # create controller and trigger element
@@ -163,6 +205,7 @@ class SynchronizationTestCase(object):
         self.assertNotEqual(element_state, State.Moving, msg)
 
     def tearDown(self):
+        """ """
         self.tgaction = None
         self.tg_ctrl = None
         self.tg_cfg = None
@@ -195,12 +238,22 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
             )
 class DummySynchronizationTestCase(SynchronizationTestCase, unittest.TestCase):
     """Integration TestCase of Synchronization with \
-       DummyTriggerGateController"""
+       DummyTriggerGateController
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         SynchronizationTestCase.setUp(self)
 
     def tearDown(self):
+        """ """
         SynchronizationTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)

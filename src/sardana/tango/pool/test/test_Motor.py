@@ -34,11 +34,17 @@ import numbers
 class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
     """TestCase class for testing that read position is possible when
     motor is out of SW limits. Verify that position has a numeric type.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def setUp(self):
-        """Create dummy motor controller and dummy motor element
-        """
+        """Create dummy motor controller and dummy motor element"""
         super(ReadMotorPositionOutsideLim, self).setUp()
         sar_type = 'Motor'
         lib = 'DummyMotorController'
@@ -54,7 +60,15 @@ class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
 
     def test_read_position_outside_sw_lim(self):
         """Test bug #238: reading position when motor is out of SW lims.
-        Verify that position has a numeric type."""
+        Verify that position has a numeric type.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         pc = self.elem.get_attribute_config("position")
         pc.min_value = "1"
         pc.max_value = "2"
@@ -68,8 +82,7 @@ class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
         self.assertIsInstance(posread, numbers.Number, msg)
 
     def tearDown(self):
-        """Remove motor element and motor controller
-        """
+        """Remove motor element and motor controller"""
         self.pool.DeleteElement(self.elem_name)
         self.pool.DeleteElement(self.ctrl_name)
         super(ReadMotorPositionOutsideLim, self).tearDown()

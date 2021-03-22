@@ -8,6 +8,17 @@ SAR_NS = 'http://sardana.cells.es/client/framework/config'
 
 
 def transform(f):
+    """
+
+    Parameters
+    ----------
+    f :
+        
+
+    Returns
+    -------
+
+    """
     if isinstance(f, str):
         doc = etree.parse(f)
     else:
@@ -29,6 +40,7 @@ def transform(f):
 
 
 def main():
+    """ """
     filename = sys.argv[1]
     t = transform(filename)
     print(etree.tostring(t, pretty_print=True))

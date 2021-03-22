@@ -51,7 +51,17 @@ except AttributeError:
 
 
 def timedelta_total_seconds(timedelta):
-    """Equivalent to timedelta.total_seconds introduced with python 2.7."""
+    """Equivalent to timedelta.total_seconds introduced with python 2.7.
+
+    Parameters
+    ----------
+    timedelta :
+        
+
+    Returns
+    -------
+
+    """
     return (
         timedelta.microseconds + 0.0
         + (timedelta.seconds + timedelta.days * 24 * 3600)
@@ -60,9 +70,15 @@ def timedelta_total_seconds(timedelta):
 
 class NXscanH5_FileRecorder(BaseFileRecorder):
 
-    """
-    Saves data to a nexus file that follows the NXscan application definition
+    """Saves data to a nexus file that follows the NXscan application definition
     (This is a pure h5py implementation that does not depend on the nxs module)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
@@ -99,9 +115,21 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                       path=path)
 
     def getFormat(self):
+        """ """
         return 'HDF5::NXscan'
 
     def setFileName(self, filename):
+        """
+
+        Parameters
+        ----------
+        filename :
+            
+
+        Returns
+        -------
+
+        """
         if self.fd is not None:
             self.fd.close()
         self.filename = filename
@@ -110,6 +138,15 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def sanitizeName(self, name):
         """It returns a version of the given name that can be used as a python
         variable (and conforms to NeXus best-practices for dataset names)
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
         """
         # make sure the name does not start with a digit
         if name[0].isdigit():
@@ -122,7 +159,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def _openFile(self, fname):
         """Open the file with given filename (create if it does not exist)
         Populate the root of the file with some metadata from the NXroot
-        definition"""
+        definition
+
+        Parameters
+        ----------
+        fname :
+            
+
+        Returns
+        -------
+
+        """
         if os.path.exists(fname):
             fd = h5py.File(fname, mode='r+')
         else:
@@ -136,6 +183,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         return fd
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
 
         if self.filename is None:
             return
@@ -258,11 +316,21 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.fd.flush()
 
     def _compression(self, shape, compfilter='gzip'):
-        """
-        Returns `compfilter` (the name of the compression filter) to use
+        """Returns `compfilter` (the name of the compression filter) to use
         (or None if no compression is recommended), based on the given shape
         and the self._dataCompressionRank thresshold.
         By default, `compfilter` is set to `'gzip'`
+
+        Parameters
+        ----------
+        shape :
+            
+        compfilter :
+             (Default value = 'gzip')
+
+        Returns
+        -------
+
         """
         min_rank = self._dataCompressionRank
         if shape is None or min_rank < 0 or len(shape) < min_rank:
@@ -275,9 +343,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         return compfilter
 
     def _createPreScanSnapshot(self, env):
-        """
-        Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
+        """Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
         Also link to the snapshot datasets from the <entry>/measurement group
+
+        Parameters
+        ----------
+        env :
+            
+
+        Returns
+        -------
+
         """
         _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         self.preScanSnapShot = env.get('preScanSnapShot', [])
@@ -314,6 +390,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                              dd.name, dtype)
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.filename is None:
             return
         _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
@@ -346,6 +433,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.fd.flush()
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
 
         if self.filename is None:
             return
@@ -421,7 +519,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def writeRecordList(self, recordlist):
-        """Called when in BLOCK writing mode"""
+        """Called when in BLOCK writing mode
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self._startRecordList(recordlist)
         _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         for dd in self.datadesc:
@@ -445,6 +553,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self._endRecordList(recordlist)
 
     def _populateInstrumentInfo(self):
+        """ """
         nxentry = self.fd[self.entryname]
         _meas = nxentry['measurement']
         _snap = _meas['pre_scan_snapshot']
@@ -474,9 +583,15 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     self.warning(msg, label, dd.instrument, e)
 
     def _createNXData(self):
-        """
-        Creates groups of type NXdata by making links to the corresponding
+        """Creates groups of type NXdata by making links to the corresponding
         datasets
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         # classify by type of plot:
         plots1d = {}
@@ -524,17 +639,27 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     self.warning('cannot create link for "%s". Skipping', axis)
 
     def _createNXpath(self, path, prefix=None):
-        """
-        Creates a path in the nexus file composed by nested data_groups
+        """Creates a path in the nexus file composed by nested data_groups
         with their corresponding NXclass attributes.
-
+        
         This method creates the groups if they do not exist. If the
         path is given using `name:nxclass` notation, the given nxclass is
         used.
         Otherwise, the class name is obtained from self._nxclass_map values
         (and if not found, it defaults to NXcollection).
-
+        
         It returns the tip of the branch (the last group created)
+
+        Parameters
+        ----------
+        path :
+            
+        prefix :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
 
         if prefix is None:
@@ -560,18 +685,30 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         return grp
 
     def _addCustomData(self, value, name, nxpath=None, dtype=None, **kwargs):
-        """
-        Apart from value and name, this recorder can use the following optional
+        """Apart from value and name, this recorder can use the following optional
         parameters:
 
-        :param nxpath: (str) a nexus path (optionally using name:nxclass
-                       notation for the group names). See the rules for
-                       automatic nxclass resolution used by
-                       :meth:`._createNXpath`. If None given, it defaults to
-                       nxpath='custom_data:NXcollection'
+        Parameters
+        ----------
+        nxpath :
+            str) a nexus path (optionally using name:nxclass
+            notation for the group names). See the rules for
+            automatic nxclass resolution used by
+            :meth:`._createNXpath`. If None given, it defaults to
+            nxpath='custom_data:NXcollection'
+        dtype :
+            name of data type (it is inferred from value if not
+            given) (Default value = None)
+        value :
+            
+        name :
+            
+        **kwargs :
+            
 
-        :param dtype: name of data type (it is inferred from value if not
-                      given)
+        Returns
+        -------
+
         """
         if nxpath is None:
             nxpath = 'custom_data:NXcollection'

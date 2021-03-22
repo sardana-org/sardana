@@ -865,12 +865,23 @@ extra8_params_def = [
 @insertTest(helper_name="parse", params_def=extra8_params_def,
             params_str="2 3", params=["2", "3"])
 class ParamParserTestCase(unittest.TestCase):
-    """Unit tests for ParamParser class. Mainly based on macro examples for
-    parameters definition.
-    """
+    """Unit tests for ParamParser class. Mainly based on macro examples for"""
     def parse(self, params_def, params_str, params):
         """Helper method to test parameters parsing. To be used with
         insertTest decorator.
+
+        Parameters
+        ----------
+        params_def :
+            
+        params_str :
+            
+        params :
+            
+
+        Returns
+        -------
+
         """
         p = ParamParser(params_def)
         result = p.parse(params_str)

@@ -33,15 +33,36 @@ from sardana.macroserver.macro import *
 class move_async(Macro):
     """A macro that executes an asynchronous movement of a motor. The movement
     can be cancelled by a Ctrl-C signal.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [['moveable', Type.Moveable, None, 'moveable to be moved'],
                  ['pos', Type.Float, None, 'target position'],
                  ]
 
     def run(self, moveable, pos):
+        """
+
+        Parameters
+        ----------
+        moveable :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         motion = self.getMotion([moveable])
         self.info('initial position: %s' % motion.readPosition())
         _id = motion.startMove([pos])

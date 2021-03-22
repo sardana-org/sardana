@@ -33,6 +33,7 @@ from taurus.qt.qtgui.base import TaurusBaseWidget
 
 
 class TaurusMacroDescriptionViewer(Qt.QTextEdit, TaurusBaseWidget):
+    """ """
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
     def __init__(self, parent=None, designMode=False):
@@ -43,19 +44,31 @@ class TaurusMacroDescriptionViewer(Qt.QTextEdit, TaurusBaseWidget):
         self.setFont(Qt.QFont("Courier", 9))
 
     def defineStyle(self):
-        """ Defines the initial style for the widget """
+        """Defines the initial style for the widget"""
         self.updateStyle()
 
     def getModelClass(self):
+        """ """
         return taurus.core.taurusdevice.TaurusDevice
 
     def updateStyle(self):
+        """ """
         self.update()
 
     def onMacroNameChanged(self, macroName):
         """Can be connected to an event emitted after macro name was changed.
            As an argument receives macroName and ask BaseMacroServer object
-           about already prepared and stored in MacroInfoObj object macro description"""
+           about already prepared and stored in MacroInfoObj object macro description
+
+        Parameters
+        ----------
+        macroName :
+            
+
+        Returns
+        -------
+
+        """
         macroServer = self.getModelObj()
 
         if macroServer is None or macroName is None or macroName == "":
@@ -65,7 +78,17 @@ class TaurusMacroDescriptionViewer(Qt.QTextEdit, TaurusBaseWidget):
         self.setText(str(macroServer.getMacroInfoObj(macroName).doc))
 
     def getFormatedToolTip(self, cache=True):
-        """This method was overridden to get rid of the default tooltip of TaurusWidget"""
+        """This method was overridden to get rid of the default tooltip of TaurusWidget
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return ""
 
     model = Qt.pyqtProperty("QString",
@@ -80,6 +103,7 @@ class TaurusMacroDescriptionViewer(Qt.QTextEdit, TaurusBaseWidget):
 
 
 def test():
+    """ """
     import sys
     from sardana.taurus.core.tango.sardana.macroserver import registerExtensions
     registerExtensions()

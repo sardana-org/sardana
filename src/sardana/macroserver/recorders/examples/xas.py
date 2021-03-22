@@ -33,15 +33,24 @@ from sardana.macroserver.scan.recorder import BaseNEXUS_FileRecorder
 
 
 class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
-    """saves data to a nexus file that follows the NXsas application definition
-
-        """
+    """saves data to a nexus file that follows the NXsas application definition"""
 
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
         BaseNEXUS_FileRecorder.__init__(
             self, filename=filename, macro=macro, overwrite=overwrite, **pars)
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         nxs = self.nxs
         if self.filename is None:
             return
@@ -184,6 +193,17 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
         self.nxentry.nxfile.flush()
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         # most used variables in the loop
         fd, debug, warning = self.nxentry.nxfile, self.debug, self.warning
         nparray, npshape = numpy.array, numpy.shape
@@ -216,6 +236,17 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
         self.nxentry.nxfile.flush()
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         env = self.currentlist.getEnviron()
         self.nxentry.insert(nxs.NXfield(
             name='end_time', value=env['endtime'].isoformat()))
@@ -236,6 +267,7 @@ try:
     from nxs import napi, NeXusError
 
     class NXfield_comp(NXfield):
+        """ """
 
         # NOTE: THE CONSTRUCTOR IS OPTIONAL. IF NOT IMPLEMENTED, WE CAN STILL
         # USE THE nxslab_dims PROPERTY
@@ -246,9 +278,7 @@ try:
             self._slab_dims = nxslab_dims
 
         def write(self):
-            """
-            Write the NXfield, including attributes, to the NeXus file.
-            """
+            """Write the NXfield, including attributes, to the NeXus file."""
             if self.nxfile:
                 if self.nxfile.mode == napi.ACC_READ:
                     raise NeXusError("NeXus file is readonly")
@@ -276,6 +306,7 @@ try:
                 raise IOError("Data is not attached to a file")
 
         def _getnxslabdims(self):
+            """ """
             try:
                 return self._nxslab_dims
             except:
@@ -289,6 +320,17 @@ try:
             return slab_dims
 
         def _setnxslabdims(self, slab_dims):
+            """
+
+            Parameters
+            ----------
+            slab_dims :
+                
+
+            Returns
+            -------
+
+            """
             self._nxslab_dims = slab_dims
 
         nxslab_dims = property(_getnxslabdims, _setnxslabdims,

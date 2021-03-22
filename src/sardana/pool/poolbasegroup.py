@@ -38,6 +38,7 @@ from sardana.pool.poolcontainer import PoolContainer
 
 
 class PoolBaseGroup(PoolContainer):
+    """ """
 
     def __init__(self, **kwargs):
         self._pending = True
@@ -57,17 +58,31 @@ class PoolBaseGroup(PoolContainer):
                       "been constructed yet")
 
     def _get_pool(self):
+        """ """
         return self._pool
 
     def _create_action_cache(self):
+        """ """
         raise NotImplementedError
 
     def _get_action_cache(self):
+        """ """
         if self._action_cache is None:
             self._action_cache = self._fill_action_cache()
         return self._action_cache
 
     def _set_action_cache(self, action_cache):
+        """
+
+        Parameters
+        ----------
+        action_cache :
+            
+
+        Returns
+        -------
+
+        """
         physical_elements = self.get_physical_elements()
         if self._action_cache is not None:
             for ctrl_physical_elements in list(physical_elements.values()):
@@ -77,6 +92,19 @@ class PoolBaseGroup(PoolContainer):
         self._action_cache = self._fill_action_cache(action_cache)
 
     def _fill_action_cache(self, action_cache=None, physical_elements=None):
+        """
+
+        Parameters
+        ----------
+        action_cache :
+             (Default value = None)
+        physical_elements :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if action_cache is None:
             action_cache = self._create_action_cache()
         if physical_elements is None:
@@ -87,6 +115,19 @@ class PoolBaseGroup(PoolContainer):
         return action_cache
 
     def _calculate_element_state(self, elem, elem_state_info):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+        elem_state_info :
+            
+
+        Returns
+        -------
+
+        """
         u_state, u_status = elem_state_info
         if u_status is None:
             state_str = "None" if u_state is None else State.whatis(u_state)
@@ -96,6 +137,17 @@ class PoolBaseGroup(PoolContainer):
         return u_state, u_status
 
     def _calculate_states(self, state_info=None):
+        """
+
+        Parameters
+        ----------
+        state_info :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         user_elements = self.get_user_elements()
         none, unknown = set(), set()
         fault, alarm, on, moving = set(), set(), set(), set()
@@ -144,9 +196,21 @@ class PoolBaseGroup(PoolContainer):
         return state, status
 
     def _is_managed_element(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         return True
 
     def _build_elements(self):
+        """ """
         self._user_elements = []
         self._physical_elements = {}
         self._physical_elements_set = set()
@@ -179,17 +243,50 @@ class PoolBaseGroup(PoolContainer):
         self._pending = False
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def set_user_element_ids(self, new_element_ids):
+        """
+
+        Parameters
+        ----------
+        new_element_ids :
+            
+
+        Returns
+        -------
+
+        """
         self.clear_user_elements()
         self._user_element_ids = new_element_ids
 
     def get_user_element_ids(self):
         """Returns the sequence of user element IDs
 
-        :return: the sequence of user element IDs
-        :rtype: sequence< :obj:`int`>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        sequence< :obj:`int`>
+            the sequence of user element IDs
+
+        """
         return self._user_element_ids
 
     user_element_ids = property(get_user_element_ids)
@@ -197,8 +294,15 @@ class PoolBaseGroup(PoolContainer):
     def get_user_elements(self):
         """Returns the sequence of user elements
 
-        :return: the sequence of user elements
-        :rtype: sequence< :class:`~sardana.pool.poolelement.PoolElement`>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        sequence< :class:`~sardana.pool.poolelement.PoolElement`>
+            the sequence of user elements
+
+        """
         if self._pending:
             self._build_elements()
         return self._user_elements
@@ -206,8 +310,15 @@ class PoolBaseGroup(PoolContainer):
     def get_user_elements_attribute_iterator(self):
         """Returns an iterator over the main attribute of each user element.
 
-        :return: an iterator over the main attribute of each user element.
-        :rtype: iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >
+            an iterator over the main attribute of each user element.
+
+        """
         for element in self.get_user_elements():
             yield element.get_default_attribute()
 
@@ -216,20 +327,34 @@ class PoolBaseGroup(PoolContainer):
 
     def get_user_elements_attribute_sequence(self):
         """Returns a sequence of main attribute of each user element.
-
+        
         In loops use preferably :meth:`get_user_elements_attribute_iterator` for
         performance and memory reasons.
 
-        :return: a sequence of main attribute of each user element.
-        :rtype: sequence< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        sequence< :class:`~sardana.sardanaattribute.SardanaAttribute` >
+            a sequence of main attribute of each user element.
+
+        """
         return list(self.get_user_elements_attribute_iterator())
 
     def get_user_elements_attribute_map(self):
         """Returns a dictionary of main attribute of each user element.
 
-        :return: a dictionary of main attribute of each user element.
-        :rtype: dict< :class:`~sardana.pool.poolelement.PoolElement`,
-                :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        dict< :class:`~sardana.pool.poolelement.PoolElement`,
+        :class:`~sardana.sardanaattribute.SardanaAttribute` >
+            a dictionary of main attribute of each user element.
+
+        """
         ret = {}
         for element in self.get_user_elements():
             ret[element] = element.get_default_attribute()
@@ -239,40 +364,75 @@ class PoolBaseGroup(PoolContainer):
         """Returns a dictionary or physical elements where key is a controller
         object and value is a sequence of pool elements
 
-        :return: a dictionary of physical elements
-        :rtype: dict< :class:`~sardana.pool.poolcontroller.PoolController,
-                sequence<:class:`~sardana.pool.poolelement.PoolElement`>"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        dict< :class:`~sardana.pool.poolcontroller.PoolController,
+        sequence<:class:`~sardana.pool.poolelement.PoolElement`>
+            a dictionary of physical elements
+
+        """
         if self._pending:
             self._build_elements()
         return self._physical_elements
 
     def get_physical_elements_iterator(self):
         """Returns an iterator over the physical elements.
-
+        
         .. warning:: The order is non deterministic.
 
-        :return: an iterator over the physical elements.
-        :rtype: iter<:class:`~sardana.pool.poolelement.PoolElement` >"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        iter<:class:`~sardana.pool.poolelement.PoolElement` >
+            an iterator over the physical elements.
+
+        """
         for _, elements in list(self.get_physical_elements().items()):
             for element in elements:
                 yield element
 
     def get_physical_elements_attribute_iterator(self):
         """Returns an iterator over the main attribute of each physical element.
-
+        
         .. warning:: The order is non deterministic.
 
-        :return: an iterator over the main attribute of each physical element.
-        :rtype: iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >
+            an iterator over the main attribute of each physical element.
+
+        """
         for element in self.get_physical_elements_iterator():
             yield element.get_default_attribute()
 
     def get_physical_elements_set(self):
+        """ """
         if self._pending:
             self._build_elements()
         return self._physical_elements_set
 
     def add_user_element(self, element, index=None):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        index :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         user_elements = self._user_elements
         physical_elements = self._physical_elements
         physical_elements_set = self._physical_elements_set
@@ -299,6 +459,21 @@ class PoolBaseGroup(PoolContainer):
 
     def _find_physical_elements(self, element, physical_elements=None,
                                 physical_elements_set=None):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        physical_elements :
+             (Default value = None)
+        physical_elements_set :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         elem_type = element.get_type()
         if physical_elements is None:
             physical_elements = {}
@@ -336,6 +511,7 @@ class PoolBaseGroup(PoolContainer):
 #        self.remove_element(element)
 
     def clear_user_elements(self):
+        """ """
         user_elements = self._user_elements
         if user_elements is not None:
             for element in user_elements:
@@ -353,6 +529,7 @@ class PoolBaseGroup(PoolContainer):
     # --------------------------------------------------------------------------
 
     def stop(self):
+        """ """
         msg = ""
         for ctrl, elements in list(self.get_physical_elements().items()):
             self.debug("Stopping %s %s", ctrl.name,
@@ -379,6 +556,7 @@ class PoolBaseGroup(PoolContainer):
     # --------------------------------------------------------------------------
 
     def abort(self):
+        """ """
         msg = ""
         for ctrl, elements in list(self.get_physical_elements().items()):
             self.debug("Aborting %s %s", ctrl.name,
@@ -407,6 +585,7 @@ class PoolBaseGroup(PoolContainer):
     # --------------------------------------------------------------------------
 
     def get_operation(self):
+        """ """
         for _, elements in list(self.get_physical_elements().items()):
             for element in elements:
                 op = element.get_operation()

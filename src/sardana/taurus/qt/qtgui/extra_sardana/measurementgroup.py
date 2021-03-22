@@ -84,6 +84,21 @@ DEFAULT_STRING_LENGTH = 80
 
 
 def createChannelDict(channel, index=None, **kwargs):
+    """
+
+    Parameters
+    ----------
+    channel :
+        
+    index :
+         (Default value = None)
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
     import PyTango
     import numpy
@@ -186,6 +201,17 @@ def createChannelDict(channel, index=None, **kwargs):
 
 
 def getElementTypeIcon(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == ChannelView.Channel:
         return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.Enabled:
@@ -211,6 +237,17 @@ def getElementTypeIcon(t):
 
 
 def getElementTypeSize(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == ChannelView.Channel:
         return Qt.QSize(200, 24)
     elif t == ChannelView.Enabled:
@@ -227,7 +264,17 @@ def getElementTypeSize(t):
 
 
 def getElementTypeToolTip(t):
-    """Wrapper to prevent loading qtgui when this module is imported"""
+    """Wrapper to prevent loading qtgui when this module is imported
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     if t == ChannelView.Channel:
         return "Channel"
     elif t == ChannelView.Enabled:
@@ -268,23 +315,41 @@ class BaseMntGrpChannelItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         return self._itemData
 
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns ChannelView.Unknown
-
+        
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
+        
+        :return: (MacroView) the role in form of element type
 
-        :return: (MacroView) the role in form of element type"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return ChannelView.Unknown
 
 
 class MntGrpChannelItem(BaseMntGrpChannelItem):
+    """ """
 
     itemdata_keys_map = {ChannelView.Channel: 'label',
                          ChannelView.Enabled: 'enabled',
@@ -304,8 +369,17 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         taurus_role = index.model().role(index.column())
         ch_name, ch_data = self.itemData()
@@ -320,6 +394,19 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         return ret
 
     def setData(self, index, qvalue):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        qvalue :
+            
+
+        Returns
+        -------
+
+        """
         ch_name, ch_data = self.itemData()
         taurus_role = index.model().role(index.column())
         key = self.itemdata_keys_map[taurus_role]
@@ -349,22 +436,47 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         ch_data[key] = data
 
     def role(self):
+        """ """
         return ChannelView.Channel
 
     def toolTip(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return "Channel " + self._itemData[0]
 
     def icon(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         taurus_role = index.model().role(index.column())
         if taurus_role == ChannelView.Channel:
             return Qt.QIcon("actions:system-shutdown.svg")
 
 
 class MntGrpUnitItem(TaurusBaseTreeItem):
+    """ """
     pass
 
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
+    """ """
     ColumnNames = ("Channel", "enabled", "output", "Data Type",
                    "Plot Type", "Plot Axes", "Timer", "Monitor",
                    "Synchronizer", "Synchronization", "Ref Enabled",
@@ -394,37 +506,107 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         self._dirty = False
 
     def setAvailableChannels(self, cdict):
+        """
+
+        Parameters
+        ----------
+        cdict :
+            
+
+        Returns
+        -------
+
+        """
         self._availableChannels = cdict
 
     def getAvailableChannels(self):
+        """ """
         return self._availableChannels
 
     def setAvailableTriggers(self, tdict):
+        """
+
+        Parameters
+        ----------
+        tdict :
+            
+
+        Returns
+        -------
+
+        """
         self._availableTriggers = tdict
 
     def getAvailableTriggers(self):
+        """ """
         return self._availableTriggers
 
     def createNewRootItem(self):
+        """ """
         return BaseMntGrpChannelItem(self, self.ColumnNames)
 
     def roleIcon(self, taurus_role):
+        """
+
+        Parameters
+        ----------
+        taurus_role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeIcon(taurus_role)
 
     def roleSize(self, taurus_role):
+        """
+
+        Parameters
+        ----------
+        taurus_role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeSize(taurus_role)
 
     def roleToolTip(self, taurus_role):
+        """
+
+        Parameters
+        ----------
+        taurus_role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeToolTip(taurus_role)
 
     def getPyData(self, ctrlname=None, chname=None, key=None):
-        '''
-        If controller name and channel name are given, it returns the dictionary with the channel info.
+        """If controller name and channel name are given, it returns the dictionary with the channel info.
         If only controller name is given, it returns the dictionary with the controller info.
-
+        
         Note that it will raise a KeyError exception if any of the keys are not
         found or if chname is given without providing the unit id
-        '''
+
+        Parameters
+        ----------
+        ctrlname :
+             (Default value = None)
+        chname :
+             (Default value = None)
+        key :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if ctrlname is None:
             raise ValueError('controller name must be passed')
         if chname is None:
@@ -433,6 +615,17 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             return self._mgconfig['controllers'][ctrlname]['channels'][chname]
 
     def setupModelData(self, mgconfig):
+        """
+
+        Parameters
+        ----------
+        mgconfig :
+            
+
+        Returns
+        -------
+
+        """
         if mgconfig is None:
             return
         root = self._rootItem  # @The root could eventually be changed for each unit or controller
@@ -446,14 +639,33 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         self._mgconfig = mgconfig
 
     def setDataSource(self, data_src):
+        """
+
+        Parameters
+        ----------
+        data_src :
+            
+
+        Returns
+        -------
+
+        """
         self._dirty = False
         TaurusBaseModel.setDataSource(self, data_src)
 
     def updateMntGrpChannelIndex(self, root=None):
-        '''
-        assigns the MeasurementGroup index (the internal order in the MG)
+        """assigns the MeasurementGroup index (the internal order in the MG)
         according to the order in the QModel
-        '''
+
+        Parameters
+        ----------
+        root :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if root is None:
             root = self._rootItem
         for row in range(root.childCount()):
@@ -461,6 +673,17 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             chdata['index'] = row
 
     def flags(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         flags = TaurusBaseModel.flags(self, index)
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Channel:  # channel column is not editable
@@ -483,8 +706,19 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
 
     def data(self, index, role=Qt.Qt.DisplayRole):
         """Reimplemented from :meth:`TaurusBaseModel.data`
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+             (Default value = Qt.Qt.DisplayRole)
+
+        Returns
+        -------
+
         """
         # Try with the normal TaurusBaseModel item-oriented approach
         try:
@@ -541,6 +775,21 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         return None
 
     def setData(self, index, qvalue, role=Qt.Qt.EditRole):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        qvalue :
+            
+        role :
+             (Default value = Qt.Qt.EditRole)
+
+        Returns
+        -------
+
+        """
         # For those things which are at the unit level, we handle them here
         taurus_role = self.role(index.column())
         if taurus_role in (ChannelView.Timer, ChannelView.Monitor, ChannelView.Synchronization):
@@ -587,6 +836,23 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
 
     # @todo: Very inefficient implementation. We should use {begin|end}InsertRows
     def addChannel(self, chname=None, chinfo=None, ctrlname=None, external=False):
+        """
+
+        Parameters
+        ----------
+        chname :
+             (Default value = None)
+        chinfo :
+             (Default value = None)
+        ctrlname :
+             (Default value = None)
+        external :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
 
         if chname is None:
             chname = chinfo['full_name']
@@ -626,6 +892,17 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
 
     # @todo: Very inefficient implementation. We should use {begin|end}InsertRows
     def removeChannels(self, chnames):
+        """
+
+        Parameters
+        ----------
+        chnames :
+            
+
+        Returns
+        -------
+
+        """
         # update the internal data
         self._dirty = True
         self.beginResetModel()  # we are altering the internal data here, so we need to protect it
@@ -653,6 +930,21 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
 
     # @todo: Very inefficient implementation. We should use {begin|end}MoveRows
     def swapChannels(self, root, row1, row2):
+        """
+
+        Parameters
+        ----------
+        root :
+            
+        row1 :
+            
+        row2 :
+            
+
+        Returns
+        -------
+
+        """
         self._dirty = True
         n1, d1 = root.child(row1).itemData()
         n2, d2 = root.child(row2).itemData()
@@ -661,17 +953,39 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         self.refresh()
 
     def isDataChanged(self):
+        """ """
         return self._dirty
 
     def setDataChanged(self, datachanged):
+        """
+
+        Parameters
+        ----------
+        datachanged :
+            
+
+        Returns
+        -------
+
+        """
         self._dirty = datachanged
 
 
 class MntGrpChannelModel(BaseMntGrpChannelModel):
-    '''A BaseMntGrpChannelModel that communicates with a MntGrp device for setting and reading the configuration
-    '''
+    """A BaseMntGrpChannelModel that communicates with a MntGrp device for setting and reading the configuration"""
 
     def setDataSource(self, mg):
+        """
+
+        Parameters
+        ----------
+        mg :
+            
+
+        Returns
+        -------
+
+        """
         if self._data_src is not None:
             self._data_src.configurationChanged.disconnect(
                 self.configurationChanged)
@@ -680,14 +994,27 @@ class MntGrpChannelModel(BaseMntGrpChannelModel):
         BaseMntGrpChannelModel.setDataSource(self, mg)
 
     def configurationChanged(self):
+        """ """
         self.refresh()
 
     def setupModelData(self, mg):
+        """
+
+        Parameters
+        ----------
+        mg :
+            
+
+        Returns
+        -------
+
+        """
         if mg is None:
             return
         BaseMntGrpChannelModel.setupModelData(self, self.getSourceData())
 
     def writeSourceData(self):
+        """ """
         mg = self.dataSource()
         if mg is not None and self._mgconfig is not None:
             mg.setConfiguration(self._mgconfig)
@@ -700,14 +1027,22 @@ class MntGrpChannelModel(BaseMntGrpChannelModel):
 
     def getLocalData(self):
         """Gets the local data (may be different from the one in the data source
-        since it may have been modified by the user)"""
+        since it may have been modified by the user)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self._mgconfig
 
 
 class AxesSelector(Qt.QWidget):
 
     def __init__(self, parent, n=0, choices=None):
-        '''Shows n comboboxes populated with choices. If n is 0, it just shows a LineEdit instead'''
+        """Shows n comboboxes populated with choices. If n is 0, it just shows a LineEdit instead"""
         Qt.QWidget.__init__(self, parent)
         self._n = n
         self._CBs = []
@@ -725,19 +1060,43 @@ class AxesSelector(Qt.QWidget):
             self.setChoices(choices)
 
     def setChoices(self, choices):
+        """
+
+        Parameters
+        ----------
+        choices :
+            
+
+        Returns
+        -------
+
+        """
         for cb in self._CBs:
             cb.addItems(choices)
 
     def text(self):
+        """ """
         return "|".join(self.getCurrentChoices())
 
     def getCurrentChoices(self):
+        """ """
         if self._LE is None:
             return [str(cb.currentText()) for cb in self._CBs]
         else:
             return [str(self._LE.text())]
 
     def setCurrentChoices(self, choice):
+        """
+
+        Parameters
+        ----------
+        choice :
+            
+
+        Returns
+        -------
+
+        """
         if self._LE is None:
             texts = str(choice).split('|')
             for t, cb in zip(texts[:len(self._CBs)], self._CBs):
@@ -747,8 +1106,24 @@ class AxesSelector(Qt.QWidget):
 
 
 class ChannelDelegate(Qt.QStyledItemDelegate):
+    """ """
 
     def createEditor(self, parent, option, index):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         model = index.model()
         taurus_role = model.role(index.column())
         if taurus_role in (ChannelView.Channel, ChannelView.PlotType, ChannelView.Normalization,
@@ -772,6 +1147,19 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         return ret
 
     def setEditorData(self, editor, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         model = index.model()
         dataSource = model.dataSource()
         taurus_role = model.role(index.column())
@@ -824,6 +1212,21 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             Qt.QStyledItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        model :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         taurus_role = model.role(index.column())
         dataSource = model.dataSource()
         if taurus_role in (ChannelView.Channel, ChannelView.PlotType, ChannelView.Normalization):
@@ -935,8 +1338,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
 
 
 class MntGrpChannelEditor(TaurusBaseTableWidget):
-    """
-    """
+    """ """
 
     KnownPerspectives = {
         "Channel": {
@@ -965,9 +1367,21 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
             self.isSimpleView, self.setSimpleView, "simpleView")
 
     def isSimpleView(self):
+        """ """
         return self._simpleView
 
     def setSimpleView(self, simpleview):
+        """
+
+        Parameters
+        ----------
+        simpleview :
+            
+
+        Returns
+        -------
+
+        """
         if simpleview == self.isSimpleView():
             return
         columnRoles = list(self.getQModel().ColumnRoles)
@@ -982,9 +1396,11 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self._simpleViewAction.setChecked(simpleview)
 
     def resetSimpleView(self):
+        """ """
         self.setSimpleView(False)
 
     def createViewWidget(self):
+        """ """
         tableView = TaurusBaseTableWidget.createViewWidget(self)
         self._delegate = ChannelDelegate(self)
         # self._delegate.setItemEditorFactory(Qt.QItemEditorFactory()) #This
@@ -1000,15 +1416,28 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         return tableView
 
     def createToolArea(self):
+        """ """
         ta = TaurusBaseTableWidget.createToolArea(self)
         e_bar = self._editorBar = EditorToolBar(self, self)
         ta.append(e_bar)
         return ta
 
     def getModelClass(self):
+        """ """
         return TaurusDevice
 
     def addChannel(self, channel=None):
+        """
+
+        Parameters
+        ----------
+        channel :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         qmodel = self.getQModel()
         dataSource = qmodel.dataSource()
         if channel is None:
@@ -1037,18 +1466,31 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
                     qmodel.addChannel(chinfo=ch_info)
 
     def removeChannels(self, channels=None):
+        """
+
+        Parameters
+        ----------
+        channels :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if channels is None:
             channels = self.selectedItems()
         chnames = [ch.itemData()[0] for ch in channels]
         self.getQModel().removeChannels(chnames)
 
     def _getSelectedChannel(self):
+        """ """
         channels = self.selectedItems()
         if len(channels) != 1:
             return None
         return channels[0]
 
     def moveBottomChannel(self):
+        """ """
         channel = self._getSelectedChannel()
         if channel is None:
             return
@@ -1063,6 +1505,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
             return self.moveBottomChannel()
 
     def moveTopChannel(self):
+        """ """
         channel = self._getSelectedChannel()
         if channel is None:
             return
@@ -1076,6 +1519,17 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
             return self.moveTopChannel()
 
     def moveUpChannel(self, channel=None):
+        """
+
+        Parameters
+        ----------
+        channel :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if channel is None:
             channel = self._getSelectedChannel()
             if channel is None:
@@ -1090,6 +1544,17 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self.viewWidget().setCurrentIndex(idx)
 
     def moveDownChannel(self, channel=None):
+        """
+
+        Parameters
+        ----------
+        channel :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if channel is None:
             channel = self._getSelectedChannel()
             if channel is None:
@@ -1104,10 +1569,12 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self.viewWidget().setCurrentIndex(idx)
 
     def getLocalConfig(self):
+        """ """
         return self.getQModel().getLocalData()
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusBaseTableWidget.getQtDesignerPluginInfo()
         ret['module'] = 'taurus.qt.qtgui.extra_sardana'
         ret['group'] = 'Taurus Sardana'

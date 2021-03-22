@@ -93,14 +93,37 @@ class MotionPath(object):
         self._calculateMotionPath()
 
     def setInitialUserPos(self, initial_user_pos):
+        """
+
+        Parameters
+        ----------
+        initial_user_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.initial_user_pos = initial_user_pos
         self._calculateMotionPath()
 
     def setFinalUserPos(self, final_user_pos):
+        """
+
+        Parameters
+        ----------
+        final_user_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.final_user_pos = final_user_pos
         self._calculateMotionPath()
 
     def _calculateMotionPath(self):
+        """ """
         motor = self.motor
         initial_user_pos = self.initial_user_pos
         final_user_pos = self.final_user_pos
@@ -251,6 +274,7 @@ class MotionPath(object):
         self.duration = duration
 
     def info(self):
+        """ """
         print("Small movement =", self.small_motion)
         print("length =", self.displacement)
         print("position where maximum velocity will be reached =",
@@ -318,6 +342,7 @@ class Motion(object):
 
 
 class BaseMotor(object):
+    """ """
 
     # base velocity (<units length>/s)
     min_vel = 0
@@ -367,49 +392,142 @@ class BaseMotor(object):
         pass
 
     def setMinVelocity(self, vi):
+        """
+
+        Parameters
+        ----------
+        vi :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getMinVelocity(self):
+        """ """
         return self.min_vel
 
     def setMaxVelocity(self, vf):
+        """
+
+        Parameters
+        ----------
+        vf :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getMaxVelocity(self):
+        """ """
         return self.max_vel
 
     def setAccelerationTime(self, at):
         """Sets the time to go from minimum velocity to maximum velocity in
-        seconds"""
+        seconds
+
+        Parameters
+        ----------
+        at :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getAccelerationTime(self):
+        """ """
         return self.accel_time
 
     def setDecelerationTime(self, dt):
         """Sets the time to go from maximum velocity to minimum velocity in
-        seconds"""
+        seconds
+
+        Parameters
+        ----------
+        dt :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getDecelerationTime(self):
+        """ """
         return self.decel_time
 
     def setAcceleration(self, a):
-        """Sets the acceleration in ms^-2"""
+        """Sets the acceleration in ms^-2
+
+        Parameters
+        ----------
+        a :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def setDeceleration(self, d):
-        """Sets the deceleration in ms^-2"""
+        """Sets the deceleration in ms^-2
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getStepPerUnit(self):
+        """ """
         return self.step_per_unit
 
     def setStepPerUnit(self, spu):
+        """
+
+        Parameters
+        ----------
+        spu :
+            
+
+        Returns
+        -------
+
+        """
         self.step_per_unit = spu
 
     def startMotion(self, initial_user_pos, final_user_pos,
                     start_instant=None):
+        """
+
+        Parameters
+        ----------
+        initial_user_pos :
+            
+        final_user_pos :
+            
+        start_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         if not self.power:
             raise Exception("Motor is powered off")
@@ -430,6 +548,17 @@ class BaseMotor(object):
         self.current_motion = motion
 
     def abortMotion(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         if not self.current_motion:
             return self.current_position
@@ -439,6 +568,17 @@ class BaseMotor(object):
         return self.current_position
 
     def isInMotion(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         # we call getCurrentPosition because inside it updates the
         # current_motion flag
@@ -446,9 +586,31 @@ class BaseMotor(object):
         return self.current_motion is not None
 
     def setCurrentPosition(self, curr_pos):
+        """
+
+        Parameters
+        ----------
+        curr_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.current_position = curr_pos
 
     def getCurrentPosition(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         pos = None
         if self.current_motion:
@@ -492,49 +654,113 @@ class BaseMotor(object):
         return pos
 
     def setCurrentUserPosition(self, user_pos):
+        """
+
+        Parameters
+        ----------
+        user_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.setCurrentPosition(user_pos * self.step_per_unit)
 
     def getCurrentUserPosition(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         return (self.getCurrentPosition(curr_instant=curr_instant) /
                 self.step_per_unit)
 
     def hitLowerLimit(self):
+        """ """
         user_pos = self.current_position / self.step_per_unit
         return user_pos <= self.lower_ls
 
     def hitUpperLimit(self):
+        """ """
         user_pos = self.current_position / self.step_per_unit
         return user_pos >= self.upper_ls
 
     def getLowerLimitSwitch(self):
+        """ """
         return self.lower_ls
 
     def setLowerLimitSwitch(self, user_lower_ls):
+        """
+
+        Parameters
+        ----------
+        user_lower_ls :
+            
+
+        Returns
+        -------
+
+        """
         self.lower_ls = user_lower_ls
 
     def getUpperLimitSwitch(self):
+        """ """
         return self.upper_ls
 
     def setUpperLimitSwitch(self, user_upper_ls):
+        """
+
+        Parameters
+        ----------
+        user_upper_ls :
+            
+
+        Returns
+        -------
+
+        """
         self.upper_ls = user_upper_ls
 
     def turnOn(self):
+        """ """
         self.power = True
 
     def turnOff(self):
+        """ """
         self.power = False
 
     def isTurnedOn(self):
+        """ """
         return self.power
 
     def hasPower(self):
+        """ """
         return self.power
 
     def setPower(self, power):
+        """
+
+        Parameters
+        ----------
+        power :
+            
+
+        Returns
+        -------
+
+        """
         self.power = power
 
     def info(self):
+        """ """
         if self.current_motion is not None:
             print(self.current_motion.info())
 
@@ -558,7 +784,17 @@ class Motor(BaseMotor):
         self.__recalculate_acc_constants()
 
     def setMinVelocity(self, vi):
-        """ Sets the minimum velocity in ms^-1. A.k.a. base rate"""
+        """Sets the minimum velocity in ms^-1. A.k.a. base rate
+
+        Parameters
+        ----------
+        vi :
+            
+
+        Returns
+        -------
+
+        """
         vi = float(vi)
         if vi < 0:
             raise Exception("Minimum velocity must be >= 0")
@@ -577,10 +813,21 @@ class Motor(BaseMotor):
             self.setDecelerationTime(self.decel_time)
 
     def getMinVelocity(self):
+        """ """
         return self.min_vel
 
     def setMaxVelocity(self, vf):
-        """ Sets the maximum velocity in ms^-1."""
+        """Sets the maximum velocity in ms^-1.
+
+        Parameters
+        ----------
+        vf :
+            
+
+        Returns
+        -------
+
+        """
         vf = float(vf)
         # jmoldes replaced <= by <, because otherwise failed
         # (check if this is correct)
@@ -602,11 +849,22 @@ class Motor(BaseMotor):
             self.setDecelerationTime(self.decel_time)
 
     def getMaxVelocity(self):
+        """ """
         return self.max_vel
 
     def setAccelerationTime(self, at):
         """Sets the time to go from minimum velocity to maximum velocity in
-        seconds"""
+        seconds
+
+        Parameters
+        ----------
+        at :
+            
+
+        Returns
+        -------
+
+        """
         at = float(at)
         if at < 0:
             raise Exception("Acceleration time must be >= 0")
@@ -619,11 +877,22 @@ class Motor(BaseMotor):
         self.__recalculate_acc_constants()
 
     def getAccelerationTime(self):
+        """ """
         return self.accel_time
 
     def setDecelerationTime(self, dt):
         """Sets the time to go from maximum velocity to minimum velocity in
-        seconds"""
+        seconds
+
+        Parameters
+        ----------
+        dt :
+            
+
+        Returns
+        -------
+
+        """
         dt = float(dt)
         if dt < 0:
             raise Exception("Deceleration time must be >= 0")
@@ -637,10 +906,21 @@ class Motor(BaseMotor):
         self.__recalculate_acc_constants()
 
     def getDecelerationTime(self):
+        """ """
         return self.decel_time
 
     def setAcceleration(self, a):
-        """Sets the acceleration in ms^-2"""
+        """Sets the acceleration in ms^-2
+
+        Parameters
+        ----------
+        a :
+            
+
+        Returns
+        -------
+
+        """
         a = float(a)
         if a < 0:
             raise Exception("Acceleration must be >= 0")
@@ -655,7 +935,17 @@ class Motor(BaseMotor):
         self.__recalculate_acc_constants()
 
     def setDeceleration(self, d):
-        """Sets the deceleration in ms^-2"""
+        """Sets the deceleration in ms^-2
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         d = float(d)
         if d > 0:
             raise Exception("Deceleration must be <= 0")
@@ -688,6 +978,17 @@ class Motor(BaseMotor):
 
     @staticmethod
     def fromMotor(motor):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+
+        Returns
+        -------
+
+        """
         try:
             import sardana.taurus.core.tango.sardana.pool
             if isinstance(motor,
@@ -704,6 +1005,17 @@ class Motor(BaseMotor):
 
     @staticmethod
     def _fromTangoMotor(motor):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+
+        Returns
+        -------
+
+        """
         import PyTango
         attrs = "base_rate", "velocity", "acceleration", "deceleration"
         attr_values = motor.read_attributes(attrs)
@@ -717,6 +1029,7 @@ class Motor(BaseMotor):
 
 
 class DemoMotor(Motor):
+    """ """
 
     def __init__(self):
         super(DemoMotor, self).__init__(2, 100, 2, 2)

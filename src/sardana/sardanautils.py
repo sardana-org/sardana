@@ -57,26 +57,92 @@ __bool_klasses = tuple(__bool_klasses)
 
 
 def is_pure_str(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(obj, __str_klasses)
 
 
 def is_non_str_seq(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(obj, collections.Sequence) and not is_pure_str(obj)
 
 
 def is_integer(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(obj, __int_klasses)
 
 
 def is_number(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(obj, __number_klasses)
 
 
 def is_bool(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(obj, __bool_klasses)
 
 
 def is_callable(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     return hasattr(obj, "__call__")
 
 __METH_MAP = {
@@ -88,12 +154,38 @@ __METH_MAP = {
 
 
 def check_type(type_info, value):
+    """
+
+    Parameters
+    ----------
+    type_info :
+        
+    value :
+        
+
+    Returns
+    -------
+
+    """
     tinfo = __DTYPE_MAP.get(type_info, type_info)
     tmeth = __METH_MAP.get(tinfo, type_info)
     return tmeth(value)
 
 
 def assert_type(type_info, value):
+    """
+
+    Parameters
+    ----------
+    type_info :
+        
+    value :
+        
+
+    Returns
+    -------
+
+    """
     ret = check_type(type_info, value)
     if not ret:
         expected = R_DTYPE_MAP[type_info]
@@ -118,6 +210,21 @@ _DTYPE_FUNC = {
 
 
 def str_to_value(value, dtype=DataType.Double, dformat=DataFormat.Scalar):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+    dtype :
+         (Default value = DataType.Double)
+    dformat :
+         (Default value = DataFormat.Scalar)
+
+    Returns
+    -------
+
+    """
     f = _DTYPE_FUNC[dtype]
     if dformat == DataFormat.Scalar:
         ret = f(value)
@@ -132,7 +239,17 @@ def str_to_value(value, dtype=DataType.Double, dformat=DataFormat.Scalar):
 
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number.
-    Each part of version number can have up to 99 possibilities."""
+    Each part of version number can have up to 99 possibilities.
+
+    Parameters
+    ----------
+    version_str :
+        
+
+    Returns
+    -------
+
+    """
     import math
     parts = version_str.split('.')
     i, v, l = 0, 0, len(parts)
@@ -176,7 +293,19 @@ def translate_version_str2int(version_str):
 
 def translate_version_str2list(version_str, depth=2):
     """Translates a version string in format 'x[.y[.z[...]]]' into a list of
-    numbers"""
+    numbers
+
+    Parameters
+    ----------
+    version_str :
+        
+    depth :
+         (Default value = 2)
+
+    Returns
+    -------
+
+    """
     if version_str is None:
         ver = depth * [0, ]
     else:
@@ -191,6 +320,19 @@ def translate_version_str2list(version_str, depth=2):
 
 
 def py2_round(x, d=0):
+    """
+
+    Parameters
+    ----------
+    x :
+        
+    d :
+         (Default value = 0)
+
+    Returns
+    -------
+
+    """
     p = 10 ** d
     if x > 0:
         return float(math.floor((x * p) + 0.5)) / p
@@ -201,9 +343,18 @@ def py2_round(x, d=0):
 def recur_map(fun, data, keep_none=False):
     """Recursive map. Similar to map, but maintains the list objects structure
 
-    :param fun: <callable> the same purpose as in map function
-    :param data: <object> the same purpose as in map function
-    :param keep_none: <bool> keep None elements without applying fun
+    Parameters
+    ----------
+    fun :
+        callable> the same purpose as in map function
+    data :
+        object> the same purpose as in map function
+    keep_none :
+        bool> keep None elements without applying fun (Default value = False)
+
+    Returns
+    -------
+
     """
     if hasattr(data, "__iter__") and not isinstance(data, str):
         return [recur_map(fun, elem, keep_none) for elem in data]

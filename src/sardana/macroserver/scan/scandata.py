@@ -75,15 +75,39 @@ class ColumnDesc(object):
         self.__dict__.update(kwargs)
 
     def getShape(self):
+        """ """
         return self._shape
 
     def setShape(self, shape):
+        """
+
+        Parameters
+        ----------
+        shape :
+            
+
+        Returns
+        -------
+
+        """
         self._shape = self._simplifyShape(shape)
 
     def getDtype(self):
+        """ """
         return self._dtype
 
     def setDtype(self, dtype):
+        """
+
+        Parameters
+        ----------
+        dtype :
+            
+
+        Returns
+        -------
+
+        """
         self._dtype = self.tr(dtype)
 
     shape = property(getShape, setShape)
@@ -91,9 +115,9 @@ class ColumnDesc(object):
 
     @staticmethod
     def _simplifyShape(s):
-        '''the idea is to strip the shape of useless "ones" at the beginning.
+        """the idea is to strip the shape of useless "ones" at the beginning.
         For example:
-
+        
             - () -> ()
             - (1,) -> ()
             - (1,1,1,1) -> ()
@@ -103,7 +127,16 @@ class ColumnDesc(object):
             - (2,3) -> (2,3)
             - (1,1,1,2,3) -> (2,3)
             - (3,1,1) -> (3,1,1)
-        '''
+
+        Parameters
+        ----------
+        s :
+            
+
+        Returns
+        -------
+
+        """
         s = list(s)
         for i, e in enumerate(s):
             if e > 1:
@@ -111,16 +144,28 @@ class ColumnDesc(object):
         return []
 
     def tr(self, dtype):
+        """
+
+        Parameters
+        ----------
+        dtype :
+            
+
+        Returns
+        -------
+
+        """
         return self._TYPE_MAP.get(dtype, dtype)
 
     def toDict(self):
-        '''creates a dictionary representation of the record'''
+        """creates a dictionary representation of the record"""
         d = copy.deepcopy(self._extra_kwargs)
         for k in ['name', 'label', 'dtype', 'shape']:
             d[k] = getattr(self, k)
         return d
 
     def clone(self):
+        """ """
         return copy.deepcopy(self)
         # return self.__class__(**self.toDict())
 
@@ -130,14 +175,22 @@ class MoveableDesc(ColumnDesc):
     def __init__(self, **kwargs):
         """Expected keywords are:
 
-               - moveable (Moveable, mandatory): moveable object
-               - name (str, optional): column name (defaults to moveable name)
-               - label (str, optional): column label (defaults to moveable
-                 name)
-               - dtype (str, optional): data type. Defaults to 'float64'
-               - shape (seq, optional): data shape. Defaults to (1,)
-               - instrument (Instrument, optional): instrument object.
-                 Defaults to moveable instrument"""
+                   - moveable (Moveable, mandatory): moveable object
+                   - name (str, optional): column name (defaults to moveable name)
+                   - label (str, optional): column label (defaults to moveable
+                     name)
+                   - dtype (str, optional): data type. Defaults to 'float64'
+                   - shape (seq, optional): data shape. Defaults to (1,)
+                   - instrument (Instrument, optional): instrument object.
+                     Defaults to moveable instrument
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
 
         try:
             self.moveable = moveable = kwargs.pop('moveable')
@@ -154,6 +207,7 @@ class MoveableDesc(ColumnDesc):
         ColumnDesc.__init__(self, **kwargs)
 
     def toDict(self):
+        """ """
         d = ColumnDesc.toDict(self)
         d['min_value'] = self.min_value
         d['max_value'] = self.max_value
@@ -161,17 +215,25 @@ class MoveableDesc(ColumnDesc):
         return d
 
     def clone(self):
+        """ """
         return self.__class__(moveable=self.moveable, **self.toDict())
 
 
 class Record(object):
-    """ One record is a set of values measured at the same time.
-
+    """One record is a set of values measured at the same time.
+    
     The Record.data member will be
     a dictionary containing:
       - 'point_nb' : (int) the point number of the scan
       - for each column of the scan (motor or counter), a key with the
       corresponding column name (str) and the corresponding value
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, data):
@@ -181,12 +243,25 @@ class Record(object):
         self.written = 0
 
     def setRecordNo(self, recordno):
+        """
+
+        Parameters
+        ----------
+        recordno :
+            
+
+        Returns
+        -------
+
+        """
         self.recordno = recordno
 
     def setComplete(self):
+        """ """
         self.complete = 1
 
     def setWritten(self):
+        """ """
         self.written = 1
 
     def __get_t3_name(self, item):
@@ -256,14 +331,21 @@ class Record(object):
 
 
 class RecordEnvironment(dict):
-    """  A RecordEnvironment is a set of arbitrary pairs of type
+    """A RecordEnvironment is a set of arbitrary pairs of type
     label/value in the form of a dictionary.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     __needed = ['title', 'labels']  # @TODO: it seems that this has changed
     # now labels are separated in moveables and counters
 
     def isValid(self):
-        """ Check valid environment = all needed keys present """
+        """Check valid environment = all needed keys present"""
 
         if not self.needed:
             return 1
@@ -277,11 +359,11 @@ class RecordEnvironment(dict):
 
 class ScanDataEnvironment(RecordEnvironment):
     """It describes a recordlist and its environment
-
+    
     A recordlist environment contains a number of predefined label/value pairs
     Values can be either a string, a numeric value or a list of strings,
     numbers
-
+    
     title:     mandatory
     labels:    mandatory. label for each of the fields in a record of the
                recordlist
@@ -289,13 +371,28 @@ class ScanDataEnvironment(RecordEnvironment):
                Can be used to affect the way the field is saved by the
                recorder. If not present all fields are by default of type
                FLOAT and FORMAT ".8g"
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     needed = ['title', 'labels', 'user']
 
 
 class RecordList(dict):
-    """  A RecordList is a set of records: for example a scan.
-    It is composed of a environment and a list of records"""
+    """A RecordList is a set of records: for example a scan.
+    It is composed of a environment and a list of records
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, datahandler, environ=None, apply_interpolation=False,
                  apply_extrapolation=False, initial_data=None):
@@ -318,21 +415,69 @@ class RecordList(dict):
         return dict(datahandler=None, environ=None, records=self.records)
 
     def setEnviron(self, environ):
+        """
+
+        Parameters
+        ----------
+        environ :
+            
+
+        Returns
+        -------
+
+        """
         self.environ = environ
 
     def updateEnviron(self, environ):
+        """
+
+        Parameters
+        ----------
+        environ :
+            
+
+        Returns
+        -------
+
+        """
         self.environ.update(environ)
 
     def setEnvironValue(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.environ[name] = value
 
     def getEnvironValue(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.environ[name]
 
     def getEnviron(self):
+        """ """
         return self.environ
 
     def start(self):
+        """ """
         self.recordno = 0
         # @TODO: it is necessary only by continuous scan
         # think how to separate this two cases
@@ -357,12 +502,19 @@ class RecordList(dict):
         self.datahandler.startRecordList(self)
 
     def initRecord(self):
-        '''Init a dummy record and add it to the records list.
+        """Init a dummy record and add it to the records list.
         A dummy record has:
            - point_nb of the consecutive record
            - each column initialized with NaN
            - each moveable initialized with None
-        '''
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         recordno = self.recordno
         if self.initial_data and recordno in self.initial_data:
             initial_data = self.initial_data.get(recordno)
@@ -379,12 +531,32 @@ class RecordList(dict):
         self.recordno += 1
 
     def initRecords(self, nb_records):
-        '''Call nb_records times initRecord method
-        '''
+        """Call nb_records times initRecord method
+
+        Parameters
+        ----------
+        nb_records :
+            
+
+        Returns
+        -------
+
+        """
         for _ in range(nb_records):
             self.initRecord()
 
     def addRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         rc = Record(record)
         rc.setRecordNo(self.recordno)
         self.records.append(rc)
@@ -394,8 +566,17 @@ class RecordList(dict):
         self.currentIndex += 1
 
     def applyZeroOrderInterpolation(self, record):
-        ''' Apply a zero order interpolation to the given record
-        '''
+        """Apply a zero order interpolation to the given record
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if self.currentIndex > 0:
             data = record.data
             prev_data = self.records[self.currentIndex - 1].data
@@ -412,7 +593,17 @@ class RecordList(dict):
                     data[k] = prev_data[k]
 
     def applyExtrapolation(self, record):
-        """Apply extrapolation to the given record"""
+        """Apply extrapolation to the given record
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         data = record.data
         for k, v in list(data.items()):
             if v is None:
@@ -442,9 +633,16 @@ class RecordList(dict):
     def addData(self, data):
         """Adds data to the record list
 
-        :param data: dictionary with two mandatory elements: label - string
-                     and data - list of values
-        :type data:  dict"""
+        Parameters
+        ----------
+        data : dic
+            dictionary with two mandatory elements: label - string
+            and data - list of values
+
+        Returns
+        -------
+
+        """
         label = data['label']
         idxs = data['index']
         # TODO: think if the ScanData.addData is the best API for
@@ -468,6 +666,19 @@ class RecordList(dict):
         self.tryToAdd(idx, label)
 
     def tryToAdd(self, idx, label):
+        """
+
+        Parameters
+        ----------
+        idx :
+            
+        label :
+            
+
+        Returns
+        -------
+
+        """
         start = self.currentIndex
         # apply extrapolation only at the beginning of the record list
         apply_extrapolation = (self.apply_extrapolation and start == 0)
@@ -483,6 +694,17 @@ class RecordList(dict):
                 self.currentIndex += 1
 
     def isRecordCompleted(self, recordno):
+        """
+
+        Parameters
+        ----------
+        recordno :
+            
+
+        Returns
+        -------
+
+        """
         rc = self.records[recordno]
         for label in self.channelLabels:
             if self.columnIndexDict[label] <= self.currentIndex:
@@ -491,9 +713,21 @@ class RecordList(dict):
         return True
 
     def addRecords(self, records):
+        """
+
+        Parameters
+        ----------
+        records :
+            
+
+        Returns
+        -------
+
+        """
         list(map(self.addRecord, records))
 
     def end(self):
+        """ """
         start = self.currentIndex
         for i in range(start, len(self.records)):
             rc = self.records[i]
@@ -505,10 +739,12 @@ class RecordList(dict):
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):
+        """ """
         return self.datahandler
 
 
 class ScanData(RecordList):
+    """ """
 
     def __init__(self, environment=None, data_handler=None,
                  apply_interpolation=False, apply_extrapolation=False):
@@ -520,18 +756,44 @@ class ScanData(RecordList):
 class ScanFactory(Singleton):
 
     def __init__(self):
-        """ Initialization. Nothing to be done here for now."""
+        """Initialization. Nothing to be done here for now."""
         pass
 
     def init(self, *args):
-        """Singleton instance initialization."""
+        """Singleton instance initialization.
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def getDataHandler(self):
+        """ """
         return DataHandler()
 
     def getScanData(self, dh, apply_interpolation=False,
                     apply_extrapolation=False):
+        """
+
+        Parameters
+        ----------
+        dh :
+            
+        apply_interpolation :
+             (Default value = False)
+        apply_extrapolation :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         return ScanData(data_handler=dh,
                         apply_interpolation=apply_interpolation,
                         apply_extrapolation=apply_extrapolation)

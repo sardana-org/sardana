@@ -49,7 +49,15 @@ def ask_peak(self):
 @imacro()
 def ask_peak_v2(self):
     """asks user for peak current of points with a custom title,
-    default value, label and units"""
+    default value, label and units
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     label, unit = "peak", "mA"
     peak = self.input("What is the peak current?", data_type=Type.Float,
@@ -61,7 +69,15 @@ def ask_peak_v2(self):
 @imacro()
 def ask_peak_v3(self):
     """asks user for peak current of points with a custom title,
-    default value, label, units and ranges"""
+    default value, label, units and ranges
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     label, unit = "peak", "mA"
     peak = self.input("What is the peak current?", data_type=Type.Float,
@@ -73,7 +89,15 @@ def ask_peak_v3(self):
 @imacro()
 def ask_peak_v4(self):
     """asks user for peak current of points with a custom title,
-    default value, label, units, ranges and step size"""
+    default value, label, units, ranges and step size
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     label, unit = "peak", "mA"
     peak = self.input("What is the peak current?", data_type=Type.Float,
@@ -86,7 +110,15 @@ def ask_peak_v4(self):
 @imacro()
 def ask_peak_v5(self):
     """asks user for peak current of points with a custom title,
-    default value, label, units, ranges, step size and decimal places"""
+    default value, label, units, ranges, step size and decimal places
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     label, unit = "peak", "mA"
     peak = self.input("What is the peak current?", data_type=Type.Float,

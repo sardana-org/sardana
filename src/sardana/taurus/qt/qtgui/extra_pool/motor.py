@@ -34,6 +34,17 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 
 def showDialogConfigureMotor(parent):
+    """
+
+    Parameters
+    ----------
+    parent :
+        
+
+    Returns
+    -------
+
+    """
     Dialog = Qt.QDialog(parent)
     Dialog.resize((Qt.QSize(Qt.QRect(0, 0, 310, 309).size()
                             ).expandedTo(Dialog.minimumSizeHint())))
@@ -45,6 +56,7 @@ def showDialogConfigureMotor(parent):
 
 @UILoadable(with_ui='ui')
 class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
@@ -56,13 +68,16 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
         self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
+        """ """
         return Qt.QSize(330, 50)
 
     def configureMotor(self):
+        """ """
         showDialogConfigureMotor(self.ui.TaurusGroupBox)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 #        ret = TaurusBaseWidget.getQtDesignerPluginInfo()
 #        ret['module'] = 'taurus.qt.qtgui.extra_pool'
@@ -75,26 +90,52 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     @Qt.pyqtSlot()
     def getModel(self):
+        """ """
         return self.ui.TaurusGroupBox.getModel()
 
     @Qt.pyqtSlot("QString")
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setModel(model)
 
     @Qt.pyqtSlot()
     def resetModel(self):
+        """ """
         self.ui.TaurusGroupBox.resetModel()
 
     @Qt.pyqtSlot()
     def getShowText(self):
+        """ """
         return self.ui.TaurusGroupBox.getShowText()
 
     @Qt.pyqtSlot(bool)
     def setShowText(self, showText):
+        """
+
+        Parameters
+        ----------
+        showText :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setShowText(showText)
 
     @Qt.pyqtSlot()
     def resetShowText(self):
+        """ """
         self.ui.TaurusGroupBox.resetShowText()
 
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
@@ -103,6 +144,7 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
 
 @UILoadable(with_ui='ui')
 class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
@@ -114,13 +156,16 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
         self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
+        """ """
         return Qt.QSize(215, 85)
 
     def configureMotor(self):
+        """ """
         showDialogConfigureMotor(self.ui.TaurusGroupBox)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 #        ret = TaurusBaseWidget.getQtDesignerPluginInfo()
 #        ret['module'] = 'taurus.qt.qtgui.extra_pool'
@@ -133,26 +178,52 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     @Qt.pyqtSlot()
     def getModel(self):
+        """ """
         return self.ui.TaurusGroupBox.getModel()
 
     @Qt.pyqtSlot("QString")
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setModel(model)
 
     @Qt.pyqtSlot()
     def resetModel(self):
+        """ """
         self.ui.TaurusGroupBox.resetModel()
 
     @Qt.pyqtSlot()
     def getShowText(self):
+        """ """
         return self.ui.TaurusGroupBox.getShowText()
 
     @Qt.pyqtSlot(bool)
     def setShowText(self, showText):
+        """
+
+        Parameters
+        ----------
+        showText :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setShowText(showText)
 
     @Qt.pyqtSlot()
     def resetShowText(self):
+        """ """
         self.ui.TaurusGroupBox.resetShowText()
 
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
@@ -161,6 +232,7 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
 
 @UILoadable(with_ui='ui')
 class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
@@ -172,13 +244,16 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
         self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
+        """ """
         return Qt.QSize(120, 145)
 
     def configureMotor(self):
+        """ """
         showDialogConfigureMotor(self.ui.TaurusGroupBox)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 #        ret = TaurusBaseWidget.getQtDesignerPluginInfo()
 #        ret['module'] = 'taurus.qt.qtgui.extra_pool'
@@ -191,26 +266,52 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     @Qt.pyqtSlot()
     def getModel(self):
+        """ """
         return self.ui.TaurusGroupBox.getModel()
 
     @Qt.pyqtSlot("QString")
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setModel(model)
 
     @Qt.pyqtSlot()
     def resetModel(self):
+        """ """
         self.ui.TaurusGroupBox.resetModel()
 
     @Qt.pyqtSlot()
     def getShowText(self):
+        """ """
         return self.ui.TaurusGroupBox.getShowText()
 
     @Qt.pyqtSlot(bool)
     def setShowText(self, showText):
+        """
+
+        Parameters
+        ----------
+        showText :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setShowText(showText)
 
     @Qt.pyqtSlot()
     def resetShowText(self):
+        """ """
         self.ui.TaurusGroupBox.resetShowText()
 
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
@@ -219,6 +320,7 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
 
 @UILoadable(with_ui='ui')
 class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
+    """ """
 
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
@@ -229,10 +331,12 @@ class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
         self.loadUi()
 
     def sizeHint(self):
+        """ """
         return Qt.QSize(300, 275)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 #        ret = TaurusBaseWidget.getQtDesignerPluginInfo()
 #        ret['module'] = 'taurus.qt.qtgui.extra_pool'
@@ -245,26 +349,52 @@ class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     @Qt.pyqtSlot()
     def getModel(self):
+        """ """
         return self.ui.TaurusGroupBox.getModel()
 
     @Qt.pyqtSlot("QString")
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setModel(model)
 
     @Qt.pyqtSlot()
     def resetModel(self):
+        """ """
         self.ui.TaurusGroupBox.resetModel()
 
     @Qt.pyqtSlot()
     def getShowText(self):
+        """ """
         return self.ui.TaurusGroupBox.getShowText()
 
     @Qt.pyqtSlot(bool)
     def setShowText(self, showText):
+        """
+
+        Parameters
+        ----------
+        showText :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.TaurusGroupBox.setShowText(showText)
 
     @Qt.pyqtSlot()
     def resetShowText(self):
+        """ """
         self.ui.TaurusGroupBox.resetShowText()
 
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)

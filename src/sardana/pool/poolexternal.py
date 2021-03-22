@@ -44,9 +44,11 @@ class PoolBaseExternalObject(PoolBaseObject):
         PoolBaseObject.__init__(self, **kwargs)
 
     def get_source(self):
+        """ """
         return self.full_name
 
     def get_config(self):
+        """ """
         raise NotImplementedError
 
 
@@ -86,12 +88,15 @@ class PoolTangoObject(PoolBaseExternalObject):
         PoolBaseExternalObject.__init__(self, **kwargs)
 
     def get_device_name(self):
+        """ """
         return self._device_name
 
     def get_attribute_name(self):
+        """ """
         return self._attribute_name
 
     def get_device(self):
+        """ """
         device = self._device
         if device is None:
             try:
@@ -101,6 +106,7 @@ class PoolTangoObject(PoolBaseExternalObject):
         return device
 
     def get_config(self):
+        """ """
         config = self._config
         if config is None:
             try:
@@ -119,6 +125,17 @@ _SCHEME_CLASS = {'tango': PoolTangoObject,
 
 
 def PoolExternalObject(**kwargs):
+    """
+
+    Parameters
+    ----------
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     scheme = kwargs.get('scheme', 'tango')
     klass = _SCHEME_CLASS[scheme]
     return klass(**kwargs)

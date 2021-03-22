@@ -38,12 +38,30 @@ class SarDemoEnv(Singleton):
 
     """Class to get _SAR_DEMO environment variable with cross checking with
     the MacroServer (given by :attr:`UNITTEST_DOOR_NAME`)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     ready = False
 
     # when building docs, in RTD environment, init is never called - Singleton
     # (comming from taurus) is a mock
     def init(self, door_name=None):
+        """
+
+        Parameters
+        ----------
+        door_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
 
@@ -83,9 +101,16 @@ class SarDemoEnv(Singleton):
     def getElements(self, elem_type='all'):
         """Return the name of sardemo element(s) of given elem type
 
-        :param elem_type: (str) type of elemnts to return (all by default)
+        Parameters
+        ----------
+        elem_type :
+            str) type of elemnts to return (all by default)
 
-        :return: (list<str>)
+        Returns
+        -------
+        type
+            list<str>)
+
         """
         if not self.ready:
             raise RuntimeError(
@@ -99,70 +124,126 @@ class SarDemoEnv(Singleton):
         return elems
 
     def getMoveables(self):
-        """Return the name of moveable(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         return self.getMotors() + self.getPseudoMotors()
 
     def getControllers(self):
-        """Return the name of controllers(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.controllers:
             self.controllers = self.getElements('controller')
         return self.controllers
 
     def getCTs(self):
-        """Return the name of counter timer exp channel(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.cts:
             self.cts = self.getElements('ctexpchannel')
         return self.cts
 
     def getMotors(self):
-        """Return the name of motor(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.motors:
             self.motors = self.getElements('motor')
         return self.motors
 
     def getPseudoMotors(self):
-        """Return the name of pseudomotor(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.pseudos:
             self.pseudos = self.getElements('pseudomotor')
         return self.pseudos
 
     def getZerods(self):
-        """Return the name of zerod exp channel(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.zerods:
             self.zerods = self.getElements('zerodexpchannel')
         return self.zerods
 
     def getOneds(self):
-        """Return the name of one exp channel(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.oneds:
             self.oneds = self.getElements('onedexpchannel')
         return self.oneds
 
     def getTwods(self):
-        """Return the name of two exp channel(s) defined by SarDemo
+        """
 
-        :return: (list<str>)
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type
+            :return: (list<str>)
+
         """
         if not self.twods:
             self.twods = self.getElements('twodexpchannel')
@@ -170,12 +251,36 @@ class SarDemoEnv(Singleton):
 
     def changeDoor(self, door_name):
         """Change the door name and reset all lists
+
+        Parameters
+        ----------
+        door_name :
+            
+
+        Returns
+        -------
+
         """
         self.__init__(door_name)
 
 
 def getElements(elem_type="all", fallback_name="element_not_defined",
                 fallback_elements_len=5):
+    """
+
+    Parameters
+    ----------
+    elem_type :
+         (Default value = "all")
+    fallback_name :
+         (Default value = "element_not_defined")
+    fallback_elements_len :
+         (Default value = 5)
+
+    Returns
+    -------
+
+    """
     if fallback_name is None:
         fallback_name = elem_type + "_not_defined"
     try:
@@ -198,38 +303,47 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
 
 
 def getControllers():
+    """ """
     return getElements(elem_type="controller")
 
 
 def getCTs():
+    """ """
     return getElements(elem_type="ctexpchannel")
 
 
 def getMotors():
+    """ """
     return getElements(elem_type="motor")
 
 
 def getPseudoMotors():
+    """ """
     return getElements(elem_type="pseudomotor")
 
 
 def getMoveables():
+    """ """
     return getElements(elem_type="moveable")
 
 
 def getZerods():
+    """ """
     return getElements(elem_type="zerodexpchannel")
 
 
 def getOneds():
+    """ """
     return getElements(elem_type="onedexpchannel")
 
 
 def getTwods():
+    """ """
     return getElements(elem_type="twodexpchannel")
 
 
 def getIORs():
+    """ """
     return getElements(elem_type="ioregister")
 
 

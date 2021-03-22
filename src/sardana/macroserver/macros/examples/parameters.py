@@ -34,11 +34,19 @@ class pt0(Macro):
     """Macro without parameters. Pretty dull.
        Usage from Spock, ex.:
        pt0
-       """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = []
 
     def run(self):
+        """ """
         pass
 
 
@@ -48,11 +56,29 @@ class pt1(Macro):
     default value and description.
     Usage from Spock, ex.:
     pt1 1
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [['value', Type.Float, None, 'some bloody float']]
 
     def run(self, f):
+        """
+
+        Parameters
+        ----------
+        f :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -61,11 +87,29 @@ class pt1d(Macro):
     Usage from Spock, ex.:
     pt1d 1
     pt1d
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [['value', Type.Float, None, 'some bloody float']]
 
     def run(self, f):
+        """
+
+        Parameters
+        ----------
+        f :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -75,11 +119,29 @@ class pt2(Macro):
     default value and description.
     Usage from Spock, ex.
     pt2 mot1
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [['motor', Type.Motor, None, 'some bloody motor']]
 
     def run(self, m):
+        """
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -91,6 +153,13 @@ class pt3(Macro):
     Usages from Spock, ex.:
     pt3 [1 34 15]
     pt3 1 34 15
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -98,6 +167,19 @@ class pt3(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -111,6 +193,13 @@ class pt3d(Macro):
     pt3d 1 34 15
     Usage taken the default value, ex.:
     pt3d [1 [] 15]
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -118,6 +207,19 @@ class pt3d(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -129,6 +231,13 @@ class pt4(Macro):
     Usages from Spock, ex.:
     pt4 [mot1 mot2 mot3]
     pt4 mot1 mot2 mot3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -137,6 +246,19 @@ class pt4(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -145,6 +267,13 @@ class pt5(Macro):
     Usages from Spock, ex.:
     pt5 mot1 [1 3]
     pt5 mot1 1 3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -153,6 +282,19 @@ class pt5(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -163,6 +305,13 @@ class pt6(Macro):
     Usages from Spock, ex.:
     pt6 mot1 [1 34 1]
     pt6 mot1 1 34 1
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -172,6 +321,19 @@ class pt6(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -180,6 +342,13 @@ class pt7(Macro):
     Usages from Spock, ex.:
     pt7 [[mot1 1] [mot2 3]]
     pt7 mot1 1 mot2 3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -189,6 +358,19 @@ class pt7(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -202,6 +384,12 @@ class pt7d1(Macro):
     pt7d1 [[mot1] [mot2 3]] # at any repetition
     pt7d1 mot1 # if only one repetition
 
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -211,6 +399,19 @@ class pt7d1(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -222,6 +423,13 @@ class pt7d2(Macro):
     pt7d2 mot1 1 mot2 3
     Using both default values, ex.:
     pt7d2 [[] [mot2 3] []] # at any repetition
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -231,6 +439,19 @@ class pt7d2(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -240,6 +461,13 @@ class pt8(Macro):
     Usages from Spock, ex.:
     pt8 [[mot1 1] [mot2 3]]
     pt8 mot1 1 mot2 3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -250,6 +478,19 @@ class pt8(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -259,6 +500,13 @@ class pt9(Macro):
     Usages from Spock, ex.:
     pt9 [[mot1 1][mot2 3]]
     pt9 mot1 1 mot2 3
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -269,6 +517,19 @@ class pt9(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -278,6 +539,13 @@ class pt10(Macro):
     Usage from Spock, ex.:
     pt10 [1 3] mot1
     pt10 1 mot1 # if only one repetition
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -286,16 +554,38 @@ class pt10(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class pt11(Macro):
     """Macro with counter parameter followed by a list of numbers, followed by
     a motor parameter. The repeat parameter may be defined in between other
-    parameters.
-    Usages from Spock, ex.:
-    pt11 ct1 [1 3] mot1
-    pt11 ct1 1 mot1 # if only one repetition
+
+    Parameters
+    ----------
+    Usages :
+        from Spock
+    pt11 :
+        ct1
+    pt11 :
+        ct1 1 mot1
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -305,15 +595,37 @@ class pt11(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class pt12(Macro):
     """Macro with list of motors followed by list of numbers. Two repeat
-    parameters may defined.
-    Usage from Spock, ex.:
-    pt12 [1 3 4] [mot1 mot2]
-    pt12 1 mot1 # if only one repetition for each repeat parameter
+
+    Parameters
+    ----------
+    Usage :
+        from Spock
+    pt12 :
+        1 3 4
+    pt12 :
+        1 mot1
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -323,6 +635,19 @@ class pt12(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -331,7 +656,14 @@ class pt13(Macro):
     motors. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
     pt13 [[mot1 mot2] [mot3 mot4]]
-"""
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor_group_list',
@@ -341,6 +673,19 @@ class pt13(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -349,6 +694,13 @@ class pt14(Macro):
     motors and a float. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
     pt14 [[[mot1 mot2] 3] [[mot3] 5]]
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -359,6 +711,19 @@ class pt14(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -370,6 +735,13 @@ class pt14d(Macro):
     pt14d [[[mot1 mot2] 3] [[mot3] []]]
     pt14d [[[mot1 []] 3] [[mot3] []]]
     pt14d [[[[]] 3] [[mot3] []]]
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -380,13 +752,34 @@ class pt14d(Macro):
     ]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class twice(Macro):
     """A macro that returns a float that is twice its input. It also sets its
     data to be a dictionary with 'in','out' as keys and value,result
-    as values, respectively"""
+    as values, respectively
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     # uncomment the following lines as necessary. Otherwise you may delete them
     param_def = [["value", Type.Float, 23, "value to be doubled"]]
@@ -400,6 +793,17 @@ class twice(Macro):
     #    pass
 
     def run(self, n):
+        """
+
+        Parameters
+        ----------
+        n :
+            
+
+        Returns
+        -------
+
+        """
         ret = 2 * n
         self.setData({'in': n, 'out': ret})
         return ret

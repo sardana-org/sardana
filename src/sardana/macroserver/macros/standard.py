@@ -62,6 +62,17 @@ class _wm(Macro):
     ]
 
     def run(self, motor_list):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+
+        Returns
+        -------
+
+        """
         show_dial = self.getViewOption(ViewOption.ShowDial)
         show_ctrlaxis = self.getViewOption(ViewOption.ShowCtrlAxis)
         pos_format = self.getViewOption(ViewOption.PosFormat)
@@ -156,9 +167,33 @@ class _wum(Macro):
     ]
 
     def prepare(self, motor_list, **opts):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.table_opts = {}
 
     def run(self, motor_list):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+
+        Returns
+        -------
+
+        """
         motor_width = 9
         motor_names = []
         motor_pos = []
@@ -188,10 +223,22 @@ class wu(Macro):
     """Show all user motor positions"""
 
     def prepare(self, **opts):
+        """
+
+        Parameters
+        ----------
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.all_motors = self.findObjs('.*', type_class=Type.Moveable)
         self.table_opts = {}
 
     def run(self):
+        """ """
         nr_motors = len(self.all_motors)
         if nr_motors == 0:
             self.output('No motor defined')
@@ -216,10 +263,34 @@ class wa(Macro):
     ]
 
     def prepare(self, filter, **opts):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.all_motors = self.findObjs(filter, type_class=Type.Moveable)
         self.table_opts = {}
 
     def run(self, filter):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+
+        Returns
+        -------
+
+        """
         nr_motors = len(self.all_motors)
         if nr_motors == 0:
             self.output('No motor defined')
@@ -248,6 +319,17 @@ class pwa(Macro):
     ]
 
     def run(self, filter):
+        """
+
+        Parameters
+        ----------
+        filter :
+            
+
+        Returns
+        -------
+
+        """
         self.execMacro('wa', filter, **Table.PrettyOpts)
 
 
@@ -260,6 +342,21 @@ class set_lim(Macro):
     ]
 
     def run(self, motor, low, high):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        low :
+            
+        high :
+            
+
+        Returns
+        -------
+
+        """
         name = motor.getName()
         self.debug("Setting user limits for %s" % name)
         motor.getPositionObj().setLimits(low, high)
@@ -276,6 +373,21 @@ class set_lm(Macro):
     ]
 
     def run(self, motor, low, high):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        low :
+            
+        high :
+            
+
+        Returns
+        -------
+
+        """
         name = motor.getName()
         self.debug("Setting dial limits for %s" % name)
         motor.getDialPositionObj().setLimits(low, high)
@@ -292,6 +404,19 @@ class set_pos(Macro):
     ]
 
     def run(self, motor, pos):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
         motor.definePosition(pos)
@@ -300,7 +425,15 @@ class set_pos(Macro):
 
 class set_user_pos(Macro):
     """Sets the USER position of the motor to the specified value (by
-    changing OFFSET and keeping DIAL)"""
+    changing OFFSET and keeping DIAL)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
@@ -308,6 +441,19 @@ class set_user_pos(Macro):
     ]
 
     def run(self, motor, pos):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
         offset_attr = motor.getAttribute('Offset')
@@ -329,9 +475,33 @@ class wm(Macro):
     ]
 
     def prepare(self, motor_list, **opts):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.table_opts = {}
 
     def run(self, motor_list):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+
+        Returns
+        -------
+
+        """
         motor_width = 10
         motor_names = []
         motor_pos = []
@@ -420,9 +590,33 @@ class wum(Macro):
     ]
 
     def prepare(self, motor_list, **opts):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.table_opts = {}
 
     def run(self, motor_list):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+
+        Returns
+        -------
+
+        """
         motor_width = 10
         motor_names = []
         motor_pos = []
@@ -456,6 +650,17 @@ class pwm(Macro):
     ]
 
     def run(self, motor_list):
+        """
+
+        Parameters
+        ----------
+        motor_list :
+            
+
+        Returns
+        -------
+
+        """
         self.execMacro('wm', motor_list, **Table.PrettyOpts)
 
 
@@ -470,6 +675,17 @@ class mv(Macro):
     ]
 
     def run(self, motor_pos_list):
+        """
+
+        Parameters
+        ----------
+        motor_pos_list :
+            
+
+        Returns
+        -------
+
+        """
         motors, positions = [], []
         for m, p in motor_pos_list:
             motors.append(m)
@@ -491,6 +707,17 @@ class mstate(Macro):
     param_def = [['motor', Type.Moveable, None, 'Motor to check state']]
 
     def run(self, motor):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+
+        Returns
+        -------
+
+        """
         self.info("Motor %s" % str(motor.stateObj.read().rvalue))
 
 
@@ -500,6 +727,19 @@ class umv(Macro):
     param_def = mv.param_def
 
     def prepare(self, motor_pos_list, **opts):
+        """
+
+        Parameters
+        ----------
+        motor_pos_list :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.all_names = []
         self.all_pos = []
         self.print_pos = False
@@ -510,6 +750,17 @@ class umv(Macro):
             posObj.subscribeEvent(self.positionChanged, motor)
 
     def run(self, motor_pos_list):
+        """
+
+        Parameters
+        ----------
+        motor_pos_list :
+            
+
+        Returns
+        -------
+
+        """
         self.print_pos = True
         try:
             self.execMacro('mv', motor_pos_list)
@@ -517,10 +768,12 @@ class umv(Macro):
             self.finish()
 
     def finish(self):
+        """ """
         self._clean()
         self.printAllPos()
 
     def _clean(self):
+        """ """
         for motor, pos in self.getParameters()[0]:
             posObj = motor.getPositionObj()
             try:
@@ -530,12 +783,26 @@ class umv(Macro):
                 raise e
 
     def positionChanged(self, motor, position):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        position :
+            
+
+        Returns
+        -------
+
+        """
         idx = self.all_names.index([motor.getName()])
         self.all_pos[idx] = [position]
         if self.print_pos:
             self.printAllPos()
 
     def printAllPos(self):
+        """ """
         motor_width = 10
         table = Table(self.all_pos, elem_fmt=['%*.4f'],
                       col_head_str=self.all_names, col_head_width=motor_width)
@@ -554,6 +821,17 @@ class mvr(Macro):
     ]
 
     def run(self, motor_disp_list):
+        """
+
+        Parameters
+        ----------
+        motor_disp_list :
+            
+
+        Returns
+        -------
+
+        """
         motor_pos_list = []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
@@ -572,6 +850,17 @@ class umvr(Macro):
     param_def = mvr.param_def
 
     def run(self, motor_disp_list):
+        """
+
+        Parameters
+        ----------
+        motor_disp_list :
+            
+
+        Returns
+        -------
+
+        """
         motor_pos_list = []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
@@ -599,6 +888,19 @@ class tw(iMacro):
     ]
 
     def run(self, motor, delta):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        delta :
+            
+
+        Returns
+        -------
+
+        """
         self.output(
             "Indicate direction with + (or p) or - (or n) or enter")
         self.output(
@@ -650,6 +952,17 @@ class tw(iMacro):
 
 
 def _value_to_repr(data):
+    """
+
+    Parameters
+    ----------
+    data :
+        
+
+    Returns
+    -------
+
+    """
     if data is None:
         return "<nodata>"
     elif np.ndim(data) > 0:
@@ -659,8 +972,20 @@ def _value_to_repr(data):
 
 
 class _ct:
+    """ """
 
     def dump_information(self, elements):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         msg = ["Elements ended acquisition with:"]
         for element in elements:
             msg.append(element.information())
@@ -670,7 +995,15 @@ class _ct:
 class ct(Macro, Hookable, _ct):
     """Count for the specified time on the measurement group
        or experimental channel given as second argument
-       (if not given the active measurement group is used)"""
+       (if not given the active measurement group is used)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
@@ -680,6 +1013,21 @@ class ct(Macro, Hookable, _ct):
     ]
 
     def prepare(self, integ_time, countable_elem, **opts):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+        countable_elem :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         if countable_elem is None:
             try:
                 self.countable_elem_name = self.getEnv('ActiveMntGrp')
@@ -692,6 +1040,19 @@ class ct(Macro, Hookable, _ct):
             self.countable_elem = countable_elem
 
     def run(self, integ_time, countable_elem):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+        countable_elem :
+            
+
+        Returns
+        -------
+
+        """
         if self.countable_elem is None:
             msg = ('Unknown countable {0} element. Use macro parameter or'
                    'ActiveMntGrp environment variable'.format(
@@ -758,6 +1119,21 @@ class uct(Macro, _ct):
     ]
 
     def prepare(self, integ_time, countable_elem, **opts):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+        countable_elem :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
 
         self.print_value = False
 
@@ -798,6 +1174,19 @@ class uct(Macro, _ct):
             valueObj.subscribeEvent(self.counterChanged, channel)
 
     def run(self, integ_time, countable_elem):
+        """
+
+        Parameters
+        ----------
+        integ_time :
+            
+        countable_elem :
+            
+
+        Returns
+        -------
+
+        """
         if self.countable_elem is None:
             msg = ('Unknown countable {0} element. Use macro parameter or'
                    'ActiveMntGrp environment variable'.format(
@@ -827,20 +1216,36 @@ class uct(Macro, _ct):
         self.printAllValues()
 
     def finish(self):
+        """ """
         self._clean()
 
     def _clean(self):
+        """ """
         for channel in self.channels:
             valueObj = channel.getValueObj_()
             valueObj.unsubscribeEvent(self.counterChanged, channel)
 
     def counterChanged(self, channel, value):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = self.names.index([channel.getName()])
         self.values[idx] = [value]
         if self.print_value and not self.isStopped():
             self.printAllValues()
 
     def printAllValues(self):
+        """ """
         ch_width = 10
         table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
                       col_head_width=ch_width)
@@ -858,6 +1263,17 @@ class settimer(Macro):
     ]
 
     def run(self, timer):
+        """
+
+        Parameters
+        ----------
+        timer :
+            
+
+        Returns
+        -------
+
+        """
         mnt_grp_name = self.getEnv('ActiveMntGrp')
         mnt_grp = self.getObj(mnt_grp_name, type_class=Type.MeasurementGroup)
 
@@ -880,18 +1296,35 @@ class settimer(Macro):
                       'message item to be reported']], None,
          'message to be reported']])
 def report(self, message):
-    """Logs a new record into the message report system (if active)"""
+    """Logs a new record into the message report system (if active)
+
+    Parameters
+    ----------
+    message :
+        
+
+    Returns
+    -------
+
+    """
     self.report(' '.join(message))
 
 
 class logmacro(Macro):
-    """ Turn on/off logging of the spock output.
-
+    """Turn on/off logging of the spock output.
+    
     .. note::
         The logmacro class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -900,6 +1333,19 @@ class logmacro(Macro):
     ]
 
     def run(self, offon, mode):
+        """
+
+        Parameters
+        ----------
+        offon :
+            
+        mode :
+            
+
+        Returns
+        -------
+
+        """
         if offon:
             if mode == 1:
                 self.setEnv('LogMacroMode', True)
@@ -915,15 +1361,28 @@ class repeat(Hookable, Macro):
     specified by nr parameter. The macros to be repeated can be
     given as parameters or as body hooks.
     If both are given first will be executed the ones given as
-    parameters and then the ones given as body hooks.
-    If nr has negative value, repetitions will be executed until you
-    stop repeat macro.
 
-    .. note::
-        The repeat macro has been included in Sardana
-        on a provisional basis. Backwards incompatible changes
-        (up to and including removal of the macro) may occur if
-        deemed necessary by the core developers."""
+    Parameters
+    ----------
+    If :
+        nr has negative value
+    stop :
+        repeat macro
+    note :
+        
+    The :
+        repeat macro has been included in Sardana
+    on :
+        a provisional basis
+    up :
+        to and including removal of the macro
+    deemed :
+        necessary by the core developers
+
+    Returns
+    -------
+
+    """
 
     hints = {'allowsHooks': ('body',)}
 
@@ -938,6 +1397,19 @@ class repeat(Hookable, Macro):
     ]
 
     def prepare(self, nr, macro_name_params):
+        """
+
+        Parameters
+        ----------
+        nr :
+            
+        macro_name_params :
+            
+
+        Returns
+        -------
+
+        """
         self.bodyHooks = self.getHooks("body")
         self.macro_name_params = macro_name_params
 
@@ -950,6 +1422,19 @@ class repeat(Hookable, Macro):
             bodyHook()
 
     def run(self, nr, macro_name_params):
+        """
+
+        Parameters
+        ----------
+        nr :
+            
+        macro_name_params :
+            
+
+        Returns
+        -------
+
+        """
         if nr < 0:
             while True:
                 self.__loop()
@@ -961,15 +1446,22 @@ class repeat(Hookable, Macro):
 
 
 class newfile(Hookable, Macro):
-    """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
-
+    """Sets the ScanDir and ScanFile as well as ScanID in the environment.
+    
     If ScanFilePath is only a file name, the ScanDir must be set externally
     via `senv ScanDir <PathToScanFile>` or using the %expconf. Otherwise,
     the path in ScanFilePath must be absolute and existing on the
     MacroServer host.
-
+    
     The ScanID should be set to the value before the upcoming scan number.
     Default value is 0.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'allowsHooks': ('post-newfile')}
@@ -982,6 +1474,19 @@ class newfile(Hookable, Macro):
     ]
 
     def run(self, ScanFilePath_list, ScanID):
+        """
+
+        Parameters
+        ----------
+        ScanFilePath_list :
+            
+        ScanID :
+            
+
+        Returns
+        -------
+
+        """
         path_list = []
         fileName_list = []
         # traverse the repeat parameters for the ScanFilePath_list
@@ -1069,6 +1574,17 @@ class plotselect(Macro):
      ]
 
     def run(self, channel):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+
+        Returns
+        -------
+
+        """
         active_meas_grp = self.getEnv('ActiveMntGrp')
         meas_grp = self.getMeasurementGroup(active_meas_grp)
         self.output("Active measurement group: {}".format(meas_grp.name))
@@ -1103,6 +1619,19 @@ class _movetostatspos(Macro):
     ]
 
     def run(self, channel, caller):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+        caller :
+            
+
+        Returns
+        -------
+
+        """
         stats = self.getEnv('ScanStats', door_name=self.getDoorName())
 
         if channel is None:
@@ -1142,6 +1671,13 @@ class pic(Macro):
     """This macro moves the motor of the last scan to the PEAK position for a
     given channel. If no channel is given, it selects the first channel from
     the ScanStats env variable.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -1149,6 +1685,17 @@ class pic(Macro):
     ]
 
     def run(self, channel):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+
+        Returns
+        -------
+
+        """
         self.execMacro('_movetostatspos', channel, 'pic')
 
 
@@ -1156,6 +1703,13 @@ class cen(Macro):
     """This macro moves the motor of the last scan to the CEN position for a
     given channel. If no channel is given, it selects the first channel from
     the ScanStats env variable.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -1163,6 +1717,17 @@ class cen(Macro):
     ]
 
     def run(self, channel):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+
+        Returns
+        -------
+
+        """
         self.execMacro('_movetostatspos', channel, 'cen')
 
 
@@ -1172,6 +1737,7 @@ class where(Macro):
     env = ("ScanStats", )
 
     def run(self):
+        """ """
         motor_name = self.getEnv('ScanStats')['Motor']
         motor = self.getMoveable(motor_name)
         self.info("motor {:s} is\nat {:.4f}".format(motor_name,

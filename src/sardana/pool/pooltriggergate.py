@@ -38,13 +38,20 @@ from sardana.pool.poolsynchronization import PoolSynchronization
 
 
 class Index(SardanaAttribute):
-    """ Index of the trigger/gate event being currently generated.
-
+    """Index of the trigger/gate event being currently generated.
+    
     .. note::
         The Index class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -52,6 +59,7 @@ class Index(SardanaAttribute):
 
 
 class PoolTriggerGate(PoolElement):
+    """ """
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.TriggerGate
@@ -67,8 +75,15 @@ class PoolTriggerGate(PoolElement):
     def get_index_attribute(self):
         """Returns the index attribute object for this trigger/gate
 
-        :return: the index attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the index attribute
+
+        """
         return self._index
 
     # --------------------------------------------------------------------------
@@ -76,4 +91,5 @@ class PoolTriggerGate(PoolElement):
     # --------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_index_attribute()

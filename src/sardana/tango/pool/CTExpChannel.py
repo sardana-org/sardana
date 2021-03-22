@@ -47,24 +47,49 @@ from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
 
 
 class CTExpChannel(PoolTimerableDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolTimerableDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolTimerableDevice.init(self, name)
 
     def get_ct(self):
+        """ """
         return self.element
 
     def set_ct(self, ct):
+        """
+
+        Parameters
+        ----------
+        ct :
+            
+
+        Returns
+        -------
+
+        """
         self.element = ct
 
     ct = property(get_ct, set_ct)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolTimerableDevice.delete_device(self)
         ct = self.ct
         if ct is not None:
@@ -72,6 +97,7 @@ class CTExpChannel(PoolTimerableDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolTimerableDevice.init_device(self)
 
         ct = self.ct
@@ -91,6 +117,21 @@ class CTExpChannel(PoolTimerableDevice):
         self.set_state(DevState.ON)
 
     def on_ct_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_ct_changed(event_source, event_type, event_value)
         except not DevFailed:
@@ -101,6 +142,21 @@ class CTExpChannel(PoolTimerableDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_ct_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -147,13 +203,26 @@ class CTExpChannel(PoolTimerableDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.ct.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -170,6 +239,7 @@ class CTExpChannel(PoolTimerableDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
@@ -183,6 +253,17 @@ class CTExpChannel(PoolTimerableDevice):
                 self.set_change_event(attr_name, True, False)
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         ct = self.ct
         # TODO: decide if we force the controller developers to store the
         # last acquired value in the controllers or we always will use
@@ -209,15 +290,28 @@ class CTExpChannel(PoolTimerableDevice):
                            timestamp=value.timestamp, priority=0)
 
     def is_Value_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
 
     def Start(self):
+        """ """
         self.ct.start_acquisition()
 
 
 class CTExpChannelClass(PoolTimerableDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {}
@@ -244,6 +338,7 @@ class CTExpChannelClass(PoolTimerableDeviceClass):
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "Counter/Timer device class"
         ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')

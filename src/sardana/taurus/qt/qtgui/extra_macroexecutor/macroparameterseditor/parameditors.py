@@ -39,41 +39,80 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.common import MSAttrListComboBo
 
 
 def str2bool(text):
+    """
+
+    Parameters
+    ----------
+    text :
+        
+
+    Returns
+    -------
+
+    """
     return text in ("True", "1")
 
 
 class ParamBase(object):
+    """ """
 
     def __init__(self, paramModel=None):
         self.setParamModel(paramModel)
         self.setToolTip(paramModel.description())
 
     def paramModel(self):
+        """ """
         return self._paramModel
 
     def setParamModel(self, paramModel):
+        """
+
+        Parameters
+        ----------
+        paramModel :
+            
+
+        Returns
+        -------
+
+        """
         self._paramModel = paramModel
 
     def resetValue(self):
+        """ """
         if self.paramModel() is not None:
             defValue = self.paramModel().defValue()
             self.setValue(defValue)
 
     def index(self):
+        """ """
         return self._index
 
     def setIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         self._index = index
         paramModel = index.model().nodeFromIndex(index)
         self.setParamModel(paramModel)
         self.setValue(paramModel.value())
 
     def onModelChanged(self):
+        """ """
         model = self.index().model()
         model.setData(self.index(), self.getValue())
 
 
 class ComboBoxBoolean(ParamBase, Qt.QComboBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QComboBox.__init__(self, parent)
@@ -82,9 +121,21 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         self.addItems(['True', 'False'])
 
     def getValue(self):
+        """ """
         return str(self.currentText())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
@@ -94,15 +145,28 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
 
 
 class ComboBoxParam(ParamBase, Qt.QComboBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QComboBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
 
     def getValue(self):
+        """ """
         return str(self.currentText())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
@@ -112,6 +176,7 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
 
 
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         MSAttrListComboBox.__init__(self, parent)
@@ -120,13 +185,26 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
 #        self.setModel("/" + self.paramModel().type() + "List")
 
     def getValue(self):
+        """ """
         return str(self.currentText())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.setCurrentText(value)
 
 
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         TaurusAttrListComboBox.__init__(self, parent)
@@ -134,6 +212,21 @@ class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
         self.setModel("/" + self.paramModel().type() + "List")
 
     def handleEvent(self, src, type, value):
+        """
+
+        Parameters
+        ----------
+        src :
+            
+        type :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.clear()
         if src and value:
             lines = list(value.value)
@@ -149,6 +242,7 @@ class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
     #        self.updateStyle()
 
     def getValue(self):
+        """ """
         return str(self.currentText())
 
 #    def resetValue(self):
@@ -156,6 +250,7 @@ class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
 
 
 class LineEditParam(ParamBase, Qt.QLineEdit):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QLineEdit.__init__(self, parent)
@@ -167,9 +262,21 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
 #            self.setText(defVal)
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.setText(value)
 
     def getValue(self):
+        """ """
         return str(self.text())
 
 #    def resetValue(self):
@@ -178,19 +285,33 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
 
 
 class CheckBoxParam(ParamBase, Qt.QCheckBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QCheckBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
 
     def getValue(self):
+        """ """
         return str(self.isChecked())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.setChecked(str2bool(value))
 
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QSpinBox.__init__(self, parent)
@@ -199,9 +320,21 @@ class SpinBoxParam(ParamBase, Qt.QSpinBox):
         self.setAccelerated(True)
 
     def getValue(self):
+        """ """
         return str(self.value())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         Qt.QSpinBox.setValue(self, int(value))
 
 #    def resetValue(self):
@@ -210,6 +343,7 @@ class SpinBoxParam(ParamBase, Qt.QSpinBox):
 
 
 class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QDoubleSpinBox.__init__(self, parent)
@@ -220,9 +354,21 @@ class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
         self.setSingleStep(0.000001)
 
     def getValue(self):
+        """ """
         return str(self.value())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         Qt.QDoubleSpinBox.setValue(self, float(value))
 
 #    def setDefaultValue(self):
@@ -241,6 +387,7 @@ class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
 
 
 class FileDialogParam(ParamBase, Qt.QWidget):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QWidget.__init__(self, parent)
@@ -258,10 +405,22 @@ class FileDialogParam(ParamBase, Qt.QWidget):
         self.button.clicked.connect(self._chooseAFile)
 
     def _chooseAFile(self):
+        """ """
         path, _ = compat.getOpenFileName()
         self.filePath.setText(path)
 
     def _readFileContent(self, path):
+        """
+
+        Parameters
+        ----------
+        path :
+            
+
+        Returns
+        -------
+
+        """
         content = ""
         if not os.access(path, os.R_OK):
             return (False, content)
@@ -274,16 +433,29 @@ class FileDialogParam(ParamBase, Qt.QWidget):
         return (True, content)
 
     def getValue(self):
+        """ """
         state, self.text = self._readFileContent(self.filePath.text())
         if state is False:
             self.filePath.setText("Error: couldn't read a file")
         return str(self.text)
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.filePath.setText(value)
 
 
 class DirPathParam(ParamBase, Qt.QWidget):
+    """ """
 
     def __init__(self, parent=None, paramModel=None):
         Qt.QWidget.__init__(self, parent)
@@ -301,6 +473,7 @@ class DirPathParam(ParamBase, Qt.QWidget):
         self.dirPath.textChanged.connect(self.onDirPathChanged)
 
     def onDirPathChanged(self):
+        """ """
         self.onModelChanged()
 
     def __chooseDirPath(self):
@@ -308,7 +481,19 @@ class DirPathParam(ParamBase, Qt.QWidget):
         self.setValue(path)
 
     def getValue(self):
+        """ """
         return str(self.dirPath.text())
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.dirPath.setText(value)

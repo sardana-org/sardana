@@ -47,6 +47,7 @@ from sardana.pool.poolexception import PoolException
 
 
 class Position(SardanaAttribute):
+    """ """
 
     def __init__(self, *args, **kwargs):
         self._exc_info = None
@@ -70,38 +71,76 @@ class Position(SardanaAttribute):
             pass
 
     def _in_error(self):
+        """ """
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if position_attr.error:
                 return True
         return self._exc_info is not None
 
     def _has_value(self):
+        """ """
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if not position_attr.has_value():
                 return False
         return True
 
     def _has_write_value(self):
+        """ """
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if not position_attr.has_write_value():
                 return False
         return True
 
     def _get_value(self):
+        """ """
         return self.calc_pseudo().value
 
     def _set_value(self, value, exc_info=None, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        exc_info :
+             (Default value = None)
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         raise Exception("Cannot set position value for %s" % self.obj.name)
 
     def _get_write_value(self):
+        """ """
         w_positions = self.get_physical_write_positions()
         return self.calc_pseudo(physical_positions=w_positions).value
 
     def _set_write_value(self, w_value, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        w_value :
+            
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         raise Exception("Cannot set position write value for %s" %
                         self.obj.name)
 
     def _get_exc_info(self):
+        """ """
         exc_info = self._exc_info
         if exc_info is None:
             for position_attr in self.obj.get_physical_position_attribute_iterator():
@@ -110,6 +149,7 @@ class Position(SardanaAttribute):
         return exc_info
 
     def _get_timestamp(self):
+        """ """
         timestamps = [
             pos_attr.timestamp for pos_attr in self.obj.get_physical_position_attribute_iterator()]
         if not len(timestamps):
@@ -117,6 +157,7 @@ class Position(SardanaAttribute):
         return max(timestamps)
 
     def _get_write_timestamp(self):
+        """ """
         timestamps = []
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
             timestamps.append(pos_attr.w_timestamp)
@@ -125,6 +166,7 @@ class Position(SardanaAttribute):
         return max(timestamps)
 
     def get_physical_write_positions(self):
+        """ """
         ret = []
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
             if pos_attr.has_write_value():
@@ -142,6 +184,7 @@ class Position(SardanaAttribute):
         return ret
 
     def get_physical_positions(self):
+        """ """
         ret = []
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
             # if underlying moveable doesn't have position yet, it is because
@@ -155,6 +198,17 @@ class Position(SardanaAttribute):
         return ret
 
     def calc_pseudo(self, physical_positions=None):
+        """
+
+        Parameters
+        ----------
+        physical_positions :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         try:
             obj = self.obj
             if physical_positions is None:
@@ -174,6 +228,17 @@ class Position(SardanaAttribute):
         return result
 
     def calc_all_pseudo(self, physical_positions=None):
+        """
+
+        Parameters
+        ----------
+        physical_positions :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         try:
             obj = self.obj
             if physical_positions is None:
@@ -192,6 +257,17 @@ class Position(SardanaAttribute):
         return result
 
     def calc_physical(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         try:
             obj = self.obj
             curr_physical_positions = self.get_physical_positions()
@@ -213,9 +289,37 @@ class Position(SardanaAttribute):
         return result
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         self.fire_read_event(propagate=evt_type.priority)
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if cache:
             for phy_elem_pos in self.obj.get_low_level_physical_position_attribute_iterator():
                 if not phy_elem_pos.has_value():
@@ -251,10 +355,38 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # forward all events coming from attributes to the listeners
         self.fire_event(evt_type, evt_value)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolElement.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
@@ -268,13 +400,26 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         return kwargs
 
     def _create_action_cache(self):
+        """ """
         motion_name = "%s.Motion" % self._name
         return PoolMotion(self, motion_name)
 
     def set_drift_correction(self, drift_correction):
+        """
+
+        Parameters
+        ----------
+        drift_correction :
+            
+
+        Returns
+        -------
+
+        """
         self._drift_correction = drift_correction
 
     def get_drift_correction(self):
+        """ """
         dc = self._drift_correction
         if dc is None:
             dc = self.manager.drift_correction
@@ -285,12 +430,25 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                                 doc="drift correction")
 
     def get_action_cache(self):
+        """ """
         return self._get_action_cache()
 
     def set_action_cache(self, action_cache):
+        """
+
+        Parameters
+        ----------
+        action_cache :
+            
+
+        Returns
+        -------
+
+        """
         self._set_action_cache(action_cache)
 
     def get_siblings(self):
+        """ """
         if self._siblings is None:
             self._siblings = siblings = set()
             for axis, sibling in \
@@ -304,6 +462,21 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                         doc="the siblings for this pseudo motor")
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         name = evt_type.name.lower()
         # always calculate state.
         status_info = self._calculate_states()
@@ -318,6 +491,19 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         self.set_status(status, propagate=status_propagate)
 
     def add_user_element(self, element, index=None):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        index :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         elem_type = element.get_type()
         if elem_type == ElementType.Motor:
             pass
@@ -334,45 +520,84 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def calc_pseudo(self, physical_positions=None):
+        """
+
+        Parameters
+        ----------
+        physical_positions :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.get_position_attribute().calc_pseudo(physical_positions=physical_positions)
 
     def calc_physical(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         return self.get_position_attribute().calc_physical(new_position)
 
     def calc_all_pseudo(self, physical_positions=None):
+        """
+
+        Parameters
+        ----------
+        physical_positions :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.get_position_attribute().calc_all_pseudo(physical_positions=physical_positions)
 
     def get_position_attribute(self):
+        """ """
         return self._position
 
     def get_low_level_physical_position_attribute_iterator(self):
+        """ """
         return self.get_physical_elements_attribute_iterator()
 
     def get_physical_position_attribute_iterator(self):
+        """ """
         return self.get_user_elements_attribute_iterator()
 
     def get_physical_positions_attribute_sequence(self):
+        """ """
         return self.get_user_elements_attribute_sequence()
 
     def get_physical_positions_attribute_map(self):
+        """ """
         return self.get_user_elements_attribute_map()
 
     def get_physical_positions(self, cache=True, propagate=1):
         """Get positions for underlying elements.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        dict <PoolElement, :class:`~sardana.sardanaattribute.SardanaAttribute` >
             the physical positions
-        :rtype:
-            dict <PoolElement, :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
+
+        """
         self._position.update(cache=cache, propagate=propagate)
         return self.get_physical_positions_attribute_map()
 
@@ -382,15 +607,21 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         it's last write position is used. Otherwise its read position is used
         instead.
 
-        :param use: the already calculated positions. If a sibling is in this
-                    dictionary, the position stored here is used instead
-        :type use: dict <PoolElement, :class:`~sardana.sardanavalue.SardanaValue` >
-        :param write_pos: determines if should try to use the last set point
-                          [default: True]
-        :type write_pos: bool
-        :return: a dictionary with siblings write positions
-        :rtype:
-            dict <PoolElement, position(float?) >"""
+        Parameters
+        ----------
+        use : dict <PoolElement, :class:`~sardana.sardanavalue.SardanaValue` >
+            the already calculated positions. If a sibling is in this
+            dictionary, the position stored here is used instead (Default value = None)
+        write_pos : bool
+            determines if should try to use the last set point
+            [default: True]
+
+        Returns
+        -------
+        dict <PoolElement, position(float?) >
+            a dictionary with siblings write positions
+
+        """
         positions = {}
         for sibling in self.siblings:
             pos_attr = sibling.get_position(propagate=0)
@@ -413,19 +644,20 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     def get_position(self, cache=True, propagate=1):
         """Returns the user position.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the user position
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         position_attr = self._position
         position_attr.update(cache=cache, propagate=propagate)
         return position_attr
@@ -433,23 +665,33 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     def set_position(self, position):
         """Moves the motor to the specified user position
 
-        :param position:
+        Parameters
+        ----------
+        position : class:`~numbers.Number
             the user position to move to
-        :type position:
-            :class:`~numbers.Number`"""
+
+        Returns
+        -------
+
+        """
         self.start_move(position)
 
     def set_write_position(self, w_position, timestamp=None, propagate=1):
         """Sets a new write value for the user position.
 
-        :param w_position:
+        Parameters
+        ----------
+        w_position : class:`~numbers.Number`
             the new write value for user position
-        :type w_position:
-            :class:`~numbers.Number`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # SardanaAttribute position will raise an exception so we let it do it
         self._position.set_write_value(w_position, timestamp=timestamp,
                                        propagate=propagate)
@@ -464,6 +706,17 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     _STD_STATUS = "{name} is {state}\n{ctrl_status}"
 
     def calculate_state_info(self, status_info=None):
+        """
+
+        Parameters
+        ----------
+        status_info :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         # Refer to Position.__init__ method for an explanation on this 'hack'
         if not self._position._listeners_configured:
@@ -483,6 +736,17 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         return status_info[0], new_status
 
     def read_state_info(self, state_info=None):
+        """
+
+        Parameters
+        ----------
+        state_info :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if state_info is None:
             state_info = {}
             action_cache = self.get_action_cache()
@@ -504,6 +768,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_position_attribute()
 
     # ------------------------------------------------------------------------
@@ -511,6 +776,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def get_motion(self):
+        """ """
         return self.get_action_cache()
 
     motion = property(get_motion, doc="motion object")
@@ -520,6 +786,21 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def calculate_motion(self, new_position, items=None, calculated=None):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+        items :
+             (Default value = None)
+        calculated :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # if items already contains the positions for this pseudo motor
         # underlying motors it means the motion has already been calculated
         # by a sibling
@@ -574,6 +855,17 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         return items
 
     def start_move(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         self._in_start_move = True
         try:
             return self._start_move(new_position)
@@ -581,6 +873,17 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             self._in_start_move = False
 
     def _start_move(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         self._aborted = False
         self._stopped = False
         items = self.calculate_motion(new_position)
@@ -596,6 +899,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def stop(self):
+        """ """
         # surpass the PoolElement.stop because it doesn't do what we want
         PoolBaseElement.stop(self)
         PoolBaseGroup.stop(self)
@@ -605,6 +909,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def abort(self):
+        """ """
         # surpass the PoolElement.abort because it doesn't do what we want
         PoolBaseElement.abort(self)
         PoolBaseGroup.abort(self)
@@ -614,4 +919,5 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def get_operation(self):
+        """ """
         return PoolBaseGroup.get_operation(self)

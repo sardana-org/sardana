@@ -49,7 +49,17 @@ class DoorOutput(Qt.QPlainTextEdit):
         self._isDebugging = False
 
     def onDoorOutputChanged(self, output):
-        """call on output attribute changed"""
+        """call on output attribute changed
+
+        Parameters
+        ----------
+        output :
+            
+
+        Returns
+        -------
+
+        """
         txt = "<font color=\"Black\">"
         if output is None:
             return
@@ -61,7 +71,17 @@ class DoorOutput(Qt.QPlainTextEdit):
         self.appendHtmlText(txt)
 
     def onDoorInfoChanged(self, info):
-        """call on info attribute changed"""
+        """call on info attribute changed
+
+        Parameters
+        ----------
+        info :
+            
+
+        Returns
+        -------
+
+        """
         txt = "<font color=\"Blue\">"
         if info is None:
             return
@@ -73,7 +93,17 @@ class DoorOutput(Qt.QPlainTextEdit):
         self.appendHtmlText(txt)
 
     def onDoorWarningChanged(self, warning):
-        """call on warning attribute changed"""
+        """call on warning attribute changed
+
+        Parameters
+        ----------
+        warning :
+            
+
+        Returns
+        -------
+
+        """
         txt = "<font color=\"Orange\">"
         if warning is None:
             return
@@ -85,7 +115,17 @@ class DoorOutput(Qt.QPlainTextEdit):
         self.appendHtmlText(txt)
 
     def onDoorErrorChanged(self, error):
-        """call on error attribute changed"""
+        """call on error attribute changed
+
+        Parameters
+        ----------
+        error :
+            
+
+        Returns
+        -------
+
+        """
         txt = "<font color=\"Red\">"
         if error is None:
             return
@@ -97,7 +137,17 @@ class DoorOutput(Qt.QPlainTextEdit):
         self.appendHtmlText(txt)
 
     def onDoorDebugChanged(self, debug):
-        """call on debug attribute changed"""
+        """call on debug attribute changed
+
+        Parameters
+        ----------
+        debug :
+            
+
+        Returns
+        -------
+
+        """
         txt = "<font color=\"Grey\">"
         if self._isDebugging:
             if debug is None:
@@ -112,11 +162,33 @@ class DoorOutput(Qt.QPlainTextEdit):
                 self.moveCursor(Qt.QTextCursor.End)
 
     def appendHtmlText(self, text):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         self.appendHtml(text)
         if not self._isStopped:
             self.moveCursor(Qt.QTextCursor.End)
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         menu = self.createStandardContextMenu()
         clearAction = Qt.QAction("Clear", menu)
         menu.addAction(clearAction)
@@ -131,9 +203,31 @@ class DoorOutput(Qt.QPlainTextEdit):
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
+        """
+
+        Parameters
+        ----------
+        stop :
+            
+
+        Returns
+        -------
+
+        """
         self._isStopped = stop
 
     def showDebugDetails(self, debug):
+        """
+
+        Parameters
+        ----------
+        debug :
+            
+
+        Returns
+        -------
+
+        """
         self._isDebugging = debug
 
 
@@ -158,7 +252,17 @@ class DoorDebug(Qt.QPlainTextEdit):
         warning(msg)
 
     def onDoorDebugChanged(self, debug):
-        """call on debug attribute changed"""
+        """call on debug attribute changed
+
+        Parameters
+        ----------
+        debug :
+            
+
+        Returns
+        -------
+
+        """
         if debug is None:
             return
         for line in debug:
@@ -168,6 +272,17 @@ class DoorDebug(Qt.QPlainTextEdit):
             self.moveCursor(Qt.QTextCursor.End)
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         menu = self.createStandardContextMenu()
         clearAction = Qt.QAction("Clear", menu)
         menu.addAction(clearAction)
@@ -180,6 +295,17 @@ class DoorDebug(Qt.QPlainTextEdit):
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
+        """
+
+        Parameters
+        ----------
+        stop :
+            
+
+        Returns
+        -------
+
+        """
         self._isStopped = stop
 
 
@@ -192,7 +318,17 @@ class DoorResult(Qt.QPlainTextEdit):
         self.setFont(Qt.QFont("Courier", 9))
 
     def onDoorResultChanged(self, result):
-        """call on result attribute changed"""
+        """call on result attribute changed
+
+        Parameters
+        ----------
+        result :
+            
+
+        Returns
+        -------
+
+        """
         if result is None:
             return
         for line in result:
@@ -200,6 +336,17 @@ class DoorResult(Qt.QPlainTextEdit):
         self.moveCursor(Qt.QTextCursor.End)
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         menu = self.createStandardContextMenu()
         clearAction = Qt.QAction("Clear", menu)
         menu.addAction(clearAction)

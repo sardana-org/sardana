@@ -39,6 +39,7 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 
 class QDoor(BaseDoor, Qt.QObject):
+    """ """
 
     __pyqtSignals__ = ["resultUpdated",
                        "recordDataUpdated", "macroStatusUpdated"]
@@ -69,11 +70,39 @@ class QDoor(BaseDoor, Qt.QObject):
         self._connections_prepared = False
 
     def resultReceived(self, log_name, result):
+        """
+
+        Parameters
+        ----------
+        log_name :
+            
+        result :
+            
+
+        Returns
+        -------
+
+        """
         res = BaseDoor.resultReceived(self, log_name, result)
         self.resultUpdated.emit(res)
         return res
 
     def recordDataReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if t not in CHANGE_EVTS:
             return
         res = BaseDoor.recordDataReceived(self, s, t, v)
@@ -81,6 +110,21 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def macroStatusReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         res = BaseDoor.macroStatusReceived(self, s, t, v)
         if t == TaurusEventType.Error:
             macro = None
@@ -93,6 +137,19 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def logReceived(self, log_name, output):
+        """
+
+        Parameters
+        ----------
+        log_name :
+            
+        output :
+            
+
+        Returns
+        -------
+
+        """
         res = BaseDoor.logReceived(self, log_name, output)
         log_name = log_name.lower()
         logUpdated = getattr(self, "%sUpdated" % log_name)
@@ -100,6 +157,7 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def _prepare_connections(self):
+        """ """
         if not self._use_experiment_configuration and \
                 not self._connections_prepared:
             self.macro_server.environmentChanged.connect(
@@ -109,6 +167,7 @@ class QDoor(BaseDoor, Qt.QObject):
             self._connections_prepared = True
 
     def _elementsChanged(self):
+        """ """
         mntgrps = self.macro_server.getElementsOfType("MeasurementGroup")
         # one or more measurement group was deleted
         mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
@@ -126,17 +185,21 @@ class QDoor(BaseDoor, Qt.QObject):
             self._onExperimentConfigurationChanged()
 
     def _onEnvironmentChanged(self, env_changes):
-        """
-        Filter environment changes that affect to the experiment
+        """Filter environment changes that affect to the experiment
         configuration.
 
-        :param env_changes: tuple with three elements in the following order:
+        Parameters
+        ----------
+        env_changes : obj:`tuple`
+            tuple with three elements in the following order:
+            
+            * added (environment variables added)
+            * removed (environment variables removed)
+            * changed (environment variables changed)
 
-        * added (environment variables added)
-        * removed (environment variables removed)
-        * changed (environment variables changed)
+        Returns
+        -------
 
-        :type env_changes: :obj:`tuple`
         """
         env_exp_changed = False
         # Filter only the Environment added/removed/changes related with
@@ -151,19 +214,33 @@ class QDoor(BaseDoor, Qt.QObject):
         self._onExperimentConfigurationChanged()
 
     def _onExperimentConfigurationChanged(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         conf = copy.deepcopy(BaseDoor.getExperimentConfiguration(self))
         self.experimentConfigurationChanged.emit(conf)
 
     def getExperimentConfigurationObj(self):
+        """ """
         self._prepare_connections()
         return BaseDoor.getExperimentConfigurationObj(self)
 
     def getExperimentConfiguration(self):
+        """ """
         self._prepare_connections()
         return BaseDoor.getExperimentConfiguration(self)
 
 
 class QMacroServer(BaseMacroServer, Qt.QObject):
+    """ """
 
     # TODO: Choose and homogenize signals named ...Updated and ...Changed.
     #  e.g: there should exist only one signal for elementsUpdated
@@ -197,6 +274,21 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
     #     return res
 
     def on_elements_changed(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         ret = added, removed, changed = \
             BaseMacroServer.on_elements_changed(self, s, t, v)
 
@@ -214,6 +306,21 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
         return ret
 
     def on_environment_changed(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         ret = added, removed, changed = \
             BaseMacroServer.on_environment_changed(self, s, t, v)
         if added or removed or changed:
@@ -228,13 +335,27 @@ from taurus.qt.qtgui.panel import TaurusMessageErrorHandler
 
 
 class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
+    """ """
 
     def setError(self, err_type=None, err_value=None, err_traceback=None):
         """Translates the given error object into an HTML string and places it
         in the message panel
 
-        :param error: an error object (typically an exception object)
-        :type error: object"""
+        Parameters
+        ----------
+        error : objec
+            an error object (typically an exception object)
+        err_type :
+             (Default value = None)
+        err_value :
+             (Default value = None)
+        err_traceback :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         msgbox = self._msgbox
         msgbox.setText(err_value)
@@ -268,7 +389,15 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
 
 def registerExtensions():
     """Registers the macroserver extensions in the
-    :class:taurus.core.tango.TangoFactory`"""
+    :class:taurus.core.tango.TangoFactory`
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     import taurus
     factory = taurus.Factory()
     factory.registerDeviceClass('MacroServer', QMacroServer)

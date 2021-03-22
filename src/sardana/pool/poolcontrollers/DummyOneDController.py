@@ -32,10 +32,30 @@ from sardana.pool.controller import DefaultValue, Description, FGet, FSet, Type
 
 
 def gauss(x, mean, ymax, fwhm, yoffset=0):
+    """
+
+    Parameters
+    ----------
+    x :
+        
+    mean :
+        
+    ymax :
+        
+    fwhm :
+        
+    yoffset :
+         (Default value = 0)
+
+    Returns
+    -------
+
+    """
     return yoffset + ymax * numpy.power(2, -4 * ((x - mean) / fwhm)**2)
 
 
 class Channel:
+    """ """
 
     def __init__(self, idx):
         self.idx = idx            # 1 based axisex
@@ -48,32 +68,40 @@ class Channel:
 
 
 class BaseValue(object):
+    """ """
 
     def __init__(self, value):
         self.raw_value = value
         self.init()
 
     def init(self):
+        """ """
         self.value = float(self.raw_value)
 
     def get(self):
+        """ """
         return self.value
 
     def get_value_name(self):
+        """ """
         return self.raw_value
 
 
 class TangoValue(BaseValue):
+    """ """
 
     def init(self):
+        """ """
         import PyTango
         self.attr_proxy = PyTango.AttributeProxy(self.raw_value)
 
     def get(self):
+        """ """
         return self.attr_proxy.read().value
 
 
 class DummyOneDController(OneDController):
+    """ """
     "This class is the Tango Sardana OneDController controller for tests"
 
     gender = "Simulation"
@@ -108,6 +136,17 @@ class DummyOneDController(OneDController):
         self.reset()
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         # the default max shape for 'value' is (16*1024,). We don't need so much
         # so we set it to BufferSize
         attrs = super(DummyOneDController, self).GetAxisAttributes(axis)
@@ -115,6 +154,7 @@ class DummyOneDController(OneDController):
         return attrs
 
     def reset(self):
+        """ """
         self.start_time = None
         self.integ_time = None
         self.monitor_count = None
@@ -122,24 +162,70 @@ class DummyOneDController(OneDController):
         self.counting_channels = {}
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = channel = Channel(axis)
         channel.value = numpy.zeros(self.BufferSize, dtype=numpy.float64)
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.channels[idx] = None
 
     def PreStateAll(self):
+        """ """
         pass
 
     def PreStateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def StateAll(self):
+        """ """
         pass
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         sta = State.On
         status = "Stopped"
@@ -154,6 +240,19 @@ class DummyOneDController(OneDController):
         return sta, status
 
     def _updateChannelState(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         if self._synchronization == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 # counting in time
@@ -172,6 +271,19 @@ class DummyOneDController(OneDController):
                     self._finish(elapsed_time)
 
     def _updateChannelValue(self, axis, elapsed_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        elapsed_time :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
         t = elapsed_time
         if self._synchronization == AcqSynch.SoftwareTrigger:
@@ -199,6 +311,19 @@ class DummyOneDController(OneDController):
                 channel.buffer_values = [value] * n
 
     def _finish(self, elapsed_time, axis=None):
+        """
+
+        Parameters
+        ----------
+        elapsed_time :
+            
+        axis :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if axis is None:
             for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
@@ -214,13 +339,26 @@ class DummyOneDController(OneDController):
         self.counting_channels = {}
 
     def PreReadAll(self):
+        """ """
         self.read_channels = {}
 
     def PreReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         channel = self.channels[axis - 1]
         self.read_channels[axis] = channel
 
     def ReadAll(self):
+        """ """
         # if in acquisition then calculate the values to return
         if self.counting_channels:
             now = time.time()
@@ -231,6 +369,17 @@ class DummyOneDController(OneDController):
                     self._updateChannelValue(axis, elapsed_time)
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug("ReadOne(%s)", axis)
         channel = self.read_channels[axis]
         if self._synchronization == AcqSynch.SoftwareTrigger:
@@ -244,9 +393,23 @@ class DummyOneDController(OneDController):
         return v
 
     def PreStartAll(self):
+        """ """
         self.counting_channels = {}
 
     def PreStartOne(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         channel.value = 0.0
@@ -256,12 +419,43 @@ class DummyOneDController(OneDController):
         return True
 
     def StartOne(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
+        """ """
         self.start_time = time.time()
 
     def LoadOne(self, axis, value, repetitions, latency_time):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+        repetitions :
+            
+        latency_time :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         if value > 0:
             self.integ_time = value
@@ -272,17 +466,52 @@ class DummyOneDController(OneDController):
         self._repetitions = repetitions
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         now = time.time()
         if axis in self.counting_channels:
             elapsed_time = now - self.start_time
             self._finish(elapsed_time, axis=axis)
 
     def getAmplitude(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         return channel.amplitude.get_value_name()
 
     def setAmplitude(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
 
@@ -292,11 +521,35 @@ class DummyOneDController(OneDController):
         channel.amplitude = klass(value)
 
     def getRoI(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         return channel.roi
 
     def setRoI(self, axis, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         try:
@@ -319,6 +572,19 @@ class DummyOneDController(OneDController):
         channel.roi = value
 
     def GetAxisPar(self, axis, par):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        par :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         channel = self.channels[idx]
         if par == "shape":

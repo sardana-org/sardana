@@ -36,10 +36,16 @@ from sardana.macroserver.scan import *
 
 
 class xas_acq(Macro, Hookable):
-    """
-    .. warning:: This macro is still under development. It may change.
-
+    """.. warning:: This macro is still under development. It may change.
+    
     Perform an X-ray absorption scan experiment. Data is stored in a NXxas-compliant file.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     hints = {'scan': 'xas_acq', 'allowsHooks': (
         'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step')}
@@ -55,6 +61,25 @@ class xas_acq(Macro, Hookable):
     ]
 
     def prepare(self, start, final, nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        final :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         # parse the user parameters
         self.starts = numpy.array([start], dtype='d')
         self.finals = numpy.array([final], dtype='d')
@@ -103,6 +128,7 @@ class xas_acq(Macro, Hookable):
                             moveables=[energymotor], env=env)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step[
@@ -115,14 +141,27 @@ class xas_acq(Macro, Hookable):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():  # just go through the steps
             yield step
 
     @property
     def data(self):
+        """ """
         return self._gScan.data  # the GScan provides scan data
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)

@@ -44,16 +44,26 @@ ControllerAPI = 1.1
 
 
 class SynchEnum(IntEnum):
+    """ """
 
     @classmethod
     def fromStr(cls, string):
-        '''Convert string representation of SynchDomain enum e.g.
+        """Convert string representation of SynchDomain enum e.g.
         'SynchDomain.Time' to SynchDomain objects. It also works with just
         domain strings like 'Time'. The following expressions are True:
-
+        
         SynchDomain.fromStr(str(SynchDomain.Time)) == SynchDomain.Time
         SynchDomain.fromStr('Time') == SynchDomain.Time
-        '''
+
+        Parameters
+        ----------
+        string :
+            
+
+        Returns
+        -------
+
+        """
         domain = string.split('.')
         if len(domain) == 1:
             return __getitem__(cls, domain[0])
@@ -65,17 +75,24 @@ class SynchEnum(IntEnum):
 
 class SynchDomain(SynchEnum):
     """Enumeration of synchronization domains.
-
+    
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
     - Monitor - not used at the moment but foreseen for synchronization on
       monitor
-
+    
     .. note::
         The SynchDomain class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     Time = 0
     Position = 1
@@ -90,18 +107,24 @@ class SynchDomain(SynchEnum):
 
 class SynchParam(SynchEnum):
     """Enumeration of synchronization description group parameters.
-
+    
     - Delay - initial delay (relative to the synchronization start)
     - Total - total interval
     - Active - active interval (part of the total interval)
     - Repeats - number of repetitions within the group
     - Initial - initial point (absolute)
-
+    
     .. note::
         The SynchParam class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
 
     """
     Delay = 0
@@ -131,12 +154,19 @@ AcqSynchType.__doc__ = \
 
 class AcqSynch(IntEnum):
     """Enumeration of synchronization options.
-
+    
     Uses software/hardware naming to refer to internal (software
     synchronizer) or external (hardware synchronization device)
     synchronization modes. See :obj:`~sardana.pool.pooldefs.AcqSynchType`
     to get more details about the synchronization type e.g. trigger, gate or
     start.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     SoftwareTrigger = 0
     """Internal (software) trigger
@@ -172,6 +202,17 @@ class AcqSynch(IntEnum):
     def from_synch_type(self, software, synch_type):
         """Helper obtain AcqSynch from information about software/hardware
         nature of synchronization element and AcqSynchType
+
+        Parameters
+        ----------
+        software :
+            
+        synch_type :
+            
+
+        Returns
+        -------
+
         """
         if synch_type is AcqSynchType.Trigger:
             if software:

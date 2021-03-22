@@ -98,33 +98,65 @@ class BaseSardanaElement(object):
         return self.name < elem.name
 
     def getData(self):
+        """ """
         return self._data
 
     def getName(self):
+        """ """
         return self.name
 
     def getId(self):
+        """ """
         return self.full_name
 
     def getType(self):
+        """ """
         return self.getTypes()[0]
 
     def getTypes(self):
+        """ """
         elem_types = self.type
         if isinstance(elem_types, str):
             return [elem_types]
         return elem_types
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs.update(self._data)
         return kwargs
 
     def str(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # TODO change and check which is the active protocol to serialize
         # acordingly
         return CodecFactory().encode(('json', self.serialize(*args, **kwargs)))
 
     def getObj(self):
+        """ """
         obj = self._object
         if obj is None:
             self._object = obj = self._manager.getObject(self)
@@ -132,6 +164,7 @@ class BaseSardanaElement(object):
 
 
 class BaseSardanaElementContainer:
+    """ """
 
     def __init__(self):
         # dict<str, dict> where key is the type and value is:
@@ -144,6 +177,17 @@ class BaseSardanaElementContainer:
         self._interfaces_dict = {}
 
     def addElement(self, elem):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = elem.getType()
         elem_full_name = elem.full_name
 
@@ -162,6 +206,17 @@ class BaseSardanaElementContainer:
             interface_elems[elem_full_name] = elem
 
     def removeElement(self, e):
+        """
+
+        Parameters
+        ----------
+        e :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = e.getType()
 
         # update type_elems
@@ -175,34 +230,122 @@ class BaseSardanaElementContainer:
             del interface_elems[e.full_name]
 
     def removeElementsOfType(self, t):
+        """
+
+        Parameters
+        ----------
+        t :
+            
+
+        Returns
+        -------
+
+        """
         for elem in self.getElementsOfType(t):
             self.removeElement(elem)
 
     def getElementsOfType(self, t):
+        """
+
+        Parameters
+        ----------
+        t :
+            
+
+        Returns
+        -------
+
+        """
         elems = self._type_elems_dict.get(t, {})
         return elems
 
     def getElementNamesOfType(self, t):
+        """
+
+        Parameters
+        ----------
+        t :
+            
+
+        Returns
+        -------
+
+        """
         return [e.name for e in list(self.getElementsOfType(t).values())]
 
     def getElementsWithInterface(self, interface):
+        """
+
+        Parameters
+        ----------
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         elems = self._interfaces_dict.get(interface, {})
         return elems
 
     def getElementsWithInterfaces(self, interfaces):
+        """
+
+        Parameters
+        ----------
+        interfaces :
+            
+
+        Returns
+        -------
+
+        """
         ret = CaselessDict()
         for interface in interfaces:
             ret.update(self.getElementsWithInterface(interface))
         return ret
 
     def getElementNamesWithInterface(self, interface):
+        """
+
+        Parameters
+        ----------
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         return [e.name for e in
                 list(self.getElementsWithInterface(interface).values())]
 
     def hasElementName(self, elem_name):
+        """
+
+        Parameters
+        ----------
+        elem_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
+        """
+
+        Parameters
+        ----------
+        elem_name :
+            
+
+        Returns
+        -------
+
+        """
         elem_name = elem_name.lower()
         for elems in list(self._type_elems_dict.values()):
             elem = elems.get(elem_name)  # full_name?
@@ -213,6 +356,19 @@ class BaseSardanaElementContainer:
                     return elem
 
     def getElementWithInterface(self, elem_name, interface):
+        """
+
+        Parameters
+        ----------
+        elem_name :
+            
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         elem_name = elem_name.lower()
         elems = self._interfaces_dict.get(interface, {})
         if elem_name in elems:
@@ -222,15 +378,18 @@ class BaseSardanaElementContainer:
                 return elem
 
     def getElements(self):
+        """ """
         ret = set()
         for elems in list(self._type_elems_dict.values()):
             ret.update(list(elems.values()))
         return ret
 
     def getInterfaces(self):
+        """ """
         return self._interfaces_dict
 
     def getTypes(self):
+        """ """
         return self._type_elems_dict
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -241,6 +400,7 @@ class BaseSardanaElementContainer:
 
 
 class PropertyInfo():
+    """ """
 
     def __init__(self, name, type, format, default_value=None):
         self._name = name
@@ -249,15 +409,19 @@ class PropertyInfo():
         self._default_value = default_value
 
     def get_name(self):
+        """ """
         return self._name
 
     def get_type(self):
+        """ """
         return self._type
 
     def get_format(self):
+        """ """
         return self._format
 
     def get_default_value(self):
+        """ """
         return self._default_value
 
 
@@ -267,6 +431,7 @@ class PropertyInfo():
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 class ControllerClassInfo(object):
+    """ """
 
     def __init__(self, name, type, library):
         self._name = name
@@ -274,25 +439,31 @@ class ControllerClassInfo(object):
         self._library = library
 
     def get_max_elements(self):
+        """ """
         return 20
 
     def get_name(self):
+        """ """
         return self._name
 
     def get_model(self):
+        """ """
         # fake data ###############
         return "Model of " + self._name
 
     def get_icon(self):
+        """ """
         # fake data ###############
         from taurus.external.qt import Qt
         return Qt.QIcon("designer:extra_motor.png")
 
     def get_organization(self):
+        """ """
         # fake data ###############
         return "Organization of " + self._name
 
     def get_description(self):
+        """ """
         #fake data############
         descr = "This is description of "
         for i in range(20):
@@ -301,10 +472,12 @@ class ControllerClassInfo(object):
         return descr
 
     def get_family(self):
+        """ """
         # fake data ###############
         return "Family of " + self._name
 
     def get_properties(self):
+        """ """
         properties = []
         # fake data ######################
         properties.append(PropertyInfo(
@@ -337,6 +510,7 @@ class ControllerClassInfo(object):
         return properties
 
     def get_controller_type(self):
+        """ """
         return self._type
 
 
@@ -346,24 +520,40 @@ class ControllerClassInfo(object):
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 class ControllerInfo(object):
+    """ """
 
     def __init__(self, name, ctrl_class_info):
         self._name = name
         self._ctrl_class_info = ctrl_class_info
 
     def get_controller_class_info(self):
+        """ """
         return self._ctrl_class_info
 
     def get_controller_type(self):
+        """ """
         return self._ctrl_class_info.get_controller_type()
 
     def get_name(self):
+        """ """
         return self._name
 
     def get_max_elements(self):
+        """ """
         return self._ctrl_class_info.get_max_elements()
 
     def is_axis_free(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         # fake data
         if axis == 3:
             return False
@@ -371,6 +561,17 @@ class ControllerInfo(object):
             return True
 
     def is_name_free(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         # fake data
         if name == "asd":
             return False
@@ -378,6 +579,7 @@ class ControllerInfo(object):
             return True
 
     def get_icon(self):
+        """ """
         return self._ctrl_class_info.get_icon()
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -388,6 +590,7 @@ class ControllerInfo(object):
 
 
 class Pool(object):
+    """ """
 
     def __init__(self, sardana, name, poolpath, version, alias=None, device_name=None):
         self._sardana = sardana
@@ -398,18 +601,35 @@ class Pool(object):
         self._device_name = device_name
 
     def starter_run(self, host, level=1):
+        """
+
+        Parameters
+        ----------
+        host :
+            
+        level :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         return True
 
     def get_name(self):
+        """ """
         return self._name
 
     def local_run(self):
+        """ """
         return True
 
     def get_element_types(self):
+        """ """
         return sorted(PoolElementType.keys())
 
     def get_controller_class_infos(self):
+        """ """
         #fake data ########################
         data = []
         for i in range(5):
@@ -422,6 +642,7 @@ class Pool(object):
         return data
 
     def get_controller_infos(self):
+        """ """
         ctrl_classes = self.get_controller_class_infos()
         data = []
         for i in range(2):
@@ -433,9 +654,39 @@ class Pool(object):
         return data
 
     def create_controller(self, controller_class_info, name, properties):
+        """
+
+        Parameters
+        ----------
+        controller_class_info :
+            
+        name :
+            
+        properties :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def create_element(self, controller_name, name, axis):
+        """
+
+        Parameters
+        ----------
+        controller_name :
+            
+        name :
+            
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -445,6 +696,7 @@ class Pool(object):
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 class MacroServer(object):
+    """ """
 
     def __init__(self, sardana, name, macropath, pool_names, version, alias=None, device_name=None):
         self._sardana = sardana
@@ -457,6 +709,19 @@ class MacroServer(object):
         self._doors = []
 
     def create_door(self, alias, device_name):
+        """
+
+        Parameters
+        ----------
+        alias :
+            
+        device_name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self._create_door(alias, device_name)
         except:
@@ -465,6 +730,19 @@ class MacroServer(object):
             raise
 
     def _create_door(self, alias, device_name):
+        """
+
+        Parameters
+        ----------
+        alias :
+            
+        device_name :
+            
+
+        Returns
+        -------
+
+        """
         db = self.get_database()
         info = PyTango.DbDevInfo()
         info.name = device_name
@@ -478,15 +756,41 @@ class MacroServer(object):
         return door
 
     def remove_door(self, device_name):
+        """
+
+        Parameters
+        ----------
+        device_name :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def starter_run(self, host, level=1):
+        """
+
+        Parameters
+        ----------
+        host :
+            
+        level :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         return True
 
     def local_run(self):
+        """ """
         return True
 
     def get_database(self):
+        """ """
         return self._sardana.get_database()
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -497,6 +801,7 @@ class MacroServer(object):
 
 
 class Door(object):
+    """ """
 
     def __init__(self, alias=None, device_name=None):
         self._name = alias
@@ -509,6 +814,7 @@ class Door(object):
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 class Sardana(object):
+    """ """
 
     def __init__(self, sardana_db, name, device_name=None):
         self._sardana_db = sardana_db
@@ -519,6 +825,7 @@ class Sardana(object):
         self._init()
 
     def _init(self):
+        """ """
         if not self._device_name:
             return
         self._pools = []
@@ -556,22 +863,56 @@ class Sardana(object):
                 self._pools.append(pool)
 
     def get_name(self):
+        """ """
         return self._name
 
     def set_device_name(self, device_name):
+        """
+
+        Parameters
+        ----------
+        device_name :
+            
+
+        Returns
+        -------
+
+        """
         self._device_name = device_name
         self._init()
 
     def get_device_name(self):
+        """ """
         return self._device_name
 
     def get_pools(self):
+        """ """
         return self._pools
 
     def get_macro_servers(self):
+        """ """
         return self._macro_servers
 
     def create_pool(self, name, poolpath, version, alias=None, device_name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        poolpath :
+            
+        version :
+            
+        alias :
+             (Default value = None)
+        device_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         try:
             return self._create_pool(name, poolpath, version, alias=alias, device_name=device_name)
         except:
@@ -580,6 +921,25 @@ class Sardana(object):
             raise
 
     def _create_pool(self, name, poolpath, version, alias=None, device_name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        poolpath :
+            
+        version :
+            
+        alias :
+             (Default value = None)
+        device_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         db = self.get_database()
         info = PyTango.DbDevInfo()
         info.name = device_name
@@ -598,6 +958,27 @@ class Sardana(object):
         return pool
 
     def create_macroserver(self, name, macropath, pool_names, version, alias=None, device_name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        macropath :
+            
+        pool_names :
+            
+        version :
+            
+        alias :
+             (Default value = None)
+        device_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         try:
             return self._create_macroserver(name, macropath, pool_names, version, alias=alias, device_name=device_name)
         except:
@@ -606,6 +987,27 @@ class Sardana(object):
             raise
 
     def _create_macroserver(self, name, macropath, pool_names, version, alias=None, device_name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        macropath :
+            
+        pool_names :
+            
+        version :
+            
+        alias :
+             (Default value = None)
+        device_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         db = self.get_database()
         info = PyTango.DbDevInfo()
         info.name = device_name
@@ -624,12 +1026,15 @@ class Sardana(object):
         return ms
 
     def remove_pool(self):
+        """ """
         pass
 
     def remove_macroserver(self):
+        """ """
         pass
 
     def get_database(self):
+        """ """
         return self._sardana_db.get_database()
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -648,6 +1053,7 @@ class DatabaseSardana(object):
         self.refresh()
 
     def refresh(self):
+        """ """
         self._sardanas = sardanas = {}
         services = self._db.get_service_list("Sardana/.*")
         for service, dev in list(services.items()):
@@ -659,6 +1065,19 @@ class DatabaseSardana(object):
                 pass
 
     def create_sardana(self, name, device_name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        device_name :
+            
+
+        Returns
+        -------
+
+        """
         if name in self._sardanas:
             raise Exception("Sardana '%s' already exists" % name)
         self._db.register_service("Sardana", name, device_name)
@@ -667,6 +1086,17 @@ class DatabaseSardana(object):
         return sardana
 
     def remove_sardana(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._sardanas.pop(name)
         except KeyError:
@@ -674,12 +1104,25 @@ class DatabaseSardana(object):
         self._db.unregister_service("Sardana", name)
 
     def get_sardanas(self):
+        """ """
         return self._sardanas
 
     def get_sardana(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self._sardanas[name]
 
     def get_database(self):
+        """ """
         return self._db
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -692,17 +1135,40 @@ class DatabaseSardana(object):
 class SardanaManager(Singleton, Logger):
 
     def __init__(self):
-        """ Initialization. Nothing to be done here for now."""
+        """Initialization. Nothing to be done here for now."""
         pass
 
     def init(self, *args, **kwargs):
         """Singleton instance initialization.
-           **For internal usage only**"""
+           **For internal usage only**
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         name = self.__class__.__name__
         self.call__init__(Logger, name)
         self._db_sardanas = {}
 
     def _get_db_sardana(self, db=None):
+        """
+
+        Parameters
+        ----------
+        db :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if db is None:
             import taurus
             db = taurus.Database()
@@ -712,29 +1178,85 @@ class SardanaManager(Singleton, Logger):
         return db_sardana
 
     def create_sardana(self, name, device_name, db=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        device_name :
+            
+        db :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self._get_db_sardana(db).create_sardana(name, device_name)
 
     def remove_sardana(self, name, db=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        db :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._get_db_sardana(db).remove_sardana(name)
 
     def get_sardanas(self, db=None):
+        """
+
+        Parameters
+        ----------
+        db :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self._get_db_sardana(db).get_sardanas()
 
     def get_sardana(self, name, db=None):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        db :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self._get_db_sardana(db).get_sardana(name)
 
     def get_hosts(self):
+        """ """
         return ["localhost"] + ["controls%02d" % i for i in range(5)]
 
     def get_level_range(self):
+        """ """
         return 1, 200
 
     def has_localhost_starter(self):
+        """ """
         import socket
         return socket.gethostname() in self.get_hosts()
 
     @classmethod
     def get_default_pool_path(cls):
+        """ """
         pathList = []
         pathList.append("/homelocal/sicilia/lib/poolcontrollers")
         pathList.append(
@@ -743,6 +1265,7 @@ class SardanaManager(Singleton, Logger):
 
     @classmethod
     def get_default_ms_path(cls):
+        """ """
         pathList = []
         pathList.append(
             "/homelocal/sicilia/lib/python/site-packages/macroserver/macros")

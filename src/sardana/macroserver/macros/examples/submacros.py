@@ -39,12 +39,15 @@ from sardana.macroserver.macro import Macro, Type
 
 
 class call_wa(Macro):
+    """ """
 
     def run(self):
+        """ """
         self.macros.wa()
 
 
 class call_wm(Macro):
+    """ """
 
     param_def = [
         ['motor_list', [['motor', Type.Motor, None, 'Motor to move']],
@@ -52,14 +55,34 @@ class call_wm(Macro):
     ]
 
     def run(self, m):
+        """
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         self.macros.wm(m)
 
 
 class subsubm(Macro):
     """this macro just calls the 'subm' macro
-    This macro is part of the examples package. It was written for demonstration purposes"""
+    This macro is part of the examples package. It was written for demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def run(self):
+        """ """
         self.output("Starting %s" % self.getName())
         m = self.macros
         motors = self.getObjs('.*', type_class=Type.Motor)
@@ -69,9 +92,18 @@ class subsubm(Macro):
 
 class subm(Macro):
     """this macro just calls the 'subsubm' macro
-    This macro is part of the examples package. It was written for demonstration purposes"""
+    This macro is part of the examples package. It was written for demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def run(self):
+        """ """
         self.output("Starting %s" % self.getName())
         self.macros.subsubm()
         self.output("Finished %s" % self.getName())
@@ -79,9 +111,18 @@ class subm(Macro):
 
 class mainmacro(Macro):
     """this macro just calls the 'subm' macro
-    This macro is part of the examples package. It was written for demonstration purposes"""
+    This macro is part of the examples package. It was written for demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def run(self):
+        """ """
         self.output("Starting %s" % self.getName())
         self.macros.subm()
         self.output("Finished %s" % self.getName())
@@ -94,10 +135,10 @@ class mainmacro(Macro):
 
 
 class runsubs(Macro):
-    """ A macro that calls a ascan macro using the motor given as first parameter.
-
+    """A macro that calls a ascan macro using the motor given as first parameter.
+    
     This macro is part of the examples package. It was written for demonstration purposes
-
+    
     Call type will allow to choose to format in which the ascan macro is called
     from this macro:
     1 - m.ascan(motor.getName(), '0', '10', '4', '0.2')
@@ -117,18 +158,40 @@ class runsubs(Macro):
         macro, prep = self.createMacro(params)
         macro.hooks = [ self.hook ]
         self.runMacro(macro)
-
+    
         Options 7,8 and 9 use the lower level macro API in order to be able to
-        attach hooks to the ascan macro."""
+        attach hooks to the ascan macro.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     param_def = [
         ['motor',      Type.Motor,   None, 'Motor to move'],
         ['call_type',  Type.Integer, 2, 'type of run to execute internally'],
     ]
 
     def hook(self):
+        """ """
         self.info("executing hook in a step of a scan...")
 
     def run(self, motor, call_type):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        call_type :
+            
+
+        Returns
+        -------
+
+        """
         m = self.macros
         self.output("Using type %d" % call_type)
         if call_type == 1:
@@ -163,15 +226,34 @@ class runsubs(Macro):
 class get_data(Macro):
     """A macro that executes another macro from within it, get its data,
     and calculates a result using this data.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [["mot", Type.Moveable, None, "moveable to be moved"]]
     result_def = [["middle", Type.Float, None,
                    "the middle motor position"]]
 
     def run(self, mot):
+        """
+
+        Parameters
+        ----------
+        mot :
+            
+
+        Returns
+        -------
+
+        """
         start = 0
         end = 2
         intervals = 2

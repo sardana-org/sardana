@@ -41,15 +41,18 @@ COL1_NAME = "col1"
 
 
 class RecordList(dict):
+    """ """
 
     def __init__(self, env):
         self._env = env
 
     def getEnviron(self):
+        """ """
         return self._env
 
 
 class Record(object):
+    """ """
 
     def __init__(self, data, recordno=0):
         self.data = data
@@ -57,8 +60,10 @@ class Record(object):
 
 
 class TestNXscanH5_FileRecorder(TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         self.dir_name = tempfile.gettempdir()
         self.path = os.path.join(self.dir_name, "test.h5")
         try:
@@ -137,6 +142,13 @@ class TestNXscanH5_FileRecorder(TestCase):
     def test_VDS(self):
         """Test creation of VDS when channel reports URIs (str) of h5file
         scheme in a simulated sardana scan (3 points).
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         try:
             h5py.VirtualLayout
@@ -190,6 +202,7 @@ class TestNXscanH5_FileRecorder(TestCase):
                 os.remove(path)
 
     def tearDown(self):
+        """ """
         try:
             os.remove(self.path)
         except OSError:
@@ -198,12 +211,36 @@ class TestNXscanH5_FileRecorder(TestCase):
 
 @pytest.fixture
 def recorder(tmpdir):
+    """
+
+    Parameters
+    ----------
+    tmpdir :
+        
+
+    Returns
+    -------
+
+    """
     path = str(tmpdir / "file.h5")
     return NXscanH5_FileRecorder(filename=path)
 
 
 @pytest.mark.parametrize("custom_data", ["str_custom_data", 8, True])
 def test_addCustomData(recorder, custom_data):
+    """
+
+    Parameters
+    ----------
+    recorder :
+        
+    custom_data :
+        
+
+    Returns
+    -------
+
+    """
     name = "custom_data_name"
     recorder.addCustomData(custom_data, name)
     with h5py.File(recorder.filename) as fd:

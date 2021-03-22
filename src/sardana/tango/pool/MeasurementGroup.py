@@ -47,23 +47,48 @@ from sardana.tango.pool.PoolDevice import PoolGroupDevice, PoolGroupDeviceClass
 
 
 class MeasurementGroup(PoolGroupDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolGroupDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolGroupDevice.init(self, name)
 
     def get_measurement_group(self):
+        """ """
         return self.element
 
     def set_measurement_group(self, measurement_group):
+        """
+
+        Parameters
+        ----------
+        measurement_group :
+            
+
+        Returns
+        -------
+
+        """
         self.element = measurement_group
 
     measurement_group = property(get_measurement_group, set_measurement_group)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolGroupDevice.delete_device(self)
         mg = self.measurement_group
         if mg is not None:
@@ -71,6 +96,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
         detect_evts = "moveable", "synchdescription", \
@@ -106,6 +132,21 @@ class MeasurementGroup(PoolGroupDevice):
 
     def on_measurement_group_changed(self, event_source, event_type,
                                      event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_measurement_group_changed(
                 event_source, event_type, event_value)
@@ -118,6 +159,21 @@ class MeasurementGroup(PoolGroupDevice):
 
     def _on_measurement_group_changed(self, event_source, event_type,
                                       event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -161,11 +217,20 @@ class MeasurementGroup(PoolGroupDevice):
     def _synch_description_str2enum(self, _synch_description_str):
         """Translates synchronization description data structure so it uses
         SynchParam and SynchDomain enums as keys instead of strings.
-
+        
         .. todo:: At some point remove the backwards compatibility
           for memorized values created with Python 2. In Python 2 IntEnum was
           serialized to "<class>.<attr>" e.g. "SynchDomain.Time" and we were
           using a class method `fromStr` to interpret the enumeration objects.
+
+        Parameters
+        ----------
+        _synch_description_str :
+            
+
+        Returns
+        -------
+
         """
         synch_description = []
         for group_str in _synch_description_str:
@@ -190,36 +255,114 @@ class MeasurementGroup(PoolGroupDevice):
         return synch_description
 
     def always_executed_hook(self):
+        """ """
         pass
         # state = to_tango_state(self.motor_group.get_state(cache=False))
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def read_IntegrationTime(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         it = self.measurement_group.integration_time
         if it is None:
             it = float('nan')
         attr.set_value(it)
 
     def write_IntegrationTime(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.measurement_group.integration_time = attr.get_write_value()
 
     def read_MonitorCount(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         it = self.measurement_group.monitor_count
         if it is None:
             it = 0
         attr.set_value(it)
 
     def write_MonitorCount(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.measurement_group.monitor_count = attr.get_write_value()
 
     def read_AcquisitionMode(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         acq_mode = self.measurement_group.acquisition_mode
         acq_mode_str = AcqMode.whatis(acq_mode)
         attr.set_value(acq_mode_str)
 
     def write_AcquisitionMode(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         acq_mode_str = attr.get_write_value()
         try:
             acq_mode = AcqMode.lookup[acq_mode_str]
@@ -229,12 +372,34 @@ class MeasurementGroup(PoolGroupDevice):
         self.measurement_group.acquisition_mode = acq_mode
 
     def read_Configuration(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         cfg = self.measurement_group.get_user_configuration()
         codec = CodecFactory().getCodec('json')
         data = codec.encode(('', cfg))
         attr.set_value(data[1])
 
     def write_Configuration(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data = attr.get_write_value()
         cfg = CodecFactory().decode(('json', data))
         util = Util.instance()
@@ -245,33 +410,99 @@ class MeasurementGroup(PoolGroupDevice):
         self.measurement_group.set_configuration_from_user(cfg)
 
     def read_NbStarts(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         nb_starts = self.measurement_group.nb_starts
         if nb_starts is None:
             nb_starts = int('nan')
         attr.set_value(nb_starts)
 
     def write_NbStarts(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         self.measurement_group.nb_starts = attr.get_write_value()
 
     def read_Moveable(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         moveable = self.measurement_group.moveable
         if moveable is None:
             moveable = 'None'
         attr.set_value(moveable)
 
     def write_Moveable(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         moveable = attr.get_write_value()
         if moveable == 'None':
             moveable = None
         self.measurement_group.moveable = moveable
 
     def read_SynchDescription(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         synch_description = self.measurement_group.synch_description
         codec = CodecFactory().getCodec('json')
         data = codec.encode(('', synch_description))
         attr.set_value(data[1])
 
     def write_SynchDescription(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data = attr.get_write_value()
         synch_description = CodecFactory().decode(('json', data))
         # translate dictionary keys
@@ -280,15 +511,48 @@ class MeasurementGroup(PoolGroupDevice):
         self.measurement_group.synch_description = synch_description
 
     def read_LatencyTime(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         latency_time = self.measurement_group.latency_time
         attr.set_value(latency_time)
 
     def read_SoftwareSynchronizerInitialDomain(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         domain = self.measurement_group.sw_synch_initial_domain
         d = SynchDomain(domain).name
         attr.set_value(d)
 
     def write_SoftwareSynchronizerInitialDomain(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data = attr.get_write_value()
         try:
             domain = SynchDomain[data]
@@ -297,9 +561,11 @@ class MeasurementGroup(PoolGroupDevice):
         self.measurement_group.sw_synch_initial_domain = domain
 
     def Prepare(self):
+        """ """
         self.measurement_group.prepare()
 
     def Start(self):
+        """ """
         try:
             self.wait_for_operation()
         except:
@@ -307,10 +573,12 @@ class MeasurementGroup(PoolGroupDevice):
         self.measurement_group.start_acquisition()
 
     def Stop(self):
+        """ """
         self.measurement_group.stop()
 
 
 class MeasurementGroupClass(PoolGroupDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -363,6 +631,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
     attr_list.update(PoolGroupDeviceClass.attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolGroupDeviceClass._get_class_properties(self)
         ret['Description'] = "Measurement group device class"
         ret['InheritedFrom'].insert(0, 'PoolGroupDevice')

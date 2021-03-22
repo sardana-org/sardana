@@ -41,22 +41,77 @@ from sardana.macroserver.macro import macro, Macro, Type, Optional
 
 
 def sanitizer(values):
+    """
+
+    Parameters
+    ----------
+    values :
+        
+
+    Returns
+    -------
+
+    """
     return ["n/a" if v is None else v for v in values]
 
 
 def plot_type_sanitizer(values):
+    """
+
+    Parameters
+    ----------
+    values :
+        
+
+    Returns
+    -------
+
+    """
     return [PlotType.whatis(v) for v in values]
 
 
 def plot_axes_sanitizer(values):
+    """
+
+    Parameters
+    ----------
+    values :
+        
+
+    Returns
+    -------
+
+    """
     return ["n/a" if len(v) == 0 else v[0] for v in values]
 
 
 def synchrtonization_sanitizer(values):
+    """
+
+    Parameters
+    ----------
+    values :
+        
+
+    Returns
+    -------
+
+    """
     return [AcqSynchType.whatis(v) for v in values]
 
 
 def plot_axes_validator(value):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+
+    Returns
+    -------
+
+    """
     value = value.lower()
     if value in ("idx", "<idx>"):
         value = ["<idx>"]
@@ -66,6 +121,17 @@ def plot_axes_validator(value):
 
 
 def bool_validator(value):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+
+    Returns
+    -------
+
+    """
     in_value = value
     value = value.lower()
     if value in ['true', '1']:
@@ -78,6 +144,17 @@ def bool_validator(value):
 
 
 def synchronization_validator(value):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+
+    Returns
+    -------
+
+    """
     in_value = value
     value = value.lower()
     try:
@@ -120,8 +197,18 @@ simple_parameters = ("enabled", "plottype", "plotaxes")
 ])
 def get_meas_conf(self, detail, meas_grp):
     """Print measurement group configuration in form of a table.
-
+    
     Examples of usage:
+
+    Parameters
+    ----------
+    detail :
+        
+    meas_grp :
+        
+
+    Returns
+    -------
 
     >>> get_meas_conf  # get <ActiveMntGrp> simple configuration
     >>> get_meas_conf all  # get <ActiveMntGrp> complete configuration
@@ -176,9 +263,9 @@ def get_meas_conf(self, detail, meas_grp):
 ])
 def set_meas_conf(self, parameter, value, items, meas_grp):
     """Set measurement group configuration parameter.
-
+    
     Available configuration parameters and values:
-
+    
     - **Enabled**: True/1 or False/0
     - **Output**: True/1 or False/0
     - **PlotType**: No, Spectrum or Image
@@ -190,8 +277,22 @@ def set_meas_conf(self, parameter, value, items, meas_grp):
     - **Synchronization**: 0/Trigger, 1/Gate or 2/Start
     - **ValueRefEnabled** - True/1 or False/0
     - **ValueRefPattern** - URI e.g. file:///tmp/img_{index}.tiff
-
+    
     Examples of usage:
+
+    Parameters
+    ----------
+    parameter :
+        
+    value :
+        
+    items :
+        
+    meas_grp :
+        
+
+    Returns
+    -------
 
     >>> # enable all channels in <ActiveMntGrp>
     >>> set_meas_conf enabled True
@@ -225,8 +326,19 @@ def set_meas_conf(self, parameter, value, items, meas_grp):
 ])
 def set_meas(self, meas_grp, macro):
     """Activate measurement group.
-
+    
     It sets the ActiveMntGrp environment variable.
+
+    Parameters
+    ----------
+    meas_grp :
+        
+    macro :
+        
+
+    Returns
+    -------
+
     """
     var = "ActiveMntGrp"
     if macro is not None:
@@ -241,8 +353,17 @@ def set_meas(self, meas_grp, macro):
 ])
 def get_meas(self, macro):
     """Activate measurement group.
-
+    
     It gets the ActiveMntGrp environment variable.
+
+    Parameters
+    ----------
+    macro :
+        
+
+    Returns
+    -------
+
     """
     if macro is not None:
         macro_name = macro.name
@@ -259,10 +380,10 @@ def get_meas(self, macro):
 
 
 class lssnap(Macro):
-    """List pre-scan snapshot group.
-    """
+    """List pre-scan snapshot group."""
 
     def run(self):
+        """ """
         try:
             snapshot_items = self.getEnv("PreScanSnapshot")
         except UnknownEnv:
@@ -277,12 +398,19 @@ class lssnap(Macro):
 
 class defsnap(Macro):
     """Define snapshot group item(s).
-
+    
     Accepts:
-
+    
     - Pool moveables: motor, pseudo motor
     - Pool experimental channels: counter/timer, 0D, 1D, 2D, pseudo counter
     - Taurus attributes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -294,8 +422,30 @@ class defsnap(Macro):
     ]
 
     def run(self, snap_names):
+        """
+
+        Parameters
+        ----------
+        snap_names :
+            
+
+        Returns
+        -------
+
+        """
 
         def get_item_info(item):
+            """
+
+            Parameters
+            ----------
+            item :
+                
+
+            Returns
+            -------
+
+            """
             if isinstance(item, taurus.core.TaurusAttribute):
                 return item.fullname, item.label
             else:
@@ -325,8 +475,7 @@ class defsnap(Macro):
 
 
 class udefsnap(Macro):
-    """Undefine snapshot group item(s). Without arguments undefine all.
-    """
+    """Undefine snapshot group item(s). Without arguments undefine all."""
 
     param_def = [
         ["snap_names", [[
@@ -338,6 +487,17 @@ class udefsnap(Macro):
     ]
 
     def run(self, snap_names):
+        """
+
+        Parameters
+        ----------
+        snap_names :
+            
+
+        Returns
+        -------
+
+        """
         if len(snap_names) == 0:
             self.unsetEnv("PreScanSnapshot")
             return

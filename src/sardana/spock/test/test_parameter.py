@@ -31,15 +31,19 @@ from sardana.spock import parameter
 
 class ParamTestCase(unittest.TestCase):
 
-    """
-    Instantiate in different ways a Param object and verify that
+    """Instantiate in different ways a Param object and verify that
     they are correct instances from the class Param.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def testInstanceCreation(self):
-        """
-        Instantiate in different ways a Param object.
-        """
+        """Instantiate in different ways a Param object."""
         spock_param = parameter.Param()
         self.assertIsInstance(spock_param, parameter.Param,
                               'Instantiation of an object Param without arguments ' +

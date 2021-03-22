@@ -47,24 +47,49 @@ from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
 
 
 class OneDExpChannel(PoolTimerableDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolTimerableDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolTimerableDevice.init(self, name)
 
     def get_oned(self):
+        """ """
         return self.element
 
     def set_oned(self, oned):
+        """
+
+        Parameters
+        ----------
+        oned :
+            
+
+        Returns
+        -------
+
+        """
         self.element = oned
 
     oned = property(get_oned, set_oned)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolTimerableDevice.delete_device(self)
         oned = self.oned
         if oned is not None:
@@ -72,6 +97,7 @@ class OneDExpChannel(PoolTimerableDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolTimerableDevice.init_device(self)
         oned = self.oned
         if oned is None:
@@ -90,6 +116,21 @@ class OneDExpChannel(PoolTimerableDevice):
         self.set_state(DevState.ON)
 
     def on_oned_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_oned_changed(event_source, event_type, event_value)
         except not DevFailed:
@@ -100,6 +141,21 @@ class OneDExpChannel(PoolTimerableDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_oned_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -148,13 +204,26 @@ class OneDExpChannel(PoolTimerableDevice):
                            priority=priority, error=error, synch=False)
 
     def always_executed_hook(self):
+        """ """
         #state = to_tango_state(self.oned.get_state(cache=False))
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def get_dynamic_attributes(self):
+        """ """
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
@@ -173,6 +242,7 @@ class OneDExpChannel(PoolTimerableDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
+        """ """
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         non_detect_evts = "valuebuffer",
@@ -182,6 +252,17 @@ class OneDExpChannel(PoolTimerableDevice):
                 self.set_change_event(attr_name, True, False)
 
     def read_Value(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         oned = self.oned
         # TODO: decide if we force the controller developers to store the
         # last acquired value in the controllers or we always will use
@@ -208,11 +289,33 @@ class OneDExpChannel(PoolTimerableDevice):
                            timestamp=value.timestamp, priority=0)
 
     def is_Value_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
 
     def read_DataSource(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data_source = self.oned.get_data_source()
         if data_source is None:
             full_name = self.get_full_name()
@@ -223,6 +326,7 @@ class OneDExpChannel(PoolTimerableDevice):
         attr.set_value(data_source)
 
     def Start(self):
+        """ """
         self.oned.start_acquisition()
 
 
@@ -233,6 +337,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
 
 
 class OneDExpChannelClass(PoolTimerableDeviceClass):
+    """ """
 
     #    Class Properties
     class_property_list = {
@@ -263,6 +368,7 @@ class OneDExpChannelClass(PoolTimerableDeviceClass):
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
+        """ """
         ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "1D device class"
         ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')

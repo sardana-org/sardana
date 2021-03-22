@@ -38,6 +38,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 @UILoadable(with_ui="_ui")
 class ReflectionsEditor(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -49,6 +50,7 @@ class ReflectionsEditor(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'reflectionseditor'
         ret['group'] = 'Taurus Containers'
@@ -57,6 +59,17 @@ class ReflectionsEditor(TaurusWidget):
         return ret
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if model is not None:
             self.device = taurus.Device(model)
 
@@ -153,6 +166,7 @@ class ReflectionsEditor(TaurusWidget):
                     ("%12.4f" % ref[i + 6]).strip())
 
     def apply(self):
+        """ """
         # Get the values for the new reflections
         hklnew = []
         anglesnew = []
@@ -215,6 +229,7 @@ class ReflectionsEditor(TaurusWidget):
         self.clear()
 
     def clear(self):
+        """ """
         reflections = self.device.reflectionlist
 
         # Clean the values
@@ -246,6 +261,7 @@ class ReflectionsEditor(TaurusWidget):
 
 
 def main():
+    """ """
     app = Qt.QApplication(sys.argv)
     w = ReflectionsEditor()
     w.show()

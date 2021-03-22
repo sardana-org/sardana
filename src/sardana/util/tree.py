@@ -7,13 +7,32 @@ class BaseNode:
 
 class BranchNode(BaseNode):
     """BranchNode, apart of reference to data, stores a list of
-    children Nodes."""
+    children Nodes.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, data):
         BaseNode.__init__(self, data)
         self.children = []
 
     def addChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         self.children.append(child)
 
 
@@ -31,4 +50,5 @@ class Tree:
         self._root = root
 
     def root(self):
+        """ """
         return self._root

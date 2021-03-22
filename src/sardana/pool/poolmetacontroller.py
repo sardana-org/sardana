@@ -128,7 +128,7 @@ for t, d in list(TYPE_MAP.items()):
 class ControllerLibrary(SardanaLibrary):
     """Object representing a python module containning controller classes.
     Public members:
-
+    
         - module - reference to python module
         - f_path - complete (absolute) path and filename
         - f_name - filename (including file extension)
@@ -137,6 +137,13 @@ class ControllerLibrary(SardanaLibrary):
         - controller_list - list<ControllerClass>
         - exc_info - exception information if an error occured when loading
                      the module
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, **kwargs):
@@ -150,6 +157,19 @@ class ControllerLibrary(SardanaLibrary):
     has_controller = SardanaLibrary.has_meta_class
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaLibrary.serialize(self, *args, **kwargs)
         kwargs['pool'] = self.get_manager().name
         kwargs['id'] = InvalidId
@@ -157,10 +177,12 @@ class ControllerLibrary(SardanaLibrary):
 
     @property
     def controllers(self):
+        """ """
         return self.meta_classes
 
 
 class DataInfo(object):
+    """ """
 
     def __init__(self, name, dtype, dformat=DataFormat.Scalar,
                  access=DataAccess.ReadWrite, description="",
@@ -185,6 +207,7 @@ class DataInfo(object):
         self.maxdimsize = maxdimsize
 
     def copy(self):
+        """ """
         s = self
         d = DataInfo(s.name, s.dtype, dformat=s.dformat, access=s.access,
                      description=s.description, default_value=s.default_value,
@@ -194,6 +217,21 @@ class DataInfo(object):
 
     @classmethod
     def toDataInfo(klass, name, info):
+        """
+
+        Parameters
+        ----------
+        klass :
+            
+        name :
+            
+        info :
+            
+
+        Returns
+        -------
+
+        """
         info = CaselessDict(info)
         dtype = info[Type]
         dtype, dformat = to_dtype_dformat(dtype)
@@ -214,6 +252,7 @@ class DataInfo(object):
                         maxdimsize=maxdimsize)
 
     def toDict(self):
+        """ """
         return {'name': self.name, 'type': DataType.whatis(self.dtype),
                 'format': DataFormat.whatis(self.dformat),
                 'access': DataAccess.whatis(self.access),
@@ -223,6 +262,19 @@ class DataInfo(object):
                 'maxdimsize': self.maxdimsize}
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs.update(self.toDict())
         return kwargs
 
@@ -249,11 +301,19 @@ class DataInfo(object):
 class ControllerClass(SardanaClass):
     """Object representing a python controller class.
        Public members:
-
+    
            - name - class name
            - klass - python class object
            - lib - ControllerLibrary object representing the module where the
-             controller is."""
+             controller is.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('pool')
@@ -328,6 +388,19 @@ class ControllerClass(SardanaClass):
         return types
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaClass.serialize(self, *args, **kwargs)
         kwargs['id'] = InvalidId
         kwargs['pool'] = self.get_manager().name
@@ -345,16 +418,20 @@ class ControllerClass(SardanaClass):
 
     @property
     def controller_class(self):
+        """ """
         return self.klass
 
     @property
     def gender(self):
+        """ """
         return self.klass.gender
 
     @property
     def model(self):
+        """ """
         return self.klass.model
 
     @property
     def organization(self):
+        """ """
         return self.klass.organization

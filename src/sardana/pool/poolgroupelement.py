@@ -35,6 +35,7 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 
 
 class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
+    """ """
 
     def __init__(self, **kwargs):
         user_elements = kwargs.pop('user_elements')
@@ -43,6 +44,19 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
                                pool=kwargs['pool'])
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolBaseElement.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
@@ -54,9 +68,21 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
         return kwargs
 
     def get_action_cache(self):
+        """ """
         return self._get_action_cache()
 
     def set_action_cache(self, action_cache):
+        """
+
+        Parameters
+        ----------
+        action_cache :
+            
+
+        Returns
+        -------
+
+        """
         self._set_action_cache(action_cache)
 
     # -------------------------------------------------------------------------
@@ -64,6 +90,7 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
     # -------------------------------------------------------------------------
 
     def read_state_info(self):
+        """ """
         state_info = {}
         ctrl_state_info = self.get_action_cache().read_state_info(serial=True)
         for elem, ctrl_elem_state_info in list(ctrl_state_info.items()):
@@ -75,6 +102,19 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
         return state_info
 
     def _set_state_info(self, state_info, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         state_info = self._calculate_states(state_info)
         state, status = state_info
         self._set_status(status, propagate=propagate)
@@ -85,6 +125,7 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
     # -------------------------------------------------------------------------
 
     def stop(self):
+        """ """
         PoolBaseElement.stop(self)
         PoolBaseGroup.stop(self)
 
@@ -93,6 +134,7 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
     # -------------------------------------------------------------------------
 
     def abort(self):
+        """ """
         PoolBaseElement.abort(self)
         PoolBaseGroup.abort(self)
 
@@ -101,4 +143,5 @@ class PoolGroupElement(PoolBaseElement, PoolBaseGroup):
     # -------------------------------------------------------------------------
 
     def get_operation(self):
+        """ """
         return PoolBaseGroup.get_operation(self)

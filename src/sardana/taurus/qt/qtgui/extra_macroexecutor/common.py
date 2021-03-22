@@ -34,21 +34,58 @@ from taurus.qt.qtgui.container import TaurusMainWindow
 
 
 def str2bool(text):
+    """
+
+    Parameters
+    ----------
+    text :
+        
+
+    Returns
+    -------
+
+    """
     return text in ("True", "1")
 
 
 def standardPlotablesFilter(column_desc_dict):
     """This is a standard plotables filter emitted with "plotablesFilter" signal.
-       Its purpose is to filterout point_nr columnf from scanline"""
+       Its purpose is to filterout point_nr columnf from scanline
+
+    Parameters
+    ----------
+    column_desc_dict :
+        
+
+    Returns
+    -------
+
+    """
     if column_desc_dict.get("label", None) == "point_nb":
         return False
     return True
 
 
 class MSAttrListComboBox(TaurusAttrListComboBox):
+    """ """
     _elementType = ''
 
     def handleEvent(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if evt_type in (TaurusEventType.Config, TaurusEventType.Error):
             return
         text = str(self.currentText())
@@ -62,16 +99,40 @@ class MSAttrListComboBox(TaurusAttrListComboBox):
             self.setCurrentText(text)
 
     def setCurrentText(self, text):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         idx = self.findText(text)
         self.setCurrentIndex(idx)
 
     def setElementType(self, elementType):
+        """
+
+        Parameters
+        ----------
+        elementType :
+            
+
+        Returns
+        -------
+
+        """
         self._elementType = elementType
 
     def getElementType(self):
+        """ """
         return self._elementType
 
     def resetElementType(self):
+        """ """
         self._elementType = MSAttrListComboBox._elementType
 
     elementType = Qt.pyqtProperty(
@@ -89,6 +150,17 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.setToolTip("Choose a macro name...")
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(model, Qt.QAbstractItemModel):
             Qt.QAbstractItemView.setModel(self, model)
         else:
@@ -96,10 +168,22 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
             self.__loadMacroNames()
 
     def parentModelChanged(self, parentmodel_name):
+        """
+
+        Parameters
+        ----------
+        parentmodel_name :
+            
+
+        Returns
+        -------
+
+        """
         TaurusBaseWidget.parentModelChanged(self, parentmodel_name)
         self.__loadMacroNames()
 
     def onMacrosUpdated(self):
+        """ """
         self.__loadMacroNames()
 
     def __loadMacroNames(self):
@@ -114,6 +198,17 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.updateStyle()
 
     def selectMacro(self, macroName):
+        """
+
+        Parameters
+        ----------
+        macroName :
+            
+
+        Returns
+        -------
+
+        """
         currentIdx = self.currentIndex()
         index = self.findText(macroName)
         self.setCurrentIndex(index)
@@ -121,6 +216,7 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
             self.currentIndexChanged['QString'].emit(macroName)
 
 class TaurusMacroConfigurationDialog(Qt.QDialog):
+    """ """
 
     macroserverNameChanged = Qt.pyqtSignal('QString')
     doorNameChanged = Qt.pyqtSignal('QString')
@@ -144,6 +240,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.initComponents()
 
     def initComponents(self):
+        """ """
         self.setModal(True)
         macroServerLabel = Qt.QLabel("MacroServer:", self)
         self.macroServerComboBox = Qt.QComboBox()
@@ -179,6 +276,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.selectDoor(self.initDoor)
 
     def accept(self):
+        """ """
         self.macroserverNameChanged.emit(
             str(self.macroServerComboBox.currentText()))
         self.doorNameChanged.emit(
@@ -208,18 +306,52 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         return ms_stateIcons
 
     def onReloadMacroServers(self):
+        """ """
         ms_stateIcons = self.__retriveMacroServersFromDB()
         self.__fillMacroServerComboBox(ms_stateIcons, self.macroServerComboBox)
 
     def onMacroServerComboBoxChanged(self, macroServerName):
+        """
+
+        Parameters
+        ----------
+        macroServerName :
+            
+
+        Returns
+        -------
+
+        """
         self.doorComboBox.setModel(macroServerName + "/doorList")
         self.doorComboBox.fireEvent(self.doorComboBox, taurus.core.taurusbasetypes.TaurusEventType.Change,
                                     self.doorComboBox.getModelValueObj())  # fake event
 
     def onMacroServerNameChanged(self, macroServerName):
+        """
+
+        Parameters
+        ----------
+        macroServerName :
+            
+
+        Returns
+        -------
+
+        """
         self.__selectMacroServer(macroServerName)
 
     def onDoorNameChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self.__selectDoor(doorName)
 
     def __fillMacroServerComboBox(self, ms_stateIcons, comboBox):
@@ -230,6 +362,17 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
             comboBox.addItem(icon, macroServer)
 
     def selectDoor(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         if doorName is None:
             return
         #@todo: Change that it will be able to handle also full device names
@@ -239,6 +382,17 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
             self.doorComboBox.setCurrentIndex(index)
 
     def selectMacroServer(self, macroServerName):
+        """
+
+        Parameters
+        ----------
+        macroServerName :
+            
+
+        Returns
+        -------
+
+        """
         if macroServerName is None:
             return
         #@todo: Change that it will be able to handle also full device names
@@ -249,6 +403,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
 
 
 class MacroExecutionWindow(TaurusMainWindow):
+    """ """
 
     doorChanged = Qt.pyqtSignal('QString')
 
@@ -278,27 +433,72 @@ class MacroExecutionWindow(TaurusMainWindow):
     def contextMenuEvent(self, event):
         """Reimplemented to show self.taurusMenu in as a context Menu
         See https://github.com/taurus-org/taurus/pull/906
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
         """
         self.taurusMenu.exec_(event.globalPos())
 
     def doorName(self):
+        """ """
         return self._doorName
 
     def setDoorName(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self._doorName = doorName
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self.setDoorName(doorName)
 
     def customMacroEditorPaths(self):
+        """ """
         return self._customMacroEditorPaths
 
     def setCustomMacroEditorPaths(self, customMacroEditorPaths):
+        """
+
+        Parameters
+        ----------
+        customMacroEditorPaths :
+            
+
+        Returns
+        -------
+
+        """
         self._customMacroEditorPaths = customMacroEditorPaths
 #        ParamEditorManager().parsePaths(customMacroEditorPaths)
 #        ParamEditorManager().browsePaths()
 
     def onCustomMacroEditorPaths(self):
+        """ """
         paths = str(Qt.QInputDialog.getText(self,
                                             "Edition of custom macro editors paths",
                                             "Paths:", Qt.QLineEdit.Normal,
@@ -306,14 +506,26 @@ class MacroExecutionWindow(TaurusMainWindow):
         self.setCustomMacroEditorPaths(paths)
 
     def initComponents(self):
+        """ """
         pass
 
     def setModel(self, model):
-        """Sets new model for application, and change window title witn new macroserver name."""
+        """Sets new model for application, and change window title witn new macroserver name.
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         TaurusMainWindow.setModel(self, model)
         self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
 
     def createConfigureAction(self):
+        """ """
         configureAction = Qt.QAction(Qt.QIcon.fromTheme(
             "preferences-system-session"), "Change configuration", self)
         configureAction.triggered.connect(self.changeConfiguration)
@@ -322,6 +534,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         return configureAction
 
     def createCustomMacroEditorPathsAction(self):
+        """ """
         configureAction = Qt.QAction(Qt.QIcon.fromTheme(
             "folder-open"), "Change custom macro editors paths", self)
         configureAction.triggered.connect(self.onCustomMacroEditorPaths)
@@ -332,7 +545,15 @@ class MacroExecutionWindow(TaurusMainWindow):
     def changeConfiguration(self):
         """This method is used to change macroserver as a model of application.
            It shows dialog with list of all macroservers on tango host, if the user
-           Cancel dialog it doesn't do anything."""
+           Cancel dialog it doesn't do anything.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         dialog = TaurusMacroConfigurationDialog(
             self, self.modelName, self.doorName())
         if dialog.exec_():
@@ -342,15 +563,33 @@ class MacroExecutionWindow(TaurusMainWindow):
             return
 
     def onShortMessage(self, msg):
-        ''' Slot to be called when there is a new short message. Currently, the only action
+        """Slot to be called when there is a new short message. Currently, the only action
         taken when there is a new message is to display it in the main window status bar.
 
-        :param msg: (str) the short descriptive message to be handled
-        '''
+        Parameters
+        ----------
+        msg :
+            str) the short descriptive message to be handled
+
+        Returns
+        -------
+
+        """
         self.statusBar().showMessage(msg)
 
 
 def test_macrocombobox(ms_name):
+    """
+
+    Parameters
+    ----------
+    ms_name :
+        
+
+    Returns
+    -------
+
+    """
     mcb = MacroComboBox()
     mcb.setModel(ms_name)
     mcb.show()

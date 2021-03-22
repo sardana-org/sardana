@@ -43,6 +43,7 @@ from sardana.spock import genutils
 
 
 class MessageHandler(Qt.QObject):
+    """ """
 
     messageArrived = Qt.pyqtSignal(compat.PY_OBJECT)
 
@@ -53,9 +54,31 @@ class MessageHandler(Qt.QObject):
         self.messageArrived.connect(self.on_message)
 
     def handle_message(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         self.messageArrived.emit(input_data)
 
     def on_message(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         msg_type = input_data['type']
         if msg_type == 'input':
             if 'macro_name' in input_data and 'title' not in input_data:
@@ -78,12 +101,26 @@ class MessageHandler(Qt.QObject):
 
 
 class InputHandler(Singleton, BaseInputHandler):
+    """ """
 
     def __init__(self):
         # don't call super __init__ on purpose
         pass
 
     def init(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self._conn, child_conn = Pipe()
         self._proc = proc = Process(target=self.safe_run,
                                     name="SpockInputHandler", args=(child_conn,))
@@ -91,6 +128,17 @@ class InputHandler(Singleton, BaseInputHandler):
         proc.start()
 
     def input(self, input_data=None):
+        """
+
+        Parameters
+        ----------
+        input_data :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # parent process
         data_type = input_data.get('data_type', 'String')
         if isinstance(data_type, str):
@@ -104,10 +152,32 @@ class InputHandler(Singleton, BaseInputHandler):
         return ret
 
     def input_timeout(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         # parent process
         self._conn.send(input_data)
 
     def safe_run(self, conn):
+        """
+
+        Parameters
+        ----------
+        conn :
+            
+
+        Returns
+        -------
+
+        """
         # child process
         try:
             return self.run(conn)
@@ -117,6 +187,17 @@ class InputHandler(Singleton, BaseInputHandler):
             msgbox.exec_()
 
     def run(self, conn):
+        """
+
+        Parameters
+        ----------
+        conn :
+            
+
+        Returns
+        -------
+
+        """
         # child process
         self._conn = conn
         app = Qt.QApplication.instance()
@@ -130,6 +211,7 @@ class InputHandler(Singleton, BaseInputHandler):
         print("Quit input handler")
 
     def run_forever(self):
+        """ """
         # child process
         message, conn = True, self._conn
         while message:

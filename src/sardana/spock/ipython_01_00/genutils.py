@@ -113,6 +113,7 @@ ENV_NAME = "_E"
 
 
 def get_gui_mode():
+    """ """
     try:
         import taurus.external.qt.Qt
         return 'qt'
@@ -121,14 +122,17 @@ def get_gui_mode():
 
 
 def get_pylab_mode():
+    """ """
     return get_app().pylab
 
 
 def get_color_mode():
+    """ """
     return get_config().InteractiveShell.colors
 
 
 def get_app():
+    """ """
     # return TerminalIPythonApp.instance()
     return Application.instance()
 
@@ -144,23 +148,39 @@ def get_ipapi():
 
 
 def get_config():
+    """ """
     return get_app().config
 
 
 def get_editor():
+    """ """
     return get_ipapi().editor
 
 
 def ask_yes_no(prompt, default=None):
     """Asks a question and returns a boolean (y/n) answer.
-
+    
     If default is given (one of 'y','n'), it is used if the user input is
     empty. Otherwise the question is repeated until an answer is given.
-
+    
     An EOF is treated as the default answer.  If there is no default, an
-    exception is raised to prevent infinite loops.
 
-    Valid answers are: y/yes/n/no (match is not case sensitive)."""
+    Parameters
+    ----------
+    prompt :
+        
+    default :
+         (Default value = None)
+
+    Returns
+    -------
+
+    Raises
+    ------
+    Valid
+        answers are
+
+    """
 
     if default:
         prompt = '%s [%s]' % (prompt, default)
@@ -168,11 +188,34 @@ def ask_yes_no(prompt, default=None):
 
 
 def spock_input(prompt='',  ps2='... '):
+    """
+
+    Parameters
+    ----------
+    prompt :
+         (Default value = '')
+    ps2 :
+         (Default value = '... ')
+
+    Returns
+    -------
+
+    """
     return input(prompt)
 
 
 def translate_version_str2int(version_str):
-    """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
+    """Translates a version string in format x[.y[.z[...]]] into a 000000 number
+
+    Parameters
+    ----------
+    version_str :
+        
+
+    Returns
+    -------
+
+    """
     import math
     # Get the current version number ignoring the release part ("-alpha")
     num_version_str = version_str.split('-')[0]
@@ -241,16 +284,28 @@ def get_ipython_version_number():
 
 
 def get_python_version():
+    """ """
     return '.'.join(map(str, sys.version_info[:3]))
 
 
 def get_python_version_number():
+    """ """
     pyver_str = get_python_version()
     return translate_version_str2int(pyver_str)
 
 
 def get_ipython_profiles(path=None):
-    """list profiles in a given root directory"""
+    """list profiles in a given root directory
+
+    Parameters
+    ----------
+    path :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     if path is None:
         path = get_ipython_dir()
     files = os.listdir(path)
@@ -267,6 +322,7 @@ def get_ipython_profiles(path=None):
 
 
 def get_pytango_version():
+    """ """
     try:
         import PyTango
         try:
@@ -278,6 +334,7 @@ def get_pytango_version():
 
 
 def get_pytango_version_number():
+    """ """
     tgver_str = get_pytango_version()
     if tgver_str is None:
         return None
@@ -285,6 +342,17 @@ def get_pytango_version_number():
 
 
 def get_server_for_device(device_name):
+    """
+
+    Parameters
+    ----------
+    device_name :
+        
+
+    Returns
+    -------
+
+    """
     db = get_tango_db()
     device_name = device_name.lower()
     server_list = db.get_server_list()
@@ -297,7 +365,17 @@ def get_server_for_device(device_name):
 
 def get_macroserver_for_door(door_name):
     """Returns the MacroServer device name in the same DeviceServer as the
-    given door device"""
+    given door device
+
+    Parameters
+    ----------
+    door_name :
+        
+
+    Returns
+    -------
+
+    """
     _, door_name, _ = from_name_to_tango(door_name)
     db = get_tango_db()
     door_name = door_name.lower()
@@ -318,7 +396,19 @@ def get_macroserver_for_door(door_name):
 
 
 def get_device_from_user(expected_class, dft=None):
-    """Gets a device of the given device class from user input"""
+    """Gets a device of the given device class from user input
+
+    Parameters
+    ----------
+    expected_class :
+        
+    dft :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     dft = print_dev_from_class(expected_class, dft)
     prompt = "%s name from the list" % expected_class
     if not dft is None:
@@ -347,6 +437,7 @@ def get_device_from_user(expected_class, dft=None):
 
 
 def get_tango_db():
+    """ """
     import PyTango
     tg_host = PyTango.ApiUtil.get_env_var("TANGO_HOST")
 
@@ -370,6 +461,7 @@ def get_tango_db():
 
 
 def get_tango_host_from_user():
+    """ """
     import PyTango
     while True:
         prompt = "Please enter a valid tango host (<host>:<port>): "
@@ -397,6 +489,19 @@ def get_tango_host_from_user():
 
 
 def print_dev_from_class(classname, dft=None):
+    """
+
+    Parameters
+    ----------
+    classname :
+        
+    dft :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
 
     db = get_tango_db()
     pytg_ver = get_pytango_version_number()
@@ -453,6 +558,17 @@ def print_dev_from_class(classname, dft=None):
 
 
 def from_name_to_tango(name):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+
+    Returns
+    -------
+
+    """
     try:
         from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
         return TangoDeviceNameValidator().getNames(name)
@@ -461,6 +577,17 @@ def from_name_to_tango(name):
 
 
 def _from_name_to_tango(name):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+
+    Returns
+    -------
+
+    """
 
     db = get_tango_db()
 
@@ -496,10 +623,12 @@ def _from_name_to_tango(name):
 
 
 def clean_up():
+    """ """
     taurus.Manager().cleanUp()
 
 
 def get_taurus_core_version():
+    """ """
     try:
         import taurus
         return taurus.core.release.version
@@ -510,6 +639,7 @@ def get_taurus_core_version():
 
 
 def get_taurus_core_version_number():
+    """ """
     tgver_str = get_taurus_core_version()
     if tgver_str is None:
         return None
@@ -521,6 +651,7 @@ def get_taurus_core_version_number():
 
 
 def check_requirements():
+    """ """
     r = requirements
     minPyTango, recPyTango = list(map(translate_version_str2int, r["PyTango"]))
     minIPython, recIPython = list(map(translate_version_str2int, r["IPython"]))
@@ -619,6 +750,17 @@ def check_requirements():
 
 
 def _get_dev(dev_type):
+    """
+
+    Parameters
+    ----------
+    dev_type :
+        
+
+    Returns
+    -------
+
+    """
     spock_config = get_config().Spock
     taurus_dev = None
     taurus_dev_var = "_" + dev_type
@@ -643,16 +785,27 @@ def _get_dev(dev_type):
 
 
 def get_door():
+    """ """
     return _get_dev('door')
 
 
 def get_macro_server():
+    """ """
     return _get_dev('macro_server')
 
 
 def _macro_completer(self, event):
     """Method called by the IPython autocompleter. It will determine possible
        values for macro arguments.
+
+    Parameters
+    ----------
+    event :
+        
+
+    Returns
+    -------
+
     """
     ms = get_macro_server()
 
@@ -680,6 +833,21 @@ def _macro_completer(self, event):
 
 
 def expose_magic(name, fn, completer_func=_macro_completer):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+    fn :
+        
+    completer_func :
+         (Default value = _macro_completer)
+
+    Returns
+    -------
+
+    """
     shell = get_shell()
     fn.old_magic = shell.register_magic_function(fn, magic_name=name)
     fn.old_completer = completer_func
@@ -694,6 +862,17 @@ def expose_magic(name, fn, completer_func=_macro_completer):
 
 
 def unexpose_magic(name):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+
+    Returns
+    -------
+
+    """
     shell = get_shell()
     mg_name = 'magic_' + name
     if hasattr(shell, mg_name):
@@ -704,19 +883,67 @@ def unexpose_magic(name):
 
 
 def expose_variable(name, value):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+    value :
+        
+
+    Returns
+    -------
+
+    """
     get_shell().user_ns[name] = value
 
 
 def expose_variables(d):
+    """
+
+    Parameters
+    ----------
+    d :
+        
+
+    Returns
+    -------
+
+    """
     get_shell().user_ns.update(d)
 
 
 def unexpose_variable(name):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+
+    Returns
+    -------
+
+    """
     user_ns = get_shell().user_ns
     del user_ns[name]
 
 
 def _create_config_file(location, door_name=None):
+    """
+
+    Parameters
+    ----------
+    location :
+        
+    door_name :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     ###########################################################################
     # NOTE: BaseIPythonApplication.config_file_name.default_value should return
     # the config file name, but it returns an empty string instead (at least
@@ -786,10 +1013,19 @@ def create_spock_profile(userdir, profile, door_name=None):
     """Create spock profile directory and configuration file from a template
     file
 
-    :param userdir: directory where the spock profile will be created
-    :param profile: profile name
-    :param door_name: door name, if None, user will be asked for the door name
-    :"""
+    Parameters
+    ----------
+    userdir :
+        directory where the spock profile will be created
+    profile :
+        profile name
+    door_name :
+        door name, if None, user will be asked for the door name (Default value = None)
+
+    Returns
+    -------
+
+    """
     if not os.path.isdir(userdir):
         ProfileDir.create_profile_dir(userdir)
     p_dir = ProfileDir.create_profile_dir_by_name(userdir, profile)
@@ -813,14 +1049,32 @@ def create_spock_profile(userdir, profile, door_name=None):
 def upgrade_spock_profile(ipy_profile_dir, door_name):
     """Upgrade spock profile by recreating configuration file from scratch
 
-    :param ipy_profile_dir: directory with the spock profile
-    :param door_name: door name
+    Parameters
+    ----------
+    ipy_profile_dir :
+        directory with the spock profile
+    door_name :
+        door name
+
+    Returns
+    -------
+
     """
     _create_config_file(ipy_profile_dir, door_name)
 
 
 def get_profile_metadata(ipy_profile_dir):
-    """Read the profile version string and the door name from the profile"""
+    """Read the profile version string and the door name from the profile
+
+    Parameters
+    ----------
+    ipy_profile_dir :
+        
+
+    Returns
+    -------
+
+    """
     spock_profile_ver_str = '0.0.0'
     door_name = None
 
@@ -850,7 +1104,14 @@ def get_profile_metadata(ipy_profile_dir):
 def check_for_upgrade(ipy_profile_dir):
     """Check if the current profile is up to date with the spock version
 
-    :param ipy_profile_dir: directory with the spock profile
+    Parameters
+    ----------
+    ipy_profile_dir :
+        directory with the spock profile
+
+    Returns
+    -------
+
     """
     spock_profile_ver_str, door_name = get_profile_metadata(ipy_profile_dir)
 
@@ -890,6 +1151,17 @@ def check_for_upgrade(ipy_profile_dir):
 
 
 def get_args(argv):
+    """
+
+    Parameters
+    ----------
+    argv :
+        
+
+    Returns
+    -------
+
+    """
 
     script_name = argv[0]
     _, session = os.path.split(script_name)
@@ -955,6 +1227,7 @@ MSG_OK = MSG_G % 'OK'
 
 
 def init_taurus():
+    """ """
     # the CodecFactory is not thread safe. There are two attributes who will
     # request for it in the first event at startup in different threads
     # therefore this small hack: make sure CodecFactory is initialized.
@@ -975,6 +1248,17 @@ def init_taurus():
 
 
 def load_ipython_extension(ipython):
+    """
+
+    Parameters
+    ----------
+    ipython :
+        
+
+    Returns
+    -------
+
+    """
     import sardana.spock.magic
     magic = sardana.spock.magic
 
@@ -1007,6 +1291,7 @@ def load_ipython_extension(ipython):
     if new_style_magics:
         @IPython.core.magic.magics_class
         class Sardana(IPython.core.magic.Magics):
+            """ """
             debug = IPython.core.magic.line_magic(magic.debug)
             www = IPython.core.magic.line_magic(magic.www)
             post_mortem = IPython.core.magic.line_magic(magic.post_mortem)
@@ -1031,10 +1316,32 @@ def load_ipython_extension(ipython):
 
 
 def unload_ipython_extension(ipython):
+    """
+
+    Parameters
+    ----------
+    ipython :
+        
+
+    Returns
+    -------
+
+    """
     pass
 
 
 def load_config(config):
+    """
+
+    Parameters
+    ----------
+    config :
+        
+
+    Returns
+    -------
+
+    """
     spockver = release.version
     pyver = get_python_version()
     ipyver = get_ipython_version()
@@ -1114,8 +1421,20 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
         from IPython.terminal.prompts import (Prompts, Token)
 
         class SpockPrompts(Prompts):
+            """ """
 
             def in_prompt_tokens(self, cli=None):
+                """
+
+                Parameters
+                ----------
+                cli :
+                     (Default value = None)
+
+                Returns
+                -------
+
+                """
                 return [
                     (Token.Prompt, door_alias),
                     (Token.Prompt, ' ['),
@@ -1124,6 +1443,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
                 ]
 
             def out_prompt_tokens(self):
+                """ """
                 return [
                     (Token.OutPrompt, '\tResult ['),
                     (Token.OutPromptNum, str(self.shell.execution_count)),
@@ -1249,6 +1569,17 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
 
 
 def start(user_ns=None):
+    """
+
+    Parameters
+    ----------
+    user_ns :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     # Make sure the log level is changed to warning
     CodecFactory()
     taurus.setLogLevel(taurus.Warning)
@@ -1281,12 +1612,26 @@ def start(user_ns=None):
 
 
 def mainloop(app=None, user_ns=None):
+    """
+
+    Parameters
+    ----------
+    app :
+         (Default value = None)
+    user_ns :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     if app is None:
         app = start(user_ns)
     app.start()
 
 
 def prepare_input_handler():
+    """ """
     # initialize input handler as soon as possible
 
     from sardana import sardanacustomsettings
@@ -1301,6 +1646,17 @@ def prepare_input_handler():
 
 
 def prepare_cmdline(argv=None):
+    """
+
+    Parameters
+    ----------
+    argv :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     if argv is None:
         argv = sys.argv
 
@@ -1351,6 +1707,7 @@ def prepare_cmdline(argv=None):
 
 
 def run():
+    """ """
 
     # TODO: Temporary solution, available while Taurus3 is being supported.
     from taurus import tauruscustomsettings

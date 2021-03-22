@@ -44,7 +44,19 @@ from sardana.pool.test.util import AttributeListener
 
 
 def _get_full_name(device_proxy, logger=None):
-    """Obtain Sardana full name as it is used by the server."""
+    """Obtain Sardana full name as it is used by the server.
+
+    Parameters
+    ----------
+    device_proxy :
+        
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     db = PyTango.Database()
     if db.get_from_env_var():
         db_name = PyTango.ApiUtil.get_env_var("TANGO_HOST")
@@ -64,6 +76,7 @@ def _get_full_name(device_proxy, logger=None):
 
 
 class TangoAttributeListener(AttributeListener):
+    """ """
 
     def __init__(self, data_key="value"):
         AttributeListener.__init__(self)
@@ -72,9 +85,35 @@ class TangoAttributeListener(AttributeListener):
         self._data_key = data_key
 
     def push_event(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.event_received(*args, **kwargs)
 
     def event_received(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         try:
             event = args[0]
             if event.err:
@@ -106,15 +145,35 @@ class TangoAttributeListener(AttributeListener):
 
 
 class MeasSarTestTestCase(SarTestTestCase):
-    """ Helper class to setup the need environmet for execute """
+    """Helper class to setup the need environmet for execute"""
 
     def setUp(self, pool_properties=None):
+        """
+
+        Parameters
+        ----------
+        pool_properties :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         SarTestTestCase.setUp(self, pool_properties)
         self.event_ids = {}
         self.mg_name = '_test_mg_1'
 
     def create_meas(self, config):
-        """ Create a meas with the given configuration
+        """Create a meas with the given configuration
+
+        Parameters
+        ----------
+        config :
+            
+
+        Returns
+        -------
+
         """
         # creating mg
         config = copy.deepcopy(config)
@@ -169,7 +228,16 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.meas.write_attribute('configuration', json.dumps(cfg))
 
     def prepare_meas(self, params):
-        """ Set the measurement group parameters
+        """Set the measurement group parameters
+
+        Parameters
+        ----------
+        params :
+            
+
+        Returns
+        -------
+
         """
         synch_description = params["synch_description"]
         codec = CodecFactory().getCodec('json')
@@ -177,6 +245,17 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.meas.write_attribute('SynchDescription', data[1])
 
     def _add_attribute_listener(self, config):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+
+        Returns
+        -------
+
+        """
         self.attr_listener = TangoAttributeListener()
         chn_names = []
         for ctrl_config in list(config.values()):
@@ -195,7 +274,18 @@ class MeasSarTestTestCase(SarTestTestCase):
         return chn_names
 
     def _acq_asserts(self, channel_names, repetitions):
-        """ Do the asserts after an acquisition
+        """Do the asserts after an acquisition
+
+        Parameters
+        ----------
+        channel_names :
+            
+        repetitions :
+            
+
+        Returns
+        -------
+
         """
         # printing acquisition records
         table = self.attr_listener.get_table()
@@ -214,7 +304,18 @@ class MeasSarTestTestCase(SarTestTestCase):
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_cont_acquisition(self, params, config):
-        """ Helper method to do a continous acquisition
+        """Helper method to do a continous acquisition
+
+        Parameters
+        ----------
+        params :
+            
+        config :
+            
+
+        Returns
+        -------
+
         """
         self.create_meas(config)
         self.prepare_meas(params)
@@ -231,6 +332,17 @@ class MeasSarTestTestCase(SarTestTestCase):
         self._acq_asserts(chn_names, repetitions)
 
     def push_event(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         value = event.attr_value.value
         self.meas_state = value
         if value == PyTango.DevState.MOVING:
@@ -239,7 +351,19 @@ class MeasSarTestTestCase(SarTestTestCase):
             self.meas_finished.set()
 
     def stop_meas_cont_acquisition(self, params, config):
-        '''Helper method to do measurement and stop it'''
+        """Helper method to do measurement and stop it
+
+        Parameters
+        ----------
+        params :
+            
+        config :
+            
+
+        Returns
+        -------
+
+        """
         self.create_meas(config)
         self.prepare_meas(params)
         self.meas_state = None
@@ -271,10 +395,11 @@ class MeasSarTestTestCase(SarTestTestCase):
             self.assertEqual(state, desired_state, msg)
 
     def stopMeas(self):
-        '''Method used to stop measreument group'''
+        """Method used to stop measreument group"""
         self.meas.stop()
 
     def tearDown(self):
+        """ """
         for channel, event_id in list(self.event_ids.items()):
             channel.unsubscribe_event(event_id)
         try:
@@ -423,6 +548,7 @@ config_5 = {
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
             params=params_1, config=config_5)
 class TangoAcquisition2DandPCTestCase(MeasSarTestTestCase, unittest.TestCase):
+    """ """
 
     pseudo_cls_list = (
         list(SarTestTestCase.pseudo_cls_list)
@@ -431,6 +557,7 @@ class TangoAcquisition2DandPCTestCase(MeasSarTestTestCase, unittest.TestCase):
     )
 
     def setUp(self):
+        """ """
         ctrls_test_path = '../../../pool/test/res/controllers'
         source = os.path.join(os.path.dirname(__file__), ctrls_test_path)
         path = os.path.abspath(source)
@@ -463,6 +590,7 @@ config_6 = {
             params=params_1, config=config_6)
 class TangoAcquisition2DRefAndPCTestCase(MeasSarTestTestCase,
                                          unittest.TestCase):
+    """ """
 
     pseudo_cls_list = (
         list(SarTestTestCase.pseudo_cls_list)
@@ -471,6 +599,7 @@ class TangoAcquisition2DRefAndPCTestCase(MeasSarTestTestCase,
     )
 
     def setUp(self):
+        """ """
         ctrls_test_path = '../../../pool/test/res/controllers'
         source = os.path.join(os.path.dirname(__file__), ctrls_test_path)
         path = os.path.abspath(source)

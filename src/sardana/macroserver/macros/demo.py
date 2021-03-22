@@ -38,6 +38,23 @@ _ENV_HKL = "_SAR_DEMO_HKL"
 
 
 def get_free_names(db, prefix, nb, start_at=1):
+    """
+
+    Parameters
+    ----------
+    db :
+        
+    prefix :
+        
+    nb :
+        
+    start_at :
+         (Default value = 1)
+
+    Returns
+    -------
+
+    """
     ret = []
     i = start_at
     failed = 96

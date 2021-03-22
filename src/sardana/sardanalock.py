@@ -39,6 +39,7 @@ _VERBOSE = True
 
 
 def SardanaLock(verbose=None, name=None, lock=None):
+    """ """
     if verbose is None:
         verbose = _VERBOSE
     if verbose:
@@ -68,14 +69,39 @@ class _SardanaLock(object):
         return "<%s owner=%r>" % (self.__name, owner)
 
     def owner_name(self):
+        """ """
         owner = self.__owner
         if owner is not None:
             return owner.name
 
     def _note(self, msg, *args):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         self.__logger.log(self.__level, msg, *args)
 
     def acquire(self, blocking=1):
+        """
+
+        Parameters
+        ----------
+        blocking :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if __debug__:
             self._note("[START] acquire(%s) [owner=%s]", blocking,
                        self.owner_name())
@@ -94,6 +120,7 @@ class _SardanaLock(object):
     __enter__ = acquire
 
     def release(self):
+        """ """
         if __debug__:
             self._note("[START] release() [owner=%s]", self.owner_name())
         self.__block.release()

@@ -53,6 +53,7 @@ __docformat__ = 'restructuredtext'
 
 
 def registerExtensions():
+    """ """
     from . import pool
     from . import macroserver
 

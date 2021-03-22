@@ -75,10 +75,32 @@ TYPE_MAP = {
 
 
 def getElementTypeLabel(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     return TYPE_MAP.get(t, (t,))[0]
 
 
 def getElementTypeIcon(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     try:
         return Qt.QIcon(TYPE_MAP.get(t, (None, _TNG))[1])
     except:
@@ -86,10 +108,32 @@ def getElementTypeIcon(t):
 
 
 def getElementTypeSize(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     return Qt.QSize(200, 24)
 
 
 def getElementTypeToolTip(t):
+    """
+
+    Parameters
+    ----------
+    t :
+        
+
+    Returns
+    -------
+
+    """
     return TYPE_MAP.get(t, (None, None, 'no information'))[2]
 
 
@@ -98,8 +142,17 @@ class SardanaBaseTreeItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-
+        
         :return: (object) the data for the given index
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
         """
         if index.column() > 0:
             return None
@@ -108,28 +161,51 @@ class SardanaBaseTreeItem(TaurusBaseTreeItem):
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-
+        
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
+        
+        :return: the role in form of element type
 
-        :return: the role in form of element type"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return 'type'
 
 
 class SardanaRootTreeItem(SardanaBaseTreeItem):
+    """ """
     pass
 
 
 class SardanaTypeTreeItem(SardanaBaseTreeItem):
+    """ """
     pass
 
 
 class SardanaElementTreeItem(SardanaBaseTreeItem):
+    """ """
 
     def role(self):
+        """ """
         return self.itemData().type
 
     def data(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         column, model = index.column(), index.model()
         role = model.role(column, self.depth())
         obj = self.itemData()
@@ -146,6 +222,17 @@ class SardanaElementTreeItem(SardanaBaseTreeItem):
         return getattr(obj, role)
 
     def toolTip(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() > 0:
             return self.data(index)
         obj = self.itemData()
@@ -168,12 +255,24 @@ class SardanaElementTreeItem(SardanaBaseTreeItem):
         return txt
 
     def icon(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() > 0:
             return None
         return getElementTypeIcon(self.itemData().type)
 
 
 class SardanaBaseElementModel(TaurusBaseModel):
+    """ """
 
     elementsChanged = Qt.pyqtSignal()
 
@@ -185,6 +284,17 @@ class SardanaBaseElementModel(TaurusBaseModel):
         self.setSelectables(self.ColumnRoles[0])
 
     def setDataSource(self, data_source):
+        """
+
+        Parameters
+        ----------
+        data_source :
+            
+
+        Returns
+        -------
+
+        """
         old_ds = self.dataSource()
         if old_ds is not None:
             old_ds.elementsChanged.disconnect(self.on_elements_changed)
@@ -193,35 +303,115 @@ class SardanaBaseElementModel(TaurusBaseModel):
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_elements_changed(self):
+        """ """
         self.refresh()
 
     def createNewRootItem(self):
+        """ """
         return SardanaRootTreeItem(self, self.ColumnNames)
 
     def roleIcon(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeIcon(role)
 
     def columnIcon(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleIcon(self.role(column))
 
     def roleToolTip(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeToolTip(role)
 
     def columnToolTip(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         return self.roleToolTip(self.role(column))
 
     def roleSize(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return getElementTypeSize(role)
 
     def columnSize(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         role = self.role(column)
         s = self.roleSize(role)
         return s
 
     def mimeTypes(self):
+        """ """
         return "text/plain", TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_MODEL_MIME_TYPE
 
     def mimeData(self, indexes):
+        """
+
+        Parameters
+        ----------
+        indexes :
+            
+
+        Returns
+        -------
+
+        """
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
@@ -239,9 +429,31 @@ class SardanaBaseElementModel(TaurusBaseModel):
         return ret
 
     def accept(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         return True
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         dev = self.dataSource()
         if dev is None:
             return
@@ -284,15 +496,28 @@ class SardanaBaseElementModel(TaurusBaseModel):
 
 
 class SardanaElementTypeModel(SardanaBaseElementModel):
+    """ """
     pass
 
 
 class SardanaElementPlainModel(SardanaBaseElementModel):
+    """ """
 
     ColumnNames = "Elements",
     ColumnRoles = ('Root', 'name',),
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         dev = self.dataSource()
         if dev is None:
             return
@@ -310,8 +535,22 @@ class SardanaElementPlainModel(SardanaBaseElementModel):
 
 
 class SardanaBaseProxyModel(TaurusBaseProxyModel):
+    """ """
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
+        """
+
+        Parameters
+        ----------
+        sourceRow :
+            
+        sourceParent :
+            
+
+        Returns
+        -------
+
+        """
         sourceModel = self.sourceModel()
         idx = sourceModel.index(sourceRow, 0, sourceParent)
         treeItem = idx.internalPointer()
@@ -323,6 +562,19 @@ class SardanaBaseProxyModel(TaurusBaseProxyModel):
         return True
 
     def elementMatches(self, element, expr):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+        expr :
+            
+
+        Returns
+        -------
+
+        """
         name = element.name
         if Qt.QString(name).contains(expr):
             return True
@@ -342,6 +594,19 @@ class SardanaTypeProxyModel(TaurusBaseProxyModel):
         self._types = types
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
+        """
+
+        Parameters
+        ----------
+        sourceRow :
+            
+        sourceParent :
+            
+
+        Returns
+        -------
+
+        """
         sourceModel = self.sourceModel()
         idx = sourceModel.index(sourceRow, 0, sourceParent)
         treeItem = idx.internalPointer()
@@ -355,9 +620,21 @@ class EnvironmentTreeItem(TaurusBaseTreeItem):
     """An environment node"""
 
     def role(self):
+        """ """
         return self.itemData().type
 
     def data(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         column, model = index.column(), index.model()
         role = model.role(column, self.depth())
         obj = self.itemData()
@@ -369,15 +646,38 @@ class EnvironmentTreeItem(TaurusBaseTreeItem):
             return type(obj[1]).__name__
 
     def toolTip(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         return "environment '%s'" % self.itemData()[0]
 
     def icon(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() > 0:
             return None
         return ":/class.png"
 
 
 class SardanaEnvironmentModel(TaurusBaseModel):
+    """ """
 
     environmentChanged = Qt.pyqtSignal()
 
@@ -389,6 +689,17 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         self.setSelectables(self.ColumnRoles[0])
 
     def setDataSource(self, data_source):
+        """
+
+        Parameters
+        ----------
+        data_source :
+            
+
+        Returns
+        -------
+
+        """
         old_ds = self.dataSource()
         if old_ds is not None:
             old_ds.environmentChanged.disconnect(self.on_environment_changed)
@@ -397,12 +708,25 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_environment_changed(self):
+        """ """
         self.refresh()
 
     def createNewRootItem(self):
+        """ """
         return SardanaRootTreeItem(self, self.ColumnNames)
 
     def roleIcon(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return ":/tango.png"
     #    return getElementTypeIcon(role)
 
@@ -410,6 +734,17 @@ class SardanaEnvironmentModel(TaurusBaseModel):
     #    return self.roleIcon(self.role(column))
 
     def roleToolTip(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         cr = self.ColumnRoles
         if role == cr[0][1]:
             return "Environment name"
@@ -422,17 +757,51 @@ class SardanaEnvironmentModel(TaurusBaseModel):
     #    return self.roleToolTip(self.role(column))
 
     def roleSize(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         return Qt.QSize(200, 24)
 
     def columnSize(self, column):
+        """
+
+        Parameters
+        ----------
+        column :
+            
+
+        Returns
+        -------
+
+        """
         role = self.role(column)
         s = self.roleSize(role)
         return s
 
     def mimeTypes(self):
+        """ """
         return "text/plain", TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_MODEL_MIME_TYPE
 
     def mimeData(self, indexes):
+        """
+
+        Parameters
+        ----------
+        indexes :
+            
+
+        Returns
+        -------
+
+        """
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
@@ -450,9 +819,31 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         return ret
 
     def accept(self, environment):
+        """
+
+        Parameters
+        ----------
+        environment :
+            
+
+        Returns
+        -------
+
+        """
         return True
 
     def setupModelData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         dev = self.dataSource()
         if dev is None:
             return

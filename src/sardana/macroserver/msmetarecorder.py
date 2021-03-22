@@ -43,7 +43,7 @@ RECORDER_TEMPLATE = """class @recorder_name@(BaseFileRecorder):
 class RecorderLibrary(SardanaLibrary):
     """Object representing a python module containing recorder classes and/or
     recorder functions. Public members:
-
+    
         - module - reference to python module
         - file_path - complete (absolute) path (with file name at the end)
         - file_name - file name (including file extension)
@@ -51,7 +51,15 @@ class RecorderLibrary(SardanaLibrary):
         - name - (=module name) module name (without file extension)
         - recorder_list - list<RecorderClass>
         - exc_info - exception information if an error occurred when loading
-                    the module"""
+                    the module
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('macro_server')
@@ -59,6 +67,19 @@ class RecorderLibrary(SardanaLibrary):
         SardanaLibrary.__init__(self, **kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaLibrary.serialize(self, *args, **kwargs)
         kwargs['macro_server'] = self.get_manager().name
         kwargs['id'] = InvalidId
@@ -71,17 +92,26 @@ class RecorderLibrary(SardanaLibrary):
 
     @property
     def recorders(self):
+        """ """
         return self.meta_classes
 
 
 class RecorderClass(SardanaClass):
     """Object representing a python recorder class.
        Public members:
-
+    
            - name - class name
            - klass - python class object
            - lib - RecorderLibrary object representing the module where the
-             recorder is."""
+             recorder is.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('macro_server')
@@ -89,6 +119,19 @@ class RecorderClass(SardanaClass):
         SardanaClass.__init__(self, **kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaClass.serialize(self, *args, **kwargs)
         kwargs['id'] = InvalidId
         kwargs['hints'] = self.code_object.hints
@@ -97,4 +140,5 @@ class RecorderClass(SardanaClass):
 
     @property
     def recorder_class(self):
+        """ """
         return self.klass

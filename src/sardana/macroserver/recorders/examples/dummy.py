@@ -33,6 +33,7 @@ from sardana.macroserver.scan.recorder import BaseFileRecorder
 
 
 class DumbRecorder(BaseFileRecorder):
+    """ """
 
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
         BaseFileRecorder.__init__(self, **pars)
@@ -43,6 +44,17 @@ class DumbRecorder(BaseFileRecorder):
             self.filename = filename
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self.fd = open(self.filename, "a")
         self.fd.write("Starting new recording\n")
         self.fd.write("# Title :     %s\n" % recordlist.getEnvironValue('title'))
@@ -55,9 +67,31 @@ class DumbRecorder(BaseFileRecorder):
         self.fd.write("  ".join([desc.label for desc in env['datadesc']]) + "\n")
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         self.fd.write("%s\n" % record.data)
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self.fd.write("Ending recording\n")
         env = recordlist.getEnviron()
         self.fd.write("Recording ended at: %s\n" % env['endtime'])

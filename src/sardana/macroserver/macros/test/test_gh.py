@@ -37,25 +37,40 @@ from sardana.macroserver.macros.test.test_scanct import mg_config4
          wait_timeout=1)
 @testRun(macro_name="udefgh", wait_timeout=1)
 class GeneralHooksMacrosTest(RunMacroTestCase, unittest.TestCase):
+    """ """
     pass
 
 
 class GeneralHooksTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                        RunMacroTestCase, unittest.TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         MeasSarTestTestCase.setUp(self)
         BaseMacroServerTestCase.setUp(self)
         RunMacroTestCase.setUp(self)
         unittest.TestCase.setUp(self)
 
     def create_meas(self, config):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+
+        Returns
+        -------
+
+        """
         MeasSarTestTestCase.create_meas(self, config)
         self.macro_executor.run(macro_name='senv',
                                 macro_params=['ActiveMntGrp', '_test_mg_1'],
                                 sync=True, timeout=1.)
 
     def test_gh(self):
+        """ """
         self.macro_runs(macro_name="defgh", macro_params=["lsm", "pre-acq"],
                         wait_timeout=1)
         self.create_meas(mg_config4)
@@ -64,6 +79,7 @@ class GeneralHooksTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                         wait_timeout=1)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)
         RunMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)

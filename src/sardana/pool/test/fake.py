@@ -29,8 +29,7 @@ from sardana.pool.poolcontrollermanager import ControllerManager
 
 
 class FakePool(object):
-    ''' Fake class to simulate the behavior of the Pool class
-    '''
+    """Fake class to simulate the behavior of the Pool class"""
     acq_loop_sleep_time = 0.1
     acq_loop_states_per_value = 10
     motion_loop_sleep_time = 0.1
@@ -48,16 +47,50 @@ class FakePool(object):
         self._freeId = 1
 
     def add_element(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         self.elements[element.id] = element
         self.elements_by_full_name[element.full_name] = element
 
     def get_element(self, id):
+        """
+
+        Parameters
+        ----------
+        id :
+            
+
+        Returns
+        -------
+
+        """
         return self.elements[id]
 
     def get_element_by_full_name(self, full_name):
+        """
+
+        Parameters
+        ----------
+        full_name :
+            
+
+        Returns
+        -------
+
+        """
         return self.elements_by_full_name[full_name]
 
     def get_free_id(self):
+        """ """
         while True:
             try:
                 self.get_element(self._freeId)
@@ -66,6 +99,17 @@ class FakePool(object):
                 return self._freeId
 
     def get_free_name(self, base_name):
+        """
+
+        Parameters
+        ----------
+        base_name :
+            
+
+        Returns
+        -------
+
+        """
         num = 1
         while True:
             try:
@@ -75,9 +119,11 @@ class FakePool(object):
                 return base_name + "%s" % num
 
     def get_manager(self):
+        """ """
         return self.ctrl_manager
 
     def cleanup(self):
+        """ """
         self.ctrl_manager.cleanUp()
         self.ctrl_manager.reInit()
         self.elements = {}
@@ -87,11 +133,24 @@ class FakePool(object):
 
 
 class FakeElement(object):
-    '''Fake pool element'''
+    """Fake pool element"""
 
     def __init__(self, pool, name="FakeElement"):
         self.pool = pool
         self.name = name
 
     def on_element_changed(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass

@@ -39,7 +39,15 @@ from sardana.pool.poolbaseelement import PoolBaseElement
 class PoolElement(PoolBaseElement):
     """A Pool element is an Pool object which is controlled by a controller.
        Therefore it contains a _ctrl_id and a _axis (the id of the element in
-       the controller)."""
+       the controller).
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         ctrl = kwargs.pop('ctrl')
@@ -55,6 +63,19 @@ class PoolElement(PoolBaseElement):
         super(PoolElement, self).__init__(**kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = PoolBaseElement.serialize(self, *args, **kwargs)
         kwargs['controller'] = self.controller.full_name
         kwargs['axis'] = self.axis
@@ -62,30 +83,58 @@ class PoolElement(PoolBaseElement):
         return kwargs
 
     def get_parent(self):
+        """ """
         return self.get_controller()
 
     def get_controller(self):
+        """ """
         if self._ctrl is None:
             return None
         return self._ctrl()
 
     def get_controller_id(self):
+        """ """
         return self._ctrl_id
 
     def get_axis(self):
+        """ """
         return self._axis
 
     def is_deleted(self):
+        """ """
         return self._deleted
 
     def set_deleted(self, deleted):
+        """
+
+        Parameters
+        ----------
+        deleted :
+            
+
+        Returns
+        -------
+
+        """
         self._deleted = deleted
 
     def set_action_cache(self, action_cache):
+        """
+
+        Parameters
+        ----------
+        action_cache :
+            
+
+        Returns
+        -------
+
+        """
         self._action_cache = action_cache
         action_cache.add_element(self)
 
     def get_source(self):
+        """ """
         return "{0}/{1}".format(self.full_name, self.get_default_acquisition_channel())
 
     # --------------------------------------------------------------------------
@@ -93,14 +142,41 @@ class PoolElement(PoolBaseElement):
     # --------------------------------------------------------------------------
 
     def get_instrument(self):
+        """ """
         if self._instrument is None:
             return None
         return self._instrument()
 
     def set_instrument(self, instrument, propagate=1):
+        """
+
+        Parameters
+        ----------
+        instrument :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._set_instrument(instrument, propagate=propagate)
 
     def _set_instrument(self, instrument, propagate=1):
+        """
+
+        Parameters
+        ----------
+        instrument :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if self._instrument is not None:
             self._instrument().remove_element(self)
         new_instrument_name = ""
@@ -120,6 +196,7 @@ class PoolElement(PoolBaseElement):
     # --------------------------------------------------------------------------
 
     def stop(self):
+        """ """
         self.info("Stop!")
         PoolBaseElement.stop(self)
         self.controller.stop_element(self)
@@ -129,20 +206,69 @@ class PoolElement(PoolBaseElement):
     # --------------------------------------------------------------------------
 
     def abort(self):
+        """ """
         self.info("Abort!")
         PoolBaseElement.abort(self)
         self.controller.abort_element(self)
 
     def get_par(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.controller.get_axis_par(self.axis, name)
 
     def set_par(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.controller.set_axis_par(self.axis, name, value)
 
     def get_extra_par(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.controller.get_axis_attr(self.axis, name)
 
     def set_extra_par(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         return self.controller.set_axis_attr(self.axis, name, value)
 
     axis = property(get_axis, doc="element axis")

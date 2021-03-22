@@ -38,11 +38,27 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
 
 
 class SequenceEditorDelegate(Qt.QItemDelegate):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
+        """
+
+        Parameters
+        ----------
+        painter :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 2:
             macroNode = index.model().nodeFromIndex(index)
             opts = Qt.QStyleOptionProgressBar()
@@ -61,12 +77,40 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
             Qt.QItemDelegate.paint(self, painter, option, index)
 
     def createEditor(self, parent, option, index):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 3:
             return Qt.QCheckBox(parent)
         else:
             return Qt.QItemDelegate.createEditor(self, parent, option, index)
 
     def setEditorData(self, editor, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = index.model().mapToSource(index).internalPointer()
         if index.column() == 3:  # and isinstance(node, MacroNode):
             editor.setChecked(node.isPause())
@@ -74,16 +118,47 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
             Qt.QItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        model :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 3:
             model.setData(index, editor.isChecked())
 
 
 class MacroParametersProxyDelegate(Qt.QItemDelegate):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QItemDelegate.__init__(self, parent)
 
     def createEditor(self, parent, option, index):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             node = index.model().nodeFromIndex(index)
             if isinstance(node, macro.SingleParamNode):
@@ -103,6 +178,19 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
         return Qt.QItemDelegate.createEditor(self, parent, option, index)
 
     def setEditorData(self, editor, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             text = index.model().data(index, Qt.Qt.DisplayRole)
             if text in ["None", "", None]:
@@ -129,10 +217,38 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
             Qt.QItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        model :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             model.setData(index, editor.getValue())
 
     def sizeHint(self, option, index):
+        """
+
+        Parameters
+        ----------
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 0:
             fm = option.fontMetrics
             text = index.model().data(index, Qt.Qt.DisplayRole)

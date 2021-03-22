@@ -43,11 +43,17 @@ from sardana.macroserver.scan import *
 
 
 class ascan_demo(Macro):
-    """
-    This is a basic reimplementation of the ascan` macro for demonstration
+    """This is a basic reimplementation of the ascan` macro for demonstration
     purposes of the Generic Scan framework. The "real" implementation of
     :class:`sardana.macroserver.macros.ascan` derives from
     :class:`sardana.macroserver.macros.aNscan` and provides some extra features.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     # this is used to indicate other codes that the macro is a scan
@@ -65,6 +71,27 @@ class ascan_demo(Macro):
     ]
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         # parse the user parameters
         self.start = numpy.array([start_pos], dtype='d')
         self.final = numpy.array([final_pos], dtype='d')
@@ -81,6 +108,7 @@ class ascan_demo(Macro):
                             moveables=[motor], env=env)
 
     def _generator(self):
+        """ """
         step = {}
         # integ_time is the same for all steps
         step["integ_time"] = self.integ_time
@@ -91,14 +119,27 @@ class ascan_demo(Macro):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():  # just go through the steps
             yield step
 
     @property
     def data(self):
+        """ """
         return self._gScan.data  # the GScan provides scan data
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -113,14 +154,22 @@ class ascanr(Macro, Hookable):
     It could be implemented deriving from aNscan, but I do it like this for clarity.
     Look for the comments with "!!!" for tips specific to the extra info columns
     I do not support constrains in this one for simplicity (see ascan for that)
-
+    
     Do an absolute scan of the specified motor, repeating measurements in each step.
     ascanr scans one motor, as specified by motor. The motor starts at the
     position given by start_pos and ends at the position given by final_pos.
     At each step, the acquisition will be repeated "repeat" times
     The step size is (start_pos-final_pos)/nr_interv. The number of data points collected
     will be (nr_interv+1)*repeat. Count time for each acquisition is given by time which if positive,
-    specifies seconds and if negative, specifies monitor counts. """
+    specifies seconds and if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {'scan': 'ascanr', 'allowsHooks': (
         'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step')}
@@ -137,6 +186,29 @@ class ascanr(Macro, Hookable):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time, repeat,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        repeat :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
 
         self.starts = numpy.array([start_pos], dtype='d')
         self.finals = numpy.array([final_pos], dtype='d')
@@ -160,6 +232,7 @@ class ascanr(Macro, Hookable):
                             constrains, extrainfodesc)  # !!!
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step[
@@ -176,14 +249,27 @@ class ascanr(Macro, Hookable):
                 yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     @property
     def data(self):
+        """ """
         return self._gScan.data
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -199,7 +285,15 @@ class toothedtriangle(Macro, Hookable):
     nr_interv+1 steps).For the second half of the cycle it steps back until
     it undoes the first half and is ready for the next cycle.
     At each step, nr_samples acquisitions are performed.
-    The total number of points in the scan is nr_interv*2*nr_cycles*nr_samples+1"""
+    The total number of points in the scan is nr_interv*2*nr_cycles*nr_samples+1
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {'scan': 'toothedtriangle',
              'allowsHooks': ('pre-scan', 'pre-move', 'post-move', 'pre-acq',
@@ -219,6 +313,31 @@ class toothedtriangle(Macro, Hookable):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
                 nr_cycles, nr_samples, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        nr_cycles :
+            
+        nr_samples :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
 
         self.start_pos = start_pos
         self.final_pos = final_pos
@@ -250,6 +369,7 @@ class toothedtriangle(Macro, Hookable):
                             constrains, extrainfodesc)  # !!!
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -288,14 +408,27 @@ class toothedtriangle(Macro, Hookable):
             point_no += 1
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     @property
     def data(self):
+        """ """
         return self._gScan.data
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -308,6 +441,13 @@ class regscan(Macro):
     """regscan.
     Do an absolute scan of the specified motor with different number of intervals for each region.
     It uses the gscan framework.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'regscan'}
@@ -325,6 +465,25 @@ class regscan(Macro):
     ]
 
     def prepare(self, motor, integ_time, start_pos, regions, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        integ_time :
+            
+        start_pos :
+            
+        regions :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.name = 'regscan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -338,6 +497,7 @@ class regscan(Macro):
         self._gScan = SScan(self, generator, moveables, env, constrains)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
 
@@ -361,6 +521,17 @@ class regscan(Macro):
             region_start = region_stop
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
@@ -369,6 +540,13 @@ class reg2scan(Macro):
     """reg2scan.
     Do an absolute scan of the specified motors with different number of intervals for each region.
     It uses the gscan framework. All the motors will be drived to the same position in each step
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'reg2scan'}
@@ -387,6 +565,27 @@ class reg2scan(Macro):
     ]
 
     def prepare(self, motor1, motor2, integ_time, start_pos, regions, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        motor2 :
+            
+        integ_time :
+            
+        start_pos :
+            
+        regions :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.name = 'reg2scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -400,6 +599,7 @@ class reg2scan(Macro):
         self._gScan = SScan(self, generator, moveables, env, constrains)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
 
@@ -423,6 +623,17 @@ class reg2scan(Macro):
             region_start = region_stop
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
@@ -432,10 +643,17 @@ class reg3scan(Macro):
     Do an absolute scan of the specified motors with different number of
     intervals for each region. It uses the gscan framework.
     All the motors will be drived to the same position in each step
-
+    
     .. note::
         integration time is specified before the regions to facilitate
         input of parameters in Spock.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'reg3scan'}
@@ -455,6 +673,29 @@ class reg3scan(Macro):
     ]
 
     def prepare(self, motor1, motor2, motor3, integ_time, start_pos, regions, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        motor2 :
+            
+        motor3 :
+            
+        integ_time :
+            
+        start_pos :
+            
+        regions :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.name = 'reg3scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -468,6 +709,7 @@ class reg3scan(Macro):
         self._gScan = SScan(self, generator, moveables, env, constrains)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
 
@@ -491,6 +733,17 @@ class reg3scan(Macro):
             region_start = region_stop
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
@@ -500,6 +753,13 @@ class a2scan_mod(Macro):
     Do an a2scan with the particularity of different intervals per motor: int_mot1, int_mot2.
     If int_mot2 < int_mot1, mot2 will change position every int(int_mot1/int_mot2) steps of mot1.
     It uses the gscan framework.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'a2scan_mod'}
@@ -519,6 +779,35 @@ class a2scan_mod(Macro):
 
     def prepare(self, motor1, start_pos1, final_pos1, nr_interv1, motor2, start_pos2, final_pos2, nr_interv2, integ_time,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        start_pos1 :
+            
+        final_pos1 :
+            
+        nr_interv1 :
+            
+        motor2 :
+            
+        start_pos2 :
+            
+        final_pos2 :
+            
+        nr_interv2 :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.name = 'a2scan_mod'
         self.integ_time = integ_time
         self.start_pos1 = start_pos1
@@ -535,6 +824,7 @@ class a2scan_mod(Macro):
         self._gScan = SScan(self, generator, moveables, env, constraints)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
 
@@ -560,16 +850,33 @@ class a2scan_mod(Macro):
             point_id += 1
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
 
 class ascanc_demo(Macro):
-    """
-    This is a basic reimplementation of the ascanc` macro for demonstration
+    """This is a basic reimplementation of the ascanc` macro for demonstration
     purposes of the Generic Scan framework. The "real" implementation of
     :class:`sardana.macroserver.macros.ascanc` derives from
     :class:`sardana.macroserver.macros.aNscan` and provides some extra features.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     # this is used to indicate other codes that the macro is a scan
@@ -586,6 +893,25 @@ class ascanc_demo(Macro):
     ]
 
     def prepare(self, motor, start_pos, final_pos, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.name = 'ascanc_demo'
         # parse the user parameters
         self.start = numpy.array([start_pos], dtype='d')
@@ -602,11 +928,13 @@ class ascanc_demo(Macro):
                             env=env)
 
     def _waypoint_generator(self):
+        """ """
         # a very simple waypoint generator! only start and stop points!
         yield {"positions": self.start, "waypoint_id": 0}
         yield {"positions": self.final, "waypoint_id": 1}
 
     def _period_generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         point_no = 0
@@ -616,22 +944,60 @@ class ascanc_demo(Macro):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
 
 class ascan_with_addcustomdata(ascan_demo):
-    '''
-    example of an ascan-like macro where we demonstrate how to pass custom data to the data handler.
+    """example of an ascan-like macro where we demonstrate how to pass custom data to the data handler.
     This is an extension of the ascan_demo macro. Wemake several calls to `:meth:DataHandler.addCustomData`
     exemplifying different features.
     At least the following recorders will act on custom data:
       - OutputRecorder (this will ignore array data)
       - NXscan_FileRecorder
       - SPEC_FileRecorder (this will ignore array data)
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         # we get the datahandler
         dh = self._gScan._data_handler
         # at this point the entry name is not yet set, so we give it explicitly
@@ -670,8 +1036,15 @@ class ascanct_midtrigger(Macro):
     space interval. Be aware that the space interval does not
     necessarily correspond to the middle of the acquisition interval
     (remember about the latency time).
-
+    
     This macro does not export all the ascanct features e.g. hooks.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
@@ -682,6 +1055,19 @@ class ascanct_midtrigger(Macro):
                  ['latency_time', Type.Float, 0, 'Latency time']]
 
     def run(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         motor = args[0]
         scan_macro = self.execMacro("ascanct", *args, **kwargs)
         # we get the datahandler

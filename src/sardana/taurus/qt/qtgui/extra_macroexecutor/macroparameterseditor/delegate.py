@@ -37,11 +37,27 @@ from .parameditors import MSAttrListComboBoxParam, SpinBoxParam, \
 
 
 class ParamEditorDelegate(Qt.QStyledItemDelegate):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QStyledItemDelegate.__init__(self, parent)
 
     def createEditor(self, parent, option, index):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             node = index.model().nodeFromIndex(index)
             if isinstance(node, macro.SingleParamNode):
@@ -78,6 +94,19 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
         return Qt.QStyledItemDelegate.createEditor(self, parent, option, index)
 
     def setEditorData(self, editor, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             text = index.model().data(index, Qt.Qt.DisplayRole)
             if text == "None" or text == "" or text is None:
@@ -100,12 +129,40 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
             Qt.QStyledItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
+        """
+
+        Parameters
+        ----------
+        editor :
+            
+        model :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 1:
             model.setData(index, editor.getValue())
         else:
             Qt.QStyledItemDelegate.setModelData(self, editor, model, index)
 
     def sizeHint(self, option, index):
+        """
+
+        Parameters
+        ----------
+        option :
+            
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 0:
             fm = option.fontMetrics
             text = index.model().data(index, Qt.Qt.DisplayRole)

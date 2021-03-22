@@ -36,6 +36,7 @@ from .model import MacrosListModel
 
 
 class HistoryMacrosViewer(TaurusWidget):
+    """ """
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
     def __init__(self, parent=None, designMode=False):
@@ -45,6 +46,7 @@ class HistoryMacrosViewer(TaurusWidget):
         self.initComponents()
 
     def initComponents(self):
+        """ """
         self.setLayout(Qt.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -63,6 +65,7 @@ class HistoryMacrosViewer(TaurusWidget):
         self.layout().addLayout(actionBar)
 
     def createActionBar(self):
+        """ """
         layout = Qt.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         deleteAllButton = Qt.QToolButton()
@@ -74,6 +77,7 @@ class HistoryMacrosViewer(TaurusWidget):
         return layout
 
     def listElementUp(self):
+        """ """
         indexPos = self.list.currentIndex()
         if indexPos.isValid() and indexPos.row() >= 1:
             self.list.setCurrentIndex(indexPos.sibling(
@@ -82,6 +86,7 @@ class HistoryMacrosViewer(TaurusWidget):
             self.selectFirstElement()
 
     def listElementDown(self):
+        """ """
         indexPos = self.list.currentIndex()
         if indexPos.isValid() and indexPos.row() < self._model.rowCount() - 1:
             self.list.setCurrentIndex(indexPos.sibling(
@@ -92,12 +97,35 @@ class HistoryMacrosViewer(TaurusWidget):
             self.selectFirstElement()
 
     def addMacro(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         self.list.insertMacro(macroNode)
 
     def toXmlString(self):
+        """ """
         return self.list.toXmlString()
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.list.fromXmlString(xmlString)
         historyList = self.list.model().list
         macroServerObj = self.getModelObj()
@@ -108,15 +136,18 @@ class HistoryMacrosViewer(TaurusWidget):
             macroServerObj.fillMacroNodeAdditionalInfos(macroNode)
 
     def selectFirstElement(self):
+        """ """
         self.list.removeAllAction.setEnabled(True)
         self.list.setCurrentIndex(self._model.index(0))
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 
 
 class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
+    """ """
 
     historySelected = Qt.pyqtSignal(compat.PY_OBJECT)
 
@@ -132,11 +163,35 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
         self.removeAllAction.setEnabled(False)
 
     def currentChanged(self, current, previous):
+        """
+
+        Parameters
+        ----------
+        current :
+            
+        previous :
+            
+
+        Returns
+        -------
+
+        """
         macro = copy.deepcopy(self.currentIndex().internalPointer())
         self.historySelected.emit(macro)
         Qt.QListView.currentChanged(self, current, previous)
 
     def mousePressEvent(self, e):
+        """
+
+        Parameters
+        ----------
+        e :
+            
+
+        Returns
+        -------
+
+        """
         clickedIndex = self.indexAt(e.pos())
         if clickedIndex.isValid():
             macro = copy.deepcopy(self.currentIndex().internalPointer())
@@ -145,17 +200,40 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
         Qt.QListView.mousePressEvent(self, e)
 
     def focusInEvent(self, e):
+        """
+
+        Parameters
+        ----------
+        e :
+            
+
+        Returns
+        -------
+
+        """
         if self.model().rowCount() > 0:
             self.removeAllAction.setEnabled(True)
         else:
             self.removeAllAction.setEnabled(False)
 
     def insertMacro(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         idx = self.model().insertRow(macroNode)
         self.setCurrentIndex(idx)
         self.removeAllAction.setEnabled(True)
 
     def removeAllMacros(self):
+        """ """
         self.selectAll()
         slist = sorted(self.selectedIndexes(),
                        key=lambda index: index.row(), reverse=True)
@@ -164,13 +242,26 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
         self.removeAllAction.setEnabled(False)
 
     def toXmlString(self):
+        """ """
         return self.model().toXmlString()
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         self.model().fromXmlString(xmlString)
 
 
 def test():
+    """ """
     import sys
     import taurus
     import time

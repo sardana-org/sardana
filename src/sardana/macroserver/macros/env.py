@@ -44,6 +44,19 @@ from lxml import etree
 
 
 def reprValue(v, max=74):
+    """
+
+    Parameters
+    ----------
+    v :
+        
+    max :
+         (Default value = 74)
+
+    Returns
+    -------
+
+    """
     # cut long strings
     v = str(v)
     if len(v) > max:
@@ -55,6 +68,7 @@ class dumpenv(Macro):
     """Dumps the complete environment"""
 
     def run(self):
+        """ """
         env = self.getGlobalEnv()
         out = List(['Name', 'Value', 'Type'])
         for k, v in env.items():
@@ -70,6 +84,7 @@ class lsvo(Macro):
     """Lists the view options"""
 
     def run(self):
+        """ """
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
         for key, value in list(vo.items()):
@@ -81,15 +96,20 @@ class lsvo(Macro):
 
 class setvo(Macro):
     """Sets the given view option to the given value.
-
+    
     Available view options:
-
+    
     - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
     - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
     - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
     - **OutputBlock**: used by scan macros. Default value ``False``
     - **DescriptionLength**: used by lsdef. Default value ``60``
 
+    Parameters
+    ----------
+
+    Returns
+    -------
 
     """
 
@@ -99,6 +119,19 @@ class setvo(Macro):
                  ['value', Type.String, None, 'View option value']]
 
     def run(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             value = eval(value)
         except:
@@ -108,20 +141,37 @@ class setvo(Macro):
 
 class usetvo(Macro):
     """Resets the value of the given view option.
-
+    
     Available view options:
-
+    
     - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
     - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
     - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
     - **OutputBlock**: used by scan macros. Default value ``False``
     - **DescriptionLength**: used by lsdef. Default value ``60``
 
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [['name', Type.String, None, 'View option name']]
 
     def run(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         self.resetViewOption(name)
 
 
@@ -135,9 +185,33 @@ class lsenv(Macro):
     ]
 
     def prepare(self, macro_list, **opts):
+        """
+
+        Parameters
+        ----------
+        macro_list :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.table_opts = opts
 
     def run(self, macro_list):
+        """
+
+        Parameters
+        ----------
+        macro_list :
+            
+
+        Returns
+        -------
+
+        """
         # list the environment for the current door
         if len(macro_list) == 0:
             # list All the environment for the current door
@@ -165,6 +239,19 @@ class lsenv(Macro):
             self.output(line)
 
     def reprValue(self, v, max=54):
+        """
+
+        Parameters
+        ----------
+        v :
+            
+        max :
+             (Default value = 54)
+
+        Returns
+        -------
+
+        """
         # cut long strings
         v = str(v)
         if len(v) > max:
@@ -190,6 +277,19 @@ class senv(Macro):
     ]
 
     def run(self, env, value):
+        """
+
+        Parameters
+        ----------
+        env :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if len(value) == 1:
             value = value[0]
         else:
@@ -215,6 +315,17 @@ class genv(Macro):
                  ]
 
     def run(self, var):
+        """
+
+        Parameters
+        ----------
+        var :
+            
+
+        Returns
+        -------
+
+        """
         pars = var.split(".")
         door_name = None
         macro_name = None
@@ -246,14 +357,26 @@ class usenv(Macro):
     ]
 
     def run(self, env):
+        """
+
+        Parameters
+        ----------
+        env :
+            
+
+        Returns
+        -------
+
+        """
         self.unsetEnv(env)
         self.output("Success!")
 
 
 class load_env(Macro):
-    """ Read environment variables from config_env.xml file"""
+    """Read environment variables from config_env.xml file"""
 
     def run(self):
+        """ """
         doc = etree.parse("config_env.xml")
         root = doc.getroot()
         for element in root:
@@ -363,15 +486,23 @@ class load_env(Macro):
 
 class lsgh(Macro):
     """List general hooks.
-
+    
     .. note::
         The `lsgh` macro has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def run(self):
+        """ """
         try:
             general_hooks = self.getEnv("_GeneralHooks")
         except UnknownEnv:
@@ -401,19 +532,25 @@ class lsgh(Macro):
 
 class defgh(Macro):
     """Define general hook:
-
-    >>> defgh "mv [[mot02 9]]" pre-scan
-    >>> defgh "ct 0.1" pre-scan
-    >>> defgh lsm pre-scan
-    >>> defgh "mv mot03 10" pre-scan
-    >>> defgh "Print 'Hello world'" pre-scan
-
+    
+    
     .. note::
         The `defgh` macro has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
 
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    >>> defgh "mv [[mot02 9]]" pre-scan
+    >>> defgh "ct 0.1" pre-scan
+    >>> defgh lsm pre-scan
+    >>> defgh "mv mot03 10" pre-scan
+    >>> defgh "Print 'Hello world'" pre-scan
     """
 
     param_def = [
@@ -425,6 +562,19 @@ class defgh(Macro):
     ]
 
     def run(self, macro_name, position):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+        position :
+            
+
+        Returns
+        -------
+
+        """
 
         self.info("Defining general hook")
         self.output(macro_name)
@@ -443,12 +593,19 @@ class defgh(Macro):
 
 class udefgh(Macro):
     """Undefine general hook. Without arguments undefine all.
-
+    
     .. note::
         The `lsgh` macro has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -458,6 +615,19 @@ class udefgh(Macro):
     ]
 
     def run(self, macro_name, hook_pos):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+        hook_pos :
+            
+
+        Returns
+        -------
+
+        """
         try:
             gh_macros_list = self.getEnv("_GeneralHooks")
         except UnknownEnv:

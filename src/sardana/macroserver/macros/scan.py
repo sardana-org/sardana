@@ -63,14 +63,22 @@ HybridMode = 'h'
 
 
 def getCallable(repr):
-    """
-    returns a function .
+    """returns a function .
     Ideas: repr could be an URL for a file where the function is contained,
     or be evaluable code, or a pickled function object,...
-
+    
     In any case, the return from it should be a callable of the form:
     f(x1,x2) where x1, x2 are points in the moveable space and the return value
     of f is True if the movement from x1 to x2 is allowed. False otherwise
+
+    Parameters
+    ----------
+    repr :
+        
+
+    Returns
+    -------
+
     """
     if repr == UNCONSTRAINED:
         return lambda x1, x2: True
@@ -80,16 +88,27 @@ def getCallable(repr):
 
 # TODO: remove starts
 def _calculate_positions(moveable_node, start, end):
-    '''Function to calculate starting and ending positions on the physical
+    """Function to calculate starting and ending positions on the physical
     motors level.
-    :param moveable_node: (BaseNode) node representing a moveable.
-                          Can be a BranchNode representing a PseudoMotor,
-                          or a LeafNode representing a PhysicalMotor).
-    :param start: (float) starting position of the moveable
-    :param end: (float) ending position of the moveable
 
-    :return: (list<(float,float)>) a list of tuples comprising starting
-             and ending positions. List order is important and preserved.'''
+    Parameters
+    ----------
+    moveable_node :
+        BaseNode) node representing a moveable.
+        Can be a BranchNode representing a PseudoMotor,
+        or a LeafNode representing a PhysicalMotor).
+    start :
+        float) starting position of the moveable
+    end :
+        float) ending position of the moveable
+
+    Returns
+    -------
+    type
+        list<(float,float)>) a list of tuples comprising starting
+        and ending positions. List order is important and preserved.
+
+    """
     start_positions = []
     end_positions = []
     if isinstance(moveable_node, BranchNode):
@@ -114,7 +133,15 @@ def _calculate_positions(moveable_node, start, end):
 
 class aNscan(Hookable):
     """N-dimensional scan. This is **not** meant to be called by the user,
-    but as a generic base to construct ascan, a2scan, a3scan,..."""
+    but as a generic base to construct ascan, a2scan, a3scan,...
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {'scan': 'aNscan', 'allowsHooks': ('pre-scan', 'pre-move',
                                                'post-move', 'pre-acq',
@@ -124,6 +151,31 @@ class aNscan(Hookable):
 
     def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time,
                  mode=StepMode, latency_time=0, **opts):
+        """
+
+        Parameters
+        ----------
+        motorlist :
+            
+        startlist :
+            
+        endlist :
+            
+        scan_length :
+            
+        integ_time :
+            
+        mode :
+             (Default value = StepMode)
+        latency_time :
+             (Default value = 0)
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
 
         self.motors = motorlist
         self.starts = numpy.array(startlist, dtype='d')
@@ -214,6 +266,7 @@ class aNscan(Hookable):
         self._data = self._gScan.data
 
     def _stepGenerator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -230,6 +283,7 @@ class aNscan(Hookable):
             yield step
 
     def _waypoint_generator(self):
+        """ """
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         step["post-move-hooks"] = self.getHooks('post-move')
@@ -241,6 +295,7 @@ class aNscan(Hookable):
             yield step
 
     def _waypoint_generator_hwtime(self):
+        """ """
 
         # CScan in its constructor populates a list of data structures - trees.
         # Each tree represent one Moveables with its hierarchy of inferior
@@ -273,6 +328,7 @@ class aNscan(Hookable):
             yield step
 
     def _period_generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step["pre-acq-hooks"] = self.getHooks('pre-acq')
@@ -288,10 +344,22 @@ class aNscan(Hookable):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     def getTimeEstimation(self):
+        """ """
         gScan = self._gScan
         mode = self.mode
         it = gScan.generator()
@@ -321,6 +389,7 @@ class aNscan(Hookable):
         return total_time
 
     def getIntervalEstimation(self):
+        """ """
         mode = self.mode
         if mode in [StepMode, ContinuousHwTimeMode, HybridMode]:
             return self.nr_interv
@@ -328,6 +397,7 @@ class aNscan(Hookable):
             return self.nr_waypoints
 
     def _fill_missing_records(self):
+        """ """
         # fill record list with dummy records for the final padding
         nb_of_points = self.nb_points
         scan = self._gScan
@@ -336,6 +406,7 @@ class aNscan(Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -344,10 +415,16 @@ class aNscan(Hookable):
     nr_points = property(_get_nr_points)
 
 class dNscan(aNscan):
-    """
-    same as aNscan but it interprets the positions as being relative to the
+    """same as aNscan but it interprets the positions as being relative to the
     current positions and upon completion, it returns the motors to their
     original positions
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = copy.deepcopy(aNscan.hints)
@@ -355,6 +432,29 @@ class dNscan(aNscan):
 
     def _prepare(self, motorlist, startlist, endlist, scan_length,
                  integ_time, mode=StepMode, **opts):
+        """
+
+        Parameters
+        ----------
+        motorlist :
+            
+        startlist :
+            
+        endlist :
+            
+        scan_length :
+            
+        integ_time :
+            
+        mode :
+             (Default value = StepMode)
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._motion = self.getMotion([m.getName() for m in motorlist])
         self.originalPositions = numpy.array(
             self._motion.readPosition(force=True))
@@ -364,18 +464,25 @@ class dNscan(aNscan):
                         scan_length, integ_time, mode=mode, **opts)
 
     def do_restore(self):
+        """ """
         self.info("Returning to start positions...")
         self._motion.move(self.originalPositions)
 
 
 class ascan(aNscan, Macro):
-    """
-    Do an absolute scan of the specified motor.
+    """Do an absolute scan of the specified motor.
     ascan scans one motor, as specified by motor. The motor starts at the
     position given by start_pos and ends at the position given by final_pos.
     The step size is (start_pos-final_pos)/nr_interv. The number of data
     points collected will be nr_interv+1. Count time is given by time which
     if positive, specifies seconds and if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -388,13 +495,33 @@ class ascan(aNscan, Macro):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos],
                       nr_interv, integ_time, **opts)
 
 
 class a2scan(aNscan, Macro):
-    """
-    two-motor scan.
+    """two-motor scan.
     a2scan scans two motors, as specified by motor1 and motor2.
     Each motor moves the same number of intervals with starting and ending
     positions given by start_pos1 and final_pos1, start_pos2 and final_pos2,
@@ -403,6 +530,13 @@ class a2scan(aNscan, Macro):
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -417,6 +551,33 @@ class a2scan(aNscan, Macro):
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
                 final_pos2, nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        start_pos1 :
+            
+        final_pos1 :
+            
+        motor2 :
+            
+        start_pos2 :
+            
+        final_pos2 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor1, motor2], [start_pos1, start_pos2], [
                       final_pos1, final_pos2], nr_interv, integ_time, **opts)
 
@@ -430,7 +591,15 @@ class a3scan(aNscan, Macro):
     The step size for each motor is (start_pos-final_pos)/nr_interv.
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
-    if negative, specifies monitor counts."""
+    if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -447,6 +616,39 @@ class a3scan(aNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
                 integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3],
                       nr_interv, integ_time, **opts)
 
@@ -460,7 +662,15 @@ class a4scan(aNscan, Macro):
     The step size for each motor is (start_pos-final_pos)/nr_interv.
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
-    if negative, specifies monitor counts."""
+    if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -480,13 +690,51 @@ class a4scan(aNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [
                       f1, f2, f3, f4], nr_interv, integ_time, **opts)
 
 
 class amultiscan(aNscan, Macro):
-    """
-    Multiple motor scan.
+    """Multiple motor scan.
     amultiscan scans N motors, as specified by motor1, motor2,...,motorN.
     Each motor moves the same number of intervals with starting and ending
     positions given by start_posN and final_posN (for N=1,2,...).
@@ -494,6 +742,13 @@ class amultiscan(aNscan, Macro):
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -507,6 +762,19 @@ class amultiscan(aNscan, Macro):
     ]
 
     def prepare(self, *args, **opts):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         motors = args[0:-2:3]
         starts = args[1:-2:3]
         ends = args[2:-2:3]
@@ -517,8 +785,7 @@ class amultiscan(aNscan, Macro):
 
 
 class dmultiscan(dNscan, Macro):
-    """
-    Multiple motor scan relative to the starting positions.
+    """Multiple motor scan relative to the starting positions.
     dmultiscan scans N motors, as specified by motor1, motor2,...,motorN.
     Each motor moves the same number of intervals If each motor is at a
     position X before the scan begins, it will be scanned from X+start_posN
@@ -527,6 +794,13 @@ class dmultiscan(dNscan, Macro):
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -540,6 +814,19 @@ class dmultiscan(dNscan, Macro):
     ]
 
     def prepare(self, *args, **opts):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         motors = args[0:-2:3]
         starts = args[1:-2:3]
         ends = args[2:-2:3]
@@ -556,7 +843,15 @@ class dscan(dNscan, Macro):
     to X+final_pos. The step size is (start_pos-final_pos)/nr_interv.
     The number of data points collected will be nr_interv+1. Count time is
     given by time which if positive, specifies seconds and if negative,
-    specifies monitor counts. """
+    specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor', Type.Moveable, None, 'Moveable to move'],
@@ -568,6 +863,27 @@ class dscan(dNscan, Macro):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos],
                       nr_interv, integ_time, **opts)
 
@@ -581,7 +897,15 @@ class d2scan(dNscan, Macro):
     The step size for each motor is (start_pos-final_pos)/nr_interv.
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
-    if negative, specifies monitor counts."""
+    if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -595,6 +919,33 @@ class d2scan(dNscan, Macro):
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
                 final_pos2, nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        start_pos1 :
+            
+        final_pos1 :
+            
+        motor2 :
+            
+        start_pos2 :
+            
+        final_pos2 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor1, motor2], [start_pos1, start_pos2], [
                       final_pos1, final_pos2], nr_interv, integ_time, **opts)
 
@@ -608,7 +959,15 @@ class d3scan(dNscan, Macro):
     The step size for each motor is (start_pos-final_pos)/nr_interv.
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
-    if negative, specifies monitor counts."""
+    if negative, specifies monitor counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -626,6 +985,39 @@ class d3scan(dNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
                 integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3],
                       nr_interv, integ_time, **opts)
 
@@ -642,6 +1034,13 @@ class d4scan(dNscan, Macro):
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
     Upon termination, the motors are returned to their starting positions.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     param_def = [
@@ -663,6 +1062,45 @@ class d4scan(dNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 nr_interv, integ_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [
                       f1, f2, f3, f4], nr_interv, integ_time, **opts)
 
@@ -676,6 +1114,13 @@ class mesh(Macro, Hookable):
     (or monitor counts, if integ_time is negative).
     The scan of motor1 is done at each point scanned by motor2. That is, the
     first motor scan is nested within the second motor scan.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'mesh', 'allowsHooks': ('pre-scan', 'pre-move',
@@ -705,6 +1150,37 @@ class mesh(Macro, Hookable):
     def prepare(self, m1, m1_start_pos, m1_final_pos, m1_nr_interv,
                 m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
                 bidirectional, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        m1_start_pos :
+            
+        m1_final_pos :
+            
+        m1_nr_interv :
+            
+        m2 :
+            
+        m2_start_pos :
+            
+        m2_final_pos :
+            
+        m2_nr_interv :
+            
+        integ_time :
+            
+        bidirectional :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.motors = [m1, m2]
         self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
         self.finals = numpy.array([m1_final_pos, m2_final_pos], dtype='d')
@@ -740,6 +1216,7 @@ class mesh(Macro, Hookable):
         self.setData(self._gScan.data)
 
     def _generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -768,13 +1245,23 @@ class mesh(Macro, Hookable):
                 yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
 
 class dmesh(mesh):
-    """
-    2d relative grid scan.
+    """2d relative grid scan.
     The relative mesh scan traces out a grid using motor1 and motor2.
     If first motor is at the position X before the scan begins, it will
     be scanned from X+m1_start_pos to X+m1_final_pos using the specified
@@ -787,6 +1274,13 @@ class dmesh(mesh):
     The scan of motor1 is done at each point scanned by motor2. That is, the
     first motor scan is nested within the second motor scan.
     Upon scan completion, it returns the motors to their original positions.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = copy.deepcopy(mesh.hints)
@@ -815,6 +1309,37 @@ class dmesh(mesh):
     def prepare(self, m1, m1_start_pos, m1_final_pos, m1_nr_interv,
                 m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
                 bidirectional, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        m1_start_pos :
+            
+        m1_final_pos :
+            
+        m1_nr_interv :
+            
+        m2 :
+            
+        m2_start_pos :
+            
+        m2_final_pos :
+            
+        m2_nr_interv :
+            
+        integ_time :
+            
+        bidirectional :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._motion = self.getMotion([m1, m2])
         self.originalPositions = numpy.array(
             self._motion.readPosition(force=True))
@@ -827,13 +1352,13 @@ class dmesh(mesh):
                      bidirectional, **opts)
 
     def do_restore(self):
+        """ """
         self.info("Returning to start positions...")
         self._motion.move(self.originalPositions)
 
 
 class fscan(Macro, Hookable):
-    """
-    N-dimensional scan along user defined paths.
+    """N-dimensional scan along user defined paths.
     The motion path for each motor is defined through the evaluation of a
     user-supplied function that is evaluated as a function of the independent
     variables.
@@ -848,15 +1373,20 @@ class fscan(Macro, Hookable):
     time to each acquisition point.
     -If integ_time is positive, it specifies seconds and if negative, specifies
     monitor counts.
-
+    
     IMPORTANT Notes:
     -no spaces are allowed in the indepvar string.
     -all funcs must evaluate to the same number of points
 
+    Parameters
+    ----------
+
+    Returns
+    -------
 
     >>> fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
     >>> fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 \
-motor2 sqrt(y*x+3)
+    motor2 sqrt(y*x+3)
     """
 
     # ['integ_time', Type.String,   None, 'Integration time']
@@ -875,6 +1405,19 @@ motor2 sqrt(y*x+3)
     ]
 
     def prepare(self, *args, **opts):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         if args[0].lower() in ["!", "*", "none", None]:
             indepvars = {}
         else:
@@ -945,6 +1488,7 @@ motor2 sqrt(y*x+3)
         self.setData(self._gScan.data)
 
     def _generator(self):
+        """ """
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         step["post-move-hooks"] = self.getHooks('post-move')
@@ -961,10 +1505,22 @@ motor2 sqrt(y*x+3)
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -981,7 +1537,15 @@ class ascanh(aNscan, Macro):
     The step size is (start_pos-final_pos)/nr_interv. The number of data
     points collected will be nr_interv+1. Count time is given by time which
     if positive, specifies seconds and if negative, specifies monitor
-    counts. """
+    counts.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor', Type.Moveable, None, 'Moveable to move'],
@@ -993,13 +1557,42 @@ class ascanh(aNscan, Macro):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos], nr_interv, integ_time,
                       mode=HybridMode, **opts)
 
 
 class scanhist(Macro):
     """Shows scan history information. Give optional parameter scan number to
-    display details about a specific scan"""
+    display details about a specific scan
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['scan number', Type.Integer, -1,
@@ -1007,6 +1600,17 @@ class scanhist(Macro):
     ]
 
     def run(self, scan_number):
+        """
+
+        Parameters
+        ----------
+        scan_number :
+            
+
+        Returns
+        -------
+
+        """
         try:
             hist = self.getEnv("ScanHistory")
         except UnknownEnv:
@@ -1018,6 +1622,19 @@ class scanhist(Macro):
             self.show_one(hist, scan_number)
 
     def show_one(self, hist, scan_number):
+        """
+
+        Parameters
+        ----------
+        hist :
+            
+        scan_number :
+            
+
+        Returns
+        -------
+
+        """
         item = None
         for h in hist:
             if h['serialno'] == scan_number:
@@ -1056,6 +1673,17 @@ class scanhist(Macro):
             self.output(line)
 
     def show_all(self, hist):
+        """
+
+        Parameters
+        ----------
+        hist :
+            
+
+        Returns
+        -------
+
+        """
 
         cols = "#", "Title", "Start time", "End time", "Stored"
         width = -1, -1, -1, -1, -1
@@ -1084,7 +1712,15 @@ class scanhist(Macro):
 
 class ascanc(aNscan, Macro):
     """Do an absolute continuous scan of the specified motor.
-    ascanc scans one motor, as specified by motor."""
+    ascanc scans one motor, as specified by motor.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor', Type.Moveable, None, 'Moveable to move'],
@@ -1096,6 +1732,27 @@ class ascanc(aNscan, Macro):
 
     def prepare(self, motor, start_pos, final_pos, integ_time, slow_down,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos], slow_down,
                       integ_time, mode=ContinuousMode, **opts)
 
@@ -1115,6 +1772,33 @@ class a2scanc(aNscan, Macro):
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
                 final_pos2, integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        start_pos1 :
+            
+        final_pos1 :
+            
+        motor2 :
+            
+        start_pos2 :
+            
+        final_pos2 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor1, motor2], [start_pos1, start_pos2],
                       [final_pos1, final_pos2], slow_down, integ_time,
                       mode=ContinuousMode, **opts)
@@ -1138,6 +1822,39 @@ class a3scanc(aNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
                 slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
                       integ_time, mode=ContinuousMode, **opts)
 
@@ -1163,13 +1880,54 @@ class a4scanc(aNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       slow_down, integ_time, mode=ContinuousMode, **opts)
 
 
 class dNscanc(dNscan):
+    """ """
 
     def do_restore(self):
+        """ """
         # set velocities to maximum and then move to initial positions
         for moveable in self.motors:
             self._gScan.set_max_top_velocity(moveable)
@@ -1189,6 +1947,27 @@ class dscanc(dNscanc, Macro):
 
     def prepare(self, motor, start_pos, final_pos, integ_time, slow_down,
                 **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos], slow_down, integ_time,
                       mode=ContinuousMode, **opts)
 
@@ -1209,6 +1988,33 @@ class d2scanc(dNscanc, Macro):
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
                 final_pos2, integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        motor1 :
+            
+        start_pos1 :
+            
+        final_pos1 :
+            
+        motor2 :
+            
+        start_pos2 :
+            
+        final_pos2 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor1, motor2], [start_pos1, start_pos2],
                       [final_pos1, final_pos2], slow_down, integ_time,
                       mode=ContinuousMode, **opts)
@@ -1232,6 +2038,39 @@ class d3scanc(dNscanc, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
                 slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
                       integ_time, mode=ContinuousMode, **opts)
 
@@ -1257,6 +2096,45 @@ class d4scanc(dNscanc, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       slow_down, integ_time, mode=ContinuousMode, **opts)
 
@@ -1291,6 +2169,37 @@ class meshc(Macro, Hookable):
     def prepare(self, m1, m1_start_pos, m1_final_pos, slow_down,
                 m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
                 bidirectional, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        m1_start_pos :
+            
+        m1_final_pos :
+            
+        slow_down :
+            
+        m2 :
+            
+        m2_start_pos :
+            
+        m2_final_pos :
+            
+        m2_nr_interv :
+            
+        integ_time :
+            
+        bidirectional :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self.motors = [m1, m2]
         self.slow_down = slow_down
         self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
@@ -1330,6 +2239,7 @@ class meshc(Macro, Hookable):
         self.setData(self._gScan.data)
 
     def _waypoint_generator(self):
+        """ """
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         step["post-move-hooks"] = self.getHooks('post-move')
@@ -1350,6 +2260,7 @@ class meshc(Macro, Hookable):
             yield step
 
     def _period_generator(self):
+        """ """
         step = {}
         step["integ_time"] = self.integ_time
         step["pre-acq-hooks"] = self.getHooks('pre-acq')
@@ -1365,13 +2276,26 @@ class meshc(Macro, Hookable):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     def getTimeEstimation(self):
+        """ """
         return self._gScan.waypoint_estimation()
 
     def getIntervalEstimation(self):
+        """ """
         return self.nr_waypoints
 
 
@@ -1388,6 +2312,13 @@ class dmeshc(meshc):
     if integ_time is negative) are executed while motor1 is moving
     with the constant velocity.
     Upon scan completion, it returns the motors to their original positions.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = copy.deepcopy(meshc.hints)
@@ -1416,6 +2347,37 @@ class dmeshc(meshc):
     def prepare(self, m1, m1_start_pos, m1_final_pos, slow_down,
                 m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
                 bidirectional, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        m1_start_pos :
+            
+        m1_final_pos :
+            
+        slow_down :
+            
+        m2 :
+            
+        m2_start_pos :
+            
+        m2_final_pos :
+            
+        m2_nr_interv :
+            
+        integ_time :
+            
+        bidirectional :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._motion = self.getMotion([m1, m2])
         self.originalPositions = numpy.array(
             self._motion.readPosition(force=True))
@@ -1428,6 +2390,7 @@ class dmeshc(meshc):
                       bidirectional, **opts)
 
     def do_restore(self):
+        """ """
         self.info("Returning to start positions...")
         self._motion.move(self.originalPositions)
 
@@ -1435,7 +2398,15 @@ class dmeshc(meshc):
 class aNscanct(aNscan):
     """N-dimensional continuous scan. This is **not** meant to be called by
     the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
-    ..."""
+    ...
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {"scan": "aNscanct",
              "allowsHooks": ("pre-scan", "pre-configuration",
@@ -1450,7 +2421,15 @@ class ascanct(aNscanct, Macro):
     ascanct scans one motor, as specified by motor. The motor starts before the
     position given by start_pos in order to reach the constant velocity at the
     start_pos and finishes at the position after the final_pos in order to
-    maintain the constant velocity until the final_pos."""
+    maintain the constant velocity until the final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
@@ -1461,6 +2440,29 @@ class ascanct(aNscanct, Macro):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv,
                 integ_time, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
@@ -1472,7 +2474,15 @@ class a2scanct(aNscanct, Macro):
     starts before the position given by its start_pos in order to reach the
     constant velocity at its start_pos and finishes at the position after
     its final_pos in order to maintain the constant velocity until its
-    final_pos."""
+    final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1487,6 +2497,35 @@ class a2scanct(aNscanct, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_interv,
                 integ_time, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2], [s1, s2], [f1, f2], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
@@ -1498,7 +2537,15 @@ class a3scanct(aNscanct, Macro):
     Each motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
-    final_pos."""
+    final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1516,6 +2563,41 @@ class a3scanct(aNscanct, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
                 integ_time, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
@@ -1527,7 +2609,15 @@ class a4scanct(aNscan, Macro):
     motor4. Each motor starts before the position given by its start_pos in
     order to reach the constant velocity at its start_pos and finishes at the
     position after its final_pos in order to maintain the constant velocity
-    until its final_pos."""
+    until its final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1548,6 +2638,47 @@ class a4scanct(aNscan, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 nr_interv, integ_time, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
@@ -1556,7 +2687,15 @@ class a4scanct(aNscan, Macro):
 class dNscanct(dNscan):
     """N-dimensional continuous scan. This is **not** meant to be called by
     the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
-    ..."""
+    ...
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {"scan": "dNscanct",
              "allowsHooks": ("pre-scan", "pre-configuration",
@@ -1572,7 +2711,15 @@ class dscanct(dNscanct, Macro):
     The Motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
-    final_pos."""
+    final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
@@ -1583,6 +2730,29 @@ class dscanct(dNscanct, Macro):
 
     def prepare(self, motor, start_pos, final_pos, nr_interv,
                 integ_time, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([motor], [start_pos], [final_pos], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
@@ -1595,6 +2765,13 @@ class d2scanct(dNscanct, Macro):
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
     final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1608,6 +2785,33 @@ class d2scanct(dNscanct, Macro):
     ]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2], [s1, s2], [f1, f2], slow_down, integ_time,
                       mode=ContinuousHwTimeMode, **opts)
 
@@ -1619,6 +2823,13 @@ class d3scanct(dNscanct, Macro):
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
     final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1636,6 +2847,39 @@ class d3scanct(dNscanct, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
                 slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
                       integ_time, mode=ContinuousHwTimeMode, **opts)
 
@@ -1647,7 +2891,15 @@ class d4scanct(dNscanct, Macro):
     Each motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
-    final_pos."""
+    final_pos.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -1667,6 +2919,45 @@ class d4scanct(dNscanct, Macro):
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 integ_time, slow_down, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        s1 :
+            
+        f1 :
+            
+        m2 :
+            
+        s2 :
+            
+        f2 :
+            
+        m3 :
+            
+        s3 :
+            
+        f3 :
+            
+        m4 :
+            
+        s4 :
+            
+        f4 :
+            
+        integ_time :
+            
+        slow_down :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       slow_down, integ_time, mode=ContinuousHwTimeMode, **opts)
 
@@ -1681,6 +2972,13 @@ class meshct(Macro, Hookable):
     (or monitor counts, if integ_time is negative).
     The scan of motor1 is done at each point scanned by motor2. That is, the
     first motor scan is nested within the second motor scan.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {"scan": "meshct",
@@ -1713,6 +3011,39 @@ class meshct(Macro, Hookable):
     def prepare(self, m1, m1_start_pos, m1_final_pos, m1_nr_interv,
                 m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
                 bidirectional, latency_time, **opts):
+        """
+
+        Parameters
+        ----------
+        m1 :
+            
+        m1_start_pos :
+            
+        m1_final_pos :
+            
+        m1_nr_interv :
+            
+        m2 :
+            
+        m2_start_pos :
+            
+        m2_final_pos :
+            
+        m2_nr_interv :
+            
+        integ_time :
+            
+        bidirectional :
+            
+        latency_time :
+            
+        **opts :
+            
+
+        Returns
+        -------
+
+        """
 
         self.motors = [m1, m2]
         self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
@@ -1778,6 +3109,7 @@ class meshct(Macro, Hookable):
         self.setData(self._gScan.data)
 
     def _generator(self):
+        """ """
         moveables_trees = self._gScan.get_moveables_trees()
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -1808,16 +3140,30 @@ class meshct(Macro, Hookable):
             yield step
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     def getTimeEstimation(self):
+        """ """
         return 0.0
 
     def getIntervalEstimation(self):
+        """ """
         return len(self.waypoints)
 
     def _fill_missing_records(self):
+        """ """
         # fill record list with dummy records for the final padding
         nb_of_points = self.nb_points
         scan = self._gScan
@@ -1827,6 +3173,7 @@ class meshct(Macro, Hookable):
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -1840,6 +3187,13 @@ class timescan(Macro, Hookable):
     immediately. The number of data points collected will be nr_interv + 1.
     Count time is given by integ_time. Latency time will be the longer one
     of latency_time and measurement group latency time.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     hints = {'scan': 'timescan', 'allowsHooks': ('pre-scan', 'pre-acq',
@@ -1851,6 +3205,21 @@ class timescan(Macro, Hookable):
         ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, nr_interv, integ_time, latency_time):
+        """
+
+        Parameters
+        ----------
+        nr_interv :
+            
+        integ_time :
+            
+        latency_time :
+            
+
+        Returns
+        -------
+
+        """
         self.nr_interv = nr_interv
         self.nb_points = nr_interv + 1
         self.integ_time = integ_time
@@ -1864,18 +3233,32 @@ class timescan(Macro, Hookable):
         self.setData(self._gScan.data)
 
     def run(self, *args):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+
+        Returns
+        -------
+
+        """
         for step in self._gScan.step_scan():
             yield step
 
     def getTimeEstimation(self):
+        """ """
         mg_latency_time = self._gScan.measurement_group.getLatencyTime()
         latency_time = max(self.latency_time, mg_latency_time)
         return self.nb_points * (self.integ_time + latency_time)
 
     def getIntervalEstimation(self):
+        """ """
         return self.nr_interv
 
     def _get_nr_points(self):
+        """ """
         msg = ("nr_points is deprecated since version 3.0.3. "
                "Use nb_points instead.")
         self.warning(msg)
@@ -1890,6 +3273,13 @@ class scanstats(Macro):
     for plotting it fallbacks to the first enabled channel. Print stats and
     publish them in the env.
     The macro must be hooked in the post-scan hook place.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     env = ("ActiveMntGrp", )
@@ -1903,6 +3293,17 @@ class scanstats(Macro):
         ]
 
     def run(self, channel):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+
+        Returns
+        -------
+
+        """
         parent = self.getParentMacro()
         if not parent:
             self.warning("for now the scanstats macro can only be executed as"
@@ -2012,6 +3413,19 @@ class scanstats(Macro):
 
     @staticmethod
     def _calcStats(x, y):
+        """
+
+        Parameters
+        ----------
+        x :
+            
+        y :
+            
+
+        Returns
+        -------
+
+        """
         # max and min
         _min = numpy.min(y)
         _max = numpy.max(y)

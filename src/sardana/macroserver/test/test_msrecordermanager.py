@@ -54,27 +54,50 @@ _FAKE_RECORDER_DIR = os.path.join(_TEST_DIR, 'res')
             expected_num_path=2)
 @insertTest(helper_name='getRecorderPath')
 class RecorderManagerTest(unittest.TestCase):
+    """ """
     # Just an hardcode fullname for create an instance of MacroServer.
     # This macroserver does not need to be defined.
     ms_fullname = "macroserver/demo1/1"
 
     def setUp(self):
+        """ """
         name = self.ms_fullname.split("/")[1]
         self._macro_server = MacroServer(self.ms_fullname, name, macro_path=[],
                                          recorder_path=[])
         self.manager = self._macro_server.recorder_manager
 
     def tearDown(self):
+        """ """
         pass
 
     def _updateRecorderManager(self, recorder_path):
         """Helper for update the sardana recorder manager
+
+        Parameters
+        ----------
+        recorder_path :
+            
+
+        Returns
+        -------
+
         """
         self.manager.setRecorderPath(recorder_path)
 
     def getRecorderPath(self, recorder_path=[], expected_num_path=1):
         """Helper for test the number of reading recorder paths.
         The number of reading path sould be len(recorder_path) + 1
+
+        Parameters
+        ----------
+        recorder_path :
+             (Default value = [])
+        expected_num_path :
+             (Default value = 1)
+
+        Returns
+        -------
+
         """
         if recorder_path is not []:
             self._updateRecorderManager(recorder_path)
@@ -88,6 +111,19 @@ class RecorderManagerTest(unittest.TestCase):
     def getRecorderClasses(self, filter=None, extra_paths=None,
                            extra_recorders=0):
         """Helper for test getRecorderClasses method of the record Manager.
+
+        Parameters
+        ----------
+        filter :
+             (Default value = None)
+        extra_paths :
+             (Default value = None)
+        extra_recorders :
+             (Default value = 0)
+
+        Returns
+        -------
+
         """
         if filter is None:
             filter = DataRecorder
@@ -107,6 +143,17 @@ class RecorderManagerTest(unittest.TestCase):
 
     def getRecorderClass(self, klass_name, extra_paths=[]):
         """Helper for test getRecorderClass method of the record Manager.
+
+        Parameters
+        ----------
+        klass_name :
+            
+        extra_paths :
+             (Default value = [])
+
+        Returns
+        -------
+
         """
         self.manager.setRecorderPath(extra_paths)
         klass = self.manager.getRecorderClass(klass_name)
@@ -123,6 +170,13 @@ class RecorderManagerTest(unittest.TestCase):
         """Test whether ordered path precedence is maintained in case of
         different recorder classes with the same name located in different
         paths.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         path1 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path1')
         path2 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path2')
@@ -140,6 +194,13 @@ class RecorderManagerTest(unittest.TestCase):
         """Test whether ordered path precedence is maintained in case of
         different recorder classes supporting the same format located in
         different paths.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         path1 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path1')
         path2 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path2')
@@ -156,8 +217,7 @@ class RecorderManagerTest(unittest.TestCase):
         self.assertEqual(path3, path, msg)
 
     def test_ExternalVsBuiltinPrecedence(self):
-        """Test if external recorders are of higher priority than the built-in)
-        """
+        """Test if external recorders are of higher priority than the built-in)"""
         external_path = os.path.join(_TEST_DIR, 'res', 'recorders',
                                      'pathexternal')
 

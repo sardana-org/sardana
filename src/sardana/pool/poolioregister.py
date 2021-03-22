@@ -39,17 +39,32 @@ from sardana.pool.poolacquisition import PoolIORAcquisition
 
 
 class Value(SardanaAttribute):
+    """ """
 
     def __init__(self, *args, **kwargs):
         super(Value, self).__init__(*args, **kwargs)
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or not self.has_value():
             value = self.obj.read_value()
             self.set_value(value, propagate=propagate)
 
 
 class PoolIORegister(PoolElement):
+    """ """
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.IORegister
@@ -62,8 +77,15 @@ class PoolIORegister(PoolElement):
     def get_value_attribute(self):
         """Returns the value attribute object for this IO register
 
-        :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the value attribute
+
+        """
         return self._value
 
     # -------------------------------------------------------------------------
@@ -71,6 +93,21 @@ class PoolIORegister(PoolElement):
     # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # forward all events coming from attributes to the listeners
         self.fire_event(evt_type, evt_value)
 
@@ -79,6 +116,7 @@ class PoolIORegister(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_value_attribute()
 
     # -------------------------------------------------------------------------
@@ -87,53 +125,105 @@ class PoolIORegister(PoolElement):
     def read_value(self):
         """Reads the IO register value from hardware.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanavalue.SardanaValue`
             a :class:`~sardana.sardanavalue.SardanaValue` containing the IO
             register value
-        :rtype:
-            :class:`~sardana.sardanavalue.SardanaValue`"""
+
+        """
         return self.get_action_cache().read_value()[self]
 
     def put_value(self, value, propagate=1):
         """Sets a value.
 
-        :param value:
+        Parameters
+        ----------
+        value : class:`~sardana.sardanavalue.SardanaValue`
             the new value
-        :type value:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        """
         val_attr = self._value
         val_attr.set_value(value, propagate=propagate)
         return val_attr
 
     def get_value(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         value = self.get_value_attribute()
         value.update(cache=cache, propagate=propagate)
         return value
 
     def set_value(self, value, timestamp=None):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.write_register(value, timestamp=timestamp)
 
     def set_write_value(self, w_value, timestamp=None, propagate=1):
         """Sets a new write value for the IO registere
 
-        :param w_value:
+        Parameters
+        ----------
+        w_value : class:`~numbers.Number`
             the new write value for IO register
-        :type w_value:
-            :class:`~numbers.Number`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._value.set_write_value(w_value, timestamp=timestamp,
                                     propagate=propagate)
 
     value = property(get_value, set_value, doc="ioregister value")
 
     def write_register(self, value, timestamp=None):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._aborted = False
         self._stopped = False
         if not self._simulation_mode:

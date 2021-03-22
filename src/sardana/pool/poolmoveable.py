@@ -32,15 +32,56 @@ __docformat__ = 'restructuredtext'
 
 
 class PoolMoveable(object):
+    """ """
 
     def get_size(self):
+        """ """
         raise RuntimeError("Must be implemented in subclass")
 
     def calc_move(self, positions, ctrl_map, trust=False):
+        """
+
+        Parameters
+        ----------
+        positions :
+            
+        ctrl_map :
+            
+        trust :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         raise RuntimeError("Must be implemented in subclass")
 
     def set_value(self, v, propagate=True):
+        """
+
+        Parameters
+        ----------
+        v :
+            
+        propagate :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         raise RuntimeError("Must be implemented in subclass")
 
     def get_value(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         raise RuntimeError("Must be implemented in subclass")

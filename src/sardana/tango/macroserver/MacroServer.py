@@ -51,6 +51,17 @@ class MacroServer(SardanaDevice):
         SardanaDevice.__init__(self, cl, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         SardanaDevice.init(self, name)
 
         if self._alias is None:
@@ -61,9 +72,11 @@ class MacroServer(SardanaDevice):
 
     @property
     def macro_server(self):
+        """ """
         return self._macro_server
 
     def delete_device(self):
+        """ """
         SardanaDevice.delete_device(self)
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
@@ -72,6 +85,7 @@ class MacroServer(SardanaDevice):
             attr.cleanUp()
 
     def init_device(self):
+        """ """
         SardanaDevice.init_device(self)
         self.set_change_event('State', True, False)
         self.set_change_event('Status', True, False)
@@ -132,6 +146,17 @@ class MacroServer(SardanaDevice):
         self.set_state(DevState.ON)
 
     def _calculate_name(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         if name is None:
             return None
         util = Util.instance()
@@ -140,6 +165,21 @@ class MacroServer(SardanaDevice):
                        'ds_inst_name': util.get_ds_inst_name().lower()}
 
     def on_macro_server_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -200,30 +240,97 @@ class MacroServer(SardanaDevice):
             self.set_attribute(env_attr, value=value)
 
     def always_executed_hook(self):
+        """ """
         pass
 
     def read_attr_hardware(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def read_DoorList(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         door_names = self.macro_server.get_door_names()
         attr.set_value(door_names)
 
     @DebugIt()
     def read_MacroList(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         macro_names = self.macro_server.get_macro_names()
         attr.set_value(macro_names)
 
     def read_MacroLibList(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         macro_lib_names = self.macro_server.get_macro_lib_names()
         attr.set_value(macro_lib_names)
 
     def read_TypeList(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         type_names = self.macro_server.get_data_type_names_with_asterisc()
         attr.set_value(type_names)
 
     #@DebugIt()
     def getElements(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         value = self.ElementsCache
         if cache and value is not None:
             return value
@@ -235,10 +342,32 @@ class MacroServer(SardanaDevice):
 
     #@DebugIt()
     def read_Elements(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         fmt, data = self.getElements()
         attr.set_value(fmt, data)
 
     def is_Elements_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return SardanaServer.server_state == State.Running
 
     is_DoorList_allowed = \
@@ -248,14 +377,22 @@ class MacroServer(SardanaDevice):
 
     def GetMacroInfo(self, macro_names):
         """GetMacroInfo(list<string> macro_names):
-
+        
            Returns a list of string containing macro information.
            Each string is a JSON encoded.
 
-           Params:
-               - macro_name: a list of strings with the macro(s) name(s)
-           Returns:
-               - a list of string containing macro information.
+        Parameters
+        ----------
+        macro_name :
+            a list of strings with the macro
+        macro_names :
+            
+
+        Returns
+        -------
+        type
+            - a list of string containing macro information.
+
         """
         macro_server = self.macro_server
         codec = CodecFactory().getCodec('json')
@@ -268,7 +405,17 @@ class MacroServer(SardanaDevice):
         return ret
 
     def ReloadMacro(self, macro_names):
-        """ReloadMacro(list<string> macro_names):"""
+        """ReloadMacro(list<string> macro_names):
+
+        Parameters
+        ----------
+        macro_names :
+            
+
+        Returns
+        -------
+
+        """
         try:
             for macro_name in macro_names:
                 self.macro_server.reload_macro(macro_name)
@@ -278,6 +425,15 @@ class MacroServer(SardanaDevice):
 
     def ReloadMacroLib(self, lib_names):
         """ReloadMacroLib(sequence<string> lib_names):
+
+        Parameters
+        ----------
+        lib_names :
+            
+
+        Returns
+        -------
+
         """
         try:
             for lib_name in lib_names:
@@ -288,11 +444,31 @@ class MacroServer(SardanaDevice):
 
     def GetMacroCode(self, argin):
         """GetMacroCode(<module name> [, <macro name>]) -> full filename, code, line_nb
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
         """
         ret = self.macro_server.get_or_create_macro_lib(*argin)
         return list(map(str, ret))
 
     def SetMacroCode(self, argin):
+        """
+
+        Parameters
+        ----------
+        argin :
+            
+
+        Returns
+        -------
+
+        """
         lib_name, code = argin[:2]
         auto_reload = True
         if len(argin) > 2:
@@ -302,6 +478,17 @@ class MacroServer(SardanaDevice):
 
     #@DebugIt()
     def getEnvironment(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         value = self.EnvironmentCache
         if cache and value is not None:
             return value
@@ -312,15 +499,48 @@ class MacroServer(SardanaDevice):
         return value
 
     def read_Environment(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         fmt, data = self.getEnvironment()
         attr.set_value(fmt, data)
 
     def write_Environment(self, attr):
+        """
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         data = attr.get_write_value()
         data = CodecFactory().getCodec('pickle').decode(data)[1]
         self.macro_server.change_env(data)
 
     def is_Environment_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return True
 
 

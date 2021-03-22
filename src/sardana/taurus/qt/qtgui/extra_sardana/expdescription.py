@@ -54,6 +54,17 @@ def _to_fqdn(name, logger=None):
     names e.g. pc255:10000/motor/motctrl20/1. This helper converts them into
     FQDN URI references e.g. tango://pc255.cells.es:10000/motor/motctrl20/1.
     It is similarly solved for attribute names.
+
+    Parameters
+    ----------
+    name :
+        
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
     """
     full_name = name
     # try to use Taurus 4 to retrieve FQDN URI name
@@ -78,6 +89,7 @@ def _to_fqdn(name, logger=None):
 
 
 class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
+    """ """
     #    ALLOWED_TYPES = 'Acquirable'
     #
     #    def filterAcceptsRow(self, sourceRow, sourceParent):
@@ -93,6 +105,19 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
     ALLOWED_TYPES = [ElementType[t] for t in TYPE_ACQUIRABLE_ELEMENTS]
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
+        """
+
+        Parameters
+        ----------
+        sourceRow :
+            
+        sourceParent :
+            
+
+        Returns
+        -------
+
+        """
         sourceModel = self.sourceModel()
         idx = sourceModel.index(sourceRow, 0, sourceParent)
         treeItem = idx.internalPointer()
@@ -102,12 +127,21 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
 
 
 def find_diff(first, second):
-    """
-    Return a dict of keys that differ with another config object.  If a value
+    """Return a dict of keys that differ with another config object.  If a value
     is not found in one fo the configs, it will be represented by KEYNOTFOUND.
-    :param first: Fist configuration to diff.
-    :param second: Second configuration to diff.
-    :return: Dict of Key => (first.val, second.val)
+
+    Parameters
+    ----------
+    first :
+        Fist configuration to diff.
+    second :
+        Second configuration to diff.
+
+    Returns
+    -------
+    type
+        Dict of Key => (first.val, second.val)
+
     """
 
     KEYNOTFOUNDIN1 = 'KeyNotFoundInRemote'
@@ -167,13 +201,19 @@ def find_diff(first, second):
 
 @UILoadable(with_ui='ui')
 class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
-    '''
-    A widget for editing the configuration of a experiment (measurement groups,
+    """A widget for editing the configuration of a experiment (measurement groups,
     plot and storage parameters, etc).
-
+    
     It receives a Sardana Door name as its model and gets/sets the configuration
     using the `ExperimentConfiguration` environmental variable for that Door.
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     createExpConfChangedDialog = Qt.pyqtSignal()
     experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
@@ -250,6 +290,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.registerConfigDelegate(self.ui.channelEditor)
 
     def setAutoUpdate(self, auto_update):
+        """
+
+        Parameters
+        ----------
+        auto_update :
+            
+
+        Returns
+        -------
+
+        """
         if auto_update and not self._autoUpdate:
             self._warningWidget = self._getWarningWidget()
             self.ui.verticalLayout_3.insertWidget(0, self._warningWidget)
@@ -260,6 +311,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._autoUpdate = auto_update
 
     def _getWarningWidget(self):
+        """ """
         w = Qt.QWidget()
         layout = QtGui.QHBoxLayout()
         w.setLayout(layout)
@@ -275,6 +327,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return w
 
     def _getResumeText(self):
+        """ """
         msg_resume = '<p> Summary of differences: <ul>'
         mnt_grps = ''
         envs = ''
@@ -299,11 +352,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return msg_resume
 
     def _getDetialsText(self):
+        """ """
         msg_detials = 'Changes {key: [external, local], ...}\n'
         msg_detials += json.dumps(self._diff, sort_keys=True)
         return msg_detials
 
     def _createExpConfChangedDialog(self):
+        """ """
         msg_details = self._getDetialsText()
         msg_info = self._getResumeText()
         self._expConfChangedDialog = Qt.QMessageBox()
@@ -345,6 +400,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
     @QtCore.pyqtSlot()
     def _experimentConfigurationChanged(self):
+        """ """
         self._diff = ''
         try:
             self._diff = self._getDiff()
@@ -365,6 +421,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                     self._expConfChangedDialog.setDetailedText(msg_details)
 
     def _getDiff(self):
+        """ """
         door = self.getModelObj()
         if door is None:
             return []
@@ -374,10 +431,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return find_diff(new_conf, old_conf)
 
     def getModelClass(self):
-        '''reimplemented from :class:`TaurusBaseWidget`'''
+        """reimplemented from :class:`TaurusBaseWidget`"""
         return taurus.core.taurusdevice.TaurusDevice
 
     def onChooseScanDirButtonClicked(self):
+        """ """
         ret = Qt.QFileDialog.getExistingDirectory(
             self, 'Choose directory for saving files', self.ui.pathLE.text())
         if ret:
@@ -385,6 +443,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.ui.pathLE.textEdited.emit(ret)
 
     def onDialogButtonClicked(self, button):
+        """
+
+        Parameters
+        ----------
+        button :
+            
+
+        Returns
+        -------
+
+        """
         role = self.ui.buttonBox.buttonRole(button)
         if role == Qt.QDialogButtonBox.ApplyRole:
             if not self.writeExperimentConfiguration(ask=False):
@@ -393,13 +462,33 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._reloadConf()
 
     def closeEvent(self, event):
-        '''This event handler receives widget close events'''
+        """This event handler receives widget close events
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         if self.isDataChanged():
             self.writeExperimentConfiguration(ask=True)
         Qt.QWidget.closeEvent(self, event)
 
     def setModel(self, model):
-        '''reimplemented from :class:`TaurusBaseWidget`'''
+        """reimplemented from :class:`TaurusBaseWidget`
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         TaurusBaseWidget.setModel(self, model)
         self._reloadConf(force=True)
         # set the model of some child widgets
@@ -415,6 +504,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._experimentConfigurationChanged)
 
     def _reloadConf(self, force=False):
+        """
+
+        Parameters
+        ----------
+        force :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if not force and self.isDataChanged():
             op = Qt.QMessageBox.question(self, "Reload info from door",
                                          "If you reload, all current experiment configuration changes will be lost. Reload?",
@@ -444,24 +544,66 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
 
     def _setDirty(self, dirty):
+        """
+
+        Parameters
+        ----------
+        dirty :
+            
+
+        Returns
+        -------
+
+        """
         self._dirty = dirty
         self._updateButtonBox()
 
     def isDataChanged(self):
         """Tells if the local data has been modified since it was last refreshed
-
+        
         :return: (bool) True if he local data has been modified since it was last refreshed
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return bool(self._dirty or self.ui.channelEditor.getQModel().isDataChanged() or self._dirtyMntGrps)
 
     def _updateButtonBox(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.ui.buttonBox.setEnabled(self.isDataChanged())
 
     def getLocalConfig(self):
+        """ """
         return self._localConfig
 
     def setLocalConfig(self, conf):
-        '''gets a ExpDescription dictionary and sets up the widget'''
+        """gets a ExpDescription dictionary and sets up the widget
+
+        Parameters
+        ----------
+        conf :
+            
+
+        Returns
+        -------
+
+        """
 
         self._localConfig = conf
 
@@ -504,10 +646,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._localConfig['DataCompressionRank'] + 1)
 
     def writeExperimentConfiguration(self, ask=True):
-        '''sends the current local configuration to the door
+        """sends the current local configuration to the door
 
-        :param ask: (bool) If True (default) prompts the user before saving.
-        '''
+        Parameters
+        ----------
+        ask :
+            bool) If True (default) prompts the user before saving.
+
+        Returns
+        -------
+
+        """
 
         if ask:
             op = Qt.QMessageBox.question(self, "Save configuration?",
@@ -548,6 +697,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
     @Qt.pyqtSlot('QString')
     def changeActiveMntGrp(self, activeMntGrpName):
+        """
+
+        Parameters
+        ----------
+        activeMntGrpName :
+            
+
+        Returns
+        -------
+
+        """
         if self._localConfig is None:
             return
         if activeMntGrpName == self._localConfig['ActiveMntGrp']:
@@ -571,7 +731,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._setDirty(True)
 
     def createMntGrp(self):
-        '''creates a new Measurement Group'''
+        """creates a new Measurement Group"""
 
         if self._localConfig is None:
             return
@@ -621,7 +781,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.changeActiveMntGrp(mntGrpName)
 
     def deleteMntGrp(self):
-        '''creates a new Measurement Group'''
+        """creates a new Measurement Group"""
         activeMntGrpName = str(self.ui.activeMntGrpCB.currentText())
         op = Qt.QMessageBox.question(self, "Delete Measurement Group",
                                      "Remove the measurement group '%s'?" % activeMntGrpName,
@@ -645,21 +805,65 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
     @Qt.pyqtSlot('int')
     def onCompressionCBChanged(self, idx):
+        """
+
+        Parameters
+        ----------
+        idx :
+            
+
+        Returns
+        -------
+
+        """
         if self._localConfig is None:
             return
         self._localConfig['DataCompressionRank'] = idx - 1
         self._setDirty(True)
 
     def onPathLEEdited(self, text):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         self._localConfig['ScanDir'] = str(text)
         self._setDirty(True)
 
     def onFilenameLEEdited(self, text):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         self._localConfig['ScanFile'] = [v.strip()
                                          for v in str(text).split(',')]
         self._setDirty(True)
 
     def onPreScanSnapshotChanged(self, items):
+        """
+
+        Parameters
+        ----------
+        items :
+            
+
+        Returns
+        -------
+
+        """
         door = self.getModelObj()
         ms = door.macro_server
         preScanList = []
@@ -677,7 +881,19 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
 
 def demo(model=None, autoUpdate=False):
-    """Experiment configuration"""
+    """Experiment configuration
+
+    Parameters
+    ----------
+    model :
+         (Default value = None)
+    autoUpdate :
+         (Default value = False)
+
+    Returns
+    -------
+
+    """
     #w = main_ChannelEditor()
     w = ExpDescriptionEditor(autoUpdate=autoUpdate)
     if model is None:
@@ -693,6 +909,7 @@ def demo(model=None, autoUpdate=False):
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

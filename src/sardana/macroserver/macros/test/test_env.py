@@ -31,29 +31,25 @@ from sardana.macroserver.macros.test import RunMacroTestCase, testRun
 
 @testRun
 class DumpenvTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for dumpenv macro
-    """
+    """Test case for dumpenv macro"""
     macro_name = "dumpenv"
 
 
 @testRun
 class LsvoTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for lsvo macro
-    """
+    """Test case for lsvo macro"""
     macro_name = "lsvo"
 
 
 @testRun(macro_params=["PosFormat", "3"])
 class SetvoTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for setvo macro
-    """
+    """Test case for setvo macro"""
     macro_name = "setvo"
 
 
 @testRun(macro_params=["PosFormat"])
 class UsetvoTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for usetvo macro
-    """
+    """Test case for usetvo macro"""
     macro_name = "usetvo"
 
 
@@ -61,20 +57,17 @@ class UsetvoTest(RunMacroTestCase, unittest.TestCase):
 @testRun(macro_params=["ascan"])
 @testRun(macro_params=["ascan", "dscan"])
 class LsenvTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for lsvo macro
-    """
+    """Test case for lsvo macro"""
     macro_name = "lsenv"
 
 
 @testRun(macro_params=["MyEnvVar", "test.dat"])
 class SenvTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for senv macro
-    """
+    """Test case for senv macro"""
     macro_name = "senv"
 
 
 @testRun(macro_params=["MyEnvVar"])
 class UsenvTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for usenv macro
-    """
+    """Test case for usenv macro"""
     macro_name = "usenv"

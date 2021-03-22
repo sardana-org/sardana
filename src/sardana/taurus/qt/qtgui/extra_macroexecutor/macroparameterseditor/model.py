@@ -38,6 +38,7 @@ from sardana.macroserver.msparameter import Optional
 
 
 class ParamEditorModel(Qt.QAbstractItemModel):
+    """ """
 
     def __init__(self, parent=None):
         Qt.QAbstractItemModel.__init__(self, parent)
@@ -46,9 +47,21 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         self.headers = ["Parameter", "Value"]
 
     def root(self):
+        """ """
         return self._root
 
     def setRoot(self, node=None):
+        """
+
+        Parameters
+        ----------
+        node :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.beginResetModel()
         if node is None:
             node = macro.MacroNode()
@@ -56,6 +69,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         self.endResetModel()
 
     def flags(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.column() == 0:
             return Qt.Qt.ItemIsEnabled | Qt.Qt.ItemIsSelectable
 
@@ -68,6 +92,21 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return Qt.Qt.ItemIsEnabled
 
     def _insertRow(self, parentIndex, node=None, row=-1):
+        """
+
+        Parameters
+        ----------
+        parentIndex :
+            
+        node :
+             (Default value = None)
+        row :
+             (Default value = -1)
+
+        Returns
+        -------
+
+        """
         parentNode = self.nodeFromIndex(parentIndex)
 
         if row == -1:
@@ -83,7 +122,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self.index(row, 0, parentIndex)
 
     def _removeRow(self, index):
-        """This method is used remove macro (pased via index)"""
+        """This method is used remove macro (pased via index)
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -93,6 +142,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         self.endRemoveRows()
 
     def _upRow(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -103,6 +163,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return newIndex
 
     def _downRow(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -113,6 +184,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return newIndex
 
     def duplicateNode(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node_to_duplicate = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
@@ -122,6 +204,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             parentNode.arrangeIndexes()
 
     def addRepeat(self, index, callReset=True):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        callReset :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         paramRepeatNode = self.nodeFromIndex(index)
         paramRepeatNode.addRepeat()
         if callReset:
@@ -129,6 +224,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.endResetModel()
 
     def delRepeat(self, index, callReset=True):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        callReset :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         branchIndex = self.parent(index)
         branch = self.nodeFromIndex(branchIndex)
         child = self.nodeFromIndex(index)
@@ -138,6 +246,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.endResetModel()
 
     def upRepeat(self, index, callReset=True):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        callReset :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         branchIndex = self.parent(index)
         branch = self.nodeFromIndex(branchIndex)
         child = self.nodeFromIndex(index)
@@ -147,6 +268,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.endResetModel()
 
     def downRepeat(self, index, callReset=True):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        callReset :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         branchIndex = self.parent(index)
         branch = self.nodeFromIndex(branchIndex)
         child = self.nodeFromIndex(index)
@@ -156,6 +290,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.endResetModel()
 
     def DuplicateRepeat(self, index, callReset=True):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        callReset :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         branchIndex = self.parent(index)
         branch = self.nodeFromIndex(branchIndex)
         child = self.nodeFromIndex(index)
@@ -165,15 +312,50 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.endResetModel()
 
     def rowCount(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
         if node is None or isinstance(node, macro.SingleParamNode):
             return 0
         return len(node)
 
     def columnCount(self, parent):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         return self.columns
 
     def data(self, index, role):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if not index.isValid() or not (0 <= index.row() < self.rowCount(index.parent())):
             return None
 
@@ -192,6 +374,21 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        value :
+            
+        role :
+             (Default value = Qt.Qt.EditRole)
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(index)
 #        if index.isValid() and 0 <= index.row() < len(node.parent()):
         if index.column() == 1:
@@ -201,11 +398,41 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return False
 
     def headerData(self, section, orientation, role):
+        """
+
+        Parameters
+        ----------
+        section :
+            
+        orientation :
+            
+        role :
+            
+
+        Returns
+        -------
+
+        """
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
             return self.headers[section]
         return None
 
     def index(self, row, column, parent):
+        """
+
+        Parameters
+        ----------
+        row :
+            
+        column :
+            
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         if not parent.isValid():
             parentNode = self.root()
         else:
@@ -217,6 +444,17 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             return self.createIndex(row, column, childNode)
 
     def parent(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         node = self.nodeFromIndex(child)
         if node is None:
             return Qt.QModelIndex()
@@ -230,25 +468,48 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self.createIndex(row, 0, parent)
 
     def nodeFromIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         if index.isValid():
             return index.internalPointer()
         else:
             return self.root()
 
     def toSpockCommand(self):
-        """
-        Converts root obj (MacroNode) to string representing spock command and returns it.
-
+        """Converts root obj (MacroNode) to string representing spock command and returns it.
+        
         :return: (etree.Element)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
 
         return self.root().toSpockCommand()
 
     def toXmlString(self):
-        """
-        Converts root obj (MacroNode) to xml string and returns it.
-
+        """Converts root obj (MacroNode) to xml string and returns it.
+        
         :return: (etree.Element)
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
 
         xmlElement = self.root().toXml()

@@ -34,7 +34,7 @@ from sardana import sardanacustomsettings
 
 class TangoAttrCb(object):
 
-    '''An abstract callback class for Tango events'''
+    """An abstract callback class for Tango events"""
 
     def __init__(self, tango_macro_executor):
         self._tango_macro_executor = tango_macro_executor
@@ -42,10 +42,22 @@ class TangoAttrCb(object):
 
 class TangoResultCb(TangoAttrCb):
 
-    '''Callback class for Tango events of the Result attribute'''
+    """Callback class for Tango events of the Result attribute"""
 
     def push_event(self, *args, **kwargs):
-        '''callback method receiving the event'''
+        """callback method receiving the event
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         event_data = args[0]
         if event_data.err:
             result = event_data.errors
@@ -56,16 +68,35 @@ class TangoResultCb(TangoAttrCb):
 
 class TangoLogCb(TangoAttrCb):
 
-    '''Callback class for Tango events of the log attributes
+    """Callback class for Tango events of the log attributes
     e.g. Output, Error, Critical
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, tango_macro_executor, log_name):
         self._tango_macro_executor = tango_macro_executor
         self._log_name = log_name
 
     def push_event(self, *args, **kwargs):
-        '''callback method receiving the event'''
+        """callback method receiving the event
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         event_data = args[0]
         if event_data.attr_value:
             log = event_data.attr_value.value
@@ -79,13 +110,25 @@ class TangoLogCb(TangoAttrCb):
 
 class TangoStatusCb(TangoAttrCb):
 
-    '''Callback class for Tango events of the MacroStatus attribute'''
+    """Callback class for Tango events of the MacroStatus attribute"""
 
     START_STATES = ['start']
     DONE_STATES = ['finish', 'stop', 'exception']
 
     def push_event(self, *args, **kwargs):
-        '''callback method receiving the event'''
+        """callback method receiving the event
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         event_data = args[0]
         if event_data.err:
             self._state_buffer = event_data.errors
@@ -123,9 +166,7 @@ class TangoStatusCb(TangoAttrCb):
 
 class TangoMacroExecutor(BaseMacroExecutor):
 
-    '''
-    Macro executor implemented using Tango communication with the Door device
-    '''
+    """Macro executor implemented using Tango communication with the Door device"""
 
     def __init__(self, door_name=None):
         super(TangoMacroExecutor, self).__init__()
@@ -136,13 +177,25 @@ class TangoMacroExecutor(BaseMacroExecutor):
         self._started_event = None
 
     def _clean(self):
-        '''Recreates threading Events in case the macro executor is reused.'''
+        """Recreates threading Events in case the macro executor is reused."""
         super(TangoMacroExecutor, self)._clean()
         self._started_event = threading.Event()
         self._done_event = threading.Event()
 
     def _run(self, macro_name, macro_params):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`
+
+        Parameters
+        ----------
+        macro_name :
+            
+        macro_params :
+            
+
+        Returns
+        -------
+
+        """
         # preaparing RunMacro command input arguments
         argin = copy.copy(macro_params)
         argin.insert(0, macro_name)
@@ -155,7 +208,17 @@ class TangoMacroExecutor(BaseMacroExecutor):
         self._door.RunMacro(argin)
 
     def _wait(self, timeout):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`
+
+        Parameters
+        ----------
+        timeout :
+            
+
+        Returns
+        -------
+
+        """
         # TODO: In case of timeout = inf if the macro excecutor run a macro
         # with wrong parameters it'll never awake of the done_event wait
         # Pending to remove this comment when Sardana resolves the bug.
@@ -172,7 +235,17 @@ class TangoMacroExecutor(BaseMacroExecutor):
             self._door.unsubscribe_event(self._status_id)
 
     def _stop(self, started_event_timeout=3.0):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`
+
+        Parameters
+        ----------
+        started_event_timeout :
+             (Default value = 3.0)
+
+        Returns
+        -------
+
+        """
         self._started_event.wait(started_event_timeout)
         try:
             self._door.StopMacro()
@@ -180,7 +253,17 @@ class TangoMacroExecutor(BaseMacroExecutor):
             raise Exception("Unable to Stop macro: %s" % e)
 
     def _registerLog(self, log_level):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`
+
+        Parameters
+        ----------
+        log_level :
+            
+
+        Returns
+        -------
+
+        """
         log_cb = TangoLogCb(self, log_level)
         id_log_name = '_%s_id' % log_level
         id_log = self._door.subscribe_event(log_level,
@@ -189,26 +272,43 @@ class TangoMacroExecutor(BaseMacroExecutor):
         setattr(self, id_log_name, id_log)
 
     def _unregisterLog(self, log_level):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`
+
+        Parameters
+        ----------
+        log_level :
+            
+
+        Returns
+        -------
+
+        """
         id_log_name = '_%s_id' % log_level
         id_log = getattr(self, id_log_name)
         self._door.unsubscribe_event(id_log)
 
     def _registerResult(self):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`"""
         result_cb = TangoResultCb(self)
         self._result_id = self._door.subscribe_event('result',
                                                      PyTango.EventType.CHANGE_EVENT,
                                                      result_cb)
 
     def _unregisterResult(self):
-        '''reimplemented from :class:`BaseMacroExecutor`'''
+        """reimplemented from :class:`BaseMacroExecutor`"""
         self._door.unsubscribe_event(self._result_id)
 
     def getData(self):
-        '''Returns the data object for the last executed macro
-
+        """Returns the data object for the last executed macro
+        
         :return: (obj)
-        '''
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         data = self._door.RecordData
         return CodecFactory().decode(data)

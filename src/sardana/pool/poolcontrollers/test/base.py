@@ -39,12 +39,19 @@ __all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
            'PositionGenerator', 'TriggerGateReceiver']
 
 class BaseControllerTestCase(object):
-    """ Base test case for unit testing arbitrary controllers.
+    """Base test case for unit testing arbitrary controllers.
     This class will create a controller instance and define an axis from the
     class member attributes:
         KLASS <type> controller class
         PROPS <dict> properties of the controller
         AXIS <int> number of the axis
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     KLASS = None
     PROPS = {}
@@ -52,6 +59,7 @@ class BaseControllerTestCase(object):
     DEBUG = False
 
     def setUp(self):
+        """ """
         self.logger = Logger('BaseControllerTestCase')
         if self.DEBUG:
             self.logger.setLogLevel(Logger.Debug)
@@ -64,11 +72,25 @@ class BaseControllerTestCase(object):
         self.ctrl.AddDevice(self.AXIS)
 
     def tearDown(self):
+        """ """
         if self.ctrl is not None:
             self.ctrl.DeleteDevice(self.AXIS)
 
     def axisPar(self, name, value, expected_value=None):
-        """ Helper for test the SetAxisPar & GetaxisPar methods
+        """Helper for test the SetAxisPar & GetaxisPar methods
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+        expected_value :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         axis = self.AXIS
         if expected_value is None:
@@ -80,7 +102,16 @@ class BaseControllerTestCase(object):
         self.assertEqual(r_value, expected_value, msg)
 
     def stateOne(self, expected_state=State.On):
-        """ Helper for test the stateOne method
+        """Helper for test the stateOne method
+
+        Parameters
+        ----------
+        expected_state :
+             (Default value = State.On)
+
+        Returns
+        -------
+
         """
         sta, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The current state of axis(%d) is %d when expected, %d'
@@ -88,39 +119,59 @@ class BaseControllerTestCase(object):
         self.assertEqual(sta, expected_state, msg)
 
     def start_action(self, configuration):
-        """ This method set the axis parameters and pre start the axis.
+        """This method set the axis parameters and pre start the axis.
+
+        Parameters
+        ----------
+        configuration :
+            
+
+        Returns
+        -------
+
         """
         for key, value in list(configuration.items()):
             self.axisPar(key, value)
         self.ctrl.SynchOne(configuration)
 
     def pre_AddDevice_hook(self):
+        """ """
         pass
 
 
 class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
+    """ """
 
     def setUp(self):
+        """ """
         unittest.TestCase.setUp(self)
         BaseControllerTestCase.setUp(self)
         self.isAborted = False
 
     def tearDown(self):
+        """ """
         BaseControllerTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
 
     def post_configuration_hook(self):
-        ''' Hook for post configure actions
-        '''
+        """Hook for post configure actions"""
         pass
 
     def post_generation_hook(self):
-        ''' Hook for post generation actions
-        '''
+        """Hook for post generation actions"""
         pass
 
     def generation(self, configuration):
-        """ Helper for test a simple generation
+        """Helper for test a simple generation
+
+        Parameters
+        ----------
+        configuration :
+            
+
+        Returns
+        -------
+
         """
         self.configuration = configuration
         repetitions = 0
@@ -143,7 +194,18 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         self.assertEqual(state, State.get('On'), msg)
 
     def abort(self, configuration, abort):
-        """ Helper for test the abort
+        """Helper for test the abort
+
+        Parameters
+        ----------
+        configuration :
+            
+        abort :
+            
+
+        Returns
+        -------
+
         """
         self.configuration = configuration
         self.ctrl.SynchOne(self.AXIS, configuration)
@@ -163,8 +225,15 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
 
 
 class PositionGenerator(threading.Thread):
-    """ It is a position generator. A Sardana Motion class is used for simulate
+    """It is a position generator. A Sardana Motion class is used for simulate
     the motor. The attribute value has the current user position of the motor.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, start_pos, end_pos, period):
@@ -188,9 +257,15 @@ class PositionGenerator(threading.Thread):
                                       initial_value=0)
 
     def run(self):
-        """
-        Start the motion and update the SardanaAttribute value with the current
+        """Start the motion and update the SardanaAttribute value with the current
         position of the motion between every nap period
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         self.motor.startMotion(self._start_pos, self._end_pos)
         while self.motor.isInMotion():
@@ -201,38 +276,93 @@ class PositionGenerator(threading.Thread):
         self.value.set_value(value, timestamp=time.time(), propagate=1)
 
     def getMotor(self):
-        """ Get the motion object
-        """
+        """Get the motion object"""
         return self.motor
 
     def setStartPos(self, pos):
-        """ Update start position
+        """Update start position
+
+        Parameters
+        ----------
+        pos :
+            
+
+        Returns
+        -------
+
         """
         self._start_pos = pos
         self.value.set_value(pos)
 
     def setEndPos(self, pos):
-        """ Update end position
+        """Update end position
+
+        Parameters
+        ----------
+        pos :
+            
+
+        Returns
+        -------
+
         """
         self._end_pos = pos
 
     def setPeriod(self, time):
-        """ Update the nap time
+        """Update the nap time
+
+        Parameters
+        ----------
+        time :
+            
+
+        Returns
+        -------
+
         """
         self._end_pos = time
 
     def add_listener(self, listener):
+        """
+
+        Parameters
+        ----------
+        listener :
+            
+
+        Returns
+        -------
+
+        """
         self.value.add_listener(listener)
 
     def remove_listener(self, listener):
+        """
+
+        Parameters
+        ----------
+        listener :
+            
+
+        Returns
+        -------
+
+        """
         self.value.remove_listener(listener)
 
 
 class TriggerGateReceiver(object):
-    '''Software TriggerGateReceiver which captures timestamps whenever an event
+    """Software TriggerGateReceiver which captures timestamps whenever an event
     comes. Provides useful methods for calculating the event generation
     performance
-    '''
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     # TODO: add more jitter measurements e.g. drift
 
     def __init__(self):
@@ -240,12 +370,26 @@ class TriggerGateReceiver(object):
         self.passive_events = {}
 
     def getCount(self):
+        """ """
         count = len(list(self.passive_events.keys()))
         return count
 
     count = property(getCount)
 
     def event_received(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # store also a timestamp of the start event when it will be implemented
         timestamp = time.time()
         _, type_, value = args
@@ -258,6 +402,7 @@ class TriggerGateReceiver(object):
             raise ValueError('Unknown EventType')
 
     def calc_characteristics(self):
+        """ """
         # TODO: refactor the characteristics calculation method to use numpy
         i = 0
         count = self.count
@@ -275,15 +420,22 @@ class TriggerGateReceiver(object):
         return characteristics
 
     def calc_cycletocycle(self):
-        '''Calculate the cycle-to-cycle jitter characteristics: mean, std and max.
+        """Calculate the cycle-to-cycle jitter characteristics: mean, std and max.
         Cycle-to-cycle jitter is a difference between a cycle period and a cycle
         period before it. To calculate one cycle-to-cycle jitter one needs
         exactly 3 active events:
-
+        
         c2c_jitter_1 = cycle_2 - cycle_1
         cycle_2 = active_3 - active_2
         cycle_1 = active_2 - active_1
-        '''
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         i = 0
         count = self.count
         periods = []

@@ -39,8 +39,7 @@ from sardana.tango.macroserver.MacroServer import MacroServerClass
 
 
 class BaseMacroServerTestCase(object):
-    """Abstract class for macroserver DS testing.
-    """
+    """Abstract class for macroserver DS testing."""
     ms_ds_name = getattr(sardanacustomsettings, 'UNITTEST_MS_DS_NAME',
                          "unittest1")
     ms_name = getattr(sardanacustomsettings, 'UNITTEST_MS_NAME',
@@ -49,10 +48,15 @@ class BaseMacroServerTestCase(object):
                         "door/demo1/1")
 
     def setUp(self, properties=None):
-        """
-        Start MacroServer DS.
+        """Start MacroServer DS.
 
-        :param properties: dictionary with the macroserver properies.
+        Parameters
+        ----------
+        properties :
+            dictionary with the macroserver properies. (Default value = None)
+
+        Returns
+        -------
 
         """
         try:
@@ -90,8 +94,7 @@ class BaseMacroServerTestCase(object):
             self.tearDown()
 
     def tearDown(self):
-        """Remove the MacroServer instance and its properties file.
-        """
+        """Remove the MacroServer instance and its properties file."""
 
         self._msstarter.cleanDb(force=True)
         self._msstarter = None

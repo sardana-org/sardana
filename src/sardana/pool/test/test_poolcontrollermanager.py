@@ -36,11 +36,20 @@ class ControllerManagerTestCase(unittest.TestCase):
 
     def test_init(self):
         """Verify that the created ControllerManager is a ControllerManager
-        instance."""
+        instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         msg = 'ControllerManager constructor does not create ' +\
               'ControllerManager instance'
         self.assertIsInstance(self.cm, ControllerManager, msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)
         self.cm = None

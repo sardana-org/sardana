@@ -36,6 +36,7 @@ from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
 class PoolCounterTimer(PoolTimerableChannel):
+    """ """
 
     def __init__(self, **kwargs):
         self._timer = None
@@ -49,13 +50,18 @@ class PoolCounterTimer(PoolTimerableChannel):
     def set_write_value(self, w_value, timestamp=None, propagate=1):
         """Sets a new write value for the value.
 
-        :param w_value:
+        Parameters
+        ----------
+        w_value : class:`~numbers.Number`
             the new write value for value
-        :type w_value:
-            :class:`~numbers.Number`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._value.set_write_value(w_value, timestamp=timestamp,
                                     propagate=propagate)

@@ -7,6 +7,17 @@ import taurus
 
 
 def checkPoolElements(pool):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+
+    Returns
+    -------
+
+    """
     pool_dev = taurus.Device(pool)
 
     # GET CONTROLLER CLASSES

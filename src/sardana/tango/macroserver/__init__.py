@@ -34,6 +34,17 @@ SERVER_NAME = "MacroServer"
 
 
 def prepare_macroserver(util):
+    """
+
+    Parameters
+    ----------
+    util :
+        
+
+    Returns
+    -------
+
+    """
     import taurus.core.util.log
     Logger = taurus.core.util.log.Logger
 
@@ -42,6 +53,23 @@ def prepare_macroserver(util):
     Logger.addLevelName(15, "OUTPUT")
 
     def output(loggable, msg, *args, **kw):
+        """
+
+        Parameters
+        ----------
+        loggable :
+            
+        msg :
+            
+        *args :
+            
+        **kw :
+            
+
+        Returns
+        -------
+
+        """
         loggable.getLogObj().log(Logger.Output, msg, *args, **kw)
 
     Logger.output = output
@@ -54,6 +82,21 @@ def prepare_macroserver(util):
 
 
 def main_macroserver(args=None, start_time=None, mode=None):
+    """
+
+    Parameters
+    ----------
+    args :
+         (Default value = None)
+    start_time :
+         (Default value = None)
+    mode :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     import sardana.tango.core.util
     # pass server name so the scripts generated with setuptools work on Windows
     return sardana.tango.core.util.run(prepare_macroserver, args=args,
@@ -64,5 +107,6 @@ run = main_macroserver
 
 
 def main():
+    """ """
     import datetime
     run(start_time=datetime.datetime.now())

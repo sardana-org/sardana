@@ -34,6 +34,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 @UILoadable(with_ui="_ui")
 class DisplayScanAngles(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -43,6 +44,7 @@ class DisplayScanAngles(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'displayscanangles'
         ret['group'] = 'Taurus Containers'
@@ -52,6 +54,7 @@ class DisplayScanAngles(TaurusWidget):
 
 
 def main():
+    """ """
     app = Qt.QApplication(sys.argv)
     w = DisplayScanAngles()
     w.show()

@@ -30,6 +30,7 @@ import threading
 
 
 class AttributeListener(object):
+    """ """
 
     def __init__(self, dtype=object, attr_name="valuebuffer"):
         self.data = {}
@@ -38,6 +39,19 @@ class AttributeListener(object):
         self.data_lock = threading.RLock()
 
     def event_received(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         # s - type: sardana.sardanavalue.SardanaValue
         # t - type: sardana.sardanaevent.EventType
         # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
@@ -62,8 +76,7 @@ class AttributeListener(object):
             self.data[obj_name] = channel_data
 
     def get_table(self):
-        '''Construct a table-like array with padded  channel data as columns.
-        Return the '''
+        """Construct a table-like array with padded  channel data as columns."""
         with self.data_lock:
             max_len = max([len(d) for d in list(self.data.values())])
             dtype_spec = []

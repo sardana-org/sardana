@@ -31,4 +31,5 @@ from .genutils import (load_ipython_extension, unload_ipython_extension,  # noqa
 
 
 def main():
+    """ """
     run()

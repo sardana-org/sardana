@@ -33,6 +33,17 @@ __all__ = ['SarTestTestCase']
 
 
 def _cleanup_device(dev_name):
+    """
+
+    Parameters
+    ----------
+    dev_name :
+        
+
+    Returns
+    -------
+
+    """
     factory = taurus.Factory()
     device = taurus.Device(dev_name)
     # tango_alias_devs contains any names in which we have referred
@@ -47,17 +58,24 @@ def _cleanup_device(dev_name):
 
 
 class SarTestTestCase(BasePoolTestCase):
-    """ Base class to setup sardana test environment.
+    """Base class to setup sardana test environment.
         It creates the controllers defined in cls_list and pseudo_cls_list
         with the given 'n' elements.
-
+    
         - cls_list is a list of tuples: (ctrl_class, prefix, subfix, num_elem)
-
+    
         The ctrls name and elements name will be hardcode following
         the next structure:
-
+    
         - The ctrl_name will be prefix + _ctrl_ + postfix.
         - The elem_name will be prefix + _ + postfix + _ + axis
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     # TODO: Formating PEP8
     cls_list = [
@@ -89,6 +107,17 @@ class SarTestTestCase(BasePoolTestCase):
     ]
 
     def setUp(self, pool_properties=None):
+        """
+
+        Parameters
+        ----------
+        pool_properties :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         BasePoolTestCase.setUp(self, pool_properties)
 
         # due to problems with factory cleanup in Taurus 3
@@ -154,8 +183,7 @@ class SarTestTestCase(BasePoolTestCase):
             print(e)
 
     def tearDown(self):
-        """Remove the elements and the controllers
-        """
+        """Remove the elements and the controllers"""
         dirty_elems = []
         dirty_ctrls = []
         f = taurus.Factory()

@@ -39,23 +39,64 @@ RecorderStatus = Enumeration('RecorderStatus', ('Idle', 'Active', 'Disable'))
 
 
 class DataHandler:
-    """ The data handler is the data recording center of a system. It contains
+    """The data handler is the data recording center of a system. It contains
     one or several recorders.  All data transit through the handler, then
-    given to recorders for final saving """
+    given to recorders for final saving
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self):
         self.recorders = []
 
     def addRecorder(self, recorder):
+        """
+
+        Parameters
+        ----------
+        recorder :
+            
+
+        Returns
+        -------
+
+        """
         if recorder is not None:
             self.recorders.append(recorder)
 
     def startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         for recorder in self.recorders:
             if recorder.savemode is SaveModes.Record:
                 recorder.startRecordList(recordlist)
 
     def endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         for recorder in self.recorders:
             if recorder.savemode is SaveModes.Record:
                 recorder.endRecordList(recordlist)
@@ -63,6 +104,19 @@ class DataHandler:
                 recorder.writeRecordList(recordlist)
 
     def addRecord(self, recordlist, record):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+        record :
+            
+
+        Returns
+        -------
+
+        """
         for recorder in self.recorders:
             if recorder.savemode is SaveModes.Record:
                 recorder.writeRecord(record)
@@ -70,17 +124,27 @@ class DataHandler:
                 pass
 
     def addCustomData(self, value, name, **kwargs):
-        '''Write data other than a record.
+        """Write data other than a record.
 
-        :param value: The value to be written
-        :param name: An identification for this value
+        Parameters
+        ----------
+        value :
+            The value to be written
+        name :
+            An identification for this value
+            
+            Optional keyword arguments can be passed with information that some
+            recorders may need in order to record this value. For example: the NeXus
+            recorder will make use of "nxpath" info if available to place the value
+            where it belongs in the nexus hierarchy. Check the `addCustomData`
+            method of each recorder to see what they use/require.
+        **kwargs :
+            
 
-        Optional keyword arguments can be passed with information that some
-        recorders may need in order to record this value. For example: the NeXus
-        recorder will make use of "nxpath" info if available to place the value
-        where it belongs in the nexus hierarchy. Check the `addCustomData`
-        method of each recorder to see what they use/require.
-        '''
+        Returns
+        -------
+
+        """
         for recorder in self.recorders:
             recorder.addCustomData(value, name, **kwargs)
 #
@@ -89,7 +153,7 @@ class DataHandler:
 
 
 class DataRecorder(Logger):
-    """ Generic class for data recorder. Does nothing"""
+    """Generic class for data recorder. Does nothing"""
 
     def __init__(self, *args, **kwargs):
         name = self.__class__.__name__
@@ -99,15 +163,29 @@ class DataRecorder(Logger):
         self.savemode = SaveModes.Record
 
     def getStatus(self):
+        """ """
         return self.status
 
     def disable(self):
+        """ """
         self.status = RecorderStatus.Disable
 
     def enable(self):
+        """ """
         self.status = RecorderStatus.Idle
 
     def startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         is_idle = self.status is RecorderStatus.Idle
         if is_idle:
             self.recordlist = recordlist
@@ -120,34 +198,125 @@ class DataRecorder(Logger):
             return -1
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self._endRecordList(recordlist)
 
         self.status = RecorderStatus.Idle
         self.recordlist = None
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def writeRecordList(self, recordlist):
-        """ Only in BLOCK_MODE. Will write whole RecordList """
+        """Only in BLOCK_MODE. Will write whole RecordList
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         self._startRecordList(recordlist)
         for record in recordlist.records:
             self.writeRecord(record)
         self._endRecordList(recordlist)
 
     def writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         self._writeRecord(record)
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def setSaveMode(self, mode):
+        """
+
+        Parameters
+        ----------
+        mode :
+            
+
+        Returns
+        -------
+
+        """
         self.savemode = mode
 
     def addCustomData(self, value, name, **kwargs):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._addCustomData(value, name, **kwargs)
         except Exception as e:
@@ -155,4 +324,19 @@ class DataRecorder(Logger):
                                (self.__class__.__name__, e))
 
     def _addCustomData(self, value, name, **kwargs):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        name :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         pass

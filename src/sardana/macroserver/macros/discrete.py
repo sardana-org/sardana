@@ -34,6 +34,7 @@ from sardana.macroserver.macro import Macro, Type
 
 
 class DiscretePseudoMotorConfiguration(dict):
+    """ """
 
     def __init__(self, pseudo_obj, macro):
         self.pseudo = pseudo_obj
@@ -46,14 +47,35 @@ class DiscretePseudoMotorConfiguration(dict):
         self.update(conf)
 
     def get_configuration(self):
+        """ """
         value = self.pseudo.getAttribute('configuration').read().value
         fmt, data = self.json.decode(('json', value))
         return data
 
     def has_calibration(self):
+        """ """
         return all(['set' in list(self[x].keys()) for x in list(self.keys())])
 
     def add_point(self, label, pos, setpos, dmin, dmax):
+        """
+
+        Parameters
+        ----------
+        label :
+            
+        pos :
+            
+        setpos :
+            
+        dmin :
+            
+        dmax :
+            
+
+        Returns
+        -------
+
+        """
         point = dict()
         point['pos'] = int(pos)
         label = label.upper()
@@ -86,6 +108,17 @@ class DiscretePseudoMotorConfiguration(dict):
         self._update()
 
     def remove_point(self, label):
+        """
+
+        Parameters
+        ----------
+        label :
+            
+
+        Returns
+        -------
+
+        """
         try:
             label = label.upper()
             self.pop(label)
@@ -94,6 +127,7 @@ class DiscretePseudoMotorConfiguration(dict):
             self.macro.error('Cannot remove label {0}\n{1}'.format(label, e))
 
     def _update(self):
+        """ """
         try:
             fmt, value = self.json.encode(('', self))
             self.pseudo.getAttribute('configuration').write(value)
@@ -108,28 +142,34 @@ class DiscretePseudoMotorConfiguration(dict):
 
 
 class def_discr_pos(Macro):
-    """
-    Define a (calibrated) point for a discrete pseudomotor configuration.
-
+    """Define a (calibrated) point for a discrete pseudomotor configuration.
+    
     The mandatory parameters to execute the macro are: pseudo, label and pos.
-
+    
     Two different scenarios exist: To define a new point or to modify an
     existing one. The controller protects from uploading repeated pos values.
-
+    
     If the point is new, the default dmin and dmax parameters are used to
     construct the calibration. If no set point is provided, the current
     physical position is used instead.
-
+    
     If the point already exists, the values are updated as in the previous
     case. However, if no dmin and dmax are provided, the previous
     calibration values for dmin and dmax are calculated and used to rebuild
     the calibration.
-
+    
     .. note::
         The def_discr_pos macro has been included in sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the macro) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name.'],
@@ -143,19 +183,46 @@ class def_discr_pos(Macro):
         ]
 
     def run(self, pseudo, label, pos, setpos, dmin, dmax):
+        """
+
+        Parameters
+        ----------
+        pseudo :
+            
+        label :
+            
+        pos :
+            
+        setpos :
+            
+        dmin :
+            
+        dmax :
+            
+
+        Returns
+        -------
+
+        """
         conf = DiscretePseudoMotorConfiguration(pseudo, self)
         conf.add_point(label, pos, setpos, dmin, dmax)
 
 
 class udef_discr_pos(Macro):
-    """
-    Remove a point from a discrete pseudomotor configuration.
-
+    """Remove a point from a discrete pseudomotor configuration.
+    
     .. note::
         The udef_discr_pos macro has been included in sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the macro) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name'],
@@ -163,25 +230,55 @@ class udef_discr_pos(Macro):
     ]
 
     def run(self, pseudo, label):
+        """
+
+        Parameters
+        ----------
+        pseudo :
+            
+        label :
+            
+
+        Returns
+        -------
+
+        """
         conf = DiscretePseudoMotorConfiguration(pseudo, self)
         conf.remove_point(label)
 
 
 class prdef_discr(Macro):
-    """
-    Print discrete pseudomotor configuration.
-
+    """Print discrete pseudomotor configuration.
+    
     .. note::
     The prdef_discr_pos macro has been included in sardana
     on a provisional basis. Backwards incompatible changes
     (up to and including removal of the macro) may occur if
     deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name'],
     ]
 
     def run(self, pseudo):
+        """
+
+        Parameters
+        ----------
+        pseudo :
+            
+
+        Returns
+        -------
+
+        """
         conf = DiscretePseudoMotorConfiguration(pseudo, self)
         col_head_str = [['pos'], ['set'], ['min'], ['max']]
         row_head_str = []

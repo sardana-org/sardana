@@ -46,6 +46,17 @@ Token = collections.namedtuple("Token", ["type", "value"])
 
 
 def generate_tokens(text):
+    """
+
+    Parameters
+    ----------
+    text :
+        
+
+    Returns
+    -------
+
+    """
     scanner = master_pat.scanner(text)
     for m in iter(scanner.match, None):
         # quoted parameters must be returned without the quotes that's why we
@@ -59,22 +70,47 @@ def generate_tokens(text):
 
 
 def is_repeat_param(param_def):
+    """
+
+    Parameters
+    ----------
+    param_def :
+        
+
+    Returns
+    -------
+
+    """
     return isinstance(param_def["type"], list)
 
 
 def is_repeat_param_single(param_def):
+    """
+
+    Parameters
+    ----------
+    param_def :
+        
+
+    Returns
+    -------
+
+    """
     return len(param_def) == 1
 
 
 class ParseError(Exception):
+    """ """
     pass
 
 
 class UnrecognizedParamValue(ParseError):
+    """ """
     pass
 
 
 class ExcessParamValue(ParseError):
+    """ """
     pass
 
 
@@ -83,14 +119,32 @@ class ParamParser:
     to test and accept the current lookahead token. Use the ._expect()
     method to exactly match and discard the next token on the input
     (or raise a SyntaxError if it doesn't match).
-
+    
     Inspired on Python Cookbook 3 (chapter 2.19)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, params_def=None):
         self._params_def = params_def
 
     def parse(self, text):
+        """
+
+        Parameters
+        ----------
+        text :
+            
+
+        Returns
+        -------
+
+        """
         self.tokens = generate_tokens(text)
         self.tok = None             # Last symbol consumed
         self.nexttok = None         # Next symbol tokenized
@@ -104,7 +158,17 @@ class ParamParser:
         self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
 
     def _accept(self, toktype):
-        """Test and consume the next token if it matches toktype"""
+        """Test and consume the next token if it matches toktype
+
+        Parameters
+        ----------
+        toktype :
+            
+
+        Returns
+        -------
+
+        """
         if self.nexttok and self.nexttok.type == toktype:
             self._advance()
             return True
@@ -112,7 +176,17 @@ class ParamParser:
             return False
 
     def _expect(self, toktype):
-        """Consume next token if it matches toktype or raise SyntaxError"""
+        """Consume next token if it matches toktype or raise SyntaxError
+
+        Parameters
+        ----------
+        toktype :
+            
+
+        Returns
+        -------
+
+        """
         if not self._accept(toktype):
             raise ParseError("Expected " + toktype)
 
@@ -121,20 +195,28 @@ class ParamParser:
     def _params(self, params_def=None, is_repeat=False):
         """Interpret parameter values by iterating over generated tokens
         according to parameters definition.
-
+        
         It is used either at the macro level or a the repeat parameter
         repetition level.
 
-        :param params_def: parameters definition as used by the
+        Parameters
+        ----------
+        params_def : list<dict>
+            parameters definition as used by the
             :meth:`sardana.macroserver.msmetamacro.Parametrizable.get_parameter`
             or by the
-            `attr:`sardana.taurus.core.tango.sardana.macro.MacroInfo.parameters`
-        :type params_def: list<dict>
-        :param end_check: whether to check if there are parameter values
+            `attr:`sardana.taurus.core.tango.sardana.macro.MacroInfo.parameters` (Default value = None)
+        end_check : bool
+            whether to check if there are parameter values
             exceeding parameters definition
-        :type end_check: bool
-        :return: parameter values
-        :rtype: list
+        is_repeat :
+             (Default value = False)
+
+        Returns
+        -------
+        list
+            parameter values
+
         """
         params_def = params_def or self._params_def
         len_params_def = len(params_def)
@@ -166,8 +248,14 @@ class ParamParser:
         """Interpret normal parameter value. Respect quotes for string
         parameters.
 
-        :return: parameter value
-        :rtype: str
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+            parameter value
+
         """
         if self._accept("LPAREN"):
             # empty brackets will be interpreted as a default value
@@ -190,7 +278,7 @@ class ParamParser:
 
     def _repeat_param(self, repeat_param_def, is_last_param):
         """Interpret repeat parameter.
-
+        
         Accepts repeat parameters using the following rules:
         * enclosed in parenthesis
         * non-enclosed in parenthesis multiple repetitions of the last repeat
@@ -198,13 +286,19 @@ class ParamParser:
         * non-enclosed in parenthesis one repetition of single repeat
         parameter at arbitrary position
 
-        :param repeat_param_def: repeat parameter definition
-        :type repeat_param_def: list<dict>
-        :param is_last_param: whether this repeat parameter is the last in the
+        Parameters
+        ----------
+        repeat_param_def : list<dict>
+            repeat parameter definition
+        is_last_param : bool
+            whether this repeat parameter is the last in the
             definition
-        :type is_last_param: bool
-        :return: repeat parameter value
-        :rtype: list
+
+        Returns
+        -------
+        list
+            repeat parameter value
+
         """
         repeats = []
 
@@ -238,10 +332,16 @@ class ParamParser:
     def _repeat(self, repeat_param_def):
         """Interpret one repetition of the repeat parameter.
 
-        :param repeat_param_def: repeat parameter definition
-        :type repeat_param_def: list<dict>
-        :return: repeat value
-        :rtype: list or None
+        Parameters
+        ----------
+        repeat_param_def : list<dict>
+            repeat parameter definition
+
+        Returns
+        -------
+        list or None
+            repeat value
+
         """
         repeat = None
         if self._accept("LPAREN"):

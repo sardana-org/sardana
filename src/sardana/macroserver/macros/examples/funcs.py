@@ -42,13 +42,33 @@ def mfunc1(self):
 
 @macro()
 def mfunc2(self, p1):
-    """Second macro function. One parameter of unknown type"""
+    """Second macro function. One parameter of unknown type
+
+    Parameters
+    ----------
+    p1 :
+        
+
+    Returns
+    -------
+
+    """
     self.output("parameter: %s", p1)
 
 
 @macro([["moveable", Type.Moveable, None, "motor to watch"]])
 def mfunc3(self, moveable):
-    """Third macro function. A proper moveable parameter"""
+    """Third macro function. A proper moveable parameter
+
+    Parameters
+    ----------
+    moveable :
+        
+
+    Returns
+    -------
+
+    """
     self.output("Moveable %s is at %s",
                 moveable.getName(), moveable.getPosition())
     self.ascan(moveable, 0, 10, 10, 0.1)
@@ -57,19 +77,51 @@ def mfunc3(self, moveable):
 
 @macro()
 def mfunc4(self, *args):
-    """Fourth macro function. A list of parameters of unknown type"""
+    """Fourth macro function. A list of parameters of unknown type
+
+    Parameters
+    ----------
+    *args :
+        
+
+    Returns
+    -------
+
+    """
     self.output("parameters %s", args)
 
 
 @macro()
 def mfunc5(self, *args):
-    """Fifth macro function. A list of parameters of unknown type"""
+    """Fifth macro function. A list of parameters of unknown type
+
+    Parameters
+    ----------
+    *args :
+        
+
+    Returns
+    -------
+
+    """
     self.output("parameters %s", args)
 
 
 @macro([["moveable", Type.Moveable, None, "moveable to move"],
         ["position", Type.Float, None, "absolute position"]])
 def move(self, moveable, position):
-    """This macro moves a motor to the specified position"""
+    """This macro moves a motor to the specified position
+
+    Parameters
+    ----------
+    moveable :
+        
+    position :
+        
+
+    Returns
+    -------
+
+    """
     moveable.move(position)
     self.print("Motor ended at ", moveable.getPosition())

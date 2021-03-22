@@ -30,6 +30,7 @@ from sardana.pool.controller import DefaultValue, Description, FGet, FSet, Type
 
 
 class BaseMotion(object):
+    """ """
 
     def __init__(self):
         self.min_vel = -1
@@ -45,6 +46,7 @@ class BaseMotion(object):
 
 
 class Motion(BaseMotion):
+    """ """
 
     def __init__(self):
         BaseMotion.__init__(self)
@@ -109,7 +111,17 @@ class Motion(BaseMotion):
         self.__recalculate_acc_constants()
 
     def setMinVelocity(self, vi):
-        """ Sets the minimum velocity in ms^-1. A.k.a. base rate"""
+        """Sets the minimum velocity in ms^-1. A.k.a. base rate
+
+        Parameters
+        ----------
+        vi :
+            
+
+        Returns
+        -------
+
+        """
         vi = float(vi)
         if vi < 0:
             raise ValueError("Minimum velocity must be >= 0")
@@ -126,10 +138,21 @@ class Motion(BaseMotion):
             self.setDecelerationTime(self.decel_time)
 
     def getMinVelocity(self):
+        """ """
         return self.min_vel
 
     def setMaxVelocity(self, vf):
-        """ Sets the maximum velocity in ms^-1."""
+        """Sets the maximum velocity in ms^-1.
+
+        Parameters
+        ----------
+        vf :
+            
+
+        Returns
+        -------
+
+        """
         vf = float(vf)
         if vf <= 0:
             raise ValueError("Maximum velocity must be > 0")
@@ -146,16 +169,39 @@ class Motion(BaseMotion):
             self.setDecelerationTime(self.decel_time)
 
     def getMaxVelocity(self):
+        """ """
         return self.max_vel
 
     def setMaxUserVelocity(self, vel):
+        """
+
+        Parameters
+        ----------
+        vel :
+            
+
+        Returns
+        -------
+
+        """
         self.setMaxVelocity(vel * self.step_per_unit)
 
     def getMaxUserVelocity(self):
+        """ """
         return self.getMaxVelocity() / self.step_per_unit
 
     def setAccelerationTime(self, at):
-        """Sets the time to go from minimum velocity to maximum velocity in seconds"""
+        """Sets the time to go from minimum velocity to maximum velocity in seconds
+
+        Parameters
+        ----------
+        at :
+            
+
+        Returns
+        -------
+
+        """
         at = float(at)
         if at <= 0:
             raise ValueError("Acceleration time must be > 0")
@@ -166,10 +212,21 @@ class Motion(BaseMotion):
         self.__recalculate_acc_constants()
 
     def getAccelerationTime(self):
+        """ """
         return self.accel_time
 
     def setDecelerationTime(self, dt):
-        """Sets the time to go from maximum velocity to minimum velocity in seconds"""
+        """Sets the time to go from maximum velocity to minimum velocity in seconds
+
+        Parameters
+        ----------
+        dt :
+            
+
+        Returns
+        -------
+
+        """
         dt = float(dt)
         if dt <= 0:
             raise ValueError("Deceleration time must be > 0")
@@ -180,10 +237,21 @@ class Motion(BaseMotion):
         self.__recalculate_acc_constants()
 
     def getDecelerationTime(self):
+        """ """
         return self.decel_time
 
     def setAcceleration(self, a):
-        """Sets the acceleration in ms^-2"""
+        """Sets the acceleration in ms^-2
+
+        Parameters
+        ----------
+        a :
+            
+
+        Returns
+        -------
+
+        """
         a = float(a)
         if a < 0:
             raise ValueError("Acceleration must be >= 0")
@@ -198,7 +266,17 @@ class Motion(BaseMotion):
         self.__recalculate_acc_constants()
 
     def setDeceleration(self, d):
-        """Sets the deceleration in ms^-2"""
+        """Sets the deceleration in ms^-2
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         d = float(d)
         if d > 0:
             raise ValueError("Deceleration must be <= 0")
@@ -213,9 +291,21 @@ class Motion(BaseMotion):
         self.__recalculate_acc_constants()
 
     def getStepPerUnit(self):
+        """ """
         return self.step_per_unit
 
     def setStepPerUnit(self, spu):
+        """
+
+        Parameters
+        ----------
+        spu :
+            
+
+        Returns
+        -------
+
+        """
         self.step_per_unit = spu
 
     def __recalculate_acc_constants(self):
@@ -228,7 +318,21 @@ class Motion(BaseMotion):
         self.dsplmnt_reach_min_vel += self.max_vel * self.decel_time
 
     def startMotion(self, initial_user_pos, final_user_pos, start_instant=None):
-        """starts a new motion"""
+        """starts a new motion
+
+        Parameters
+        ----------
+        initial_user_pos :
+            
+        final_user_pos :
+            
+        start_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         if not self.power:
             raise Exception("Motor is powered off")
@@ -374,6 +478,17 @@ class Motion(BaseMotion):
         self.inMotion = True
 
     def abortMotion(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         if not self.inMotion:
             return self.curr_pos
@@ -383,6 +498,17 @@ class Motion(BaseMotion):
         return self.curr_pos
 
     def isInMotion(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         # we call getCurrentPosition because inside it updates the inMotion
         # flag
@@ -390,10 +516,32 @@ class Motion(BaseMotion):
         return self.inMotion
 
     def setCurrentPosition(self, curr_pos):
+        """
+
+        Parameters
+        ----------
+        curr_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.curr_pos = curr_pos
         self.init_pos = curr_pos
 
     def getCurrentPosition(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         curr_instant = curr_instant or time.time()
         self.curr_instant = curr_instant
         pos = None
@@ -437,47 +585,111 @@ class Motion(BaseMotion):
         return pos
 
     def setCurrentUserPosition(self, user_pos):
+        """
+
+        Parameters
+        ----------
+        user_pos :
+            
+
+        Returns
+        -------
+
+        """
         self.setCurrentPosition(user_pos * self.step_per_unit)
 
     def getCurrentUserPosition(self, curr_instant=None):
+        """
+
+        Parameters
+        ----------
+        curr_instant :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.getCurrentPosition(curr_instant=curr_instant) / self.step_per_unit
 
     def hitLowerLimit(self):
+        """ """
         user_pos = self.curr_pos / self.step_per_unit
         return user_pos <= self.lower_ls
 
     def hitUpperLimit(self):
+        """ """
         user_pos = self.curr_pos / self.step_per_unit
         return user_pos >= self.upper_ls
 
     def getLowerLimitSwitch(self):
+        """ """
         return self.lower_ls
 
     def setLowerLimitSwitch(self, user_lower_ls):
+        """
+
+        Parameters
+        ----------
+        user_lower_ls :
+            
+
+        Returns
+        -------
+
+        """
         self.lower_ls = user_lower_ls
 
     def getUpperLimitSwitch(self):
+        """ """
         return self.upper_ls
 
     def setUpperLimitSwitch(self, user_upper_ls):
+        """
+
+        Parameters
+        ----------
+        user_upper_ls :
+            
+
+        Returns
+        -------
+
+        """
         self.upper_ls = user_upper_ls
 
     def turnOn(self):
+        """ """
         self.power = True
 
     def turnOff(self):
+        """ """
         self.power = False
 
     def isTurnedOn(self):
+        """ """
         return self.power
 
     def hasPower(self):
+        """ """
         return self.power
 
     def setPower(self, power):
+        """
+
+        Parameters
+        ----------
+        power :
+            
+
+        Returns
+        -------
+
+        """
         self.power = power
 
     def info(self):
+        """ """
         print("Small movement =", self.small_motion)
         print("length =", self.dsplmnt)
         print("position where maximum velocity will be reached =",
@@ -520,6 +732,17 @@ class BasicDummyMotorController(MotorController):
         self.m = self.MaxDevice * [None, ]
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = MotorController.GetAxisAttributes(self, axis)
         new_axis_attrs = {}
         for attr in ('Position', 'Limit_switches'):
@@ -527,6 +750,17 @@ class BasicDummyMotorController(MotorController):
         return new_axis_attrs
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         MotorController.AddDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis:
@@ -541,6 +775,17 @@ class BasicDummyMotorController(MotorController):
             self.m[idx] = m
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         MotorController.DeleteDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis or not self.m[idx]:
@@ -548,6 +793,17 @@ class BasicDummyMotorController(MotorController):
         #self.m[idx] = None
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         #self._log.debug("StateOne(%d)", axis)
         #raise Exception("Cannot StateOne %d" % axis)
         idx = axis - 1
@@ -574,6 +830,17 @@ class BasicDummyMotorController(MotorController):
         return state, status, switchstate
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         #self._log.debug("ReadOne(%d)", axis)
         #raise Exception("Cannot ReadOne")
         idx = axis - 1
@@ -583,36 +850,87 @@ class BasicDummyMotorController(MotorController):
         # return m.getCurrentUserPosition()
 
     def PreStartAll(self):
+        """ """
         #raise Exception("Cannot move on PreStartAll")
         self.motions = {}
 
     def PreStartOne(self, axis, pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         #raise Exception("Cannot move on PreStartOne")
         idx = axis - 1
         m = self.m[idx]
         return m.hasPower()
 
     def StartOne(self, axis, pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         #raise Exception("Cannot move on StartOne")
         idx = axis - 1
         self.motions[self.m[idx]] = pos
 
     def StartAll(self):
+        """ """
         #raise Exception("Cannot move on StartAll")
         t = time.time()
         for motion, pos in list(self.motions.items()):
             motion.startMotion(motion.getCurrentUserPosition(t), pos, t)
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.info("AbortOne(%d)", axis)
         idx = axis - 1
         self.m[idx].abortMotion()
 
     def SendToCtrl(self, stream):
+        """
+
+        Parameters
+        ----------
+        stream :
+            
+
+        Returns
+        -------
+
+        """
         return stream
 
 
 class FastDummyMotorController(MotorController):
+    """ """
 
     gender = "Simulation"
     model = "Basic"
@@ -625,6 +943,17 @@ class FastDummyMotorController(MotorController):
         self.m = self.MaxDevice * [None, ]
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = MotorController.GetAxisAttributes(self, axis)
         new_axis_attrs = {}
         for attr in ('Position', 'Limit_switches'):
@@ -632,6 +961,17 @@ class FastDummyMotorController(MotorController):
         return new_axis_attrs
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         MotorController.AddDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis:
@@ -642,6 +982,17 @@ class FastDummyMotorController(MotorController):
             self.m[idx] = m
 
     def DeleteDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         MotorController.DeleteDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis or not self.m[idx]:
@@ -649,6 +1000,17 @@ class FastDummyMotorController(MotorController):
         #self.m[idx] = None
 
     def StateOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         #self._log.debug("StateOne(%d)", axis)
         state = State.On
         status = "Motor HW is ON"
@@ -656,26 +1018,76 @@ class FastDummyMotorController(MotorController):
         return state, status, switchstate
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug("ReadOne(%d)", axis)
         idx = axis - 1
         m = self.m[idx]
         return m.curr_pos
 
     def PreStartAll(self):
+        """ """
         self.motions = {}
 
     def PreStartOne(self, axis, pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         return True
 
     def StartOne(self, axis, pos):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        pos :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         self.motions[self.m[idx]] = pos
 
     def StartAll(self):
+        """ """
         for motion, pos in list(self.motions.items()):
             motion.curr_pos = pos
 
     def AbortOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -686,12 +1098,34 @@ class DiscreteDummyMotorController(BasicDummyMotorController):
         BasicDummyMotorController.__init__(self, inst, props, *args, **kwargs)
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = MotorController.GetAxisAttributes(self, axis)
         new_axis_attrs = dict(Position=axis_attrs['Position'])
         new_axis_attrs['Position'][Type] = int
         return new_axis_attrs
 
     def AddDevice(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         BasicDummyMotorController.AddDevice(self, axis)
         idx = axis - 1
         m = self.m[idx]
@@ -702,6 +1136,17 @@ class DiscreteDummyMotorController(BasicDummyMotorController):
         m.setCurrentPosition(0)
 
     def ReadOne(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         pos = BasicDummyMotorController.ReadOne(self, axis)
         return int(pos)
 
@@ -757,9 +1202,35 @@ class DummyMotorController(BasicDummyMotorController):
         self._upperLS = float("+inf")
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return MotorController.GetAxisAttributes(self, axis)
 
     def SetAxisPar(self, axis, name, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         m = self.m[idx]
         name = name.lower()
@@ -775,6 +1246,19 @@ class DummyMotorController(BasicDummyMotorController):
             m.setStepPerUnit(value)
 
     def GetAxisPar(self, axis, name):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        name :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         m = self.m[idx]
         name = name.lower()
@@ -791,37 +1275,146 @@ class DummyMotorController(BasicDummyMotorController):
         return v
 
     def DefinePosition(self, axis, position):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        position :
+            
+
+        Returns
+        -------
+
+        """
         idx = axis - 1
         m = self.m[idx]
         m.offset = position - m.getCurrentUserPosition()
         m.setCurrentUserPosition(position)
 
     def getLowerLimitSwitch(self):
+        """ """
         return self._lowerLS
 
     def setLowerLimitSwitch(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._lowerLS = value
 
     def getUpperLimitSwitch(self):
+        """ """
         return self._upperLS
 
     def setUpperLimitSwitch(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._upperLS = value
 
     def getLLS(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return self.m[axis - 1].getLowerLimitSwitch()
 
     def setLLS(self, axis, ls):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        ls :
+            
+
+        Returns
+        -------
+
+        """
         self.m[axis - 1].setLowerLimitSwitch(ls)
 
     def getULS(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return self.m[axis - 1].getUpperLimitSwitch()
 
     def setULS(self, axis, ls):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        ls :
+            
+
+        Returns
+        -------
+
+        """
         self.m[axis - 1].setUpperLimitSwitch(ls)
 
     def getPower(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         return self.m[axis - 1].hasPower()
 
     def setPower(self, axis, power):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        power :
+            
+
+        Returns
+        -------
+
+        """
         self.m[axis - 1].setPower(power)

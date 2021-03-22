@@ -47,12 +47,21 @@ class PoolCounterTimerTestCase(unittest.TestCase):
 
     def test_init(self):
         """Verify that the created CounterTimer is a PoolCounterTimer
-        instance."""
+        instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         msg = 'PoolCounterTimer constructor does not create ' +\
               'PoolCounterTimer instance'
         self.assertIsInstance(self.pct, PoolCounterTimer, msg)
 
     def test_acquisition(self):
+        """ """
         self.pct.integration_time = 0.1
         self.pct.start_acquisition()
         while self.pct.acquisition.is_running():
@@ -61,15 +70,38 @@ class PoolCounterTimerTestCase(unittest.TestCase):
         self.assertEqual(self.pct.value.value, 0.1, msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)
         self.pct = None
 
 
 def StateOne_state(self, axis):
+    """
+
+    Parameters
+    ----------
+    axis :
+        
+
+    Returns
+    -------
+
+    """
     return State.On
 
 
 def StateOne_state_status(self, axis):
+    """
+
+    Parameters
+    ----------
+    axis :
+        
+
+    Returns
+    -------
+
+    """
     return State.On, "Status"
 
 
@@ -79,6 +111,17 @@ def test_state(monkeypatch, mock_StateOne):
     """Test variants of StateOne return value:
     - state
     - state, status
+
+    Parameters
+    ----------
+    monkeypatch :
+        
+    mock_StateOne :
+        
+
+    Returns
+    -------
+
     """
     pool = FakePool()
     # when SEP19 gets implemented it should be possible to mock directly

@@ -39,6 +39,7 @@ import numbers
 
 
 class SPSRecorder(BaseSharedMemoryRecorder):
+    """ """
 
     maxenv = 50
     envlen = 1024
@@ -61,6 +62,19 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         self.setID(program, array)
 
     def setID(self, program, array):
+        """
+
+        Parameters
+        ----------
+        program :
+            
+        array :
+            
+
+        Returns
+        -------
+
+        """
         self.program = program.replace('/', '')
         self.array = array.replace('_', '')
         if not array is None:
@@ -71,24 +85,63 @@ class SPSRecorder(BaseSharedMemoryRecorder):
             self.init()
 
     def init(self):
+        """ """
         pass
 
     def setSize(self, rows, cols):
+        """
+
+        Parameters
+        ----------
+        rows :
+            
+        cols :
+            
+
+        Returns
+        -------
+
+        """
         self.shape = (cols, rows)
         self.rows = rows
         self.cols = cols
 
     def isInitialized(self):
+        """ """
         ret = not (
             self.program is None or self.array_ENV is None or self.array is None)
         return ret and not self.shape is None
 
     def putEnv(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
         self.sps.putenv(self.program, self.array_ENV, name, str(value))
 
     def putAllEnv(self, d):
+        """
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
         p, a = self.program, self.array_ENV
@@ -96,6 +149,17 @@ class SPSRecorder(BaseSharedMemoryRecorder):
             self.sps.putenv(p, a, k, str(v))
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
 
@@ -137,6 +201,17 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         self.putAllEnv(env)
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
 
@@ -176,6 +251,17 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         self.putAllEnv(env)
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
         env = recordlist.getEnviron()
@@ -184,22 +270,56 @@ class SPSRecorder(BaseSharedMemoryRecorder):
 
 class ShmRecorder(DataRecorder):
 
-    """ Sets data in shared memory to be used by sps """
+    """Sets data in shared memory to be used by sps"""
 
     maxenv = 50
     envlen = 1024
 
     def setShmID(self, shmid):
+        """
+
+        Parameters
+        ----------
+        shmid :
+            
+
+        Returns
+        -------
+
+        """
         self.shm_id = shmid
         self.shm_id_ENV = shmid + "_ENV"
 
     def setShmMntGrp(self, mnt_grp):
+        """
+
+        Parameters
+        ----------
+        mnt_grp :
+            
+
+        Returns
+        -------
+
+        """
         self.mnt_grp = mnt_grp
 
     def setProgram(self, progname):
+        """
+
+        Parameters
+        ----------
+        progname :
+            
+
+        Returns
+        -------
+
+        """
         self.progname = progname
 
     def isInitialized(self):
+        """ """
         try:
             getattr(self, "shm_id")
             getattr(self, "shm_id_env")
@@ -209,16 +329,64 @@ class ShmRecorder(DataRecorder):
             return False
 
     def setSize(self, rows, cols):
+        """
+
+        Parameters
+        ----------
+        rows :
+            
+        cols :
+            
+
+        Returns
+        -------
+
+        """
         self.rows = rows
         self.cols = cols
 
     def putenv(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.sps.putenv(self.progname, self.shm_id_env, name, str(value))
 
     def setChanDimList(self, chandimlist):
+        """
+
+        Parameters
+        ----------
+        chandimlist :
+            
+
+        Returns
+        -------
+
+        """
         self.chandimlist = chandimlist
 
     def _startRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
 
         if not self.isInitialized():
             return
@@ -263,6 +431,17 @@ class ShmRecorder(DataRecorder):
         self.labels = recordlist.getEnvironValue('labels')
 
     def _writeRecord(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         # uhmm. only numeric values can be written
 
         if not self.isInitialized():
@@ -317,6 +496,17 @@ class ShmRecorder(DataRecorder):
         self.putenv('com', 23)
 
     def _endRecordList(self, recordlist):
+        """
+
+        Parameters
+        ----------
+        recordlist :
+            
+
+        Returns
+        -------
+
+        """
         if not self.isInitialized():
             return
         self.putenv('ended', time.ctime(recordlist.getEnvironValue('endtime')))

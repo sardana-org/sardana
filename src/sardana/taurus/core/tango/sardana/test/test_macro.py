@@ -45,6 +45,7 @@ from sardana.util.parser import ParamParser
 
 
 class FakeMacroServer(object):
+    """ """
     name = "FakeMacroServer"
 
 macro_server = FakeMacroServer()
@@ -94,12 +95,22 @@ pt8_xml = \
 @insertTest(helper_name='verifyXML', macro_name="pt8", param_def=pt8_params_def,
             param_str=pt8_params_str, expected_xml_rep=pt8_xml)
 class MacroNodeTestCase(unittest.TestCase):
+    """ """
 
     def _validateXML(self, macronode_xml, expected_xml):
-        '''
-        :param macronode_xml: macronode lxml.etree
-        :param expected_xml:  expected lxml.etree
-        '''
+        """
+
+        Parameters
+        ----------
+        macronode_xml :
+            macronode lxml.etree
+        expected_xml :
+            expected lxml.etree
+
+        Returns
+        -------
+
+        """
         expected_str = etree.tostring(expected_xml, encoding='unicode')
         macronode_str = etree.tostring(macronode_xml, encoding='unicode',
                                        pretty_print=True)
@@ -109,14 +120,26 @@ class MacroNodeTestCase(unittest.TestCase):
         self.assertEqual(expected_str.strip(), macronode_str.strip(), msg)
 
     def verifyXML(self, macro_name, param_def, param_str, expected_xml_rep):
-        """
-        Helper to verify the generated XML of a macroNode
-        :param macro_name: (str) name of the macro
-        :param param_def:   (list<dict>) macro parameters definition
-        :param param_value: (list<str>) list of strins representing macro
+        """Helper to verify the generated XML of a macroNode
+
+        Parameters
+        ----------
+        macro_name :
+            str) name of the macro
+        param_def :
+            list<dict>) macro parameters definition
+        param_value :
+            list<str>) list of strins representing macro
             parameters values
-        :param expected_xml_rep: "pretty print" string representation of a XML
+        expected_xml_rep :
+            pretty print" string representation of a XML
             macroNode
+        param_str :
+            
+
+        Returns
+        -------
+
         """
         param_parser = ParamParser(param_def)
         param_value = param_parser.parse(param_str)
@@ -265,16 +288,26 @@ class MacroNodeTestCase(unittest.TestCase):
                                    [["mot4", "mot5", "mot6"], 5]]]
             )
 class ParamsTestCase(unittest.TestCase):
+    """ """
 
     def verifyEncoding(self, param_def, macro_params, expected_params_list):
-        """
-        Helper to verify the correct building of the parameters objects tree.
+        """Helper to verify the correct building of the parameters objects tree.
         Verify that the list is recreated correctly from the parameters
         objects tree.
-        :param param_def:   (list<dict>) macro parameters definition
-        :param macro_params: (list<str>) list of strings representing macro
+
+        Parameters
+        ----------
+        param_def :
+            list<dict>) macro parameters definition
+        macro_params :
+            list<str>) list of strings representing macro
             parameters values.
-        :param expected_params_list: (list<str>) expected parameters list.
+        expected_params_list :
+            list<str>) expected parameters list.
+
+        Returns
+        -------
+
         """
 
         # Create the MacroNode with the inputs
@@ -292,17 +325,21 @@ class ParamsTestCase(unittest.TestCase):
 
 class DuplicateTestCase(unittest.TestCase):
 
-    """
-    Duplicate a RepeatNode and check that it has been correctly duplicated.
-    """
+    """Duplicate a RepeatNode and check that it has been correctly duplicated."""
 
     def testDuplication(self):
-        """
-        Helper to verify the correct duplication of a RepeatNode. Duplication
+        """Helper to verify the correct duplication of a RepeatNode. Duplication
         of parameters.
-
+        
         ..todo:: To be more unit test the use of MacroNode class should be
         avoided. Use of RepeatParamNode and its children should be enough.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
 
         # Create the MacroNode

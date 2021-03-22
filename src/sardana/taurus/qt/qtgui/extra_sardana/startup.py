@@ -54,12 +54,18 @@ def __remove_from_syspath__():
 
 
 class UserModuleDeleter(object):
-    """
-    User Module Deleter (UMD) aims at deleting user modules
+    """User Module Deleter (UMD) aims at deleting user modules
     to force Python to deeply reload them during import
-
+    
     pathlist [list]: blacklist in terms of module path
     namelist [list]: blacklist in terms of module name
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, namelist=None, pathlist=None):
@@ -73,6 +79,19 @@ class UserModuleDeleter(object):
         self.previous_modules = list(sys.modules.keys())
 
     def is_module_blacklisted(self, modname, modpath):
+        """
+
+        Parameters
+        ----------
+        modname :
+            
+        modpath :
+            
+
+        Returns
+        -------
+
+        """
         for path in [sys.prefix] + self.pathlist:
             if modpath.startswith(path):
                 return True
@@ -80,12 +99,20 @@ class UserModuleDeleter(object):
             return set(modname.split('.')) & set(self.namelist)
 
     def run(self, verbose=False):
-        """
-        Del user modules to force Python to deeply reload them
-
+        """Del user modules to force Python to deeply reload them
+        
         Do not del modules which are considered as system modules, i.e.
         modules installed in subdirectories of Python interpreter's binary
         Do not del C modules
+
+        Parameters
+        ----------
+        verbose :
+             (Default value = False)
+
+        Returns
+        -------
+
         """
         log = []
         for modname, module in list(sys.modules.items()):
@@ -107,10 +134,22 @@ __umd__ = None
 
 
 def runfile(filename, args=None, wdir=None):
-    """
-    Run filename
+    """Run filename
     args: command line arguments (string)
     wdir: working directory
+
+    Parameters
+    ----------
+    filename :
+        
+    args :
+         (Default value = None)
+    wdir :
+         (Default value = None)
+
+    Returns
+    -------
+
     """
     global __umd__
     import os
@@ -141,10 +180,22 @@ def runfile(filename, args=None, wdir=None):
 
 
 def debugfile(filename, args=None, wdir=None):
-    """
-    Debug filename
+    """Debug filename
     args: command line arguments (string)
     wdir: working directory
+
+    Parameters
+    ----------
+    filename :
+        
+    args :
+         (Default value = None)
+    wdir :
+         (Default value = None)
+
+    Returns
+    -------
+
     """
     import pdb
     debugger = pdb.Pdb()

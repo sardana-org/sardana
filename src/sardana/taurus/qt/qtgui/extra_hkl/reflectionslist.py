@@ -33,6 +33,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 @UILoadable(with_ui="_ui")
 class ReflectionsList(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -41,6 +42,7 @@ class ReflectionsList(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'reflectionslist'
         ret['group'] = 'Taurus Containers'
@@ -50,6 +52,7 @@ class ReflectionsList(TaurusWidget):
 
 
 def main():
+    """ """
     app = Qt.QApplication(sys.argv)
     w = ReflectionsList()
     w.show()

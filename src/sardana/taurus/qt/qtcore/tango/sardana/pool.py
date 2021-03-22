@@ -39,6 +39,7 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 
 class QPool(Qt.QObject, TangoDevice):
+    """ """
 
     def __init__(self, name='', qt_parent=None, **kw):
         self.call__init__(TangoDevice, name, **kw)
@@ -46,6 +47,7 @@ class QPool(Qt.QObject, TangoDevice):
 
 
 class QMeasurementGroup(Qt.QObject, TangoDevice):
+    """ """
 
     configurationChanged = Qt.pyqtSignal()
 
@@ -64,6 +66,21 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
             return TangoDevice.__getattr__(self, name)
 
     def _configurationChanged(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if t == TaurusEventType.Config:
             return
         if TaurusEventType.Error:
@@ -73,6 +90,17 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
         self.configurationChanged.emit()
 
     def getConfiguration(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         if self._config is None or not cache:
             try:
                 v = self.read_attribute("configuration")
@@ -82,6 +110,17 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
         return self._config
 
     def setConfiguration(self, config):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+
+        Returns
+        -------
+
+        """
         self.write_attribute("configuration", json.dumps(config))
 
 

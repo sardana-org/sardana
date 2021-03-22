@@ -28,12 +28,31 @@ from sardana.pool.controller import PseudoCounterController, Type, MaxDimSize
 
 class TwoDROI(PseudoCounterController):
     """A simple pseudo counter which receives an image from a 2D experimental
-       channel and returns [1,1] quadrant"""
+       channel and returns [1,1] quadrant
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     counter_roles = "2D",
     pseudo_counter_roles = "Q1",
 
     def GetAxisAttributes(self, axis):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+
+        Returns
+        -------
+
+        """
         axis_attrs = PseudoCounterController.GetAxisAttributes(self, axis)
         axis_attrs = dict(axis_attrs)
         axis_attrs['Value'][Type] = ((float,),)
@@ -41,6 +60,19 @@ class TwoDROI(PseudoCounterController):
         return axis_attrs
 
     def Calc(self, axis, counter_values):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        counter_values :
+            
+
+        Returns
+        -------
+
+        """
         self._log.debug("Calc entering...")
         img = counter_values[0]
         if axis == 1:

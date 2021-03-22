@@ -36,6 +36,17 @@ from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
 
 def is_numerical(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     if is_number(obj):
         return True
     if is_non_str_seq(obj) or isinstance(obj, numpy.ndarray):
@@ -60,12 +71,25 @@ def is_numerical(obj):
 @insertTest(helper_name="count", test_method_doc="count with CT",
             elements=["_test_ct_1_1"])
 class TestMeasurementGroup(SarTestTestCase, TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         SarTestTestCase.setUp(self)
         registerExtensions()
 
     def count(self, elements):
+        """
+
+        Parameters
+        ----------
+        elements :
+            
+
+        Returns
+        -------
+
+        """
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -81,16 +105,20 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
+        """ """
         SarTestTestCase.tearDown(self)
 
 
 class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         SarTestTestCase.setUp(self)
         registerExtensions()
 
     def test_value_ref_enabled(self):
+        """ """
         mg_name = str(uuid.uuid1())
         channel_name = "_test_2d_1_1"
         argin = [mg_name, channel_name]
@@ -110,6 +138,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_value_ref_disabled(self):
+        """ """
         mg_name = str(uuid.uuid1())
         channel_name = "_test_2d_1_1"
         argin = [mg_name, channel_name]
@@ -129,18 +158,23 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
+        """ """
         SarTestTestCase.tearDown(self)
 
 
 class TestMotor(SarTestTestCase, TestCase):
+    """ """
 
     def setUp(self):
+        """ """
         SarTestTestCase.setUp(self)
         registerExtensions()
 
     def test_move(self):
+        """ """
         mot = Device("_test_mt_1_1")
         _, values = mot.move(1)
 
     def tearDown(self):
+        """ """
         SarTestTestCase.tearDown(self)

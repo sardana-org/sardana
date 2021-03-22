@@ -34,7 +34,15 @@ from sardana.macroserver.macro import Macro, Type, Hookable, ExecMacroHook
 class loop(Macro, Hookable):
     """A macro that executes a for loop. It accepts hooks.
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     hints = {'allowsHooks': ('pre-move', 'post-move', 'pre-acq', 'post-acq')}
 
@@ -43,6 +51,21 @@ class loop(Macro, Hookable):
                  ['step', Type.Integer, 1, 'step']]
 
     def run(self, start, stop, step):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        stop :
+            
+        step :
+            
+
+        Returns
+        -------
+
+        """
         self.info("Starting loop")
         for i in range(start, stop, step):
             self.output("At step %d" % i)
@@ -57,16 +80,40 @@ class captain_hook(Macro):
     """A macro that executes a loop macro. A hook was attached so that in each
     step of the loop this hook is executed.
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [['start', Type.Integer, None, 'start point'],
                  ['stop', Type.Integer, None, 'end point'],
                  ['step', Type.Integer, 1, 'step']]
 
     def hook(self):
+        """ """
         self.info("\thook execution")
 
     def run(self, start, stop, step):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        stop :
+            
+        step :
+            
+
+        Returns
+        -------
+
+        """
         loop_macro, _ = self.createMacro("loop", start, stop, step)
         loop_macro.hooks = [(self.hook, ["pre-acq"])]
         self.runMacro(loop_macro)
@@ -76,16 +123,40 @@ class captain_hook2(Macro):
     """A macro that executes a loop macro. A hook was attached so that in each
     step of the loop this hook is executed.
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [['start', Type.Integer, None, 'start point'],
                  ['stop', Type.Integer, None, 'end point'],
                  ['step', Type.Integer, 1, 'step']]
 
     def hook(self):
+        """ """
         self.execMacroStr(["lsm"])
 
     def run(self, start, stop, step):
+        """
+
+        Parameters
+        ----------
+        start :
+            
+        stop :
+            
+        step :
+            
+
+        Returns
+        -------
+
+        """
         loop_macro, _ = self.createMacro("loop", start, stop, step)
         #h = self.createExecMacroHook(["lsm"])
         # it gives the "pre-acq" hint to the hook
@@ -96,7 +167,15 @@ class captain_hook2(Macro):
 class hooked_scan(Macro):
     """An example on how to attach hooks to the various hook points of a scan.
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor',      Type.Moveable, None, 'Motor to move'],
@@ -107,24 +186,49 @@ class hooked_scan(Macro):
     ]
 
     def hook1(self):
+        """ """
         self.info("\thook1 execution")
 
     def hook2(self):
+        """ """
         self.info("\thook2 execution")
 
     def hook3(self):
+        """ """
         self.info("\thook3 execution")
 
     def hook4(self):
+        """ """
         self.info("\thook4 execution")
 
     def hook5(self):
+        """ """
         self.info("\thook5 execution")
 
     def hook6(self):
+        """ """
         self.info("\thook6 execution")
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         ascan, pars = self.createMacro(
             "ascan", motor, start_pos, final_pos, nr_interv, integ_time)
         ascan.hooks = [(self.hook1, ["pre-acq"]),
@@ -140,9 +244,17 @@ class hooked_scan(Macro):
 class hooked_scan_with_macro(Macro):
     """An example on how to attach macro (in this case without parameters)
     as a hook to the various hook points of a scan.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['motor', Type.Moveable, None, 'Motor to move'],
@@ -157,6 +269,29 @@ class hooked_scan_with_macro(Macro):
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, macro,
             hook_places):
+        """
+
+        Parameters
+        ----------
+        motor :
+            
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+        macro :
+            
+        hook_places :
+            
+
+        Returns
+        -------
+
+        """
         ascan, _ = self.createMacro(
             "ascan", motor, start_pos, final_pos, nr_interv, integ_time)
         macro_hook = ExecMacroHook(self, "umv", [["mot01", 1]])
@@ -167,7 +302,15 @@ class hooked_scan_with_macro(Macro):
 class hooked_dummyscan(Macro):
     """An example on how to attach hooks to the various hook points of a scan.
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['start_pos',  Type.Float,   None, 'Scan start position'],
@@ -177,15 +320,35 @@ class hooked_dummyscan(Macro):
     ]
 
     def hook1(self):
+        """ """
         self.info("\thook1 execution")
 
     def hook2(self):
+        """ """
         self.info("\thook2 execution")
 
     def hook3(self):
+        """ """
         self.info("\thook3 execution")
 
     def run(self, start_pos, final_pos, nr_interv, integ_time):
+        """
+
+        Parameters
+        ----------
+        start_pos :
+            
+        final_pos :
+            
+        nr_interv :
+            
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         dummyscan, pars = self.createMacro(
             "dummyscan", start_pos, final_pos, nr_interv, integ_time)
         dummyscan.hooks = [(self.hook1, ["pre-scan"]), (self.hook2, ["pre-acq",

@@ -53,8 +53,7 @@ MOT_NAME1, MOT_NAME2 = getMotors()[:2]
 @testRun(macro_name="set_lm", macro_params=[MOT_NAME1, "-1000", "1000"],
          wait_timeout=1)
 class LimTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for limit macros
-    """
+    """Test case for limit macros"""
     pass
 
 
@@ -63,16 +62,15 @@ class LimTest(RunMacroTestCase, unittest.TestCase):
 @testRun(macro_name="set_user_pos", macro_params=[MOT_NAME1, "0"],
          wait_timeout=1)
 class PosTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for position macros
-    """
+    """Test case for position macros"""
     pass
 
 
 class MoveTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for position macros
-    """
+    """Test case for position macros"""
 
     def test_move(self):
+        """ """
         self.macro_runs("set_user_pos", macro_params=[MOT_NAME1, "0"],
                         wait_timeout=1)
         self.macro_runs("mv", macro_params=[MOT_NAME1, "1"], wait_timeout=3)
@@ -83,11 +81,13 @@ class MoveTest(RunMacroTestCase, unittest.TestCase):
 
 @testRun(macro_params=[MOT_NAME1], wait_timeout=1)
 class MstateTest(RunMacroTestCase, unittest.TestCase):
+    """ """
 
     macro_name = "mstate"
 
 
 @testRun(macro_params=["blabla"], wait_timeout=1)
 class ReportTest(RunMacroTestCase, unittest.TestCase):
+    """ """
 
     macro_name = "report"

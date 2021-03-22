@@ -43,6 +43,7 @@ from sardana.pool.poolmotion import PoolMotion, MotionState
 
 
 class Position(SardanaAttribute):
+    """ """
 
     def __init__(self, *args, **kwargs):
         super(Position, self).__init__(*args, **kwargs)
@@ -51,34 +52,74 @@ class Position(SardanaAttribute):
         self.get_dial().add_listener(self.on_change)
 
     def get_dial(self):
+        """ """
         return self.obj.get_dial_position_attribute()
 
     def get_offset(self):
+        """ """
         return self.obj.get_offset_attribute()
 
     def get_sign(self):
+        """ """
         return self.obj.get_sign_attribute()
 
     def _in_error(self):
+        """ """
         return self.get_dial().in_error()
 
     def _has_value(self):
+        """ """
         return self.get_dial().has_value()
 
     def _has_write_value(self):
+        """ """
         return self.get_dial().has_write_value()
 
     def _get_value(self):
+        """ """
         return self.calc_position()
 
     def _get_write_value(self):
+        """ """
         dial = self.get_dial().get_write_value()
         return self.calc_position(dial=dial)
 
     def _set_value(self, value, exc_info=None, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+        exc_info :
+             (Default value = None)
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         raise Exception("Cannot set position value for %s" % self.obj.name)
 
     def _set_write_value(self, w_value, timestamp=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        w_value :
+            
+        timestamp :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         # let the write value be stored by dial using the current offset and
         # sign. This way, retrieving the write value is done in reverse applying
         # the offset and sign in use at that time
@@ -87,12 +128,15 @@ class Position(SardanaAttribute):
         self.fire_write_event(propagate=propagate)
 
     def _get_exc_info(self):
+        """ """
         return self.get_dial().get_exc_info()
 
     def _get_timestamp(self):
+        """ """
         return self.get_dial().get_timestamp()
 
     def _get_write_timestamp(self):
+        """ """
         return self.get_dial().get_write_timestamp()
 
     def calc_position(self, dial=None):
@@ -100,14 +144,18 @@ class Position(SardanaAttribute):
         given parameter or (if None), the last dial position obtained from
         hardware read.
 
-        :param dial: the new dial position [default: None, meaning use the
-                     current dial position.
-        :return: the computed user position
-        :rtype: obj
+        Parameters
+        ----------
+        dial :
+            the new dial position [default: None, meaning use the
+            current dial position.
 
-        :raises:
-            :exc:`Exception` if dial_position is None and no read value has
-            been set yet"""
+        Returns
+        -------
+        obj
+            the computed user position
+
+        """
         obj = self.obj
         if dial is None:
             dial_attr = obj.dial_position
@@ -123,12 +171,18 @@ class Position(SardanaAttribute):
         """Returns the dial position for the  given position. If position is
         not given (or is None) it uses this object's *write* value.
 
-        :param position:
+        Parameters
+        ----------
+        position : obj
             the position to be converted to dial [default: None meaning use the
             this attribute's *write* value
-        :type position: obj
-        :return: the computed dial position
-        :rtype: obj"""
+
+        Returns
+        -------
+        obj
+            the computed dial position
+
+        """
         obj = self.obj
         if position is None:
             position = self.w_value
@@ -137,7 +191,17 @@ class Position(SardanaAttribute):
 
     def calc_motion(self, new_position):
         """Calculate the motor position, dial position, backlash for the
-        given final position."""
+        given final position.
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         obj = self.obj
         ctrl = obj.controller
         step_per_unit = obj._step_per_unit
@@ -178,36 +242,89 @@ class Position(SardanaAttribute):
         return new_position, new_dial, do_backlash, backlash_position
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         self.fire_read_event(propagate=evt_type.priority)
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self.get_dial().update(cache=cache, propagate=propagate)
 
 
 class DialPosition(ScalarNumberAttribute):
+    """ """
 
     def update(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or not self.has_value():
             dial_position_value = self.obj.read_dial_position()
             self.set_value(dial_position_value, propagate=propagate)
 
 
 class LimitSwitches(ScalarNumberAttribute):
+    """ """
     pass
 
 
 class Offset(SardanaSoftwareAttribute):
+    """ """
     pass
 
 
 class Sign(SardanaSoftwareAttribute):
+    """ """
     pass
 
 
 class PoolMotor(PoolElement):
     """An internal Motor object. **NOT** part of the official API. Accessing
     this object from a controller plug-in may lead to undetermined behavior
-    like infinite recursion."""
+    like infinite recursion.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.Motor
@@ -236,6 +353,21 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         # forward all events coming from attributes to the listeners
         self.fire_event(evt_type, evt_value)
 
@@ -244,6 +376,17 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def _from_ctrl_state_info(self, state_info):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+
+        Returns
+        -------
+
+        """
         state_info, _ = state_info
         if len(state_info) > 2:
             state, status, ls = state_info[:3]
@@ -257,6 +400,19 @@ class PoolMotor(PoolElement):
         return state, status, ls
 
     def _set_state_info(self, state_info, propagate=1):
+        """
+
+        Parameters
+        ----------
+        state_info :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         PoolElement._set_state_info(self, state_info, propagate=propagate)
         ls = state_info[-1]
         if self._sign.value < 0:
@@ -270,6 +426,17 @@ class PoolMotor(PoolElement):
     _STD_STATUS = "{name} is {state}{limit_switches}"
 
     def calculate_state_info(self, state_info=None):
+        """
+
+        Parameters
+        ----------
+        state_info :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if state_info is None:
             state = self._state
             status = self._status
@@ -312,36 +479,84 @@ class PoolMotor(PoolElement):
 
     def inspect_limit_switches(self):
         """returns the current (cached value of the limit switches
+        
+        :return: the current limit switches flags
 
-        :return: the current limit switches flags"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self._limit_switches
 
     def get_limit_switches(self, cache=True, propagate=1):
         """Returns the motor limit switches state.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the motor limit switches state
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         self.get_state(cache=cache, propagate=propagate)
         return self._limit_switches
 
     def set_limit_switches(self, ls, propagate=1):
+        """
+
+        Parameters
+        ----------
+        ls :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._set_limit_switches(ls, propagate=propagate)
 
     def put_limit_switches(self, ls, propagate=1):
+        """
+
+        Parameters
+        ----------
+        ls :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._limit_switches = tuple(ls)
 
     def _set_limit_switches(self, ls, propagate=1):
+        """
+
+        Parameters
+        ----------
+        ls :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._limit_switches.set_value(tuple(ls), propagate=propagate)
 
     limit_switches = property(get_limit_switches, set_limit_switches,
@@ -352,13 +567,48 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def has_instability_time(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         it = self._instability_time
         return it is not None and it > 0.0
 
     def get_instability_time(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._instability_time
 
     def set_instability_time(self, instability_time, propagate=1):
+        """
+
+        Parameters
+        ----------
+        instability_time :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._instability_time = instability_time
         if propagate > 0:
             self.fire_event(EventType("instability_time", priority=propagate),
@@ -372,18 +622,75 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def has_backlash(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._backlash != 0
 
     def is_backlash_positive(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._backlash > 0
 
     def is_backlash_negative(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._backlash < 0
 
     def get_backlash(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._backlash
 
     def set_backlash(self, backlash, propagate=1):
+        """
+
+        Parameters
+        ----------
+        backlash :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._backlash = backlash
         if propagate > 0:
             self.fire_event(
@@ -396,12 +703,37 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_offset_attribute(self):
+        """ """
         return self._offset
 
     def get_offset(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._offset
 
     def set_offset(self, offset, propagate=1):
+        """
+
+        Parameters
+        ----------
+        offset :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._offset.set_value(offset, propagate=propagate)
 
     offset = property(get_offset, set_offset, doc="motor offset")
@@ -411,12 +743,37 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_sign_attribute(self):
+        """ """
         return self._sign
 
     def get_sign(self, cache=True):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self._sign
 
     def set_sign(self, sign, propagate=1):
+        """
+
+        Parameters
+        ----------
+        sign :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         assert sign in (-1, 1), \
             "sign must be either -1 or 1 (not {})".format(sign)
         old_sign = self._sign.value
@@ -436,18 +793,57 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_step_per_unit(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._step_per_unit is None:
             step_per_unit = self.read_step_per_unit()
             self._set_step_per_unit(step_per_unit, propagate=propagate)
         return self._step_per_unit
 
     def set_step_per_unit(self, step_per_unit, propagate=1):
+        """
+
+        Parameters
+        ----------
+        step_per_unit :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if step_per_unit <= 0.0:
             raise Exception("Step per unit must be > 0.0")
         self.controller.set_axis_par(self.axis, "step_per_unit", step_per_unit)
         self._set_step_per_unit(step_per_unit, propagate=propagate)
 
     def _set_step_per_unit(self, step_per_unit, propagate=1):
+        """
+
+        Parameters
+        ----------
+        step_per_unit :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._step_per_unit = step_per_unit
         if propagate:
             self.fire_event(EventType("step_per_unit",
@@ -456,6 +852,7 @@ class PoolMotor(PoolElement):
             self.get_position(cache=False, propagate=2)
 
     def read_step_per_unit(self):
+        """ """
         step_per_unit = self.controller.get_axis_par(
             self.axis, "step_per_unit")
         assert_type(float, step_per_unit)
@@ -469,16 +866,55 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_acceleration(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._acceleration is None:
             acceleration = self.read_acceleration()
             self._set_acceleration(acceleration, propagate=propagate)
         return self._acceleration
 
     def set_acceleration(self, acceleration, propagate=1):
+        """
+
+        Parameters
+        ----------
+        acceleration :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self.controller.set_axis_par(self.axis, "acceleration", acceleration)
         self._set_acceleration(acceleration, propagate=propagate)
 
     def _set_acceleration(self, acceleration, propagate=1):
+        """
+
+        Parameters
+        ----------
+        acceleration :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._acceleration = acceleration
         if not propagate:
             return
@@ -486,6 +922,7 @@ class PoolMotor(PoolElement):
             EventType("acceleration", priority=propagate), acceleration)
 
     def read_acceleration(self):
+        """ """
         acceleration = self.controller.get_axis_par(self.axis, "acceleration")
         assert_type(float, acceleration)
         return acceleration
@@ -498,16 +935,55 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_deceleration(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._deceleration is None:
             deceleration = self.read_deceleration()
             self._set_deceleration(deceleration, propagate=propagate)
         return self._deceleration
 
     def set_deceleration(self, deceleration, propagate=1):
+        """
+
+        Parameters
+        ----------
+        deceleration :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self.controller.set_axis_par(self.axis, "deceleration", deceleration)
         self._set_deceleration(deceleration, propagate=propagate)
 
     def _set_deceleration(self, deceleration, propagate=1):
+        """
+
+        Parameters
+        ----------
+        deceleration :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._deceleration = deceleration
         if not propagate:
             return
@@ -515,6 +991,7 @@ class PoolMotor(PoolElement):
             EventType("deceleration", priority=propagate), deceleration)
 
     def read_deceleration(self):
+        """ """
         deceleration = self.controller.get_axis_par(self.axis, "deceleration")
         assert_type(float, deceleration)
         return deceleration
@@ -526,22 +1003,62 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_base_rate(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._base_rate is None:
             base_rate = self.read_base_rate()
             self._set_base_rate(base_rate, propagate=propagate)
         return self._base_rate
 
     def set_base_rate(self, base_rate, propagate=1):
+        """
+
+        Parameters
+        ----------
+        base_rate :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self.controller.set_axis_par(self.axis, "base_rate", base_rate)
         self._set_base_rate(base_rate, propagate=propagate)
 
     def _set_base_rate(self, base_rate, propagate=1):
+        """
+
+        Parameters
+        ----------
+        base_rate :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._base_rate = base_rate
         if not propagate:
             return
         self.fire_event(EventType("base_rate", priority=propagate), base_rate)
 
     def read_base_rate(self):
+        """ """
         base_rate = self.controller.get_axis_par(self.axis, "base_rate")
         assert_type(float, base_rate)
         return base_rate
@@ -554,22 +1071,62 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_velocity(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         if not cache or self._velocity is None:
             velocity = self.read_velocity()
             self._set_velocity(velocity, propagate=propagate)
         return self._velocity
 
     def set_velocity(self, velocity, propagate=1):
+        """
+
+        Parameters
+        ----------
+        velocity :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self.controller.set_axis_par(self.axis, "velocity", velocity)
         self._set_velocity(velocity, propagate=propagate)
 
     def _set_velocity(self, velocity, propagate=1):
+        """
+
+        Parameters
+        ----------
+        velocity :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._velocity = velocity
         if not propagate:
             return
         self.fire_event(EventType("velocity", priority=propagate), velocity)
 
     def read_velocity(self):
+        """ """
         velocity = self.controller.get_axis_par(self.axis, "velocity")
         assert_type(float, velocity)
         return velocity
@@ -582,6 +1139,17 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def define_position(self, position):
+        """
+
+        Parameters
+        ----------
+        position :
+            
+
+        Returns
+        -------
+
+        """
         dial = self.get_position_attribute().calc_dial_position(position)
         self.controller.define_position(self.axis, dial)
         # force an event with the new position
@@ -590,26 +1158,34 @@ class PoolMotor(PoolElement):
     def get_position_attribute(self):
         """Returns the position attribute object for this motor
 
-        :return: the position attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the position attribute
+
+        """
         return self._position
 
     def get_position(self, cache=True, propagate=1):
         """Returns the user position.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the user position
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         position = self._position
         position.update(cache=cache, propagate=propagate)
         return position
@@ -617,47 +1193,65 @@ class PoolMotor(PoolElement):
     def set_position(self, position):
         """Moves the motor to the specified user position
 
-        :param position:
+        Parameters
+        ----------
+        position : class:`~numbers.Number
             the user position to move to
-        :type position:
-            :class:`~numbers.Number`"""
+
+        Returns
+        -------
+
+        """
         self.start_move(position)
 
     def set_write_position(self, w_position, timestamp=None, propagate=1):
         """Sets a new write value for the user position.
 
-        :param w_position:
+        Parameters
+        ----------
+        w_position : class:`~numbers.Number`
             the new write value for user position
-        :type w_position:
-            :class:`~numbers.Number`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+        timestamp :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._position.set_write_value(w_position, timestamp=timestamp,
                                        propagate=propagate)
 
     def read_dial_position(self):
         """Reads the dial position from hardware.
 
-        :return:
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanavalue.SardanaValue`
             a :class:`~sardana.sardanavalue.SardanaValue` containing the dial
             position
-        :rtype:
-            :class:`~sardana.sardanavalue.SardanaValue`"""
+
+        """
         return self.motion.read_dial_position(serial=True)[self]
 
     def put_dial_position(self, dial_position_value, propagate=1):
         """Sets a new dial position.
 
-        :param dial_position_value:
+        Parameters
+        ----------
+        dial_position_value : class:`~sardana.sardanavalue.SardanaValue`
             the new dial position value
-        :type dial_position_value:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
+        propagate : in
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
+        """
         dp = self._dial_position
         dp.set_value(dial_position_value, propagate=propagate)
         return dp
@@ -665,26 +1259,34 @@ class PoolMotor(PoolElement):
     def get_dial_position_attribute(self):
         """Returns the dial position attribute object for this motor
 
-        :return: the dial position attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
+            the dial position attribute
+
+        """
         return self._dial_position
 
     def get_dial_position(self, cache=True, propagate=1):
         """Returns the dial position.
 
-        :param cache:
+        Parameters
+        ----------
+        cache : bool
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
-        :return:
+        propagate : int
+            0 for not propagating, 1 to propagate, 2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+        class:`~sardana.sardanaattribute.SardanaAttribute`
             the dial position
-        :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+
+        """
         dp = self._dial_position
         dp.update(cache=cache, propagate=propagate)
         return dp
@@ -697,6 +1299,7 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
+        """ """
         return self.get_position_attribute()
 
     # -------------------------------------------------------------------------
@@ -704,6 +1307,7 @@ class PoolMotor(PoolElement):
     # -------------------------------------------------------------------------
 
     def get_motion(self):
+        """ """
         return self.get_action_cache()
 
     motion = property(get_motion, doc="motion object")
@@ -715,7 +1319,21 @@ class PoolMotor(PoolElement):
     def calculate_motion(self, new_position, items=None, calculated=None):
         """Calculate the motor position, dial position, backlash for the
         given final position. Items specifies the where to put the calculated
-        values, calculated is not used by physical motors"""
+        values, calculated is not used by physical motors
+
+        Parameters
+        ----------
+        new_position :
+            
+        items :
+             (Default value = None)
+        calculated :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
 
         step_per_unit = self._step_per_unit
         backlash = self._backlash
@@ -760,6 +1378,17 @@ class PoolMotor(PoolElement):
         return items
 
     def start_move(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         self._in_start_move = True
         try:
             return self._start_move(new_position)
@@ -767,6 +1396,17 @@ class PoolMotor(PoolElement):
             self._in_start_move = False
 
     def _start_move(self, new_position):
+        """
+
+        Parameters
+        ----------
+        new_position :
+            
+
+        Returns
+        -------
+
+        """
         if not self._simulation_mode:
             # update the dial value from the controller in case motor has been
             # moved outside sardana.

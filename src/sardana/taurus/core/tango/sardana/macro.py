@@ -47,12 +47,21 @@ from sardana.macroserver.msparameter import Optional
 
 
 class MacroRunException(Exception):
+    """ """
     pass
 
 
 class MacroInfo(object):
     """Contains all information about a macro: name, documentation, parameters,
-    result, etc"""
+    result, etc
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, from_json_str=None, from_json=None):
         json_obj = from_json
@@ -64,11 +73,23 @@ class MacroInfo(object):
             self._buildDoc()
 
     def _fromJSON(self, json_str):
+        """
+
+        Parameters
+        ----------
+        json_str :
+            
+
+        Returns
+        -------
+
+        """
         json_codec = CodecFactory().getCodec('json')
         format, data = json_codec.decode(('json', json_str))
         return data
 
     def _buildDoc(self):
+        """ """
         if self.hasParams():
             self._parameter_line = self._buildParameterLine(self.parameters)
             self._parameter_description = self._buildParameterDescription(
@@ -95,6 +116,17 @@ class MacroInfo(object):
         self.doc = doc
 
     def _hasParamComplex(self, parameters=None):
+        """
+
+        Parameters
+        ----------
+        parameters :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if parameters is None:
             parameters = self.parameters
 
@@ -104,12 +136,45 @@ class MacroInfo(object):
         return False
 
     def _isParamComplex(self, p):
+        """
+
+        Parameters
+        ----------
+        p :
+            
+
+        Returns
+        -------
+
+        """
         return not self._isParamAtomic(p)
 
     def _isParamAtomic(self, p):
+        """
+
+        Parameters
+        ----------
+        p :
+            
+
+        Returns
+        -------
+
+        """
         return isinstance(p['type'], str)
 
     def _buildParameterLine(self, parameters):
+        """
+
+        Parameters
+        ----------
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         l = []
         for p in parameters:
             t = p['type']
@@ -123,6 +188,17 @@ class MacroInfo(object):
     _buildResultLine = _buildParameterLine
 
     def _buildParameterDescription(self, parameters):
+        """
+
+        Parameters
+        ----------
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         l = []
         for p in parameters:
             t = p['type']
@@ -137,15 +213,29 @@ class MacroInfo(object):
 
     def hasParams(self):
         """Determines if the macro has parameters
-
+        
         :return: (bool) True if the macro has parameters or False otherwise
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return hasattr(self, 'parameters') and len(self.parameters) > 0
 
     def getParamList(self):
         """Returs the list of parameters
-
+        
         :return: (sequence) a list of parameters
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasParams():
             return []
@@ -154,10 +244,17 @@ class MacroInfo(object):
     def getParam(self, idx=0):
         """Gets the parameter for the given index
 
-        :param idx: (int) the index (default is 0)
+        Parameters
+        ----------
+        idx :
+            int) the index (default is 0)
 
-        :return: (object) the parameter or None if the macro does not have the
-                 desired parameter
+        Returns
+        -------
+        type
+            object) the parameter or None if the macro does not have the
+            desired parameter
+
         """
         if not self.hasParams():
             return
@@ -166,10 +263,19 @@ class MacroInfo(object):
     def getPossibleParams(self, idx, parameters=None):
         """Gets the possible parameters for the given index
 
-        :param idx: (int) parameter index
-        :param parameters: (sequence) sequence of parameter information
-                        (default is None which means use the macro parameters)
-        :return: (sequence) list of possible parameters
+        Parameters
+        ----------
+        idx :
+            int) parameter index
+        parameters :
+            sequence) sequence of parameter information
+            (default is None which means use the macro parameters)
+
+        Returns
+        -------
+        type
+            sequence) list of possible parameters
+
         """
         if parameters is None:
             parameters = self.parameters
@@ -205,8 +311,15 @@ class MacroInfo(object):
            For example, if a macro has a motor parameter followed by a list of
            numbers it will return:
            '<motor> [ <number> ]'
-
+        
         :return: (str) a string representing the macro parameter line
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasParams():
             return ''
@@ -214,8 +327,15 @@ class MacroInfo(object):
 
     def getParamDescr(self):
         """Returns the list of strings, each one documenting each macro parameter
-
+        
         :return: (sequence<str>) list of parameter lines
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasParams():
             return []
@@ -223,15 +343,29 @@ class MacroInfo(object):
 
     def hasResult(self):
         """Determines if the macro has a result
-
+        
         :return: (bool) True if the macro has a result or False otherwise
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         return hasattr(self, 'result') and len(self.result) > 0
 
     def getResultList(self):
         """Returns the list of results
-
+        
         :return: (sequence) a list of results
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasResult():
             return []
@@ -240,10 +374,17 @@ class MacroInfo(object):
     def getResult(self, idx=0):
         """Gets the result for the given index
 
-        :param idx: (int) the index (default is 0)
+        Parameters
+        ----------
+        idx :
+            int) the index (default is 0)
 
-        :return: (object) the result or None if the macro does not have the
-                 desired result
+        Returns
+        -------
+        type
+            object) the result or None if the macro does not have the
+            desired result
+
         """
         return self.result[idx]
 
@@ -251,8 +392,15 @@ class MacroInfo(object):
         """Returns the string line representing the macro results.
            For example, if a macro returns a number, this method it
            will return: '<number>'
-
+        
         :return: (str) a string representing the macro result line
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasResult():
             return ''
@@ -260,14 +408,32 @@ class MacroInfo(object):
 
     def getResultDescr(self):
         """Returns the list of strings, each one documenting each macro result
-
+        
         :return: (sequence<str>) list of result lines
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.hasResult():
             return []
         return self._result_description
 
     def formatResult(self, result):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+
+        Returns
+        -------
+
+        """
         if not self.hasResult():
             if result is None:
                 return None
@@ -305,8 +471,14 @@ class MacroInfo(object):
     def allowsHooks(self):
         """Checks whether the macro allows hooks
 
-        :return: True or False depending if the macro allows hooks
-        :rtype: bool
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+            True or False depending if the macro allows hooks
+
         """
         try:
             self.hints["allowsHooks"]
@@ -317,9 +489,15 @@ class MacroInfo(object):
     def getAllowedHooks(self):
         """Gets allowed hooks
 
-        :return: list with the allowed hooks or empty list if the macro
+        Parameters
+        ----------
+
+        Returns
+        -------
+        list[str]
+            list with the allowed hooks or empty list if the macro
             does not allow hooks
-        :rtype: list[str]
+
         """
         try:
             allowed_hooks = self.hints["allowsHooks"]
@@ -332,6 +510,7 @@ class MacroInfo(object):
 
 
 class Macro(object):
+    """ """
 
     Ready = PyTango.DevState.ON
     Init = PyTango.DevState.INIT
@@ -351,27 +530,51 @@ class Macro(object):
         self.result = None
 
     def getID(self):
+        """ """
         return self.id
 
     def getRange(self):
+        """ """
         return self.range
 
     def getStep(self):
+        """ """
         return self.step
 
     def getInfo(self):
+        """ """
         return self.door.macro_server.getMacroInfoObj(self.name)
 
     def setResult(self, res):
+        """
+
+        Parameters
+        ----------
+        res :
+            
+
+        Returns
+        -------
+
+        """
         self.result = self.getInfo().formatResult(res)
 
     def getResult(self):
+        """ """
         return self.result
 
 
 class BaseNode(object):
     """Base class defining basic interface for all type of nodes used to represent,
-    relationship between sequence, macros and parameters."""
+    relationship between sequence, macros and parameters.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None):
         #        if parent:
@@ -379,29 +582,53 @@ class BaseNode(object):
         self._parent = parent
 
     def parent(self):
+        """ """
         return self._parent
 
     def setParent(self, parent):
+        """
+
+        Parameters
+        ----------
+        parent :
+            
+
+        Returns
+        -------
+
+        """
         #        if parent:
         #            parent = weakref.ref(parent)
         self._parent = parent
 
     def value(self):
+        """ """
         return ""
 
     def isAllowedMoveUp(self):
+        """ """
         return False
 
     def isAllowedMoveDown(self):
+        """ """
         return False
 
     def isAllowedDelete(self):
+        """ """
         return False
 
 
 class BranchNode(BaseNode):
     """Class used to represent all types of elements which contain
-    a list of other elements (children)"""
+    a list of other elements (children)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None):
         BaseNode.__init__(self, parent)
@@ -411,9 +638,21 @@ class BranchNode(BaseNode):
         return len(self.children())
 
     def children(self):
+        """ """
         return self._children
 
     def child(self, idx):
+        """
+
+        Parameters
+        ----------
+        idx :
+            
+
+        Returns
+        -------
+
+        """
         try:
             children = self.children()
             return children[idx]
@@ -421,12 +660,36 @@ class BranchNode(BaseNode):
             return None
 
     def rowOfChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self.children().index(child)
         except ValueError:
             return -1
 
     def insertChild(self, child, row=-1):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+        row :
+             (Default value = -1)
+
+        Returns
+        -------
+
+        """
         child.setParent(self)
         if row == -1:
             row = len(self)
@@ -434,9 +697,31 @@ class BranchNode(BaseNode):
         return row
 
     def removeChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         self.children().remove(child)
 
     def upChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         i = self.children().index(child)
         if i == 0:
             return
@@ -444,6 +729,17 @@ class BranchNode(BaseNode):
         self.children().insert(child, i - 1)
 
     def downChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         i = self.children().index(child)
         if i == len(self) - 1:
             return
@@ -451,6 +747,7 @@ class BranchNode(BaseNode):
         self.children().insert(i + 1, child)
 
     def toRun(self):
+        """ """
         values = []
         alert = ""
         for child in self.children():
@@ -462,7 +759,15 @@ class BranchNode(BaseNode):
 
 class ParamNode(BaseNode):
     """Base class for param elements: single parameters and param repeats.
-    It groups a common interface of them."""
+    It groups a common interface of them.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None, param=None):
         BaseNode.__init__(self, parent)
@@ -479,21 +784,57 @@ class ParamNode(BaseNode):
             self.setMax(str(param.get('max')))
 
     def name(self):
+        """ """
         return self._name
 
     def setName(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         self._name = name
 
     def description(self):
+        """ """
         return self._description
 
     def setDescription(self, description):
+        """
+
+        Parameters
+        ----------
+        description :
+            
+
+        Returns
+        -------
+
+        """
         self._description = description
 
     def min(self):
+        """ """
         return self._min
 
     def setMin(self, min):
+        """
+
+        Parameters
+        ----------
+        min :
+            
+
+        Returns
+        -------
+
+        """
         if min == 'None':
             min = None
         elif min:
@@ -501,9 +842,21 @@ class ParamNode(BaseNode):
         self._min = min
 
     def max(self):
+        """ """
         return self._max
 
     def setMax(self, max):
+        """
+
+        Parameters
+        ----------
+        max :
+            
+
+        Returns
+        -------
+
+        """
         if max == 'None':
             max = None
         elif max:
@@ -517,6 +870,13 @@ class SingleParamNode(ParamNode):
     .. todo: All the usages of setValue are converting the
              values to str before calling the setter.
              This most probably should not be the case - to be fixed
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, parent=None, param=None):
@@ -539,26 +899,63 @@ class SingleParamNode(ParamNode):
         return self._value
 
     def value(self):
+        """ """
         return self._value
 
     def setValue(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._value = value
 
     def defValue(self):
+        """ """
         return self._defValue
 
     def setDefValue(self, defValue):
+        """
+
+        Parameters
+        ----------
+        defValue :
+            
+
+        Returns
+        -------
+
+        """
         if defValue == "None":
             defValue = None
         self._defValue = defValue
 
     def type(self):
+        """ """
         return self._type
 
     def setType(self, type):
+        """
+
+        Parameters
+        ----------
+        type :
+            
+
+        Returns
+        -------
+
+        """
         self._type = type
 
     def toXml(self):
+        """ """
         value = self.value()
         paramElement = etree.Element("param", name=self.name())
         # set value attribute only if it is different than the default value
@@ -569,19 +966,33 @@ class SingleParamNode(ParamNode):
         return paramElement
 
     def fromXml(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         self.setName(xmlElement.get("name"))
         self.setValue(xmlElement.get("value"))
 
     def isMotorParam(self):
+        """ """
         return self.type() == globals.PARAM_MOTOR
 
     def allMotors(self):
+        """ """
         if self.isMotorParam() and self.value() != 'None':
             return [self.value()]
         else:
             return[]
 
     def toRun(self):
+        """ """
         val = self.value()
         if val is None or val == "None":
             if self.defValue() is None:
@@ -594,14 +1005,24 @@ class SingleParamNode(ParamNode):
         return ([val], "")
 
     def toList(self):
+        """ """
         return self._value
 
     def fromList(self, v):
         """fromList method converts the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
         In this specific case, it converts a single parameter.
-        :param v: (str_or_list) single parameter. Only empty list are allowed.
-        Empty list indicates default value."""
+
+        Parameters
+        ----------
+        v :
+            str_or_list) single parameter. Only empty list are allowed.
+            Empty list indicates default value
+
+        Returns
+        -------
+
+        """
         if isinstance(v, list):
             if len(v) == 0:
                 v = str(self.defValue())
@@ -628,22 +1049,37 @@ class RepeatParamNode(ParamNode, BranchNode):
         return repr(self.children())
 
     def arrangeIndexes(self):
+        """ """
         for i, child in enumerate(self.children()):
             child.setIndex(i + 1)
 
     def paramsInfo(self):
+        """ """
         return self._paramsInfo
 
     def setParamsInfo(self, paramsInfo):
+        """
+
+        Parameters
+        ----------
+        paramsInfo :
+            
+
+        Returns
+        -------
+
+        """
         self._paramsInfo = paramsInfo
 
     def newRepeat(self):
+        """ """
         repeatNode = RepeatNode(self)
         for repeatParam in self.paramsInfo():
             repeatNode.addParam(repeatParam)
         return repeatNode
 
     def addRepeat(self):
+        """ """
         repeat = RepeatNode(self)
         self.insertChild(repeat)
         for repeatParam in self.paramsInfo():
@@ -651,26 +1087,43 @@ class RepeatParamNode(ParamNode, BranchNode):
         return repeat
 
     def isReachedMin(self):
+        """ """
         if self.min() is None:
             return False
         return len(self) <= self.min()
 
     def isBelowMin(self):
+        """ """
         if self.min() is None:
             return False
         return len(self) < self.min()
 
     def isReachedMax(self):
+        """ """
         if self.max() is None:
             return False
         return len(self) == self.max()
 
     def isAboveMax(self):
+        """ """
         if self.max() is None:
             return False
         return len(self) > self.max()
 
     def insertChild(self, child, row=-1):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+        row :
+             (Default value = -1)
+
+        Returns
+        -------
+
+        """
         # this line was removed on purpose
         # in case of importing sequences from plain text, it is possible that
         #  user introduced more repetitions than allowed
@@ -679,6 +1132,17 @@ class RepeatParamNode(ParamNode, BranchNode):
         return BranchNode.insertChild(self, child, row)
 
     def removeChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         if self.isReachedMin():
             return
         child.setParent(None)
@@ -688,6 +1152,17 @@ class RepeatParamNode(ParamNode, BranchNode):
         BranchNode.removeChild(self, child)
 
     def upChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         i = self.children().index(child)
         if i == 0:
             return
@@ -697,6 +1172,17 @@ class RepeatParamNode(ParamNode, BranchNode):
         self.insertChild(child, i - 1)
 
     def downChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         i = self.children().index(child)
         if i == len(self) - 1:
             return
@@ -706,6 +1192,7 @@ class RepeatParamNode(ParamNode, BranchNode):
         self.insertChild(child, i + 1)
 
     def toRun(self):
+        """ """
         values = []
         alert = ""
         if self.isBelowMin():
@@ -718,12 +1205,24 @@ class RepeatParamNode(ParamNode, BranchNode):
         return (values, alert)
 
     def toXml(self):
+        """ """
         paramElement = etree.Element("paramrepeat", name=self.name())
         for child in self.children():
             paramElement.append(child.toXml())
         return paramElement
 
     def fromXml(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         self.setName(xmlElement.get("name"))
         for repeatElement in xmlElement:
             repeat = RepeatNode(self)
@@ -731,23 +1230,33 @@ class RepeatParamNode(ParamNode, BranchNode):
             self.insertChild(repeat)
 
     def allMotors(self):
+        """ """
         motors = []
         for child in self.children():
             motors += child.allMotors()
         return motors
 
     def toList(self):
+        """ """
         return [child.toList() for child in self.children()]
 
     def fromList(self, repeats):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
         In this case case, it converts repeat parameters.
-        :param repeats: (list<str>_or_list<list>). Parameters.
-        It is a list of strings in case of repetitions of single
-        parameters.
-        It is a list of lists in case of repetitions of more than one element
-        for each repetition.
+
+        Parameters
+        ----------
+        repeats :
+            list<str>_or_list<list>). Parameters.
+            It is a list of strings in case of repetitions of single
+            parameters.
+            It is a list of lists in case of repetitions of more than one element
+            for each repetition.
+
+        Returns
+        -------
+
         """
         for j, repeat in enumerate(repeats):
 
@@ -765,7 +1274,15 @@ class RepeatParamNode(ParamNode, BranchNode):
 
 class RepeatNode(BranchNode):
     """Class for repetition elements (group of params which were repeated in
-    macro)"""
+    macro)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, parent=None):
         BranchNode.__init__(self, parent)
@@ -777,25 +1294,61 @@ class RepeatNode(BranchNode):
         return repr(self.children())
 
     def index(self):
+        """ """
         return self._index
 
     def setIndex(self, index):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+
+        Returns
+        -------
+
+        """
         self._index = index
 
     def name(self):
+        """ """
         return "#%d" % self.index()
 
     def addParam(self, param):
+        """
+
+        Parameters
+        ----------
+        param :
+            
+
+        Returns
+        -------
+
+        """
         paramNode = ParamFactory(param)
         self.insertChild(paramNode)
 
     def toXml(self):
+        """ """
         repeatElement = etree.Element("repeat", nr=str(self.index()))
         for child in self.children():
             repeatElement.append(child.toXml())
         return repeatElement
 
     def fromXml(self, xmlElement):
+        """
+
+        Parameters
+        ----------
+        xmlElement :
+            
+
+        Returns
+        -------
+
+        """
         self.setIndex(int(xmlElement.get("nr")))
         for paramElement in xmlElement:
             if paramElement.tag == "param":
@@ -809,6 +1362,13 @@ class RepeatNode(BranchNode):
         """Method for duplicating a RepeatNode. The new node is
         appended as the last element of the ParamRepeatNode containing the
         RepeatNode being duplicated.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         repeat_param_node = self.parent()
         duplicated_node = copy.deepcopy(self)
@@ -816,21 +1376,26 @@ class RepeatNode(BranchNode):
         repeat_param_node.arrangeIndexes()
 
     def allMotors(self):
+        """ """
         motors = []
         for child in self.children():
             motors += child.allMotors()
         return motors
 
     def isAllowedDel(self):
+        """ """
         pass
 
     def isAllowedMoveUp(self):
+        """ """
         return self is not self.parent().child(0)
 
     def isAllowedMoveDown(self):
+        """ """
         return self is not self.parent().child(len(self.parent()) - 1)
 
     def toList(self):
+        """ """
         if len(self.children()) == 1:
             return self.child(0).toList()
         else:
@@ -840,11 +1405,19 @@ class RepeatNode(BranchNode):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
         In this case case, it converts repeat parameters.
-        :param params: (list<str>_or_<str>). Parameters.
-        It is a list of strings in case of param repeat of more than one
-        element for each repetition.
-        It is a string or empty list in case of repetitions of
-        single elements.
+
+        Parameters
+        ----------
+        params :
+            list<str>_or_<str>). Parameters.
+            It is a list of strings in case of param repeat of more than one
+            element for each repetition.
+            It is a string or empty list in case of repetitions of
+            single elements.
+
+        Returns
+        -------
+
         """
         len_children = len(self.children())
         if len_children == 1:
@@ -892,122 +1465,326 @@ class MacroNode(BranchNode):
 
 
     def id(self):
-        """
-        Getter of macro's id property
-
+        """Getter of macro's id property
+        
         :return: (str)
-
+        
         .. seealso: :meth:`MacroNode.setId`, assignId
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
 
         return self._id
 
     def setId(self, id):
-        """
-        Setter of macro's id property
+        """Setter of macro's id property
 
-        :param id: (str) new macro's id
+        Parameters
+        ----------
+        id :
+            str) new macro's id
+            
+            See Also: id, assignId
 
-        See Also: id, assignId
+        Returns
+        -------
+
         """
 
         self._id = id
 
     def assignId(self):
-        """
-        If macro didn't have an assigned id it assigns it
+        """If macro didn't have an assigned id it assigns it
         and return macro's id.
-
+        
         :return: (str)
-
+        
         See Also: id, setId
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         id_ = str(uuid.uuid1())
         self.setId(id_)
         return id_
 
     def name(self):
+        """ """
         return self._name
 
     def setName(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         self._name = name
 
     def isPause(self):
+        """ """
         return self._pause
 
     def setPause(self, pause):
+        """
+
+        Parameters
+        ----------
+        pause :
+            
+
+        Returns
+        -------
+
+        """
         self._pause = pause
 
     def range(self):
+        """ """
         return self._range
 
     def setRange(self, range):
+        """
+
+        Parameters
+        ----------
+        range :
+            
+
+        Returns
+        -------
+
+        """
         self._range = range
 
     def progress(self):
+        """ """
         return self._progress
 
     def setProgress(self, progress):
+        """
+
+        Parameters
+        ----------
+        progress :
+            
+
+        Returns
+        -------
+
+        """
         self._progress = progress
 
     def isAllowedHooks(self):
+        """ """
         return bool(self._allowedHookPlaces)
 
     def allowedHookPlaces(self):
+        """ """
         return self._allowedHookPlaces
 
     def setAllowedHookPlaces(self, allowedHookPlaces):
+        """
+
+        Parameters
+        ----------
+        allowedHookPlaces :
+            
+
+        Returns
+        -------
+
+        """
         self._allowedHookPlaces = allowedHookPlaces
 
     def hookPlaces(self):
+        """ """
         return self._hookPlaces
 
     def setHookPlaces(self, hookPlaces):
+        """
+
+        Parameters
+        ----------
+        hookPlaces :
+            
+
+        Returns
+        -------
+
+        """
         self._hookPlaces = hookPlaces
 
     def addHookPlace(self, hookPlace):
+        """
+
+        Parameters
+        ----------
+        hookPlace :
+            
+
+        Returns
+        -------
+
+        """
         self._hookPlaces.append(hookPlace)
 
     def removeHookPlace(self, hookPlace):
+        """
+
+        Parameters
+        ----------
+        hookPlace :
+            
+
+        Returns
+        -------
+
+        """
         self._hookPlaces.remove(hookPlace)
 
     def hasParams(self):
+        """ """
         return self._hasParams
 
     def setHasParams(self, hasParams):
+        """
+
+        Parameters
+        ----------
+        hasParams :
+            
+
+        Returns
+        -------
+
+        """
         self._hasParams = hasParams
 
 #################################
     def params(self):
+        """ """
         return self._params
 
     def setParams(self, params):
+        """
+
+        Parameters
+        ----------
+        params :
+            
+
+        Returns
+        -------
+
+        """
         self._params = params
 
     def addParam(self, param):
+        """
+
+        Parameters
+        ----------
+        param :
+            
+
+        Returns
+        -------
+
+        """
         param.setParent(self)
         self._params.append(param)
 
     def popParam(self, index=None):
+        """
+
+        Parameters
+        ----------
+        index :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if index is None:
             return self._params.pop()
         else:
             return self._params.pop(index)
 
     def hooks(self):
+        """ """
         return self._hooks
 
     def setHooks(self, hooks):
+        """
+
+        Parameters
+        ----------
+        hooks :
+            
+
+        Returns
+        -------
+
+        """
         self._hooks = hooks
 
     def addHook(self, hook):
+        """
+
+        Parameters
+        ----------
+        hook :
+            
+
+        Returns
+        -------
+
+        """
         hook.setParent(self)
         self._hooks.append(hook)
 
     def removeHook(self, hook):
+        """
+
+        Parameters
+        ----------
+        hook :
+            
+
+        Returns
+        -------
+
+        """
         self._hooks.remove(hook)
 
     def rowOfHook(self, hook):
+        """
+
+        Parameters
+        ----------
+        hook :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self.hooks().index(hook)
         except ValueError:
@@ -1015,9 +1792,23 @@ class MacroNode(BranchNode):
 
 ##################################
     def children(self):
+        """ """
         return self.params() + self.hooks()
 
     def insertChild(self, child, row=-1):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+        row :
+             (Default value = -1)
+
+        Returns
+        -------
+
+        """
         child.setParent(self)
         if isinstance(child, MacroNode):
             if row == -1:
@@ -1032,12 +1823,24 @@ class MacroNode(BranchNode):
         return self.rowOfChild(child)
 
     def removeChild(self, child):
+        """
+
+        Parameters
+        ----------
+        child :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(child, MacroNode):
             self._hooks.remove(child)
         elif isinstance(child, ParamNode):
             self._params.insert(child)
 
     def toRun(self):
+        """ """
         values = []
         alert = ""
         for child in self.children():
@@ -1048,11 +1851,13 @@ class MacroNode(BranchNode):
         return values, alert
 
     def toSpockCommand(self):
+        """ """
         values, alerts = self.toRun()
         values = list(map(str, values))
         return "%s %s" % (self.name(), str.join(' ', values))
 
     def value(self):
+        """ """
         values, alerts = self.toRun()
         if len(values) == 0:
             return ''
@@ -1077,11 +1882,13 @@ class MacroNode(BranchNode):
 #        return motors
 
     def allMacros(self):
+        """ """
         macros = self.allDescendants()
         macros.append(self)
         return macros
 
     def allDescendants(self):
+        """ """
         descendantsMacros = []
         ownMacros = []
         for child in self.children():
@@ -1105,13 +1912,29 @@ class MacroNode(BranchNode):
         """This method checks if is is allowed to move macro to grandparent's
         hook list.
         It is enough to check that grandparent exist, cause all parents must
-        allow hooks"""
+        allow hooks
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self.parent().parent() is not None
 
     def moveLeft(self):
         """This method moves macro to grandparent's hook list
         and place it right after its ex-parent,
-        it also returns newRow"""
+        it also returns newRow
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         oldParent = self.parent()
         newParent = oldParent.parent()
         newRow = newParent.hooks().index(oldParent) + 1
@@ -1122,7 +1945,15 @@ class MacroNode(BranchNode):
 
     def isAllowedMoveRight(self):
         """This method is used to check if it is allowed to move macro
-        to it's first following sibling's hook list."""
+        to it's first following sibling's hook list.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         parent = self.parent()
         try:
             return parent.child(parent.rowOfChild(self) + 1).isAllowedHooks()
@@ -1132,7 +1963,15 @@ class MacroNode(BranchNode):
     def moveRight(self):
         """This method is used to move selected macro (pased via index)
         to it's first following sibling's hook list. In tree representation
-        it basically move macro to the right"""
+        it basically move macro to the right
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         parent = self.parent()
         for idx, hook in enumerate(parent.hooks()):
             if hook is self:
@@ -1143,6 +1982,7 @@ class MacroNode(BranchNode):
                 return 0
 
     def isAllowedMoveUp(self):
+        """ """
         parent = self.parent()
         if isinstance(parent, SequenceNode):
             return self is not self.parent().child(0)
@@ -1160,6 +2000,7 @@ class MacroNode(BranchNode):
         return myOldRow - 1
 
     def isAllowedMoveDown(self):
+        """ """
         parent = self.parent()
         return parent.rowOfChild(self) < len(parent) - 1
 
@@ -1172,13 +2013,19 @@ class MacroNode(BranchNode):
         return myOldRow + 1
 
     def toXml(self, withId=True):
-        """
-        Converts MacroNode obj to etree.Element obj.
+        """Converts MacroNode obj to etree.Element obj.
 
-        :param withId: (bool) if we want to export also macro id
-                        (default: True)
+        Parameters
+        ----------
+        withId :
+            bool) if we want to export also macro id
+            (default: True)
+            
+            See Also: fromXml
 
-        See Also: fromXml
+        Returns
+        -------
+
         """
 
         macroElement = etree.Element("macro", name=self.name())
@@ -1198,13 +2045,19 @@ class MacroNode(BranchNode):
         return macroElement
 
     def fromXml(self, xmlElement):
-        """
-        Fills properties of MacroNode obj from etree.Element obj passed
+        """Fills properties of MacroNode obj from etree.Element obj passed
         as a parameter
 
-        :param xmlElement: (etree.Element)
+        Parameters
+        ----------
+        xmlElement :
+            etree.Element)
+            
+            See Also: toXml
 
-        See Also: toXml
+        Returns
+        -------
+
         """
 
         self.setName(xmlElement.get("name"))
@@ -1242,6 +2095,13 @@ class MacroNode(BranchNode):
         """Convert to list representation in format:
         [macro_name, *parameter_values] where complex repeat parameters are
         encapsulated in lists e.g. ['mv', [['mot01', 0], ['mot02', 0]]]
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         list_ = [param.toList() for param in self.params()]
         list_.insert(0, self.name())
@@ -1251,10 +2111,18 @@ class MacroNode(BranchNode):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
         This will allow to pass the parameters to the macroserver.
-        :param values: (list<str>_list<list<str>>). Parameters.
-        It is a list of strings in case of single parameters.
-        In the rest of cases, values are list of objects
-        where the objects can be strings or lists in a recursive mode.
+
+        Parameters
+        ----------
+        values :
+            list<str>_list<list<str>>). Parameters.
+            It is a list of strings in case of single parameters.
+            In the rest of cases, values are list of objects
+            where the objects can be strings or lists in a recursive mode.
+
+        Returns
+        -------
+
         """
         params = self.params()
         for i, val in enumerate(values):
@@ -1275,6 +2143,7 @@ class SequenceNode(BranchNode):
         BranchNode.__init__(self, parent)
 
     def allMacros(self):
+        """ """
         macros = []
         for macro in self.children():
             macros += macro.allDescendants()
@@ -1282,24 +2151,81 @@ class SequenceNode(BranchNode):
         return macros
 
     def upMacro(self, macro):
+        """
+
+        Parameters
+        ----------
+        macro :
+            
+
+        Returns
+        -------
+
+        """
         BranchNode.upChild(self, macro)
 
     def downMacro(self, macro):
+        """
+
+        Parameters
+        ----------
+        macro :
+            
+
+        Returns
+        -------
+
+        """
         BranchNode.downChild(self, macro)
 
     def toXml(self, withId=True):
+        """
+
+        Parameters
+        ----------
+        withId :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         sequenceElement = etree.Element("sequence")
         for child in self.children():
             sequenceElement.append(child.toXml(withId))
         return sequenceElement
 
     def fromXml(self, sequenceElement):
+        """
+
+        Parameters
+        ----------
+        sequenceElement :
+            
+
+        Returns
+        -------
+
+        """
         for childElement in sequenceElement.iterchildren("macro"):
             macro = MacroNode(self)
             macro.fromXml(childElement)
             self.insertChild(macro)
 
     def fromPlainText(self, plainTextMacros, macroInfos):
+        """
+
+        Parameters
+        ----------
+        plainTextMacros :
+            
+        macroInfos :
+            
+
+        Returns
+        -------
+
+        """
         for plainTextMacro, macroInfo in zip(plainTextMacros, macroInfos):
             macro = MacroNode(self, macro_info=macroInfo)
             self.insertChild(macro)
@@ -1332,6 +2258,15 @@ class SequenceNode(BranchNode):
 def ParamFactory(paramInfo):
     """Factory method returning param element, depends of the paramInfo
     argument.
+
+    Parameters
+    ----------
+    paramInfo :
+        
+
+    Returns
+    -------
+
     """
     if isinstance(paramInfo.get('type'), list):
         param = RepeatParamNode(param=paramInfo)
@@ -1346,16 +2281,25 @@ def ParamFactory(paramInfo):
 def createMacroNode(macro_name, params_def, macro_params):
     """Create of the macro node object.
 
-    :param macro_name: (str) macro name
-    :param params_def: (list<dict>) list of param definitions
-    :param macro_params: (sequence[str]) list of parameter values, if repeat
+    Parameters
+    ----------
+    macro_name :
+        str) macro name
+    params_def :
+        list<dict>) list of param definitions
+    macro_params :
+        sequence[str]) list of parameter values, if repeat
         parameters are used parameter values may be sequences itself.
-    :return (MacroNode) macro node object
+        :return (MacroNode) macro node object
+        
+        .. todo:: This method implements exactly the same logic as :meth:
+        `sardana.taurus.core.tango.sardana.macroserver.BaseDoor.
+        _createMacroXmlFromStr`
+        unify them and place in some common location.
 
-    .. todo:: This method implements exactly the same logic as :meth:
-    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor.
-    _createMacroXmlFromStr`
-    unify them and place in some common location.
+    Returns
+    -------
+
     """
     macro_node = MacroNode(name=macro_name, params_def=params_def)
     macro_node.fromList(macro_params)

@@ -24,14 +24,28 @@ synch_description2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
 class PoolDummyTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolSynchronization action and
     the DummTriggerGateController.
-
+    
     Using insertTest decorator, one can add tests of a particular trigger/gate
     characteristic.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         unittest.TestCase.setUp(self)
         pool = FakePool()
@@ -51,7 +65,17 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
 
     def generation(self, synch_description):
         """Verify that the created PoolTGAction start_action starts correctly
-        the involved controller."""
+        the involved controller.
+
+        Parameters
+        ----------
+        synch_description :
+            
+
+        Returns
+        -------
+
+        """
         args = ([self.ctrl_conf], synch_description)
         self.tg_action.start_action(*args)
         self.tg_action.action_loop()
@@ -59,4 +83,5 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         # state changes and verify if the change ON->MOVING-ON was emitted
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)

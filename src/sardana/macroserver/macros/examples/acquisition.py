@@ -33,9 +33,17 @@ from sardana.macroserver.macro import Macro, Type
 class acq_meas_async(Macro):
     """A macro that executes an asynchronous acquisition of a measurement
     group. The acquisition can be cancelled by a Ctrl-C signal.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['meas', Type.MeasurementGroup, None, 'meas. group to be acquired'],
@@ -43,6 +51,19 @@ class acq_meas_async(Macro):
     ]
 
     def run(self, meas, integ_time):
+        """
+
+        Parameters
+        ----------
+        meas :
+            
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         self.info('starting acquisition for: {0}'.format(integ_time))
         meas.putIntegrationTime(integ_time)
         meas.setNbStarts(1)
@@ -62,9 +83,17 @@ class acq_meas_async(Macro):
 class acq_expchannel_async(Macro):
     """A macro that executes an asynchronous acquisition of an experimental
     channel. The acquisition can be cancelled by a Ctrl-C signal.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['channel', Type.ExpChannel, None, 'channel to be acquired'],
@@ -72,6 +101,19 @@ class acq_expchannel_async(Macro):
     ]
 
     def run(self, channel, integ_time):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         self.info('starting acquisition for: {0}'.format(integ_time))
         channel.putIntegrationTime(integ_time)
         id_ = channel.startCount()
@@ -89,9 +131,17 @@ class acq_expchannel_async(Macro):
 class acq_expchannel(Macro):
     """A macro that executes an synchronous acquisition of an experimental
     channel. The acquisition can be cancelled by a Ctrl-C signal.
-
+    
     This macro is part of the examples package. It was written for
-    demonstration purposes"""
+    demonstration purposes
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     param_def = [
         ['channel', Type.ExpChannel, None, 'channel to be acquired'],
@@ -99,6 +149,19 @@ class acq_expchannel(Macro):
     ]
 
     def run(self, channel, integ_time):
+        """
+
+        Parameters
+        ----------
+        channel :
+            
+        integ_time :
+            
+
+        Returns
+        -------
+
+        """
         self.info('starting acquisition for: {0}'.format(integ_time))
         _, value = channel.count(integ_time)
         self.info('acquired value: {0}'.format(value))

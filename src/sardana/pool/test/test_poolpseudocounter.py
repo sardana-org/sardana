@@ -46,6 +46,13 @@ class PseudoCounterTestCase(BasePoolTestCase, TestCase):
         """Simulate acquisition by filling the value buffer of the counters
         and test that the last_value_chunk of the pseudo counter is correctly
         filled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         pc_value_buffer = self.pc.get_value_buffer()
         self.ct1.extend_value_buffer([1., 2., 3.])

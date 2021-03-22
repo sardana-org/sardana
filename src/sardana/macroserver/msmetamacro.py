@@ -52,6 +52,7 @@ MACRO_TEMPLATE = """class @macro_name@(Macro):
     #    pass
 
     def run(self):
+        """ """
         pass
 
 """
@@ -59,6 +60,7 @@ MACRO_TEMPLATE = """class @macro_name@(Macro):
 MACRO_TEMPLATE = """\
 @macro()
 def @macro_name@(self):
+    """ """
     self.output("Running @macro_name@...")
 
 """
@@ -67,7 +69,7 @@ def @macro_name@(self):
 class MacroLibrary(SardanaLibrary):
     """Object representing a python module containing macro classes and/or
     macro functions. Public members:
-
+    
         - module - reference to python module
         - file_path - complete (absolute) path (with file name at the end)
         - file_name - file name (including file extension)
@@ -75,7 +77,15 @@ class MacroLibrary(SardanaLibrary):
         - name - (=module name) module name (without file extension)
         - macros - dict<str, MacroClass>
         - exc_info - exception information if an error occurred when loading
-                    the module"""
+                    the module
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('macro_server')
@@ -83,6 +93,19 @@ class MacroLibrary(SardanaLibrary):
         SardanaLibrary.__init__(self, **kwargs)
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaLibrary.serialize(self, *args, **kwargs)
         kwargs['macro_server'] = self.get_manager().name
         kwargs['id'] = InvalidId
@@ -105,6 +128,7 @@ class MacroLibrary(SardanaLibrary):
 
     @property
     def macros(self):
+        """ """
         ret = {}
         ret.update(self.meta_classes)
         ret.update(self.meta_functions)
@@ -114,28 +138,42 @@ class MacroLibrary(SardanaLibrary):
 class Parameterizable(object):
     """Helper class to handle parameter and result definition for a
     :class:`~sardana.macroserver.msmetamacro.MacroClass` or a
-    :class:`~sardana.macroserver.msmetamacro.MacroFunction`"""
+    :class:`~sardana.macroserver.msmetamacro.MacroFunction`
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def __init__(self):
         self._parameter = self.build_parameter()
         self._result = self.build_result()
 
     def get_parameter_definition(self):
+        """ """
         raise NotImplementedError
 
     def get_result_definition(self):
+        """ """
         raise NotImplementedError
 
     def get_hints_definition(self):
+        """ """
         raise NotImplementedError
 
     def get_parameter(self):
+        """ """
         return self._parameter
 
     def get_result(self):
+        """ """
         return self._result
 
     def build_parameter(self):
+        """ """
         try:
             built_param = self._build_parameter(
                 self.get_parameter_definition())
@@ -144,14 +182,24 @@ class Parameterizable(object):
         return built_param
 
     def build_result(self):
+        """ """
         return self._build_parameter(self.get_result_definition())
 
     def _build_parameter(self, param_def):
-        '''Builds a list of parameters, each of them represented by a dictionary
+        """Builds a list of parameters, each of them represented by a dictionary
         containing information: name, type, default_value, description, min and
         max values. In case of simple parameters, type is the parameter type.
         In case of repeat parameter, type is a list containing its definition.
-        '''
+
+        Parameters
+        ----------
+        param_def :
+            
+
+        Returns
+        -------
+
+        """
         ret = []
         param_def = param_def or ()
         for p in param_def:
@@ -174,6 +222,17 @@ class Parameterizable(object):
         return ret
 
     def build_parameter_info(self, param_def=None):
+        """
+
+        Parameters
+        ----------
+        param_def :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         param_def = param_def or self.get_parameter_definition()
 
         info = [str(len(param_def))]
@@ -196,6 +255,17 @@ class Parameterizable(object):
         return info
 
     def build_result_info(self, result_def=None):
+        """
+
+        Parameters
+        ----------
+        result_def :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         result_def = result_def or self.get_result_definition()
 
         info = [str(len(result_def))]
@@ -218,12 +288,26 @@ class Parameterizable(object):
         return info
 
     def get_info(self):
+        """ """
         info = [self.full_name, self.description, str(self.code_object.hints)]
         info += self.get_parameter_info()
         info += self.get_result_info()
         return info
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs['macro_server'] = self.get_manager().name
         kwargs['id'] = InvalidId
         kwargs['hints'] = self.code_object.hints
@@ -234,6 +318,7 @@ class Parameterizable(object):
 
 
 class MacroClass(SardanaClass, Parameterizable):
+    """ """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('macro_server')
@@ -245,25 +330,43 @@ class MacroClass(SardanaClass, Parameterizable):
         return self.name < o.name
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaClass.serialize(self, *args, **kwargs)
         kwargs = Parameterizable.serialize(self, *args, **kwargs)
         return kwargs
 
     @property
     def macro_class(self):
+        """ """
         return self.klass
 
     def get_parameter_definition(self):
+        """ """
         return self.klass.param_def
 
     def get_result_definition(self):
+        """ """
         return self.klass.result_def
 
     def get_hints_definition(self):
+        """ """
         return self.klass.hints
 
 
 class MacroFunction(SardanaFunction, Parameterizable):
+    """ """
 
     def __init__(self, **kwargs):
         kwargs['manager'] = kwargs.pop('macro_server')
@@ -275,15 +378,30 @@ class MacroFunction(SardanaFunction, Parameterizable):
         return self.name < o.name
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = SardanaFunction.serialize(self, *args, **kwargs)
         kwargs = Parameterizable.serialize(self, *args, **kwargs)
         return kwargs
 
     @property
     def macro_function(self):
+        """ """
         return self.function
 
     def to_parameter_definition(self):
+        """ """
         param_def = []
         args, varargs, keywords, defaults = inspect.getargspec(self.function)
         assert keywords is None
@@ -304,14 +422,17 @@ class MacroFunction(SardanaFunction, Parameterizable):
         return param_def
 
     def get_parameter_definition(self):
+        """ """
         param_def = self.function.param_def
         if param_def is None:
             param_def = self.to_parameter_definition()
         return param_def
 
     def get_result_definition(self):
+        """ """
         result_def = self.function.result_def
         return result_def
 
     def get_hints_definition(self):
+        """ """
         return self.function.hints or ()

@@ -63,12 +63,24 @@ class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def loadEngineModeNames(self, enginemodes):
+        """
+
+        Parameters
+        ----------
+        enginemodes :
+            
+
+        Returns
+        -------
+
+        """
         self.clear()
         self.addItems(enginemodes)
 
 
 @UILoadable(with_ui="_ui")
 class HKLScan(TaurusWidget):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
@@ -86,6 +98,7 @@ class HKLScan(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusWidget.getQtDesignerPluginInfo()
         ret['module'] = 'hklscan'
         ret['group'] = 'Taurus Containers'
@@ -94,6 +107,17 @@ class HKLScan(TaurusWidget):
         return ret
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         if model is not None:
             self.device = taurus.Device(model)
 
@@ -184,11 +208,23 @@ class HKLScan(TaurusWidget):
 
     @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
+        """
+
+        Parameters
+        ----------
+        modename :
+            
+
+        Returns
+        -------
+
+        """
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")
         self.device.write_attribute("enginemode", str(modename))
 
     def start_hklscan(self):
+        """ """
         start_hkl = []
         stop_hkl = []
         start_hkl.append(float(self._ui.lineEditStartH.text()))
@@ -220,9 +256,11 @@ class HKLScan(TaurusWidget):
                 self.door_device.RunMacro(macro_command)
 
     def stop_hklscan(self):
+        """ """
         self.door_device.StopMacro()
 
     def display_angles(self):
+        """ """
 
         xangle = []
         for i in range(0, 6):
@@ -339,6 +377,7 @@ class HKLScan(TaurusWidget):
         w.show()
 
     def open_macroserver_connection_panel(self):
+        """ """
         w = TaurusMacroConfigurationDialog(self)
         Qt.qApp.SDM.connectReader("macroserverName", w.selectMacroServer)
         Qt.qApp.SDM.connectReader("doorName", w.selectDoor)
@@ -350,12 +389,24 @@ class HKLScan(TaurusWidget):
         w.show()
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         if doorName != self.door_device_name:
             self.door_device_name = doorName
             self.door_device = taurus.Device(doorName)
 
 
 def main():
+    """ """
 
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog  <model> [door_name]"

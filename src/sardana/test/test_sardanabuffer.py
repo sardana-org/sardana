@@ -32,6 +32,7 @@ class TestPersistentBuffer(TestCase):
     """Unit tests for Buffer class"""
 
     def setUp(self):
+        """ """
         self.buffer = SardanaBuffer(persistent=True)
         self.buffer.extend([1, 2, 3])
 
@@ -47,6 +48,13 @@ class TestPersistentBuffer(TestCase):
     def test_append(self):
         """Test if append correctly fills the last_chunk as well as permanently
         adds the value to the buffer.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         self.buffer.append(1)
         self.assertEqual(len(self.buffer), 4)

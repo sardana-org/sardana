@@ -34,10 +34,10 @@ CT_NAME1, CT_NAME2 = getCTs()[:2]
 
 
 class ExpertTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for some of the expert macros.
-    """
+    """Test case for some of the expert macros."""
 
     def test_expert(self):
+        """ """
         CTRL_NAME = "unittestmotctrl01"
         MOT_NAME1 = "unittestmot01"
         MOT_NAME2 = "unittestmot02"
@@ -68,10 +68,10 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
 
 
 class MeasTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for measurement group related expert macros.
-    """
+    """Test case for measurement group related expert macros."""
     @unittest.skip("skip test until issue #57 is fixed")
     def test_meas(self):
+        """ """
         MNTGRP_NAME = "unittestmntgrp01"
         try:
             self.macro_runs(macro_name="defmeas",
@@ -105,14 +105,12 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
 @testRun(macro_name="relmaclib", macro_params=["standard"], wait_timeout=1)
 @testRun(macro_name="relmac", macro_params=["wa"], wait_timeout=1)
 class MacroTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for macro related expert macros.
-    """
+    """Test case for macro related expert macros."""
 
 
 @testRun(macro_params=["wa"], wait_timeout=1)
 @testRun(macro_params=[CTRL_NAME1], wait_timeout=1)
 @testRun(macro_params=[CT_NAME1], wait_timeout=1)
 class SarinfoTest(RunMacroTestCase, unittest.TestCase):
-    """Test case for send2ctrl macro.
-    """
+    """Test case for send2ctrl macro."""
     macro_name = "sar_info"

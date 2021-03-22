@@ -56,7 +56,19 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor import \
 
 
 def get_spock_profile_dir(profile):
-    """Return the path to the profile with the given name."""
+    """
+
+    Parameters
+    ----------
+    profile :
+        
+
+    Returns
+    -------
+    type
+        
+
+    """
     try:
         profile_dir = ProfileDir.find_profile_dir_by_name(
             get_ipython_dir(), profile)
@@ -66,7 +78,17 @@ def get_spock_profile_dir(profile):
 
 
 def check_spock_profile(profile):
-    """Check if the profile exists and has the correct value"""
+    """Check if the profile exists and has the correct value
+
+    Parameters
+    ----------
+    profile :
+        
+
+    Returns
+    -------
+
+    """
     profile_dir = get_spock_profile_dir(profile)
     if profile_dir:
         profile_version_str, door_name = get_profile_metadata(profile_dir)
@@ -76,22 +98,41 @@ def check_spock_profile(profile):
 
 
 class SpockKernelManager(QtKernelManager):
-    """
-    A kernel manager that checks the spock profile before starting a kernel.
-
+    """A kernel manager that checks the spock profile before starting a kernel.
+    
     .. note::
         The `SpockKernelManager` class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
-
+    
     If the check fails, i.e., the profile does not exist or has a different
     version, an ipython kernel without spock functionality is started instead
     and the attribute `valid_spock_profile` is set to `False`.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     kernel_about_to_launch = Qt.pyqtSignal()
 
     def _launch_kernel(self, kernel_cmd, **kw):
+        """
+
+        Parameters
+        ----------
+        kernel_cmd :
+            
+        **kw :
+            
+
+        Returns
+        -------
+
+        """
         try:
             profile = kernel_cmd[kernel_cmd.index("--profile") + 1]
         except ValueError:
@@ -115,34 +156,33 @@ class SpockKernelManager(QtKernelManager):
 
 class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     """A RichJupyterWidget that starts a kernel with a spock profile.
-
+    
     .. note::
         The `QtSpockWidget` class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
-
+    
     It is important to call `shutdown_kernel` to gracefully clean up the
     started subprocesses.
-
+    
     Useful methods of the base class include execute, interrupt_kernel,
     restart_kernel, and clear.
 
-    :param profile:
+    Parameters
+    ----------
+    profile : str
         The name of the spock profile to use. The default is 'spockdoor'.
-    :type profile: str
-    :param kernel:
+    kernel : str
         The name of the kernel to use. The default is 'python3'.
-    :type  kernel: str
-    :param use_model_from_profile:
+    use_model_from_profile : bool
         If true, the door name is taken from the spock profile, otherwise it
         has to be set via setModel.
-    :type use_model_from_profile: bool
-    :param kwargs:
+    kwargs :
         All remaining keywords are passed to the RichJupyterWidget base class
-
-    Examples::
-
+        
+        Examples::
+        
         from taurus.external.qt import Qt
         from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget
         app = Qt.QApplication(["qtspock"])
@@ -151,6 +191,10 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         widget.start_kernel()
         app.aboutToQuit.connect(widget.shutdown_kernel)
         app.exec_()
+
+    Returns
+    -------
+
     """
     def __init__(
             self,
@@ -189,9 +233,16 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
     def start_kernel(self):
         """Start the kernel
-
+        
         A normal IPython kernel is started if no model is set via `setModel` or
         `use_model_from_profile`.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if not self.kernel_manager.has_kernel:
             self.kernel_manager.start_kernel(
@@ -201,6 +252,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self.kernel_client = kernel_client
 
     def _extra_arguments(self):
+        """ """
         extra_arguments = ["--profile", self._profile]
         for ext in self._extensions:
             extra_arguments.extend(["--ext", ext])
@@ -225,9 +277,18 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
     def setModel(self, door):
         """Set a door as the model
-
+        
         An empty string or None will start a normal IPython kernel without
         spock functionality.
+
+        Parameters
+        ----------
+        door :
+            
+
+        Returns
+        -------
+
         """
         old_door_name = self._door_name
         old_macroserver_name = self._macro_server_name
@@ -247,9 +308,21 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self.start_kernel()
 
     def getModel(self):
+        """ """
         return self._door_name
 
     def _set_door_name(self, door):
+        """
+
+        Parameters
+        ----------
+        door :
+            
+
+        Returns
+        -------
+
+        """
         if door:
             full_door_tg_name, door_tg_name, door_tg_alias = (
                 from_name_to_tango(door))
@@ -261,6 +334,17 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self._door_alias = None
 
     def _set_macro_server_name(self, door):
+        """
+
+        Parameters
+        ----------
+        door :
+            
+
+        Returns
+        -------
+
+        """
         if door:
             macro_server = get_macroserver_for_door(door)
             full_ms_tg_name, ms_tg_name, ms_tg_alias = (
@@ -273,11 +357,23 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self._macro_server_alias = None
 
     def _set_prompts(self):
+        """ """
         var = "get_ipython().config.Spock.door_alias"
         self._silent_exec_callback(
             var, self._set_prompts_callback)
 
     def _set_prompts_callback(self, msg):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+
+        Returns
+        -------
+
+        """
         in_prefix = 'In'
         if msg['status'] == 'ok':
             output_bytes = msg['data']['text/plain']
@@ -295,6 +391,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             'Result [<span class="out-prompt-number">%i</span>]:')
 
     def _print_ipython_warning(self):
+        """ """
         if self.use_model_from_profile or self._extra_arguments():
             self.append_stream(
                 "\nSpock profile error: please run spock in the terminal"
@@ -307,29 +404,44 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             "Spock functionality is not available.\n")
 
     def runMacro(self, macro_node):
+        """
+
+        Parameters
+        ----------
+        macro_node :
+            
+
+        Returns
+        -------
+
+        """
         self.execute(macro_node.toSpockCommand())
 
     # Adapted from
     # https://github.com/moble/remote_exec/blob/master/remote_exec.py#L61
     def get_value(self, var, timeout=None):
         """Retrieve a value from the user namespace through a blocking call.
-
+        
         The value must be able to be pickled on the kernel side and unpickled
         on the frontend side.
-
+        
         The command will import the pickle module in the user namespace. This
         may overwrite a user defined variable with the same name.
 
-        :param var:
+        Parameters
+        ----------
+        var : str
             The name of the variable to be retrieved
-        :type var:  str
-        :param timeout:
+        timeout : int or None
             Number of seconds to wait for reply. If no reply is recieved, a
             `Queue.Empty` exception is thrown. The default is to wait
             indefinitely
-        :type timeout:  int or None
-        :return:
+
+        Returns
+        -------
+        type
             The value of the variable from the user namespace
+
         """
         pickle_dumps = 'pickle.dumps({})'.format(var)
         msg_id = self.blocking_client.execute(
@@ -356,10 +468,22 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self.kernel_manager.shutdown_kernel()
 
     def _handle_kernel_lauched(self):
+        """ """
         if self.kernel_client:
             self.kernel_client.kernel_info()
 
     def _handle_kernel_info_reply(self, rep):
+        """
+
+        Parameters
+        ----------
+        rep :
+            
+
+        Returns
+        -------
+
+        """
         self._set_prompts()
         is_starting = self._starting
         super()._handle_kernel_info_reply(rep)
@@ -373,12 +497,19 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
 class QtSpock(TaurusMainWindow):
     """A standalone QtSpock window
-
+    
     .. note::
         The `QtSpock` class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including its removal) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
     def __init__(self, parent=None, designMode=False):
         super().__init__(parent, designMode)
@@ -392,6 +523,7 @@ class QtSpock(TaurusMainWindow):
         self.loadSettings()
 
     def createConfigureAction(self):
+        """ """
         configureAction = Qt.QAction(getThemeIcon(
             "preferences-system-session"), "Change configuration", self)
         configureAction.triggered.connect(self.changeConfiguration)
@@ -402,7 +534,15 @@ class QtSpock(TaurusMainWindow):
     def changeConfiguration(self):
         """This method is used to change macroserver as a model of application.
            It shows dialog with list of all macroservers on tango host, if the
-           user Cancel dialog it doesn't do anything."""
+           user Cancel dialog it doesn't do anything.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         dialog = TaurusMacroConfigurationDialog(
             self, self.spockWidget._macro_server_name,
             self.modelName)
@@ -413,6 +553,7 @@ class QtSpock(TaurusMainWindow):
 
 
 def main():
+    """ """
     from taurus.qt.qtgui.application import TaurusApplication
     app = TaurusApplication()
     app.setOrganizationName("Taurus")

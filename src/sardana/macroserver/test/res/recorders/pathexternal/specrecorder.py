@@ -27,6 +27,6 @@ from sardana.macroserver.scan.recorder import BaseFileRecorder
 
 
 class SPEC_FileRecorder(BaseFileRecorder):
-    """ Saves data to a file """
+    """Saves data to a file"""
 
     formats = {'Spec': '.spec'}

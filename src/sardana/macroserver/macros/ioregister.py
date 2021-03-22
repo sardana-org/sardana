@@ -41,6 +41,19 @@ class write_ioreg(Macro):
     ]
 
     def run(self, ioreg, data):
+        """
+
+        Parameters
+        ----------
+        ioreg :
+            
+        data :
+            
+
+        Returns
+        -------
+
+        """
         name = ioreg.getName()
         o = "Writing " + str(data) + " to " + name + " register "
         self.debug(o)
@@ -60,6 +73,17 @@ class read_ioreg(Macro):
     ]
 
     def run(self, ioreg):
+        """
+
+        Parameters
+        ----------
+        ioreg :
+            
+
+        Returns
+        -------
+
+        """
         name = ioreg.getName()
         data = ioreg.readIORegister(force=True)
         data = float(data)

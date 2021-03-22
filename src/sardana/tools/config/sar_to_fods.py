@@ -6,6 +6,17 @@ from lxml import etree
 
 
 def transform(f):
+    """
+
+    Parameters
+    ----------
+    f :
+        
+
+    Returns
+    -------
+
+    """
     t = etree.XSLT(etree.parse("SAR_TO_FODS.xslt"))
     if isinstance(f, str):
         doc = etree.parse(f)
@@ -15,6 +26,7 @@ def transform(f):
 
 
 def main():
+    """ """
     filename = sys.argv[1]
     t = transform(filename)
     print(etree.tostring(t, pretty_print=True))

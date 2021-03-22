@@ -40,14 +40,27 @@ __CTRL_VALUE_TRANSLATORS = {}
 
 
 class CannotTranslateException(Exception):
+    """ """
 
     def __init__(self, *args, **kwargs):
         super(CannotTranslateException, self).__init__(*args, **kwargs)
 
 
 class BaseControllerTranslator(object):
+    """ """
 
     def translate(self, value):
+        """
+
+        Parameters
+        ----------
+        value :
+            
+
+        Returns
+        -------
+
+        """
         raise CannotTranslateException
 
     def __call__(self, value):
@@ -55,14 +68,31 @@ class BaseControllerTranslator(object):
 
 
 class ControllerValueTranslator(BaseControllerTranslator):
+    """ """
     pass
 
 
 class ControllerStateTranslator(BaseControllerTranslator):
+    """ """
     pass
 
 
 def register_controller_value_translator(klass, *args, **kwargs):
+    """
+
+    Parameters
+    ----------
+    klass :
+        
+    *args :
+        
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     if not issubclass(klass, ControllerValueTranslator):
         raise Exception("Cannot register controller value translator. "
                         "Class must inherit from ControllerValueTranslator")
@@ -70,6 +100,21 @@ def register_controller_value_translator(klass, *args, **kwargs):
 
 
 def register_controller_state_translator(klass, *args, **kwargs):
+    """
+
+    Parameters
+    ----------
+    klass :
+        
+    *args :
+        
+    **kwargs :
+        
+
+    Returns
+    -------
+
+    """
     if not issubclass(klass, ControllerStateTranslator):
         raise Exception("Cannot register controller value translator. "
                         "Class must inherit from ControllerStateTranslator")
@@ -77,6 +122,17 @@ def register_controller_state_translator(klass, *args, **kwargs):
 
 
 def translate_ctrl_value(value):
+    """
+
+    Parameters
+    ----------
+    value :
+        
+
+    Returns
+    -------
+
+    """
     if isinstance(value, SardanaValue):
         return value
 

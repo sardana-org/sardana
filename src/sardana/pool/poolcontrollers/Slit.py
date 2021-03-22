@@ -36,7 +36,15 @@ from sardana.pool.controller import DefaultValue, Description, Access, Type
 class Slit(PseudoMotorController):
     """A Slit pseudo motor controller for handling gap and offset pseudo
        motors. The system uses to real motors sl2t (top slit) and sl2b (bottom
-       slit)"""
+       slit)
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     gender = "Slit"
     model = "Default Slit"
@@ -59,6 +67,21 @@ class Slit(PseudoMotorController):
         self._example = {}
 
     def CalcPhysical(self, index, pseudo_pos, curr_physical_pos):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        pseudo_pos :
+            
+        curr_physical_pos :
+            
+
+        Returns
+        -------
+
+        """
         half_gap = pseudo_pos[0] / 2
         if index == 1:
             ret = self.sign * (pseudo_pos[1] + half_gap)
@@ -69,6 +92,21 @@ class Slit(PseudoMotorController):
         return ret
 
     def CalcPseudo(self, index, physical_pos, curr_pseudo_pos):
+        """
+
+        Parameters
+        ----------
+        index :
+            
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         gap = physical_pos[1] + physical_pos[0]
         if index == 1:
             ret = self.sign * gap
@@ -78,7 +116,19 @@ class Slit(PseudoMotorController):
 
     def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
         """Calculates the positions of all pseudo motors that belong to the
-           pseudo motor system from the positions of the physical motors."""
+           pseudo motor system from the positions of the physical motors.
+
+        Parameters
+        ----------
+        physical_pos :
+            
+        curr_pseudo_pos :
+            
+
+        Returns
+        -------
+
+        """
         gap = physical_pos[1] + physical_pos[0]
         return (self.sign * gap,
                 self.sign * (physical_pos[0] - gap / 2))
@@ -91,7 +141,35 @@ class Slit(PseudoMotorController):
     #            self.sign * (half_gap - pseudo_pos[1]))
 
     def SetAxisExtraPar(self, axis, parameter, value):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._example[axis] = value
 
     def GetAxisExtraPar(self, axis, parameter):
+        """
+
+        Parameters
+        ----------
+        axis :
+            
+        parameter :
+            
+
+        Returns
+        -------
+
+        """
         return self._example.get(axis, -1)

@@ -37,6 +37,7 @@ from sardana.taurus.qt.qtcore.tango.sardana.model import \
 
 
 class SardanaElementTreeWidget(TaurusBaseTreeWidget):
+    """ """
 
     KnownPerspectives = {"Type": {
         "label": "By type",
@@ -48,10 +49,12 @@ class SardanaElementTreeWidget(TaurusBaseTreeWidget):
     DftPerspective = "Type"
 
     def getModelClass(self):
+        """ """
         return TaurusDevice
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         ret = TaurusBaseTreeWidget.getQtDesignerPluginInfo()
         ret['module'] = 'taurus.qt.qtgui.extra_sardana'
         ret['group'] = 'Taurus Sardana'
@@ -60,6 +63,17 @@ class SardanaElementTreeWidget(TaurusBaseTreeWidget):
 
 
 def main_SardanaTreeWidget(device):
+    """
+
+    Parameters
+    ----------
+    device :
+        
+
+    Returns
+    -------
+
+    """
     w = SardanaElementTreeWidget(with_navigation_bar=True)
     w.setWindowTitle("Sardana browser - " + device)
     w.setModel(device)
@@ -69,12 +83,23 @@ def main_SardanaTreeWidget(device):
 
 
 def demo(device="V3"):
-    """"""
+    """
+
+    Parameters
+    ----------
+    device :
+         (Default value = "V3")
+
+    Returns
+    -------
+
+    """
     w = main_SardanaTreeWidget(device)
     return w
 
 
 def main():
+    """ """
     import sys
     import taurus.qt.qtgui.application
     Application = taurus.qt.qtgui.application.TaurusApplication

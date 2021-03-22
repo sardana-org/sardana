@@ -44,16 +44,51 @@ import collections
 
 
 def _dbm_gnu(filename):
+    """
+
+    Parameters
+    ----------
+    filename :
+        
+
+    Returns
+    -------
+
+    """
     import dbm.gnu
     return dbm.gnu.open(filename, "c")
 
 
 def _dbm_dumb(filename):
+    """
+
+    Parameters
+    ----------
+    filename :
+        
+
+    Returns
+    -------
+
+    """
     import dbm.dumb
     return dbm.dumb.open(filename, "c")
 
 
 def _create_dbm(filename, backend):
+    """
+
+    Parameters
+    ----------
+    filename :
+        
+    backend :
+        
+
+    Returns
+    -------
+
+    """
     if backend is None:
         try:
             return _dbm_gnu(filename)
@@ -70,6 +105,13 @@ def _create_dbm(filename, backend):
 class EnvironmentManager(MacroServerManager):
     """The MacroServer environment manager class. It is designed to be a
     singleton for the entire application.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, macro_server, environment_db=None):
@@ -115,6 +157,7 @@ class EnvironmentManager(MacroServerManager):
         MacroServerManager.reInit(self)
 
     def cleanUp(self):
+        """ """
         if self.is_cleaned():
             return
 
@@ -123,14 +166,26 @@ class EnvironmentManager(MacroServerManager):
         MacroServerManager.cleanUp(self)
 
     def _initEnv(self):
+        """ """
         self._macro_env, self._global_env = {}, {}
         self._door_env = CaselessDict()
 
     def _clearEnv(self):
+        """ """
         self._env = self._macro_env = self._global_env = self._door_env = None
 
     def setEnvironmentDb(self, f_name):
-        """Sets up a new environment from a file"""
+        """Sets up a new environment from a file
+
+        Parameters
+        ----------
+        f_name :
+            
+
+        Returns
+        -------
+
+        """
         self._initEnv()
         f_name = os.path.abspath(f_name)
         self._env_name = f_name
@@ -170,6 +225,17 @@ class EnvironmentManager(MacroServerManager):
             self.debug("Details:", exc_info=1)
 
     def _fillEnvironmentCaches(self, env):
+        """
+
+        Parameters
+        ----------
+        env :
+            
+
+        Returns
+        -------
+
+        """
         # fill the three environment caches
         env_dict = self._global_env
         for k, v in list(env.items()):
@@ -191,6 +257,21 @@ class EnvironmentManager(MacroServerManager):
                 env_dict[key] = v
 
     def hasEnv(self, key, macro_name=None, door_name=None):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        macro_name :
+             (Default value = None)
+        door_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         #<door>.<macro>.<property name> (highest priority)
         if macro_name and door_name:
             has = self._hasDoorMacroPropertyEnv((door_name, macro_name, key))
@@ -214,7 +295,17 @@ class EnvironmentManager(MacroServerManager):
 
     def _getDoorMacroPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
-        format <door name>.<macro name>.<property name>"""
+        format <door name>.<macro name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(prop, str):
             door_name, macro_name_key = prop.split('.', 1)
         else:
@@ -226,12 +317,32 @@ class EnvironmentManager(MacroServerManager):
 
     def _hasDoorMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
-        <door name>.<macro name>.<property name>"""
+        <door name>.<macro name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         return not self._getDoorMacroPropertyEnv(prop) is None
 
     def _getMacroPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
-        format <macro name>.<property name>"""
+        format <macro name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(prop, str):
             macro_name, key = prop.split('.')
         else:
@@ -243,12 +354,32 @@ class EnvironmentManager(MacroServerManager):
 
     def _hasMacroPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
-        <macro name>.<property name>"""
+        <macro name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         return not self._getMacroPropertyEnv(prop) is None
 
     def _getDoorPropertyEnv(self, prop):
         """Returns the property value for a property which must have the
-        format <door name>.<property name>"""
+        format <door name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(prop, str):
             door_name, key = prop.split('.')
         else:
@@ -260,17 +391,47 @@ class EnvironmentManager(MacroServerManager):
 
     def _hasDoorPropertyEnv(self, prop):
         """Determines if the environment contains a property with the format
-        <door name>.<property name>"""
+        <door name>.<property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         return not self._getDoorPropertyEnv(prop) is None
 
     def _getEnv(self, prop):
         """Returns the property value for a property which must have the
-        format <property name>"""
+        format <property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         return self._global_env.get(prop)
 
     def _hasEnv(self, prop):
         """Determines if the environment contains a property with the format
-        <property name>"""
+        <property name>
+
+        Parameters
+        ----------
+        prop :
+            
+
+        Returns
+        -------
+
+        """
         return not self._getEnv(prop) is None
 
     def getEnv(self, key=None, door_name=None, macro_name=None):
@@ -278,7 +439,20 @@ class EnvironmentManager(MacroServerManager):
         - If key is None it returns the complete environment for the given
           macro and/or door. If both are None the the complete environment is
           returned
-          @param[in]"""
+
+        Parameters
+        ----------
+        key :
+             (Default value = None)
+        door_name :
+             (Default value = None)
+        macro_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if key is None:
             return self._getAllEnv(door_name=door_name, macro_name=macro_name)
 
@@ -308,7 +482,19 @@ class EnvironmentManager(MacroServerManager):
 
     def _getAllEnv(self, door_name=None, macro_name=None):
         """Gets the complete environment for the given macro and/or door. If
-        both are None the the complete environment is returned"""
+        both are None the the complete environment is returned
+
+        Parameters
+        ----------
+        door_name :
+             (Default value = None)
+        macro_name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if macro_name is None and door_name is None:
             return dict(self._env)
         elif not door_name is None and macro_name is None:
@@ -319,7 +505,17 @@ class EnvironmentManager(MacroServerManager):
             return self._macro_env.get(macro_name, {})
 
     def getAllDoorEnv(self, door_name):
-        """Gets the complete environment for the given door."""
+        """Gets the complete environment for the given door.
+
+        Parameters
+        ----------
+        door_name :
+            
+
+        Returns
+        -------
+
+        """
         door_name = door_name.lower()
 
         # first go through the global environment
@@ -333,12 +529,19 @@ class EnvironmentManager(MacroServerManager):
         """Gets the complete environment for the given macro in a specific
         door.
 
-        :param door_name:  the door name (case insensitive)
-        :type door_name: :obj:`str`
-        :param macro_name: the macro name
-        :type macro_name: :obj:`str`
+        Parameters
+        ----------
+        door_name : obj:`str`
+            the door name (case insensitive)
+        macro_name : obj:`str`
+            the macro name
 
-        :return: a dictionary with the resulting environment"""
+        Returns
+        -------
+        type
+            a dictionary with the resulting environment
+
+        """
         door_name = door_name.lower()
 
         # first go through the global environment
@@ -371,14 +574,26 @@ class EnvironmentManager(MacroServerManager):
         """Gets the environment for the given macro in a specific door for the
         given key(s)
 
-        :param door_name: the door name (case insensitive)
-        :param macro_name: the macro name (case sensitive)
-        :param key: the keys to be retrieved. If None (default) the complete
-                    environment is returned (same as getAllDoorMacroEnv)
-                    key can be a string or a sequence<string>.
-                    keys must NOT contain '.' characters
+        Parameters
+        ----------
+        door_name :
+            the door name (case insensitive)
+        macro_name :
+            the macro name (case sensitive)
+        key :
+            the keys to be retrieved. If None (default) the complete
+            environment is returned (same as getAllDoorMacroEnv)
+            key can be a string or a sequence<string>.
+            keys must NOT contain '.' characters
+        keys :
+             (Default value = None)
 
-        :return: a dictionary with the resulting environment"""
+        Returns
+        -------
+        type
+            a dictionary with the resulting environment
+
+        """
         if keys is None:
             return self.getAllDoorMacroEnv(door_name, macro_name)
 
@@ -409,14 +624,47 @@ class EnvironmentManager(MacroServerManager):
         return ret
 
     def _grouper(self, iterable):
+        """
+
+        Parameters
+        ----------
+        iterable :
+            
+
+        Returns
+        -------
+
+        """
         # https://docs.python.org/3/library/itertools.html#itertools-recipes
         args = [iter(iterable)] * 2
         return zip_longest(*args)
 
     def _dictFromSequence(self, seq):
+        """
+
+        Parameters
+        ----------
+        seq :
+            
+
+        Returns
+        -------
+
+        """
         return dict(self._grouper(seq))
 
     def _encode(self, d):
+        """
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         ret = {}
         for k, v in d.items():
             if isinstance(v, str):
@@ -434,10 +682,19 @@ class EnvironmentManager(MacroServerManager):
     def _getCacheForKey(self, key):
         """Returns the cache dictionary object for the given key
 
-        :param key: a string representing the key
-        :return: a tuple pair. The first element is the dictionary and the
-                 second is the modified key that is applicable to the
-                 dictionary"""
+        Parameters
+        ----------
+        key :
+            a string representing the key
+
+        Returns
+        -------
+        type
+            a tuple pair. The first element is the dictionary and the
+            second is the modified key that is applicable to the
+            dictionary
+
+        """
         d = None
         key_parts = key.split('.')
         # global property
@@ -458,12 +715,36 @@ class EnvironmentManager(MacroServerManager):
         return d, key
 
     def _setOneEnv(self, key, value):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._env[key] = value
         self._env.sync()
         d, key = self._getCacheForKey(key)
         d[key] = value
 
     def _unsetOneEnv(self, key):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+
+        Returns
+        -------
+
+        """
         if key not in self._env:
             raise UnknownEnv("Unknown environment %s" % key)
         del self._env[key]
@@ -473,6 +754,17 @@ class EnvironmentManager(MacroServerManager):
             del d[key]
 
     def _unsetEnv(self, env_names):
+        """
+
+        Parameters
+        ----------
+        env_names :
+            
+
+        Returns
+        -------
+
+        """
         for key in env_names:
             self._unsetOneEnv(key)
 
@@ -482,12 +774,20 @@ class EnvironmentManager(MacroServerManager):
         If object is a map then the environmnent is updated.
         Other object types are not supported
         The elements which are strings are 'python evaluated'
-
+        
         @throws TypeError is obj is not a sequence or a map
 
-        @param[in] obj object to be added to the environment
+        Parameters
+        ----------
+        obj :
+            
 
-        @return a dict representing the added environment"""
+        Returns
+        -------
+        type
+            a dict representing the added environment
+
+        """
 
         if isinstance(obj, collections.Sequence) and \
            not isinstance(obj, str):
@@ -504,18 +804,36 @@ class EnvironmentManager(MacroServerManager):
         """Sets the environment key to the new value and stores it
         persistently.
 
-        :param key: the key for the environment
-        :param value: the value for the environment
+        Parameters
+        ----------
+        key :
+            the key for the environment
+        value :
+            the value for the environment
 
-        :return: a tuple with the key and value objects stored"""
+        Returns
+        -------
+        type
+            a tuple with the key and value objects stored
+
+        """
         ret = self.setEnvObj((key, value))
         return key, ret[key]
 
     def unsetEnv(self, key):
         """Unsets the environment for the given key.
 
-        :param key: the key for the environment to be unset
-        :return: the sequence of keys which have been removed"""
+        Parameters
+        ----------
+        key :
+            the key for the environment to be unset
+
+        Returns
+        -------
+        type
+            the sequence of keys which have been removed
+
+        """
         if isinstance(key, str):
             key = (key,)
         self._unsetEnv(key)

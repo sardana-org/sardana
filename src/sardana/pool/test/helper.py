@@ -50,8 +50,19 @@ from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup, \
 
 
 def createPoolController(pool, conf):
-    '''Method to create a PoolController using a configuration dictionary
-    '''
+    """Method to create a PoolController using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
 
     ctrl_manager = pool.ctrl_manager
@@ -89,8 +100,21 @@ def createPoolController(pool, conf):
 
 
 def createPoolCounterTimer(pool, poolcontroller, conf):
-    '''Method to create a PoolCounterTimer using a configuration dictionary
-    '''
+    """Method to create a PoolCounterTimer using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -100,8 +124,21 @@ def createPoolCounterTimer(pool, poolcontroller, conf):
 
 
 def createPoolZeroDExpChannel(pool, poolcontroller, conf):
-    '''Method to create a ZeroDExpChannel using a configuration dictionary
-    '''
+    """Method to create a ZeroDExpChannel using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -109,8 +146,21 @@ def createPoolZeroDExpChannel(pool, poolcontroller, conf):
 
 
 def createPoolTwoDExpChannel(pool, poolcontroller, conf):
-    '''Method to create a ZeroDExpChannel using a configuration dictionary
-    '''
+    """Method to create a ZeroDExpChannel using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -118,8 +168,21 @@ def createPoolTwoDExpChannel(pool, poolcontroller, conf):
 
 
 def createPoolTriggerGate(pool, poolcontroller, conf):
-    '''Method to create a PoolTriggerGate using a configuration dictionary
-    '''
+    """Method to create a PoolTriggerGate using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -127,8 +190,21 @@ def createPoolTriggerGate(pool, poolcontroller, conf):
 
 
 def createPoolMotor(pool, poolcontroller, conf):
-    '''Method to create a PoolMotor using a configuration dictionary
-    '''
+    """Method to create a PoolMotor using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -136,8 +212,23 @@ def createPoolMotor(pool, poolcontroller, conf):
 
 
 def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
-    '''Method to create a PoolPseudoCounter using a configuration dictionary
-    '''
+    """Method to create a PoolPseudoCounter using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+    elements :
+         (Default value = ())
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -146,8 +237,23 @@ def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
 
 
 def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
-    '''Method to create a PoolPseudoMotor using a configuration dictionary
-    '''
+    """Method to create a PoolPseudoMotor using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    poolcontroller :
+        
+    conf :
+        
+    elements :
+         (Default value = ())
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
@@ -156,8 +262,19 @@ def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
 
 
 def createPoolMeasurementGroup(pool, conf):
-    '''Method to create a PoolMeasurementGroup using a configuration dictionary
-    '''
+    """Method to create a PoolMeasurementGroup using a configuration dictionary
+
+    Parameters
+    ----------
+    pool :
+        
+    conf :
+        
+
+    Returns
+    -------
+
+    """
     kwargs = copy.deepcopy(conf)
     id = kwargs.get('id')
     if id is None:
@@ -167,6 +284,19 @@ def createPoolMeasurementGroup(pool, conf):
 
 
 def createControllerConfiguration(pool_ctrl, pool_channels):
+    """
+
+    Parameters
+    ----------
+    pool_ctrl :
+        
+    pool_channels :
+        
+
+    Returns
+    -------
+
+    """
     conf_ctrl = ControllerConfiguration(pool_ctrl)
     for pool_channel in pool_channels:
         channel = ChannelConfiguration(pool_channel)
@@ -176,6 +306,19 @@ def createControllerConfiguration(pool_ctrl, pool_channels):
 
 
 def createTimerableControllerConfiguration(pool_ctrl, pool_channels):
+    """
+
+    Parameters
+    ----------
+    pool_ctrl :
+        
+    pool_channels :
+        
+
+    Returns
+    -------
+
+    """
     conf_ctrl = createControllerConfiguration(pool_ctrl, pool_channels)
     channel = conf_ctrl.get_channels(enabled=True)[0]
     conf_ctrl.timer = channel
@@ -184,19 +327,24 @@ def createTimerableControllerConfiguration(pool_ctrl, pool_channels):
 
 
 def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
-    '''Method to create CTAcquisition configuration. Order of the sequences is
+    """Method to create CTAcquisition configuration. Order of the sequences is
     important. For all sequences, the element of a given position refers
     the same controller.
 
-    :param ctrls: sequence of the controllers used by the action
-    :type ctrls: seq<sardana.pool.PoolController>
-    :param ctrl_channels: sequence of the sequences of the channels
-    corresponding to the controllers
-    :type ctrl_channels: seq<seq<sardana.pool.PoolCounterTimer>>
+    Parameters
+    ----------
+    ctrls : seq<sardana.pool.PoolController>
+        sequence of the controllers used by the action
+    ctrl_channels : seq<seq<sardana.pool.PoolCounterTimer>>
+        sequence of the sequences of the channels
+        corresponding to the controllers
 
-    :return: a configuration dictionary
-    :rtype: dict<>
-    '''
+    Returns
+    -------
+    dict<>
+        a configuration dictionary
+
+    """
 
     master_ctrl_idx = 0
     master_idx = 0
@@ -225,20 +373,27 @@ def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
 
 
 def createMGUserConfiguration(pool, channels):
-    '''Method to create MeasurementGroup configuration using strings.
+    """Method to create MeasurementGroup configuration using strings.
 
+    Parameters
+    ----------
+    channels : seq<seq<tuple(str)>>
+        Each tuple: (expchan, associated_trigger, synchronization)
+        First element of the list of lists is the master
+        counter/timer.
+        First element of each list is the master counter/timer
+        from the controller.
+    pool :
+        
 
-    :param channels: Each tuple: (expchan, associated_trigger, synchronization)
-                    First element of the list of lists is the master
-                    counter/timer.
-                    First element of each list is the master counter/timer
-                    from the controller.
-    :type channels: seq<seq<tuple(str)>>
-    :return: a tuple of three elements: measurement group configuration
-             dictionary of strings, sequence of channel ids, sequence of channel
-             names
-    :rtype: tupe(dict<>, seq<int>, seq<string>
-    '''
+    Returns
+    -------
+    tupe(dict<>, seq<int>, seq<string>
+        a tuple of three elements: measurement group configuration
+        dictionary of strings, sequence of channel ids, sequence of channel
+        names
+
+    """
 
     channel_ids = []
     channel_names = []
@@ -285,6 +440,21 @@ def createMGUserConfiguration(pool, channels):
 
 
 def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+    ctrl_klass :
+        
+    ctrl_name :
+        
+
+    Returns
+    -------
+
+    """
     pool_mng = pool.get_manager()
     klass = ctrl_klass
     meta = pool_mng.getControllerMetaClass(klass)
@@ -311,6 +481,25 @@ def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
 
 
 def createCtrlConf(pool, name, klass, lib, props={}):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+    name :
+        
+    klass :
+        
+    lib :
+        
+    props :
+         (Default value = {})
+
+    Returns
+    -------
+
+    """
     cfg = dict({'class_info': None,
                 'full_name': None,
                 'id': None,
@@ -330,6 +519,21 @@ def createCtrlConf(pool, name, klass, lib, props={}):
 
 
 def createElemConf(pool, axis, name):
+    """
+
+    Parameters
+    ----------
+    pool :
+        
+    axis :
+        
+    name :
+        
+
+    Returns
+    -------
+
+    """
     cfg = dict({'axis': None,
                 'ctrl': None,
                 'full_name': '',
@@ -343,6 +547,17 @@ def createElemConf(pool, axis, name):
 
 
 def createConfFromObj(obj):
+    """
+
+    Parameters
+    ----------
+    obj :
+        
+
+    Returns
+    -------
+
+    """
     cfg = dict({
         'name': obj.name,
         'full_name': obj.full_name,

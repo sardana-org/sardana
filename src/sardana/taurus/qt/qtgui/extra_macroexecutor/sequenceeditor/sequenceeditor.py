@@ -58,6 +58,7 @@ from .delegate import SequenceEditorDelegate
 
 
 class HookAction(Qt.QAction):
+    """ """
 
     def __init__(self, text, parent, macroNode):
         Qt.QAction.__init__(self, text, parent)
@@ -69,12 +70,35 @@ class HookAction(Qt.QAction):
         self.toggled.connect(self.onToggle)
 
     def macroNode(self):
+        """ """
         return self._macroNode
 
     def setMacroNode(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         self._macroNode = macroNode
 
     def onToggle(self, trueFalse):
+        """
+
+        Parameters
+        ----------
+        trueFalse :
+            
+
+        Returns
+        -------
+
+        """
         if trueFalse:
             self.macroNode().addHookPlace(str(self.text()))
         else:
@@ -82,6 +106,7 @@ class HookAction(Qt.QAction):
 
 
 class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
+    """ """
 
     macroNameChanged = Qt.pyqtSignal('QString')
     macroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
@@ -133,6 +158,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
             "Clicking this button will move current macro to the right.")
 
     def disableActions(self):
+        """ """
         self.deleteAction.setEnabled(False)
         self.moveUpAction.setEnabled(False)
         self.moveDownAction.setEnabled(False)
@@ -140,6 +166,17 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.moveRightAction.setEnabled(False)
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         contextMenu = Qt.QMenu()
         proxyIndex = self.indexAt(event.pos())
         node = self.model().nodeFromIndex(proxyIndex)
@@ -169,6 +206,19 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 #        pass
 
     def selectionChanged(self, selected, deselected):
+        """
+
+        Parameters
+        ----------
+        selected :
+            
+        deselected :
+            
+
+        Returns
+        -------
+
+        """
         self.disableActions()
         macroName = None
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -184,36 +234,98 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.macroNameChanged.emit(macroName)
 
     def expanded(self):
+        """ """
         for column in range(self.model().columnCount(Qt.QModelIndex())):
             self.resizeColumnToContents(column)
 
     def clearTree(self):
+        """ """
         self.model().clearSequence()
 
     def toXmlString(self, pretty=False, withId=True):
+        """
+
+        Parameters
+        ----------
+        pretty :
+             (Default value = False)
+        withId :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         return self.model().toXmlString(pretty=pretty, withId=withId)
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         newRoot = self.model().fromXmlString(xmlString)
         self.expandAll()
         self.expanded()
         return newRoot
 
     def fromPlainText(self, plainTextMacros, macroInfos):
+        """
+
+        Parameters
+        ----------
+        plainTextMacros :
+            
+        macroInfos :
+            
+
+        Returns
+        -------
+
+        """
         newRoot = self.model().fromPlainText(plainTextMacros, macroInfos)
         self.expandAll()
         self.expanded()
         return newRoot
 
     def root(self):
+        """ """
         return self.model().root()
 
     def setRoot(self, root):
+        """
+
+        Parameters
+        ----------
+        root :
+            
+
+        Returns
+        -------
+
+        """
         self.model().beginResetModel()
         self.model().setRoot(root)
         self.model().endResetModel()
 
     def addMacro(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         node, proxyIndex = self.selectedNodeAndIndex()
         if node is None or not node.isAllowedHooks():
             proxyIndex = self.rootIndex()
@@ -227,6 +339,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.expanded()
 
     def deleteMacro(self):
+        """ """
         node, proxyIndex = self.selectedNodeAndIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         self.model()._removeRow(sourceIndex)
@@ -235,6 +348,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.expanded()
 
     def upMacro(self):
+        """ """
         node, proxyIndex = self.selectedNodeAndIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         newSourceIndex = self.model()._upRow(sourceIndex)
@@ -246,6 +360,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 #        self.expanded()
 
     def downMacro(self):
+        """ """
         node, proxyIndex = self.selectedNodeAndIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         newSourceIndex = self.model()._downRow(sourceIndex)
@@ -257,6 +372,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 #        self.expanded()
 
     def leftMacro(self):
+        """ """
         node, proxyIndex = self.selectedNodeAndIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         newSourceIndex = self.model()._leftRow(sourceIndex)
@@ -268,6 +384,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.expanded()
 
     def rightMacro(self):
+        """ """
         node, proxyIndex = self.selectedNodeAndIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         newSourceIndex = self.model()._rightRow(sourceIndex)
@@ -279,6 +396,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.expanded()
 
     def prepareMacroIds(self):
+        """ """
         model = self.model()
         ids = model.assignIds()
         firstId = model.firstMacroId()
@@ -286,11 +404,25 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         return firstId, lastId, ids
 
     def prepareMacroProgresses(self):
+        """ """
         self._idIndexDict = self.model().createIdIndexDictionary()
         for macroId in self._idIndexDict.keys():
             self.setProgressForMacro(macroId, 0)
 
     def setProgressForMacro(self, macroId, progress):
+        """
+
+        Parameters
+        ----------
+        macroId :
+            
+        progress :
+            
+
+        Returns
+        -------
+
+        """
         persistentIndex = self._idIndexDict.get(macroId, None)
         if persistentIndex is None:
             return
@@ -299,6 +431,19 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.model().setData(index, progress)
 
     def setRangeForMacro(self, macroId, range):
+        """
+
+        Parameters
+        ----------
+        macroId :
+            
+        range :
+            
+
+        Returns
+        -------
+
+        """
         persistentIndex = self._idIndexDict.get(macroId, None)
         if persistentIndex is None:
             return
@@ -308,7 +453,15 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def selectedNodeAndIndex(self):
         """Returns a tuple with selected internal model node object and
-        QModelIndex from current model."""
+        QModelIndex from current model.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         for idx in self.selectedIndexes():
             if idx.column() == 0:
                 node = self.model().nodeFromIndex(idx)
@@ -318,11 +471,23 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         return node, idx
 
     def dropEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         Qt.QTreeView.dropEvent(self, event)
         self.expandAll()
 
 
 class TaurusSequencerWidget(TaurusWidget):
+    """ """
 
     doorChanged = Qt.pyqtSignal('QString')
     macroStarted = Qt.pyqtSignal('QString')
@@ -501,6 +666,17 @@ class TaurusSequencerWidget(TaurusWidget):
         self.tree.macroChanged.connect(self.setMacroParametersRootIndex)
 
     def contextMenuEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event :
+            
+
+        Returns
+        -------
+
+        """
         menu = Qt.QMenu()
         menu.addAction(Qt.QIcon.fromTheme("view-refresh"), "Check door state",
                        self.checkDoorState)
@@ -509,7 +685,15 @@ class TaurusSequencerWidget(TaurusWidget):
     def checkDoorState(self):
         """Method used by "Check door state" action (available in the context
         menu). It is a workaround for situations when the event notification
-        about the macro status does not reach the sequencer widget."""
+        about the macro status does not reach the sequencer widget.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
 
         door = Device(self.doorName())
         doorState = door.getState()
@@ -527,48 +711,133 @@ class TaurusSequencerWidget(TaurusWidget):
             self.stopSequenceAction.setEnabled(True)
 
     def doorName(self):
+        """ """
         return self._doorName
 
     def setDoorName(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self._doorName = doorName
 
     def firstMacroId(self):
+        """ """
         return self._firstMacroId
 
     def setFirstMacroId(self, firstMacroId):
+        """
+
+        Parameters
+        ----------
+        firstMacroId :
+            
+
+        Returns
+        -------
+
+        """
         self._firstMacroId = firstMacroId
 
     def lastMacroId(self):
+        """ """
         return self._lastMacroId
 
     def setLastMacroId(self, lastMacroId):
+        """
+
+        Parameters
+        ----------
+        lastMacroId :
+            
+
+        Returns
+        -------
+
+        """
         self._lastMacroId = lastMacroId
 
     def macroIds(self):
+        """ """
         return self._macroIds
 
     def setMacroIds(self, macroIds):
+        """
+
+        Parameters
+        ----------
+        macroIds :
+            
+
+        Returns
+        -------
+
+        """
         self._macroIds = macroIds
 
     def emitExecutionStarted(self):
+        """ """
         return self._emitExecutionStarted
 
     def setEmitExecutionStarted(self, yesNo):
+        """
+
+        Parameters
+        ----------
+        yesNo :
+            
+
+        Returns
+        -------
+
+        """
         self._emitExecutionStarted = yesNo
 
     def sequencesPath(self):
+        """ """
         return self._sequencesPath
 
     def setSequencesPath(self, sequencesPath):
+        """
+
+        Parameters
+        ----------
+        sequencesPath :
+            
+
+        Returns
+        -------
+
+        """
         self._sequencesPath = sequencesPath
 
     def isFullSequencePlot(self):
+        """ """
         return self._fullSequencePlot
 
     def setFullSequencePlot(self, fullSequencePlot):
+        """
+
+        Parameters
+        ----------
+        fullSequencePlot :
+            
+
+        Returns
+        -------
+
+        """
         self._fullSequencePlot = fullSequencePlot
 
     def onNewSequence(self):
+        """ """
         if Qt.QMessageBox.question(self,
                                    "New sequence",
                                    "Do you want to save existing sequence?",
@@ -581,6 +850,17 @@ class TaurusSequencerWidget(TaurusWidget):
         self.currentMacroChanged.emit(None)
 
     def loadFile(self, fileName):
+        """
+
+        Parameters
+        ----------
+        fileName :
+            
+
+        Returns
+        -------
+
+        """
         if fileName == "":
             return
         #@todo: reset macroComboBox to index 0
@@ -625,6 +905,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.currentMacroChanged.emit(None)
 
     def onOpenSequence(self):
+        """ """
         if not self._sequenceModel.isEmpty():
             if Qt.QMessageBox.question(
                     self,
@@ -645,6 +926,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
 
     def onSaveSequence(self):
+        """ """
         sequencesPath = self.sequencesPath()
         if sequencesPath == "":
             sequencesPath = str(Qt.QDir.homePath())
@@ -673,6 +955,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 file.close()
 
     def onPlaySequence(self):
+        """ """
         door = Device(self.doorName())
         doorState = door.getState()
         if (doorState == PyTango.DevState.ON or
@@ -694,6 +977,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 "because state of the door was different than ON/STANDBY")
 
     def onStopSequence(self):
+        """ """
         door = Device(self.doorName())
         doorState = door.getState()
         if doorState in (PyTango.DevState.RUNNING, PyTango.DevState.STANDBY):
@@ -707,6 +991,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 "RUNNING or STANDBY")
 
     def onPauseSequence(self):
+        """ """
         door = Device(self.doorName())
         doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
@@ -719,6 +1004,17 @@ class TaurusSequencerWidget(TaurusWidget):
                 "because state of the door was different than RUNNING")
 
     def onMacroStatusUpdated(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         macro = data[0]
         if macro is None:
             return
@@ -789,6 +1085,17 @@ class TaurusSequencerWidget(TaurusWidget):
         self.tree.setProgressForMacro(id, step)
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self.setDoorName(doorName)
         if self.doorName() == "":
             self.doorStateLed.setModel(None)
@@ -810,6 +1117,17 @@ class TaurusSequencerWidget(TaurusWidget):
             self.stopSequenceAction.setEnabled(True)
 
     def setMacroParametersRootIndex(self, sourceIndex):
+        """
+
+        Parameters
+        ----------
+        sourceIndex :
+            
+
+        Returns
+        -------
+
+        """
         parametersModel = self.standardMacroParametersEditor.tree.model()
         parametersModel.setMacroIndex(sourceIndex)
         parametersModel.invalidateFilter()
@@ -834,6 +1152,7 @@ class TaurusSequencerWidget(TaurusWidget):
             self.standardMacroParametersEditor.tree.expandAll()
 
     def onMacroComboBoxChanged(self):
+        """ """
         macroName = str(self.macroComboBox.currentText())
         if macroName == "":
             self.addMacroAction.setEnabled(False)
@@ -842,6 +1161,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.macroNameChanged.emit(macroName)
 
     def onAdd(self):
+        """ """
         macroName = str(self.macroComboBox.currentText())
         macroNode = self.getModelObj().getMacroNodeObj(macroName)
         self.tree.addMacro(macroNode)
@@ -849,18 +1169,32 @@ class TaurusSequencerWidget(TaurusWidget):
         self.playSequenceAction.setEnabled(True)
 
     def isEmptySequence(self):
+        """ """
         return len(self.tree.root()) == 0
 
     def isMacroSelected(self):
+        """ """
         return len(self.tree.selectedIndexes()) == 2
 
     def emptySequence(self):
+        """ """
         self.tree.clearTree()
         self.disableButtons()
         self.currentMacroChanged.emit(None)
         self.sequenceEmpty.emit()
 
     def fromXmlString(self, xmlString):
+        """
+
+        Parameters
+        ----------
+        xmlString :
+            
+
+        Returns
+        -------
+
+        """
         newRoot = self.tree.fromXmlString(xmlString)
         macroServerObj = self.getModelObj()
         for macroNode in newRoot.allMacros():
@@ -868,6 +1202,17 @@ class TaurusSequencerWidget(TaurusWidget):
         return newRoot
 
     def fromPlainText(self, plainText):
+        """
+
+        Parameters
+        ----------
+        plainText :
+            
+
+        Returns
+        -------
+
+        """
         plainTextMacros = []
         macroInfos = []
         macroServerObj = self.getModelObj()
@@ -897,6 +1242,17 @@ class TaurusSequencerWidget(TaurusWidget):
         return newRoot
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         oldModelObj = self.getModelObj()
         if oldModelObj is not None:
             oldModelObj.macrosUpdated.disconnect(
@@ -909,6 +1265,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return {'container': False,
                 'group': 'Taurus Sardana',
                 'module': 'taurus.qt.qtgui.extra_macroexecutor',
@@ -916,12 +1273,14 @@ class TaurusSequencerWidget(TaurusWidget):
 
 
 class TaurusSequencer(MacroExecutionWindow):
+    """ """
     doorChanged = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):
         MacroExecutionWindow.__init__(self)
 
     def initComponents(self):
+        """ """
         self.taurusSequencerWidget = TaurusSequencerWidget(self)
         self.taurusSequencerWidget.setModelInConfig(True)
         self.taurusSequencerWidget.doorChanged.connect(
@@ -933,16 +1292,39 @@ class TaurusSequencer(MacroExecutionWindow):
         self.statusBar().showMessage("Sequencer ready")
 
     def setCustomMacroEditorPaths(self, customMacroEditorPaths):
+        """
+
+        Parameters
+        ----------
+        customMacroEditorPaths :
+            
+
+        Returns
+        -------
+
+        """
         MacroExecutionWindow.setCustomMacroEditorPaths(
             self, customMacroEditorPaths)
         ParamEditorManager().parsePaths(customMacroEditorPaths)
         ParamEditorManager().browsePaths()
 
     def loadSettings(self):
+        """ """
         TaurusMainWindow.loadSettings(self)
         self.doorChanged.emit(self.doorName())
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         MacroExecutionWindow.onDoorChanged(self, doorName)
         if self._qDoor:
             self._qDoor.macroStatusUpdated.disconnect(
@@ -957,15 +1339,38 @@ class TaurusSequencer(MacroExecutionWindow):
         self.taurusSequencerWidget.onDoorChanged(doorName)
 
     def setModel(self, model):
+        """
+
+        Parameters
+        ----------
+        model :
+            
+
+        Returns
+        -------
+
+        """
         MacroExecutionWindow.setModel(self, model)
         self.taurusSequencerWidget.setModel(model)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
+        """ """
         return None
 
 
 def createSequencerWidget(args):
+    """
+
+    Parameters
+    ----------
+    args :
+        
+
+    Returns
+    -------
+
+    """
     sequencer = TaurusSequencerWidget()
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
 
@@ -976,6 +1381,19 @@ def createSequencerWidget(args):
 
 
 def createSequencer(args, options):
+    """
+
+    Parameters
+    ----------
+    args :
+        
+    options :
+        
+
+    Returns
+    -------
+
+    """
     sequencer = TaurusSequencer()
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
     load_settings = True
@@ -997,6 +1415,7 @@ def createSequencer(args, options):
 
 
 def main():
+    """ """
     from taurus.core.util import argparse
     from taurus.qt.qtgui.application import TaurusApplication
 

@@ -107,6 +107,19 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 
 def _to_fqdn(name, logger=None):
+    """
+
+    Parameters
+    ----------
+    name :
+        
+    logger :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     full_name = name
     # try to use Taurus 4 to retrieve FQDN
     try:
@@ -126,17 +139,24 @@ def _to_fqdn(name, logger=None):
 
 class ConfigurationItem(object):
     """Container of configuration attributes related to a given element.
-
+    
     Wrap an element to pretend its API.
     Manage the element's configuration.
     Hold an information whether the element is enabled.
     By default it is enabled.
-
+    
     .. note::
         The ConfigurationItem class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, element, attrs=None):
@@ -161,7 +181,17 @@ class ConfigurationItem(object):
         return self._element()
 
     def set_element(self, element):
-        """Sets the element for this item"""
+        """Sets the element for this item
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         self._element = weakref.ref(element)
 
     element = property(get_element)
@@ -169,17 +199,24 @@ class ConfigurationItem(object):
 
 class ControllerConfiguration(ConfigurationItem):
     """Container of configuration attributes related to a given controller.
-
+    
     Inherit behavior from
     :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`
     and additionally hold information about its enabled/disabled channels.
     By default it is disabled.
-
+    
     .. note::
         The ControllerConfiguration class has been included in Sardana
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, element, attrs=None):
@@ -190,7 +227,17 @@ class ControllerConfiguration(ConfigurationItem):
         self._channels_disabled = []
 
     def add_channel(self, channel_item):
-        """Aggregate a channel configuration item."""
+        """Aggregate a channel configuration item.
+
+        Parameters
+        ----------
+        channel_item :
+            
+
+        Returns
+        -------
+
+        """
         self._channels.append(channel_item)
         if channel_item.enabled:
             self.enabled = True
@@ -203,7 +250,17 @@ class ControllerConfiguration(ConfigurationItem):
             self._channels_disabled.append(channel_item)
 
     def remove_channel(self, channel_item):
-        """Remove a channel configuration item."""
+        """Remove a channel configuration item.
+
+        Parameters
+        ----------
+        channel_item :
+            
+
+        Returns
+        -------
+
+        """
         self._channels.remove(channel_item)
         if channel_item.enabled:
             self._channels_enabled.remove(channel_item)
@@ -227,12 +284,17 @@ class ControllerConfiguration(ConfigurationItem):
     def get_channels(self, enabled=None):
         """Return aggregated channels.
 
-        :param enabled: which channels to return
-         - True - only enabled
-         - False - only disabled
-         - None - all
+        Parameters
+        ----------
+        enabled : bool or None
+            which channels to return
+            - True - only enabled
+            - False - only disabled
+            - None - all (Default value = None)
 
-        :type enabled: bool or None
+        Returns
+        -------
+
         """
         if enabled is None:
             return list(self._channels)
@@ -242,31 +304,52 @@ class ControllerConfiguration(ConfigurationItem):
             return list(self._channels_disabled)
 
     def validate(self):
+        """ """
         pass
 
 
 class TimerableControllerConfiguration(ControllerConfiguration):
     """Container of configuration attributes related to a given
     timerable controller.
-
+    
     Inherit behavior from
     :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
     and additionally validate *timer* and *monitor* configuration.
-
+    
     .. note::
         The TimerableControllerConfiguration class has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def update_timer(self):
+        """ """
         self._update_master("timer")
 
     def update_monitor(self):
+        """ """
         self._update_master("monitor")
 
     def _update_master(self, role):
+        """
+
+        Parameters
+        ----------
+        role :
+            
+
+        Returns
+        -------
+
+        """
         master = getattr(self, role, None)
         if master is None:
             idx = float("+inf")
@@ -287,6 +370,7 @@ class TimerableControllerConfiguration(ControllerConfiguration):
         setattr(self, role, master)
 
     def validate(self):
+        """ """
         # validate if the timer and monitor are disabled if the
         # controller is enabled
         if self.enabled \
@@ -302,15 +386,22 @@ class TimerableControllerConfiguration(ControllerConfiguration):
 class ExternalControllerConfiguration(ControllerConfiguration):
     """Container of configuration attributes related to a given
     external controller.
-
+    
     Inherit behavior from
     :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`.
-
+    
     .. note::
         The ExternalControllerConfiguration class has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, element, attrs=None):
@@ -321,31 +412,45 @@ class ExternalControllerConfiguration(ControllerConfiguration):
 class ChannelConfiguration(ConfigurationItem):
     """Container of configuration attributes related to a given
     experimental channel.
-
+    
     Inherit behavior from
     :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`.
-
+    
     .. note::
         The ChannelConfiguration class has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
 
 class SynchronizerConfiguration(ConfigurationItem):
     """Container of configuration attributes related to a given
     synchronizer element.
-
+    
     Inherit behavior from
     :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`.
     By default it is disabled.
-
+    
     .. note::
         The ChannelConfiguration class has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, element, attrs=None):
@@ -356,11 +461,11 @@ class SynchronizerConfiguration(ConfigurationItem):
 def build_measurement_configuration(user_elements):
     """Create a minimal measurement configuration data structure from the
     user_elements list.
-
+    
     .. highlight:: none
-
+    
     Minimal configuration data structure::
-
+    
         dict <str, dict> with keys:
         - 'controllers' : where value is a dict<str, dict> where:
             - key: controller's full name
@@ -369,14 +474,23 @@ def build_measurement_configuration(user_elements):
                     - key: channel's full name
                     - value: dict<str, obj> with keys:
                         - 'index' : where value is the channel's index <int>
-
+    
     .. highlight:: default
-
+    
     .. note::
         The build_measurement_configuration function has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the function) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+    user_elements :
+        
+
+    Returns
+    -------
+
     """
     user_config = {}
     external_user_elements = []
@@ -410,17 +524,24 @@ def build_measurement_configuration(user_elements):
 
 class MeasurementConfiguration(object):
     """Configuration of a measurement.
-
+    
     Accepts import and export from/to a serializable data structure (based on
     dictionaries/lists and strings).
     Provides getter methods that facilitate extracting of information e.g.
     controllers of different types, master timers/monitors, etc.
-
+    
     .. note::
         The build_measurement_configuration function has been included in
         Sardana on a provisional basis. Backwards incompatible changes
         (up to and including removal of the function) may occur if
         deemed necessary by the core developers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     DFT_DESC = 'General purpose measurement configuration'
@@ -458,11 +579,17 @@ class MeasurementConfiguration(object):
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
 
-        :param channel: channel to look for its acquisition synchronization
-        :type channel: :class:`~sardana.pool.poolbasechannel.PoolBaseChannel`
-         or :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
-        :return: acquisition synchronization
-        :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
+        Parameters
+        ----------
+        channel : class:`~sardana.pool.poolbasechannel.PoolBaseChannel`
+ or :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+            channel to look for its acquisition synchronization
+
+        Returns
+        -------
+        obj:`~sardana.pool.pooldefs.AcqSynch`
+            acquisition synchronization
+
         """
         if isinstance(channel, ChannelConfiguration):
             channel = channel.element
@@ -471,18 +598,37 @@ class MeasurementConfiguration(object):
     def get_acq_synch_by_controller(self, controller):
         """Return acquisition synchronization configured for this controller.
 
-        :param controller: controller to look for its acquisition
-         synchronization
-        :type controller: :class:`~sardana.pool.poolcontroller.PoolController`
-         or :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
-        :return: acquisition synchronization
-        :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
+        Parameters
+        ----------
+        controller : class:`~sardana.pool.poolcontroller.PoolController`
+ or :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
+            controller to look for its acquisition
+            synchronization
+
+        Returns
+        -------
+        obj:`~sardana.pool.pooldefs.AcqSynch`
+            acquisition synchronization
+
         """
         if isinstance(controller, ConfigurationItem):
             controller = controller.element
         return self._ctrl_acq_synch[controller]
 
     def _filter_ctrls(self, ctrls, enabled):
+        """
+
+        Parameters
+        ----------
+        ctrls :
+            
+        enabled :
+            
+
+        Returns
+        -------
+
+        """
         if enabled is None:
             return ctrls
 
@@ -494,23 +640,28 @@ class MeasurementConfiguration(object):
 
     def get_timerable_ctrls(self, acq_synch=None, enabled=None):
         """Return timerable controllers.
-
+        
         Allow to filter controllers based on acquisition synchronization or
         whether these are enabled/disabled.
 
-        :param acq_synch: (optional) filter controller based on acquisition
-         synchronization
-        :type acq_synch: :class:`~sardana.pool.pooldefs.AcqSynch`
-        :param enabled: (optional) filter controllers whether these are
-         enabled/disabled:
+        Parameters
+        ----------
+        acq_synch : class:`~sardana.pool.pooldefs.AcqSynch`
+            optional) filter controller based on acquisition
+            synchronization (Default value = None)
+        enabled : obj:`bool` or :obj:`None`
+            optional) filter controllers whether these are
+            enabled/disabled:
+            
+            - :obj:`True` - enabled only
+            - :obj:`False` - disabled only
+            - :obj:`None` - all (Default value = None)
 
-         - :obj:`True` - enabled only
-         - :obj:`False` - disabled only
-         - :obj:`None` - all
+        Returns
+        -------
+        list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+            timerable controllers that fulfils the filtering criteria
 
-        :type enabled: :obj:`bool` or :obj:`None`
-        :return: timerable controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         timerable_ctrls = []
         if acq_synch is None:
@@ -527,90 +678,136 @@ class MeasurementConfiguration(object):
 
     def get_zerod_ctrls(self, enabled=None):
         """Return 0D controllers.
-
+        
         Allow to filter controllers whether these are enabled/disabled.
 
-        :param enabled: (optional) filter controllers whether these are
-         enabled/disabled:
+        Parameters
+        ----------
+        enabled : obj:`bool` or :obj:`None`
+            optional) filter controllers whether these are
+            enabled/disabled:
+            
+            - :obj:`True` - enabled only
+            - :obj:`False` - disabled only
+            - :obj:`None` - all (Default value = None)
 
-         - :obj:`True` - enabled only
-         - :obj:`False` - disabled only
-         - :obj:`None` - all
+        Returns
+        -------
+        list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+            0D controllers that fulfils the filtering criteria
 
-        :type enabled: :obj:`bool` or :obj:`None`
-        :return: 0D controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         return self._filter_ctrls(self._zerod_ctrls, enabled)
 
     def get_synch_ctrls(self, enabled=None):
         """Return synchronizer (currently only trigger/gate) controllers.
-
+        
         Allow to filter controllers whether these are enabled/disabled.
 
-        :param enabled: (optional) filter controllers whether these are
-         enabled/disabled:
+        Parameters
+        ----------
+        enabled : obj:`bool` or :obj:`None`
+            optional) filter controllers whether these are
+            enabled/disabled:
+            
+            - :obj:`True` - enabled only
+            - :obj:`False` - disabled only
+            - :obj:`None` - all (Default value = None)
 
-         - :obj:`True` - enabled only
-         - :obj:`False` - disabled only
-         - :obj:`None` - all
+        Returns
+        -------
+        list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+            synchronizer controllers that fulfils the filtering criteria
 
-        :type enabled: :obj:`bool` or :obj:`None`
-        :return: synchronizer controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         return self._filter_ctrls(self._synch_ctrls, enabled)
 
     def get_master_timer_software(self):
         """Return master timer in software acquisition.
 
-        :return: master timer in software acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+            master timer in software acquisition
+
         """
         return self._master_timer_sw
 
     def get_master_monitor_software(self):
         """Return master monitor in software acquisition.
 
-        :return: master monitor in software acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+            master monitor in software acquisition
+
         """
         return self._master_monitor_sw
 
     def get_master_timer_software_start(self):
         """Return master timer in software start acquisition.
 
-        :return: master timer in software start acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+            master timer in software start acquisition
+
         """
         return self._master_monitor_sw_start
 
     def get_master_monitor_software_start(self):
         """Return master monitor in software start acquisition.
 
-        :return: master monitor in software start acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+        Parameters
+        ----------
+
+        Returns
+        -------
+        class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+            master monitor in software start acquisition
+
         """
         return self._master_timer_sw_start
 
     def get_configuration_for_user(self):
-        """Return measurement configuration serializable data structure."""
+        """ """
         return self._user_config
 
     def set_configuration_from_user(self, cfg):
         """Set measurement configuration from serializable data structure.
-
+        
         Setting of the configuration includes the validation process. Setting
         of invalid configuration raises an exception hence it is not necessary
         that the client application does the validation.
-
+        
         The configuration parameters for given channels/controllers may differ
         depending on their types e.g. 0D channel does not support timer
         parameter while C/T does.
-
+        
         .. todo::
-            Raise exceptions when setting _Synchronization_ parameter for
-            external channels, 0D and PSeudoCounters.
+
+        Parameters
+        ----------
+        cfg :
+            
+
+        Returns
+        -------
+
+        Raises
+        ------
+        external
+            channels
+
         """
 
         pool = self._parent.pool
@@ -892,7 +1089,19 @@ class MeasurementConfiguration(object):
         self.changed = True
 
     def _fill_channel_data(self, channel, channel_data):
-        """Fill channel default values for the given channel dictionary"""
+        """Fill channel default values for the given channel dictionary
+
+        Parameters
+        ----------
+        channel :
+            
+        channel_data :
+            
+
+        Returns
+        -------
+
+        """
         name = channel.name
         ctype = channel.get_type()
         full_name = channel.full_name
@@ -963,6 +1172,7 @@ class MeasurementConfiguration(object):
 
 
 class PoolMeasurementGroup(PoolGroupElement):
+    """ """
 
     def __init__(self, **kwargs):
         self._state_lock = threading.Lock()
@@ -988,10 +1198,22 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.set_configuration_from_user(configuration)
 
     def _create_action_cache(self):
+        """ """
         acq_name = "%s.Acquisition" % self._name
         return PoolAcquisition(self, acq_name)
 
     def _calculate_states(self, state_info=None):
+        """
+
+        Parameters
+        ----------
+        state_info :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         state, status = PoolGroupElement._calculate_states(self, state_info)
         # check if software synchronizer is occupied
         synch_soft = self.acquisition._synch._synch_soft
@@ -1008,6 +1230,21 @@ class PoolMeasurementGroup(PoolGroupElement):
         return state, status
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         name = evt_type.name
         if name == 'state':
             with self._state_lock:
@@ -1016,17 +1253,41 @@ class PoolMeasurementGroup(PoolGroupElement):
                 self.set_status("\n".join(status))
 
     def get_pool_controllers(self):
+        """ """
         return self.get_acquisition().get_pool_controllers()
 
     def get_pool_controller_by_name(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         name = name.lower()
         for ctrl in self.get_pool_controllers():
             if ctrl.name.lower() == name or ctrl.full_name.lower() == name:
                 return ctrl
 
     def add_user_element(self, element, index=None):
-        '''Override the base behavior, so the TriggerGate elements are silently
-        skipped if used multiple times in the group'''
+        """Override the base behavior, so the TriggerGate elements are silently
+        skipped if used multiple times in the group
+
+        Parameters
+        ----------
+        element :
+            
+        index :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         user_elements = self._user_elements
         if element in user_elements:
             # skipping TriggerGate element if already present
@@ -1037,13 +1298,19 @@ class PoolMeasurementGroup(PoolGroupElement):
     def rename_element(self, old_name, new_name, propagate=1):
         """Rename element in the controller.
 
-        :param old_name: old name of the element
-        :type old_name: :obj:`str`
-        :param new_name: new name of the element
-        :type new_name: :obj:`str`
-        :param propagate: 0 for not propagating, 1 to propagate,
-               2 propagate with priority
-        :type propagate: :obj:`int`
+        Parameters
+        ----------
+        old_name : obj:`str`
+            old name of the element
+        new_name : obj:`str`
+            new name of the element
+        propagate : obj:`int`
+            0 for not propagating, 1 to propagate,
+            2 propagate with priority (Default value = 1)
+
+        Returns
+        -------
+
         """
         self._config['label'] = new_name
         self.fire_event(EventType("configuration", priority=propagate),
@@ -1054,16 +1321,41 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def _is_managed_element(self, element):
+        """
+
+        Parameters
+        ----------
+        element :
+            
+
+        Returns
+        -------
+
+        """
         element_type = element.get_type()
         return (element_type in TYPE_EXP_CHANNEL_ELEMENTS or
                 element_type is ElementType.TriggerGate)
 
     @property
     def configuration(self):
+        """ """
         return self._config
 
     # TODO: Check if it needed
     def set_configuration(self, config=None, propagate=1):
+        """
+
+        Parameters
+        ----------
+        config :
+             (Default value = None)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._config.configuration = config
         self._config_dirty = True
         if not propagate:
@@ -1072,6 +1364,19 @@ class PoolMeasurementGroup(PoolGroupElement):
                         config)
 
     def set_configuration_from_user(self, cfg, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cfg :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._config.set_configuration_from_user(cfg)
         self._config_dirty = True
         if not propagate:
@@ -1080,9 +1385,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                         self._config.get_configuration_for_user())
 
     def get_user_configuration(self):
+        """ """
         return self._config.get_configuration_for_user()
 
     def get_timer(self):
+        """ """
         # TODO: Adapt to the new future MeasurementConfiguration API
         return self._config._master_timer
 
@@ -1093,6 +1400,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_integration_time(self):
+        """ """
         integration_time = self._synch_description.active_time
         if isinstance(integration_time, float):
             return integration_time
@@ -1104,6 +1412,19 @@ class PoolMeasurementGroup(PoolGroupElement):
                             "description groups")
 
     def set_integration_time(self, integration_time, propagate=1):
+        """
+
+        Parameters
+        ----------
+        integration_time :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         total_time = integration_time + self.latency_time
         synch = [{SynchParam.Delay: {SynchDomain.Time: 0},
                   SynchParam.Active: {SynchDomain.Time: integration_time},
@@ -1123,9 +1444,23 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_monitor_count(self):
+        """ """
         return self._monitor_count
 
     def set_monitor_count(self, monitor_count, propagate=1):
+        """
+
+        Parameters
+        ----------
+        monitor_count :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._monitor_count = monitor_count
         if not propagate:
             return
@@ -1140,9 +1475,23 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_acquisition_mode(self):
+        """ """
         return self._acquisition_mode
 
     def set_acquisition_mode(self, acquisition_mode, propagate=1):
+        """
+
+        Parameters
+        ----------
+        acquisition_mode :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._acquisition_mode = acquisition_mode
         self._config_dirty = True  # acquisition mode goes to configuration
         if not propagate:
@@ -1158,9 +1507,23 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_synch_description(self):
+        """ """
         return self._synch_description
 
     def set_synch_description(self, description, propagate=1):
+        """
+
+        Parameters
+        ----------
+        description :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._synch_description = \
             SynchDescription(description)
         self._config_dirty = True  # acquisition mode goes to configuration
@@ -1178,9 +1541,25 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_moveable(self):
+        """ """
         return self._moveable
 
     def set_moveable(self, moveable, propagate=1, to_fqdn=True):
+        """
+
+        Parameters
+        ----------
+        moveable :
+            
+        propagate :
+             (Default value = 1)
+        to_fqdn :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         self._moveable = moveable
         if self._moveable is not None:
             if to_fqdn:
@@ -1198,6 +1577,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_latency_time(self):
+        """ """
         latency_time = 0
         pool_ctrls = self.get_pool_controllers()
         for pool_ctrl in pool_ctrls:
@@ -1217,9 +1597,21 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_sw_synch_initial_domain(self):
+        """ """
         return self._sw_synch_initial_domain
 
     def set_sw_synch_initial_domain(self, domain):
+        """
+
+        Parameters
+        ----------
+        domain :
+            
+
+        Returns
+        -------
+
+        """
         self._sw_synch_initial_domain = domain
 
     sw_synch_initial_domain = property(
@@ -1234,9 +1626,23 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_nb_starts(self):
+        """ """
         return self._nb_starts
 
     def set_nb_starts(self, nb_starts, propagate=1):
+        """
+
+        Parameters
+        ----------
+        nb_starts :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._nb_starts = nb_starts
         if not propagate:
             return
@@ -1252,8 +1658,15 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def prepare(self):
         """Prepare for measurement.
-
+        
         Delegate measurement preparation to the acquisition action.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         if len(self.get_user_elements()) == 0:
             # All channels were disabled
@@ -1295,9 +1708,18 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def start_acquisition(self, value=None):
         """Start measurement.
-
+        
         Delegate start measurement to the acquisition action.
         Provide backwards compatibility for starts without previous prepare.
+
+        Parameters
+        ----------
+        value :
+             (Default value = None)
+
+        Returns
+        -------
+
         """
         if self._pending_starts == 0:
             msg = "prepare is mandatory before starting acquisition"
@@ -1308,6 +1730,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             self.acquisition.run()
 
     def _get_value(self):
+        """ """
         if self._acquisition_mode is AcqMode.Timer:
             value = self.get_integration_time()
         elif self.acquisition_mode is AcqMode.Monitor:
@@ -1315,18 +1738,32 @@ class PoolMeasurementGroup(PoolGroupElement):
         return value
 
     def set_acquisition(self, acq_cache):
+        """
+
+        Parameters
+        ----------
+        acq_cache :
+            
+
+        Returns
+        -------
+
+        """
         self.set_action_cache(acq_cache)
 
     def get_acquisition(self):
+        """ """
         return self.get_action_cache()
 
     acquisition = property(get_acquisition, doc="acquisition object")
 
     def stop(self):
+        """ """
         self._pending_starts = 0
         self.acquisition._synch._synch_soft.stop()
         PoolGroupElement.stop(self)
 
     def abort(self):
+        """ """
         self._pending_starts = 0
         PoolGroupElement.abort(self)

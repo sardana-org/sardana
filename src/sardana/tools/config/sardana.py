@@ -89,6 +89,7 @@ SAR_NS = 'http://sardana.cells.es/client/framework/config'
 
 
 class Process:
+    """ """
 
     ReadyMsg = "Ready to accept request"
     AlreadyRunning = "This server is already running, exiting!"
@@ -108,36 +109,65 @@ class Process:
         self._logfile = logfile
 
     def o(self, m):
+        """
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         sys.stdout.write(m)
         sys.stdout.flush()
 
     def on(self, m=''):
+        """
+
+        Parameters
+        ----------
+        m :
+             (Default value = '')
+
+        Returns
+        -------
+
+        """
         self.o(m)
         sys.stdout.write('\n')
         sys.stdout.flush()
 
     def getInstance(self):
+        """ """
         return self._instance
 
     def start(self):
+        """ """
         raise RuntimeException("Not allowed to 'start' abstract Process")
 
     def stop(self):
+        """ """
         raise RuntimeException("Not allowed to 'stop' abstract Process")
 
     def getMaxStartupTime(self):
+        """ """
         return Process.MaxStartupTime
 
     def getMaxShutdownTime(self):
+        """ """
         return Process.MaxShutdownTime
 
 
 class PEProcess(Process):
+    """ """
 
     def __init__(self, executable, args, name="PEProcess", instance=None, logfile=None, env=None):
         Process.__init__(self, executable, args, name, instance, logfile, env)
 
     def start(self):
+        """ """
         self._start_time = datetime.datetime.now()
         self.o("Starting '%s %s' (%s, %s)... " %
                (self._name, self._instance, self._exec, self._args))
@@ -173,11 +203,13 @@ class PEProcess(Process):
                             (self._name, self._instance))
 
     def terminate(self):
+        """ """
         if self._process is None:
             raise Exception("No process")
         return self._process.terminate()
 
     def kill(self):
+        """ """
         if not self._process is None:
             self._process.close()
             res = self._process.terminate(force=True)
@@ -186,7 +218,17 @@ class PEProcess(Process):
         return
 
     def stop(self, max_shutdown_time=None):
-        """Stops"""
+        """Stops
+
+        Parameters
+        ----------
+        max_shutdown_time :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._stop_time = datetime.datetime.now()
         self.o("Stopping '%s %s'... " % (self._name, self._instance))
 
@@ -262,6 +304,17 @@ class PEProcess(Process):
             self.kill()
 
     def run(self, timeout=0):
+        """
+
+        Parameters
+        ----------
+        timeout :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         if not self._process:
             return
         try:
@@ -281,6 +334,7 @@ class PEProcess(Process):
 
 
 class PEDeviceServerProcess(PEProcess):
+    """ """
 
     def __init__(self, executable, args, name="PEDeviceServerProcess", instance=None, db=None, logfile=None):
         db = db or PyTango.Database()
@@ -290,9 +344,11 @@ class PEDeviceServerProcess(PEProcess):
                            name, instance, logfile, env)
 
     def getServerName(self):
+        """ """
         return os.path.splitext(os.path.basename(self._exec))[0]
 
     def terminate(self):
+        """ """
         tango_host_port = self._env['TANGO_HOST']
         dserver_device_name = "%s/dserver/%s/%s" % (
             tango_host_port, self.getServerName(), self._instance)
@@ -302,12 +358,15 @@ class PEDeviceServerProcess(PEProcess):
 
 
 class PEPythonDeviceServerProcess(PEDeviceServerProcess):
+    """ """
 
     def getServerName(self):
+        """ """
         return os.path.splitext(os.path.basename(self._args[0]))[0]
 
 
 class PESimuMotorProcess(PEPythonDeviceServerProcess):
+    """ """
 
     def __init__(self, instname, db=None, logfile=None):
         name = "Motor Simulator"
@@ -332,6 +391,7 @@ class PESimuMotorProcess(PEPythonDeviceServerProcess):
 
 
 class PESimuCounterTimerProcess(PEPythonDeviceServerProcess):
+    """ """
 
     def __init__(self, instname, db=None, logfile=None):
         name = "Counter/Timer Simulator"
@@ -353,6 +413,7 @@ class PESimuCounterTimerProcess(PEPythonDeviceServerProcess):
 
 
 class PEPySignalSimulatorProcess(PEPythonDeviceServerProcess):
+    """ """
 
     def __init__(self, instname, db=None, logfile=None):
         name = "PySignal Simulator"
@@ -374,6 +435,7 @@ class PEPySignalSimulatorProcess(PEPythonDeviceServerProcess):
 
 
 class PEDevicePoolProcess(PEDeviceServerProcess):
+    """ """
 
     def __init__(self, instname, db=None, logfile=None):
         name = "Device Pool"
@@ -393,6 +455,7 @@ class PEDevicePoolProcess(PEDeviceServerProcess):
 
 
 class PEMacroServerProcess(PEDeviceServerProcess):
+    """ """
 
     def __init__(self, instname, db=None, logfile=None):
         name = "Macro Server"
@@ -422,6 +485,7 @@ MacroServerProcess = PEMacroServerProcess
 
 
 class TangoServer:
+    """ """
 
     klassName = "DeviceServer"
 
@@ -502,10 +566,32 @@ class TangoServer:
             self._proc = None
 
     def o(self, m):
+        """
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         sys.stdout.write(m)
         sys.stdout.flush()
 
     def on(self, m=''):
+        """
+
+        Parameters
+        ----------
+        m :
+             (Default value = '')
+
+        Returns
+        -------
+
+        """
         self.o(m)
         sys.stdout.write('\n')
         sys.stdout.flush()
@@ -532,6 +618,7 @@ class TangoServer:
         self.createServerInDB()
 
     def deleteServerFromDB(self):
+        """ """
         db = self._db
         server_name = self._klass_name.lower()
         server_instance = self._inst_name.lower()
@@ -549,6 +636,7 @@ class TangoServer:
             db.delete_server(server)
 
     def createServerInDB(self):
+        """ """
         for devNodeName in self.getDeviceNodeNames():
 
             nodes = self._node.findall(devNodeName)
@@ -575,6 +663,7 @@ class TangoServer:
                     self._putDeviceProps(dev_name, props)
 
     def getDeviceNodeNames(self):
+        """ """
         return [self._klass_name]
 
     def start(self):
@@ -590,16 +679,42 @@ class TangoServer:
         self.deleteServerFromDB()
 
     def run(self, step=True, timeout=0):
-        """Run"""
+        """Run
+
+        Parameters
+        ----------
+        step :
+             (Default value = True)
+        timeout :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         while True:
             self._proc.run(timeout=timeout)
             if step:
                 return
 
     def _createProcess(self):
+        """ """
         raise Exception("Must overwrite in subclass")
 
     def _putDeviceProps(self, dev_name, prop_node_list):
+        """
+
+        Parameters
+        ----------
+        dev_name :
+            
+        prop_node_list :
+            
+
+        Returns
+        -------
+
+        """
         props = {}
         for p_node in prop_node_list:
             prop_name = p_node.get("name")
@@ -617,6 +732,7 @@ class TangoServer:
             self._db.put_device_property(dev_name, props)
 
     def getInstanceName(self):
+        """ """
         return self._inst_name
 
     def __str__(self):
@@ -624,43 +740,66 @@ class TangoServer:
 
 
 class SimuMotorServer(TangoServer):
+    """ """
 
     klassName = "SimuMotorCtrl"
 
     def _createProcess(self):
+        """ """
         return SimuMotorProcess(self._inst_name, self._db, logfile=self._logfile)
 
     def getDeviceNodeNames(self):
+        """ """
         return TangoServer.getDeviceNodeNames(self) + ["SimuMotor"]
 
 
 class SimuCounterTimerServer(TangoServer):
+    """ """
 
     klassName = "SimuCoTiCtrl"
 
     def _createProcess(self):
+        """ """
         return SimuCounterTimerProcess(self._inst_name, self._db, logfile=self._logfile)
 
     def getDeviceNodeNames(self):
+        """ """
         return TangoServer.getDeviceNodeNames(self) + ["SimuCounter"]
 
 
 class PySignalSimulatorServer(TangoServer):
+    """ """
     klassName = "PySignalSimulator"
 
     def _createProcess(self):
+        """ """
         return PySignalSimulatorProcess(self._inst_name, self._db, logfile=self._logfile)
 
 
 class DevicePoolServer(TangoServer):
+    """ """
 
     klassName = "Pool"
 
     def _createProcess(self):
+        """ """
         self.dev_count = 0
         return DevicePoolProcess(self._inst_name, self._db, logfile=self._logfile)
 
     def _putDeviceProps(self, dev_name, prop_node_list):
+        """
+
+        Parameters
+        ----------
+        dev_name :
+            
+        prop_node_list :
+            
+
+        Returns
+        -------
+
+        """
         TangoServer._putDeviceProps(self, dev_name, prop_node_list)
 
     def start(self):
@@ -674,11 +813,37 @@ class DevicePoolServer(TangoServer):
         self._proc.stop(max_shutdown_time)
 
     def _item_node_to_value(self, attr_info, node):
+        """
+
+        Parameters
+        ----------
+        attr_info :
+            
+        node :
+            
+
+        Returns
+        -------
+
+        """
         v = node.text or [i.text or [j.text for j in i.findall(
             "Item")] for i in node.findall("Item")]
         return PyTango.seqStr_2_obj(v, attr_info.data_type, attr_info.data_format)
 
     def handle_attributes(self, dev_name, node):
+        """
+
+        Parameters
+        ----------
+        dev_name :
+            
+        node :
+            
+
+        Returns
+        -------
+
+        """
         attrs = node.findall('Attribute')
         if not len(attrs):
             return
@@ -784,6 +949,7 @@ class DevicePoolServer(TangoServer):
                     print('EXCEPTION:', ex)
 
     def loadPool(self):
+        """ """
         start_load_time = datetime.datetime.now()
         self.on("  Loading 'Device Pool %s'..." % self._inst_name)
 
@@ -1252,16 +1418,20 @@ class DevicePoolServer(TangoServer):
 
 
 class MacroServerServer(TangoServer):
+    """ """
 
     klassName = "MacroServer"
 
     def _createProcess(self):
+        """ """
         return MacroServerProcess(self._inst_name, self._db, logfile=self._logfile)
 
     def getDeviceNodeNames(self):
+        """ """
         return TangoServer.getDeviceNodeNames(self) + ["Door"]
 
     def start(self):
+        """ """
         try:
             TangoServer.start(self)
         except:
@@ -1307,15 +1477,48 @@ class Sardana:
         self._log = log
 
     def o(self, m):
+        """
+
+        Parameters
+        ----------
+        m :
+            
+
+        Returns
+        -------
+
+        """
         sys.stdout.write(m)
         sys.stdout.flush()
 
     def on(self, m=''):
+        """
+
+        Parameters
+        ----------
+        m :
+             (Default value = '')
+
+        Returns
+        -------
+
+        """
         self.o(m)
         sys.stdout.write('\n')
         sys.stdout.flush()
 
     def getTangoDB(self, id=None):
+        """
+
+        Parameters
+        ----------
+        id :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if id is None:
             if self._dft_tg_db is None:
                 db = PyTango.Database()
@@ -1349,6 +1552,7 @@ class Sardana:
             self.cleanUp()
 
     def _preprocess(self):
+        """ """
         start_pp_time = datetime.datetime.now()
         self.o("Preprocessing input... ")
 
@@ -1739,6 +1943,7 @@ class Sardana:
         self.prepareServices()
 
     def prepareServices(self):
+        """ """
         sarName = self._sarNode.get("name")
         macro_servers = self._sarNode.findall("MacroServerServer/MacroServer")
         db = self.getTangoDB()
@@ -1757,6 +1962,7 @@ class Sardana:
             return
 
     def prepareMotorSimulators(self):
+        """ """
         servNodes = self._sarNode.findall("SimuMotorServer")
 
         self._motorSims = {}
@@ -1767,6 +1973,7 @@ class Sardana:
             self._motorSims[serv.getInstanceName()] = serv
 
     def prepareCounterTimerSimulators(self):
+        """ """
         servNodes = self._sarNode.findall("SimuCoTiServer")
 
         self._coTiSims = {}
@@ -1777,6 +1984,7 @@ class Sardana:
             self._coTiSims[serv.getInstanceName()] = serv
 
     def prepareSignalSimulators(self):
+        """ """
         servNodes = self._sarNode.findall("PySignalSimulatorServer")
 
         self._signalSims = {}
@@ -1787,6 +1995,7 @@ class Sardana:
             self._signalSims[serv.getInstanceName()] = serv
 
     def prepareDevicePools(self):
+        """ """
         servNodes = self._sarNode.findall("PoolServer")
 
         self._devicePools = {}
@@ -1797,6 +2006,7 @@ class Sardana:
             self._devicePools[serv.getInstanceName()] = serv
 
     def prepareMSs(self):
+        """ """
         servNodes = self._sarNode.findall("MacroServerServer")
 
         self._macServs = {}
@@ -1807,6 +2017,7 @@ class Sardana:
             self._macServs[serv.getInstanceName()] = serv
 
     def _getServsShutdownOrder(self):
+        """ """
         servs = list(self._macServs.values())
         servs += list(self._devicePools.values())
         servs += list(self._signalSims.values())
@@ -1815,6 +2026,7 @@ class Sardana:
         return servs
 
     def _getServsStartupOrder(self):
+        """ """
         servs = list(self._motorSims.values())
         servs += list(self._coTiSims.values())
         servs += list(self._signalSims.values())
@@ -1823,6 +2035,7 @@ class Sardana:
         return servs
 
     def cleanUp(self):
+        """ """
         for s in self._getServsShutdownOrder():
             s.cleanUp()
 
@@ -1843,6 +2056,7 @@ class Sardana:
             s.stop()
 
     def run(self):
+        """ """
         servs = self._getServsStartupOrder()
         self.o("Running ")
         count = 0
@@ -1854,9 +2068,11 @@ class Sardana:
                 p.run(step=True, timeout=0.1)
 
     def getDoc(self):
+        """ """
         return self._xmldoc
 
     def getRoot(self):
+        """ """
         return self._sarNode
 
 

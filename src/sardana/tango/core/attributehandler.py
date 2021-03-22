@@ -38,6 +38,7 @@ import collections
 
 
 class AttributeLogHandler(logging.Handler):
+    """ """
 
     def __init__(self, dev, attr_name, level=logging.NOTSET, max_buff_size=0):
         logging.Handler.__init__(self, level)
@@ -49,14 +50,47 @@ class AttributeLogHandler(logging.Handler):
         self._buff = LIFO(max_buff_size)
 
     def emit(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         output = self.getRecordMessage(record)
         self.appendBuffer(output)
         self.sendText(output)
 
     def getRecordMessage(self, record):
+        """
+
+        Parameters
+        ----------
+        record :
+            
+
+        Returns
+        -------
+
+        """
         return self.format(record).split('\n')
 
     def sendText(self, output):
+        """
+
+        Parameters
+        ----------
+        output :
+            
+
+        Returns
+        -------
+
+        """
         dev = self._dev()
         attr = self._attr
         if attr is None or dev is None:
@@ -64,13 +98,35 @@ class AttributeLogHandler(logging.Handler):
         dev.set_attribute(attr, output)
 
     def read(self, attr):
-        """Read from the buffer and assign to the attribute value"""
+        """Read from the buffer and assign to the attribute value
+
+        Parameters
+        ----------
+        attr :
+            
+
+        Returns
+        -------
+
+        """
         attr.set_value(self._buff.getCopy())
 
     def clearBuffer(self):
+        """ """
         self._buff.clear()
 
     def appendBuffer(self, d):
+        """
+
+        Parameters
+        ----------
+        d :
+            
+
+        Returns
+        -------
+
+        """
         if isinstance(d, collections.Sequence):
             if isinstance(d, str):
                 self._buff.append(d)
@@ -80,9 +136,11 @@ class AttributeLogHandler(logging.Handler):
             self._buff.append(str(d))
 
     def sync(self):
+        """ """
         pass
 
     def finish(self):
+        """ """
         pass
 
 AttributeBufferedLogHandler = AttributeLogHandler

@@ -59,11 +59,17 @@ class ScanDataTestCase(unittest.TestCase):
     """Use ScanData, DataHandler and ScanDataEnvironment in order to record
     data and verify that the stored data in the NeXus file corresponds with
     the initial data that has been sent for storage.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def setUp(self):
-        """SetUp
-        """
+        """SetUp"""
         try:
             import nxs
             self.nxs = nxs
@@ -84,6 +90,19 @@ class ScanDataTestCase(unittest.TestCase):
         self.data_handler.addRecorder(nx_recorder)
 
     def prepareScandData(self, data, apply_interpolation=False):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+        apply_interpolation :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         scan_dir, scan_file = os.path.split(self.file_name)
         env = createScanDataEnvironment(list(data.keys()), scan_dir, scan_file)
         self.scan_data = ScanData(environment=env,
@@ -113,6 +132,17 @@ class ScanDataTestCase(unittest.TestCase):
     def recorddata(self, data, apply_interpolation):
         """Verify that the data sent for storage is equal
            to the actual data present in the created NeXus file.
+
+        Parameters
+        ----------
+        data :
+            
+        apply_interpolation :
+            
+
+        Returns
+        -------
+
         """
         self.prepareScandData(data, apply_interpolation)
         # Fill the recoder
@@ -140,6 +170,17 @@ class ScanDataTestCase(unittest.TestCase):
     def zeroOrderInterpolation(self, data, apply_interpolation):
         """Verify that the data write in the NeXus file has been
            modified using a zero order interpolation.
+
+        Parameters
+        ----------
+        data :
+            
+        apply_interpolation :
+            
+
+        Returns
+        -------
+
         """
         self.prepareScandData(data, apply_interpolation)
         # Fill the recoder
@@ -166,4 +207,5 @@ class ScanDataTestCase(unittest.TestCase):
                         self.assertEqual(chn_data[i - 1], chn_data[i], msg)
 
     def tearDown(self):
+        """ """
         unittest.TestCase.tearDown(self)

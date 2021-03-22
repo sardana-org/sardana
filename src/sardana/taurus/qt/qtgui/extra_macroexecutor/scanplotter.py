@@ -41,6 +41,7 @@ from taurus.qt.qtgui.plot import TaurusTrend
 
 
 class ScanPlotter(TaurusTrend):
+    """ """
 
     def __init__(self, parent=None, designMode=False):
 
@@ -56,23 +57,63 @@ class ScanPlotter(TaurusTrend):
         self.setXDynScale(True)
 
     def onSequenceCleared(self):
+        """ """
         self._movingMotors = []
         self._macroNames = []
         self.populatePlotables()
 
     def onMacrosAdded(self, macroNames, motors):
+        """
+
+        Parameters
+        ----------
+        macroNames :
+            
+        motors :
+            
+
+        Returns
+        -------
+
+        """
         for macro in macroNames:
             self._macroNames.append(macro)
         self._movingMotors += motors
         self.populatePlotables()
 
     def onMacroEdited(self, oldMotors, newMotors):
+        """
+
+        Parameters
+        ----------
+        oldMotors :
+            
+        newMotors :
+            
+
+        Returns
+        -------
+
+        """
         for motor in oldMotors:
             self._movingMotors.remove(motor)
         self._movingMotors += newMotors
         self.populatePlotables()
 
     def onMacrosDeleted(self, macroNames, motors):
+        """
+
+        Parameters
+        ----------
+        macroNames :
+            
+        motors :
+            
+
+        Returns
+        -------
+
+        """
         for macro in macroNames:
             self._macroNames.remove(macro)
         for motor in motors:
@@ -80,17 +121,54 @@ class ScanPlotter(TaurusTrend):
         self.populatePlotables()
 
     def onMacroStarted(self, macroName, motors):
+        """
+
+        Parameters
+        ----------
+        macroName :
+            
+        motors :
+            
+
+        Returns
+        -------
+
+        """
         self._macroNames = [macroName]
         self._movingMotors = motors
         self.populatePlotables()
 
     def onMotorChanged(self, oldMotor, newMotor):
+        """
+
+        Parameters
+        ----------
+        oldMotor :
+            
+        newMotor :
+            
+
+        Returns
+        -------
+
+        """
         if oldMotor in self._movingMotors:
             self._movingMotors.remove(oldMotor)
         self._movingMotors.append(newMotor)
         self.populatePlotables()
 
     def onMacroChanged(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         if macroNode is None:
             self._macroNames = []
             self._movingMotors = []
@@ -101,12 +179,37 @@ class ScanPlotter(TaurusTrend):
         self.populatePlotables()
 
     def onDoorChanged(self, doorName):
+        """
+
+        Parameters
+        ----------
+        doorName :
+            
+
+        Returns
+        -------
+
+        """
         self._doorName = doorName
         self._movingMotors = []
         self.populatePlotables()
 
     def getPlotables(self, macronames=None, doorname=None, movingmotors=None):
-        """returns a list of plotables for this scan given macro (channels and moving motors)"""
+        """returns a list of plotables for this scan given macro (channels and moving motors)
+
+        Parameters
+        ----------
+        macronames :
+             (Default value = None)
+        doorname :
+             (Default value = None)
+        movingmotors :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         plotables = []
         if macronames is None:
             macronames = list(set(self._macroNames))
@@ -136,6 +239,17 @@ class ScanPlotter(TaurusTrend):
         return plotables
 
     def populatePlotables(self, plotables=None):
+        """
+
+        Parameters
+        ----------
+        plotables :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         # @TODO: The name in the legend should be more descriptive: i.e. "dev/attr" instead of "attr" (this probably has to be changed for taurusplot in general  )
         if plotables is None:
             plotables = self.getPlotables()

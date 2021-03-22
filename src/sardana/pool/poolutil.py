@@ -34,6 +34,7 @@ import threading
 
 
 class _PoolUtil(object):
+    """ """
 
     def __init__(self):
         self._ctrl_proxies = CaselessDict()
@@ -46,12 +47,22 @@ class _PoolUtil(object):
         """Factory method to create a single `tango.DeviceProxy` instance
         per controller instance.
 
-        :param ctrl_name: Controller name to which assign the proxy object
-        :type ctrl_name: `str`
-        :param device_name: Tango device name
-        :type device_name: `str`
-        :return: single device proxy object
-        :rtype: `tango.DeviceProxy`
+        Parameters
+        ----------
+        ctrl_name : str`
+            Controller name to which assign the proxy object
+        device_name : str`
+            Tango device name
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+        tango.DeviceProxy`
+            single device proxy object
+
         """
         ctrl_name = args[0]
         device_name = args[1]

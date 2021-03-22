@@ -47,26 +47,62 @@ from sardana.tango.pool.PoolDevice import PoolElementDevice, \
 
 
 class TriggerGate(PoolElementDevice):
+    """ """
 
     def __init__(self, dclass, name):
         PoolElementDevice.__init__(self, dclass, name)
 
     def init(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         PoolElementDevice.init(self, name)
 
     def _is_allowed(self, req_type):
+        """
+
+        Parameters
+        ----------
+        req_type :
+            
+
+        Returns
+        -------
+
+        """
         return PoolElementDevice._is_allowed(self, req_type)
 
     def get_tg(self):
+        """ """
         return self.element
 
     def set_tg(self, tg):
+        """
+
+        Parameters
+        ----------
+        tg :
+            
+
+        Returns
+        -------
+
+        """
         self.element = tg
 
     tg = property(get_tg, set_tg)
 
     @DebugIt()
     def delete_device(self):
+        """ """
         PoolElementDevice.delete_device(self)
         tg = self.tg
         if tg is not None:
@@ -74,6 +110,7 @@ class TriggerGate(PoolElementDevice):
 
     @DebugIt()
     def init_device(self):
+        """ """
         PoolElementDevice.init_device(self)
 
         tg = self.tg
@@ -89,6 +126,21 @@ class TriggerGate(PoolElementDevice):
         self.set_state(DevState.ON)
 
     def on_tg_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._on_tg_changed(event_source, event_type, event_value)
         except not DevFailed:
@@ -99,6 +151,21 @@ class TriggerGate(PoolElementDevice):
             self.debug("Details", exc_info=exc_info)
 
     def _on_tg_changed(self, event_source, event_type, event_value):
+        """
+
+        Parameters
+        ----------
+        event_source :
+            
+        event_type :
+            
+        event_value :
+            
+
+        Returns
+        -------
+
+        """
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -136,8 +203,10 @@ class TriggerGate(PoolElementDevice):
 
 
 class TriggerGateClass(PoolElementDeviceClass):
+    """ """
 
     def _get_class_properties(self):
+        """ """
         ret = PoolElementDeviceClass._get_class_properties(self)
         ret['Description'] = "Trigger/Gate device class"
         ret['InheritedFrom'].insert(0, 'PoolElementDevice')

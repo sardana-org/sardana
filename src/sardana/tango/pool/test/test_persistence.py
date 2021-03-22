@@ -41,8 +41,7 @@ info2 = ('TriggerGate', 'DummyTriggerGateController',
             test_method_doc='Test persistence of dummy TriggerGate elements',
             info=info2)
 class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
-    """ Test the persistence of the Sardana Tango elements.
-    """
+    """Test the persistence of the Sardana Tango elements."""
 
     def check_elems_presistence(self, info):
         """Helper method to test the elements persistence. The actions are:
@@ -50,8 +49,14 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
             - restart Pool
             - check if element persist
 
-        :param info: information about controller (type, library, class)
-        :type info: tuple<str>
+        Parameters
+        ----------
+        info : tuple<str>
+            information about controller (type, library, class)
+
+        Returns
+        -------
+
         """
         # Create controller
         self.do_element_cleanup = False
@@ -81,8 +86,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         self.assertIsNotNone(obj, msg)
 
     def tearDown(self):
-        """Remove the elements and the controllers
-        """
+        """Remove the elements and the controllers"""
         cleanup_success = True
         if self.do_element_cleanup:
             try:

@@ -46,6 +46,7 @@ from sardana.macroserver.msexception import MacroServerException, \
 
 
 class OptionalParamClass(dict):
+    """ """
     def __init__(self, obj):
         super(OptionalParamClass, self).__init__(obj)
         attributes = dir(self)
@@ -62,6 +63,19 @@ class OptionalParamClass(dict):
         return 'Optional'
 
     def raise_error(*args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         raise RuntimeError('can not be accessed')
 
 
@@ -69,6 +83,7 @@ Optional = OptionalParamClass({'___optional_parameter__': True})
 
 
 class WrongParam(MacroServerException):
+    """ """
 
     def __init__(self, *args):
         MacroServerException.__init__(self, *args)
@@ -76,6 +91,7 @@ class WrongParam(MacroServerException):
 
 
 class MissingParam(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -83,6 +99,7 @@ class MissingParam(WrongParam):
 
 
 class SupernumeraryParam(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -90,6 +107,7 @@ class SupernumeraryParam(WrongParam):
 
 
 class UnknownParamObj(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -97,6 +115,7 @@ class UnknownParamObj(WrongParam):
 
 
 class WrongParamType(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -104,6 +123,7 @@ class WrongParamType(WrongParam):
 
 
 class MissingRepeat(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -111,6 +131,7 @@ class MissingRepeat(WrongParam):
 
 
 class SupernumeraryRepeat(WrongParam):
+    """ """
 
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
@@ -125,14 +146,34 @@ class TypeNames:
         self._pending_type_names = {}
 
     def addType(self, name):
-        """Register a new macro parameter type"""
+        """Register a new macro parameter type
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         setattr(self, name, name)
         self._type_names[name] = name
         if name in self._pending_type_names:
             del self._pending_type_names[name]
 
     def removeType(self, name):
-        """remove a macro parameter type"""
+        """remove a macro parameter type
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         delattr(self, name)
         try:
             del self._type_names[name]
@@ -154,6 +195,7 @@ Type = TypeNames()
 
 
 class ParamType(MSBaseObject):
+    """ """
 
     All = 'All'
 
@@ -171,22 +213,59 @@ class ParamType(MSBaseObject):
                               elem_type=ElementType.ParameterType)
 
     def getName(self):
+        """ """
         return self.name
 
     def getObj(self, str_repr):
+        """
+
+        Parameters
+        ----------
+        str_repr :
+            
+
+        Returns
+        -------
+
+        """
         return self.type_class(str_repr)
 
     @classmethod
     def hasCapability(cls, cap):
+        """
+
+        Parameters
+        ----------
+        cap :
+            
+
+        Returns
+        -------
+
+        """
         return cap in cls.capabilities
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = MSBaseObject.serialize(self, *args, **kwargs)
         kwargs['composed'] = False
         return kwargs
 
 
 class ElementParamType(ParamType):
+    """ """
 
     capabilities = ParamType.ItemList, ParamType.ItemListEvents
 
@@ -194,9 +273,35 @@ class ElementParamType(ParamType):
         ParamType.__init__(self, macro_server, name)
 
     def accepts(self, elem):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+
+        Returns
+        -------
+
+        """
         return elem.getType() == self._name
 
     def getObj(self, name, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_server = self.macro_server
         if pool == ParamType.All:
             pools = macro_server.get_pools()
@@ -222,6 +327,19 @@ class ElementParamType(ParamType):
                               (self._name, name))
 
     def getObjDict(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_server = self.macro_server
         objs = CaselessDict()
         if pool == ParamType.All:
@@ -243,20 +361,60 @@ class ElementParamType(ParamType):
         return objs
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         obj_dict = self.getObjDict(pool=pool, cache=cache)
         return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         obj_dict = self.getObjDict(pool=pool, cache=cache)
         return list(obj_dict.values())
 
     def serialize(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *args :
+            
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         kwargs = ParamType.serialize(self, *args, **kwargs)
         kwargs['composed'] = True
         return kwargs
 
 
 class ElementParamInterface(ElementParamType):
+    """ """
 
     def __init__(self, macro_server, name):
         ElementParamType.__init__(self, macro_server, name)
@@ -264,6 +422,17 @@ class ElementParamInterface(ElementParamType):
         self._interfaces = bases
 
     def accepts(self, elem):
+        """
+
+        Parameters
+        ----------
+        elem :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = elem.getType()
         elem_interfaces = INTERFACES_EXPANDED.get(elem_type)[0]
         if elem_interfaces is None:
@@ -271,6 +440,21 @@ class ElementParamInterface(ElementParamType):
         return self._name in elem_interfaces
 
     def getObj(self, name, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_server = self.macro_server
         if pool == ParamType.All:
             pools = macro_server.get_pools()
@@ -296,6 +480,19 @@ class ElementParamInterface(ElementParamType):
                               (self._name, name))
 
     def getObjDict(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         macro_server = self.macro_server
         objs = CaselessDict()
         if macro_server.is_macroserver_interface(self._name):
@@ -313,15 +510,42 @@ class ElementParamInterface(ElementParamType):
         return objs
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         obj_dict = self.getObjDict(pool=pool, cache=cache)
         return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
+        """
+
+        Parameters
+        ----------
+        pool :
+             (Default value = ParamType.All)
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         obj_dict = self.getObjDict(pool=pool, cache=cache)
         return list(obj_dict.values())
 
 
 class AttrParamType(ParamType):
+    """ """
     pass
 
 
@@ -333,12 +557,21 @@ class ParamDecoder:
     def __init__(self, type_manager, params_def, raw_params):
         """Create ParamDecorder object and decode macro parameters
 
-        :param type_manager: (sardana.macroserver.mstypemanager.TypeManager)
+        Parameters
+        ----------
+        type_manager :
+            sardana.macroserver.mstypemanager.TypeManager)
             type manager object
-        :param params_def: list<list> macro parameter definition
-        :param raw_params: (lxml.etree._Element or list) xml element
+        params_def :
+            list<list> macro parameter definition
+        raw_params :
+            lxml.etree._Element or list) xml element
             representing macro with subelements representing parameters or list
             with parameter values
+
+        Returns
+        -------
+
         """
         self.type_manager = type_manager
         self.params_def = params_def
@@ -349,6 +582,13 @@ class ParamDecoder:
     def decode(self):
         """Decode raw representation of parameters to parameters as passed
         to the prepare or run methods.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         # make a copy since in case of XML it could be necessary to modify
         # the raw_params - filter out elements different than params
@@ -383,11 +623,19 @@ class ParamDecoder:
     def decodeNormal(self, raw_param, param_def):
         """Decode and validate parameter
 
-        :param raw_param: (lxml.etree._Element or list) xml element
+        Parameters
+        ----------
+        raw_param :
+            lxml.etree._Element or list) xml element
             representing parameter
-        :param param_def: (dict) parameter definition
+        param_def :
+            dict) parameter definition
 
-        :return: (list): list with decoded parameter repetitions
+        Returns
+        -------
+        type
+            list): list with decoded parameter repetitions
+
         """
         param_type = param_def["type"]
         name = param_def["name"]
@@ -428,12 +676,20 @@ class ParamDecoder:
     def decodeRepeat(self, raw_param_repeat, param_repeat_def):
         """Decode and validate repeat parameter
 
-        :param raw_param_repeat: (lxml.etree._Element or list) xml element
+        Parameters
+        ----------
+        raw_param_repeat :
+            lxml.etree._Element or list) xml element
             representing param repeat with subelements representing repetitions
             or list representing repetitions
-        :param param_repeat_def: (dict) repeat parameter definition
+        param_repeat_def :
+            dict) repeat parameter definition
 
-        :return: (list): list with decoded parameter repetitions
+        Returns
+        -------
+        type
+            list): list with decoded parameter repetitions
+
         """
         name = param_repeat_def['name']
         param_type = param_repeat_def['type']
@@ -486,6 +742,7 @@ class ParamDecoder:
         return param_repeat
 
     def getParamList(self):
+        """ """
         return self.params
 
     def __iter__(self):
@@ -499,6 +756,13 @@ class FlatParamDecoder:
     """Parameter decoder useful for macros with only one repeat parameter
     located at the very last place. It requires that the raw parameters are
     passed as a flat list of strings.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, type_manager, params_def, raw_params):
@@ -514,6 +778,17 @@ class FlatParamDecoder:
 
     @staticmethod
     def isPossible(params_def):
+        """
+
+        Parameters
+        ----------
+        params_def :
+            
+
+        Returns
+        -------
+
+        """
         for param_def in params_def:
             param_type = param_def["type"]
             if isinstance(param_type, list):
@@ -530,12 +805,26 @@ class FlatParamDecoder:
         return True
 
     def decode(self):
+        """ """
         params_def = self.params_def
         raw_params = self.raw_params
         _, self.params = self.decodeNormal(raw_params, params_def)
         return self.params
 
     def decodeNormal(self, raw_params, params_def):
+        """
+
+        Parameters
+        ----------
+        raw_params :
+            
+        params_def :
+            
+
+        Returns
+        -------
+
+        """
         str_len = len(raw_params)
         obj_list = []
         str_idx = 0
@@ -582,6 +871,19 @@ class FlatParamDecoder:
         return str_idx, obj_list
 
     def decodeRepeat(self, raw_params, par_def):
+        """
+
+        Parameters
+        ----------
+        raw_params :
+            
+        par_def :
+            
+
+        Returns
+        -------
+
+        """
         name = par_def['name']
         param_def = par_def['type']
         min_rep = par_def['min']
@@ -607,6 +909,7 @@ class FlatParamDecoder:
         return dec_token, obj_list
 
     def getParamList(self):
+        """ """
         return self.params
 
     def __iter__(self):

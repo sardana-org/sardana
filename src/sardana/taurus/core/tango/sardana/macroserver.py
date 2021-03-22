@@ -67,6 +67,17 @@ CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
 
 def get_terminal_size(fileno=None):
+    """
+
+    Parameters
+    ----------
+    fileno :
+         (Default value = None)
+
+    Returns
+    -------
+
+    """
     try:
         if fileno is None:
             fileno = sys.stdout.fileno()
@@ -78,10 +89,24 @@ def get_terminal_size(fileno=None):
 
 
 def _get_nb_lines(nb_chrs, max_chrs):
+    """
+
+    Parameters
+    ----------
+    nb_chrs :
+        
+    max_chrs :
+        
+
+    Returns
+    -------
+
+    """
     return int(math.ceil(float(nb_chrs)/max_chrs))
 
 
 class Attr(Logger, EventGenerator):
+    """ """
 
     def __init__(self, dev, name, obj_class, attr):
         self._dev = weakref.ref(dev)
@@ -94,6 +119,21 @@ class Attr(Logger, EventGenerator):
         self._attr.addListener(self)
 
     def eventReceived(self, src, type, evt_value):
+        """
+
+        Parameters
+        ----------
+        src :
+            
+        type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if type == TaurusEventType.Error:
             self.fireEvent(None)
         elif type != TaurusEventType.Config:
@@ -103,6 +143,7 @@ class Attr(Logger, EventGenerator):
                 self.fireEvent(None)
 
     def getTaurusAttribute(self):
+        """ """
         return self._attr
 
     def __getattr__(self, name):
@@ -110,6 +151,7 @@ class Attr(Logger, EventGenerator):
 
 
 class LogAttr(Attr):
+    """ """
 
     def __init__(self, dev, name, obj_class, attr, max_buff_size=4096):
         self._log_buffer = []
@@ -117,12 +159,29 @@ class LogAttr(Attr):
         self.call__init__(Attr, dev, name, obj_class, attr)
 
     def getLogBuffer(self):
+        """ """
         return self._log_buffer
 
     def clearLogBuffer(self):
+        """ """
         self._log_buffer = []
 
     def eventReceived(self, src, type, evt_value):
+        """
+
+        Parameters
+        ----------
+        src :
+            
+        type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         if type == TaurusEventType.Change:
             if evt_value is None or evt_value.rvalue is None:
                 self.fireEvent(None)
@@ -135,6 +194,7 @@ class LogAttr(Attr):
 
 
 class BaseInputHandler(object):
+    """ """
 
     def __init__(self):
         try:
@@ -143,6 +203,17 @@ class BaseInputHandler(object):
             self._input = input
 
     def input(self, input_data=None):
+        """
+
+        Parameters
+        ----------
+        input_data :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if input_data is None:
             input_data = {}
         prompt = input_data.get('prompt')
@@ -157,14 +228,34 @@ class BaseInputHandler(object):
         return ret
 
     def input_timeout(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         print("input timeout")
 
 
 class MacroServerDevice(TangoDevice):
     """A class encapsulating a generic macro server device (usually a
-    MacroServer or a Door"""
+    MacroServer or a Door
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
 
     def _getEventWait(self):
+        """ """
         if not hasattr(self, '_evt_wait'):
             # create an object that waits for attribute events.
             # each time we use it we have to connect and disconnect to an
@@ -174,11 +265,23 @@ class MacroServerDevice(TangoDevice):
 
 
 class ExperimentConfiguration(object):
+    """ """
 
     def __init__(self, door):
         self._door = door
 
     def get(self, cache=False):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         door = self._door
         macro_server = door.macro_server
         env = door.getEnvironment()
@@ -224,7 +327,19 @@ class ExperimentConfiguration(object):
         return ret
 
     def set(self, conf, mnt_grps=None):
-        """Sets the ExperimentConfiguration dictionary."""
+        """Sets the ExperimentConfiguration dictionary.
+
+        Parameters
+        ----------
+        conf :
+            
+        mnt_grps :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if mnt_grps is None:
             mnt_grps = list(conf['MntGrpConfigs'].keys())
 
@@ -280,6 +395,17 @@ class ExperimentConfiguration(object):
         self._door.putEnvironments(env)
 
     def _getPoolOfElement(self, elementname):
+        """
+
+        Parameters
+        ----------
+        elementname :
+            
+
+        Returns
+        -------
+
+        """
         ms = self._door.macro_server
         einfo = ms.getElementInfo(elementname)
         poolname = einfo.pool
@@ -297,7 +423,7 @@ class ExperimentConfiguration(object):
 
 
 class BaseDoor(MacroServerDevice):
-    """ Class encapsulating Door device functionality."""
+    """Class encapsulating Door device functionality."""
 
     On = PyTango.DevState.ON
     Running = PyTango.DevState.RUNNING
@@ -367,12 +493,15 @@ class BaseDoor(MacroServerDevice):
         self._experiment_configuration = ExperimentConfiguration(self)
 
     def create_input_handler(self):
+        """ """
         return BaseInputHandler()
 
     def get_input_handler(self):
+        """ """
         return self._input_handler
 
     def get_color_mode(self):
+        """ """
         return "NoColor"
 
     # def macrosChanged(self, s, v, t):
@@ -380,6 +509,7 @@ class BaseDoor(MacroServerDevice):
 
     @property
     def log_start(self):
+        """ """
         if not hasattr(self, "_log_start"):
             import taurus.core.util.console
             if self.get_color_mode() == "NoColor":
@@ -397,6 +527,7 @@ class BaseDoor(MacroServerDevice):
 
     @property
     def log_stop(self):
+        """ """
         if not hasattr(self, "_log_stop"):
             import taurus.core.util.console
             if self.get_color_mode() == "NoColor":
@@ -413,17 +544,27 @@ class BaseDoor(MacroServerDevice):
         return self._log_stop
 
     def getStateAttr(self):
+        """ """
         return self._state_attr
 
     @property
     def macro_server(self):
+        """ """
         if self._macro_server is None:
             self._macro_server = self._get_macroserver_for_door()
         return self._macro_server
 
     def _get_macroserver_for_door(self):
         """Returns the MacroServer device object in the same DeviceServer as
-        this door"""
+        this door
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         db = self.getParentObj()
         door_name = self.dev_name()
         server_list = list(db.get_server_list('MacroServer/*'))
@@ -441,30 +582,79 @@ class BaseDoor(MacroServerDevice):
             return None
 
     def setDebugMode(self, state):
+        """
+
+        Parameters
+        ----------
+        state :
+            
+
+        Returns
+        -------
+
+        """
         self._debug = state
 
     def getDebugMode(self):
+        """ """
         return self._debug
 
     def setSilent(self, yesno):
+        """
+
+        Parameters
+        ----------
+        yesno :
+            
+
+        Returns
+        -------
+
+        """
         self._silent = yesno
 
     def isSilent(self):
+        """ """
         return self._silent
 
     def getLogObj(self, log_name='Debug'):
+        """
+
+        Parameters
+        ----------
+        log_name :
+             (Default value = 'Debug')
+
+        Returns
+        -------
+
+        """
         return self._log_attr.get(log_name, None)
 
     def getRunningXML(self):
+        """ """
         return self._user_xml
 
     def getRunningMacro(self):
+        """ """
         return self._running_macro
 
     def getLastRunningMacro(self):
+        """ """
         return self._last_running_macro
 
     def abort(self, synch=True):
+        """
+
+        Parameters
+        ----------
+        synch :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         if not synch:
             self.command_inout("AbortMacro")
             return
@@ -481,6 +671,17 @@ class BaseDoor(MacroServerDevice):
             evt_wait.disconnect()
 
     def release(self, synch=True):
+        """
+
+        Parameters
+        ----------
+        synch :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         if not synch:
             try:
                 self.command_inout("ReleaseMacro")
@@ -508,6 +709,17 @@ class BaseDoor(MacroServerDevice):
             evt_wait.disconnect()
 
     def stop(self, synch=True):
+        """
+
+        Parameters
+        ----------
+        synch :
+             (Default value = True)
+
+        Returns
+        -------
+
+        """
         if not synch:
             self.command_inout("StopMacro")
             return
@@ -524,6 +736,7 @@ class BaseDoor(MacroServerDevice):
             evt_wait.disconnect()
 
     def _clearRunMacro(self):
+        """ """
         # Clear the log buffer
         list(map(LogAttr.clearLogBuffer, list(self._log_attr.values())))
         self._running_macros = None
@@ -534,11 +747,19 @@ class BaseDoor(MacroServerDevice):
     def _createMacroXml(self, macro_name, macro_params):
         """Creation of the macro XML object.
 
-        :param macro_name: (str) macro name
-        :param macro_params: (sequence[str]) list of parameter values,
+        Parameters
+        ----------
+        macro_name :
+            str) macro name
+        macro_params :
+            sequence[str]) list of parameter values,
             if repeat parameters are used parameter values may be sequences
             itself.
-        :return (lxml.etree._Element) macro XML element
+            :return (lxml.etree._Element) macro XML element
+
+        Returns
+        -------
+
         """
         macro_info = self.macro_server.getMacroInfoObj(macro_name)
         params_def = macro_info.parameters
@@ -546,6 +767,19 @@ class BaseDoor(MacroServerDevice):
         return macro_node.toXml()
 
     def preRunMacro(self, obj, parameters):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        parameters :
+            
+
+        Returns
+        -------
+
+        """
         self._clearRunMacro()
 
         xml_root = None
@@ -581,14 +815,55 @@ class BaseDoor(MacroServerDevice):
         return xml_root
 
     def postRunMacro(self, result, synch):
+        """
+
+        Parameters
+        ----------
+        result :
+            
+        synch :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def runMacro(self, obj, parameters=[], synch=False):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+        parameters :
+             (Default value = [])
+        synch :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         self._user_xml = self.preRunMacro(obj, parameters)
         result = self._runMacro(self._user_xml, synch=synch)
         return self.postRunMacro(result, synch)
 
     def _runMacro(self, xml, synch=False):
+        """
+
+        Parameters
+        ----------
+        xml :
+            
+        synch :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if not synch:
             return self.command_inout("RunMacro",
                                       [etree.tostring(xml,
@@ -619,6 +894,21 @@ class BaseDoor(MacroServerDevice):
         return result
 
     def stateChanged(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         # In contrary to the Taurus3 the Taurus4 raises exceptions when the
         # device server is getting down and we try to retrieve the state.
         # In this case provide the same behavior as Taurus3 - assign None to
@@ -632,25 +922,87 @@ class BaseDoor(MacroServerDevice):
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result
-        attribute"""
+        attribute
+
+        Parameters
+        ----------
+        log_name :
+            
+        result :
+            
+
+        Returns
+        -------
+
+        """
         if self._ignore_logs or self._running_macro is None:
             return
         self._running_macro.setResult(result)
         return result
 
     def putEnvironment(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.macro_server.putEnvironment(name, value)
 
     def putEnvironments(self, obj):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+
+        Returns
+        -------
+
+        """
         self.macro_server.putEnvironments(obj)
 
     setEnvironment = putEnvironment
     setEnvironments = putEnvironments
 
     def getEnvironment(self, name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         return self.macro_server.getEnvironment(name=name)
 
     def inputReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if t not in CHANGE_EVT_TYPES:
             return
         if v is None or self._running_macros is None:
@@ -659,9 +1011,31 @@ class BaseDoor(MacroServerDevice):
         self.processInput(input_data)
 
     def processInput(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         TaurusManager().addJob(self._processInput, None, input_data)
 
     def _processInput(self, input_data):
+        """
+
+        Parameters
+        ----------
+        input_data :
+            
+
+        Returns
+        -------
+
+        """
         input_type = input_data['type']
         if input_type == 'input':
             result = self._input_handler.input(input_data)
@@ -673,11 +1047,37 @@ class BaseDoor(MacroServerDevice):
             self._input_handler.input_timeout(input_data)
 
     def recordDataReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if t not in CHANGE_EVT_TYPES:
             return
         return self._processRecordData(v)
 
     def _processRecordData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         if data is None or data.rvalue is None:
             return
         data = data.rvalue
@@ -691,9 +1091,35 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def processRecordData(self, data):
+        """
+
+        Parameters
+        ----------
+        data :
+            
+
+        Returns
+        -------
+
+        """
         pass
 
     def macroStatusReceived(self, s, t, v):
+        """
+
+        Parameters
+        ----------
+        s :
+            
+        t :
+            
+        v :
+            
+
+        Returns
+        -------
+
+        """
         if v is None or self._running_macros is None:
             return
         if t not in CHANGE_EVT_TYPES:
@@ -718,6 +1144,19 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
+        """
+
+        Parameters
+        ----------
+        log_name :
+            
+        output :
+            
+
+        Returns
+        -------
+
+        """
         term_size = get_terminal_size()
         max_chrs = term_size.columns if term_size else None
         if not output or self._silent or self._ignore_logs:
@@ -758,6 +1197,19 @@ class BaseDoor(MacroServerDevice):
         self.write(o)
 
     def write(self, msg, stream=None):
+        """
+
+        Parameters
+        ----------
+        msg :
+            
+        stream :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if self.isSilent():
             return
         self._output_stream = sys.stdout
@@ -774,29 +1226,60 @@ class BaseDoor(MacroServerDevice):
         out.flush()
 
     def writeln(self, msg='', stream=None):
+        """
+
+        Parameters
+        ----------
+        msg :
+             (Default value = '')
+        stream :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self.write("%s\n" % msg, stream=stream)
 
     def getExperimentConfigurationObj(self):
+        """ """
         return self._experiment_configuration
 
     def getExperimentConfiguration(self):
+        """ """
         return self._experiment_configuration.get()
 
     def setExperimentConfiguration(self, config, mnt_grps=None):
+        """
+
+        Parameters
+        ----------
+        config :
+            
+        mnt_grps :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         self._experiment_configuration.set(config, mnt_grps=mnt_grps)
 
 
 class UnknownMacroServerElementFormat(Exception):
+    """ """
     pass
 
 
 class MacroPath(object):
+    """ """
 
     def __init__(self, ms):
         self._ms = weakref.ref(ms)
         self.refresh()
 
     def refresh(self):
+        """ """
         self.macro_path = mp = self._ms().get_property("MacroPath")[
             "MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
@@ -804,6 +1287,7 @@ class MacroPath(object):
 
 
 class Environment(dict):
+    """ """
 
     def __init__(self, macro_server):
         dict.__setattr__(self, "_macro_server_", weakref.ref(macro_server))
@@ -857,6 +1341,21 @@ class BaseMacroServer(MacroServerDevice):
                      'MacroLibrary', 'Instrument', 'Meta', 'ParameterType'
 
     def on_environment_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self._on_environment_changed(evt_src, evt_type, evt_value)
         except Exception:
@@ -865,6 +1364,21 @@ class BaseMacroServer(MacroServerDevice):
             return set(), set(), set()
 
     def _on_environment_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         ret = added, removed, changed = set(), set(), set()
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
@@ -884,18 +1398,66 @@ class BaseMacroServer(MacroServerDevice):
         return ret
 
     def _addEnvironment(self, key, value):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self._env[key] = value
 
     def _removeEnvironment(self, key):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+
+        Returns
+        -------
+
+        """
         try:
             self._env.pop(key)
         except KeyError:
             pass
 
     def putEnvironment(self, name, value):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+        value :
+            
+
+        Returns
+        -------
+
+        """
         self.putEnvironments({name: value})
 
     def putEnvironments(self, obj):
+        """
+
+        Parameters
+        ----------
+        obj :
+            
+
+        Returns
+        -------
+
+        """
         obj = dict(new=obj)
         codec = CodecFactory().getCodec('pickle')
         self.write_attribute('Environment', codec.encode(('', obj)))
@@ -904,21 +1466,65 @@ class BaseMacroServer(MacroServerDevice):
     setEnvironments = putEnvironments
 
     def getEnvironment(self, name=None):
+        """
+
+        Parameters
+        ----------
+        name :
+             (Default value = None)
+
+        Returns
+        -------
+
+        """
         if name is None:
             return self._env
         else:
             return self._env[name]
 
     def removeEnvironment(self, key):
+        """
+
+        Parameters
+        ----------
+        key :
+            
+
+        Returns
+        -------
+
+        """
         keys = key,
         return self.removeEnvironments(keys)
 
     def removeEnvironments(self, keys):
+        """
+
+        Parameters
+        ----------
+        keys :
+            
+
+        Returns
+        -------
+
+        """
         obj = {'del': keys}
         codec = CodecFactory().getCodec('pickle')
         self.write_attribute('Environment', codec.encode(('', obj)))
 
     def getObject(self, element_info):
+        """
+
+        Parameters
+        ----------
+        element_info :
+            
+
+        Returns
+        -------
+
+        """
         elem_type = element_info.getType()
         if elem_type in self.NO_CLASS_TYPES:
             obj = object()
@@ -929,12 +1535,49 @@ class BaseMacroServer(MacroServerDevice):
         return obj
 
     def _createMacroClassObject(self, element_info):
+        """
+
+        Parameters
+        ----------
+        element_info :
+            
+
+        Returns
+        -------
+
+        """
         return MacroInfo(from_json=element_info._data)
 
     def _createDeviceObject(self, element_info):
+        """
+
+        Parameters
+        ----------
+        element_info :
+            
+
+        Returns
+        -------
+
+        """
         return Factory().getDevice(element_info.full_name)
 
     def on_elements_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         try:
             return self._on_elements_changed(evt_src, evt_type, evt_value)
         except Exception:
@@ -943,6 +1586,21 @@ class BaseMacroServer(MacroServerDevice):
             return set(), set(), set()
 
     def _on_elements_changed(self, evt_src, evt_type, evt_value):
+        """
+
+        Parameters
+        ----------
+        evt_src :
+            
+        evt_type :
+            
+        evt_value :
+            
+
+        Returns
+        -------
+
+        """
         ret = added, removed, changed = set(), set(), set()
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
@@ -968,50 +1626,153 @@ class BaseMacroServer(MacroServerDevice):
         return ret
 
     def _addElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         element = BaseSardanaElement(**element_data)
         self.getElementsInfo().addElement(element)
         return element
 
     def _removeElement(self, element_data):
+        """
+
+        Parameters
+        ----------
+        element_data :
+            
+
+        Returns
+        -------
+
+        """
         full_name = element_data['full_name']
         element = self.getElementInfo(full_name)
         self.getElementsInfo().removeElement(element)
         return element
 
     def getElementsInfo(self):
+        """ """
         return self._elements
 
     def getElements(self):
+        """ """
         return self.getElementsInfo().getElements()
 
     def getElementInfo(self, name):
+        """
+
+        Parameters
+        ----------
+        name :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElement(name)
 
     def getElementNamesOfType(self, elem_type):
+        """
+
+        Parameters
+        ----------
+        elem_type :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementNamesOfType(elem_type)
 
     def getElementNamesWithInterface(self, interface):
+        """
+
+        Parameters
+        ----------
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementNamesWithInterface(interface)
 
     def getElementsWithInterface(self, interface):
+        """
+
+        Parameters
+        ----------
+        interface :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementsWithInterface(interface)
 
     def getElementsWithInterfaces(self, interfaces):
+        """
+
+        Parameters
+        ----------
+        interfaces :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementsWithInterfaces(interfaces)
 
     def getElementsOfType(self, elem_type):
+        """
+
+        Parameters
+        ----------
+        elem_type :
+            
+
+        Returns
+        -------
+
+        """
         return self.getElementsInfo().getElementsOfType(elem_type)
 
     def getElementsOfTypes(self, elem_types):
+        """
+
+        Parameters
+        ----------
+        elem_types :
+            
+
+        Returns
+        -------
+
+        """
         elems = CaselessDict()
         for elem_type in elem_types:
             elems.update(self.getElementsOfType(elem_type))
         return elems
 
     def getInterfaces(self):
+        """ """
         return self.getElementsInfo().getInterfaces()
 
     def getExpChannelElements(self):
+        """ """
         channel_types = "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel", \
             "TwoDExpChannel", "PseudoCounter"
         return self.getElementsOfTypes(channel_types)
@@ -1021,28 +1782,47 @@ class BaseMacroServer(MacroServerDevice):
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def getMacros(self):
+        """ """
         iname = 'MacroCode'
         return dict(self.getElementsInfo().getElementsWithInterface(iname))
 
     def getMacroInfoObj(self, macro_name):
+        """
+
+        Parameters
+        ----------
+        macro_name :
+            
+
+        Returns
+        -------
+
+        """
         iname = 'MacroCode'
         return self.getElementsInfo().getElementWithInterface(macro_name,
                                                               iname)
 
     def getMacroStrList(self):
+        """ """
         return self.getElementNamesWithInterface('MacroCode')
 
     def getMacroNodeObj(self, macro_name):
-        """
-        This method retrieves information about macro from MacroServer
+        """This method retrieves information about macro from MacroServer
         and creates MacroNode object, filled with all information about
         parameters.
 
-        :param macro_name: (str) macro name
+        Parameters
+        ----------
+        macro_name :
+            str) macro name
 
-        :return: (MacroNode)
+        Returns
+        -------
+        type
+            MacroNode)
+            
+            See Also: fillMacroNodeAddidtionalInfos
 
-        See Also: fillMacroNodeAddidtionalInfos
         """
 
         macroInfoObj = self.getMacroInfoObj(macro_name)
@@ -1063,6 +1843,17 @@ class BaseMacroServer(MacroServerDevice):
         return macroNode
 
     def validateMacroName(self, macroName):
+        """
+
+        Parameters
+        ----------
+        macroName :
+            
+
+        Returns
+        -------
+
+        """
         macroInfo = self.getElementInfo(macroName)
         if macroInfo is None:
             raise Exception(
@@ -1072,12 +1863,34 @@ class BaseMacroServer(MacroServerDevice):
         return True
 
     def validateMacroNode(self, macroNode):
+        """
+
+        Parameters
+        ----------
+        macroNode :
+            
+
+        Returns
+        -------
+
+        """
         paramNodes = macroNode.children()
         for paramNode in paramNodes:
             self.validateParamNode(paramNode)
         return True
 
     def validateParamNode(self, paramNode):
+        """
+
+        Parameters
+        ----------
+        paramNode :
+            
+
+        Returns
+        -------
+
+        """
         assert isinstance(paramNode, ParamNode)
         if isinstance(paramNode, SingleParamNode):
             self.validateSingleParam(paramNode)
@@ -1086,6 +1899,17 @@ class BaseMacroServer(MacroServerDevice):
         return True
 
     def validateSingleParam(self, singleParamNode):
+        """
+
+        Parameters
+        ----------
+        singleParamNode :
+            
+
+        Returns
+        -------
+
+        """
         name = singleParamNode.name()
         type = singleParamNode.type()
         value = singleParamNode.value()
@@ -1144,6 +1968,17 @@ class BaseMacroServer(MacroServerDevice):
         return True
 
     def validateRepeatParam(self, repeatParamNode):
+        """
+
+        Parameters
+        ----------
+        repeatParamNode :
+            
+
+        Returns
+        -------
+
+        """
         paramName = repeatParamNode.name()
         if repeatParamNode.isBelowMin():
             raise Exception(
@@ -1162,14 +1997,20 @@ class BaseMacroServer(MacroServerDevice):
         return True
 
     def fillMacroNodeAdditionalInfos(self, macroNode):
-        """
-        This method fills macroNode information which couldn't be stored
+        """This method fills macroNode information which couldn't be stored
         in XML file.
 
-        :param macroNode: (MacroNode) macro node obj populated from XML
-          information
+        Parameters
+        ----------
+        macroNode :
+            MacroNode) macro node obj populated from XML
+            information
+            
+            See also: getMacroNodeObj
 
-        See also: getMacroNodeObj
+        Returns
+        -------
+
         """
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
@@ -1244,6 +2085,19 @@ class BaseMacroServer(MacroServerDevice):
             paramNode.setDefValue(str(paramInfo.get("default_value")))
 
     def printTree(self, nodes, tabs=0):
+        """
+
+        Parameters
+        ----------
+        nodes :
+            
+        tabs :
+             (Default value = 0)
+
+        Returns
+        -------
+
+        """
         tabs = tabs + 1
         for node in nodes:
             print(('\t'*tabs) + str(type(node)) + str(node))
@@ -1276,6 +2130,17 @@ class BaseMacroServer(MacroServerDevice):
             paramNode.setDefValue(str(paramInfo.get("default_value")))
 
     def getMacroPathObj(self, cache=False):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = False)
+
+        Returns
+        -------
+
+        """
         if not hasattr(self, "_macro_path"):
             self._macro_path = MacroPath(self)
         elif not cache:
@@ -1285,7 +2150,15 @@ class BaseMacroServer(MacroServerDevice):
 
 def registerExtensions():
     """Registers the macroserver extensions in the
-    :class:`taurus.core.tango.TangoFactory`"""
+    :class:`taurus.core.tango.TangoFactory`
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     factory = Factory('tango')
     factory.registerDeviceClass('MacroServer', BaseMacroServer)
     factory.registerDeviceClass('Door', BaseDoor)
@@ -1293,7 +2166,15 @@ def registerExtensions():
 
 def unregisterExtensions():
     """Registers the macroserver extensions in the
-    :class:`taurus.core.tango.TangoFactory`"""
+    :class:`taurus.core.tango.TangoFactory`
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     factory = Factory('tango')
     factory.unregisterDeviceClass('MacroServer')
     factory.unregisterDeviceClass('Door')

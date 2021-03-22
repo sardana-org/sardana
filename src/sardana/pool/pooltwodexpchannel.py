@@ -37,6 +37,7 @@ from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
 class Pool2DExpChannel(PoolTimerableChannel):
+    """ """
 
     def __init__(self, **kwargs):
         self._data_source = None
@@ -49,6 +50,19 @@ class Pool2DExpChannel(PoolTimerableChannel):
     # --------------------------------------------------------------------------
 
     def get_data_source(self, cache=True, propagate=1):
+        """
+
+        Parameters
+        ----------
+        cache :
+             (Default value = True)
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         msg = ("data_source is deprecated since "
                "version 2.8.0. Use value_ref instead.")
         self.warning(msg)
@@ -58,6 +72,19 @@ class Pool2DExpChannel(PoolTimerableChannel):
         return self._data_source
 
     def _set_data_source(self, data_source, propagate=1):
+        """
+
+        Parameters
+        ----------
+        data_source :
+            
+        propagate :
+             (Default value = 1)
+
+        Returns
+        -------
+
+        """
         self._data_source = data_source
         if not propagate:
             return
@@ -65,6 +92,7 @@ class Pool2DExpChannel(PoolTimerableChannel):
             EventType("data_source", priority=propagate), data_source)
 
     def read_data_source(self):
+        """ """
         data_source = self.controller.get_axis_par(self.axis, "data_source")
         return data_source
 

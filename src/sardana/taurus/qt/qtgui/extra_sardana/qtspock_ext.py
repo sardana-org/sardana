@@ -29,4 +29,15 @@ from IPython.core.magic import register_line_magic
 
 @register_line_magic
 def edmac(self, parameter_s=''):
+    """
+
+    Parameters
+    ----------
+    parameter_s :
+         (Default value = '')
+
+    Returns
+    -------
+
+    """
     return "edmac macro not implemented for qtspock"
