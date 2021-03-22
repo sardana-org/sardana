@@ -120,7 +120,9 @@ class MacroServer(SardanaDevice):
 
         macro_server.set_recorder_path(self.RecorderPath)
         macro_server.set_macro_path(self.MacroPath)
-        macro_server.set_pool_names(self.PoolNames)
+
+        if not self.server_init_hook_available:
+            macro_server.set_pool_names(self.PoolNames)
 
         if self.RConsolePort:
             try:
@@ -130,6 +132,10 @@ class MacroServer(SardanaDevice):
                 self.warning("Failed to start rconsole")
                 self.debug("Details:", exc_info=1)
         self.set_state(DevState.ON)
+
+    def server_init_hook(self):
+        super().server_init_hook()
+        self.macro_server.set_pool_names(self.PoolNames)
 
     def _calculate_name(self, name):
         if name is None:
@@ -222,7 +228,7 @@ class MacroServer(SardanaDevice):
         type_names = self.macro_server.get_data_type_names_with_asterisc()
         attr.set_value(type_names)
 
-    #@DebugIt()
+    # @DebugIt()
     def getElements(self, cache=True):
         value = self.ElementsCache
         if cache and value is not None:
@@ -233,7 +239,7 @@ class MacroServer(SardanaDevice):
         self.ElementsCache = value
         return value
 
-    #@DebugIt()
+    # @DebugIt()
     def read_Elements(self, attr):
         fmt, data = self.getElements()
         attr.set_value(fmt, data)
@@ -300,7 +306,7 @@ class MacroServer(SardanaDevice):
         self.macro_server.set_macro_lib(
             lib_name, code, auto_reload=auto_reload)
 
-    #@DebugIt()
+    # @DebugIt()
     def getEnvironment(self, cache=True):
         value = self.EnvironmentCache
         if cache and value is not None:
@@ -417,34 +423,37 @@ class MacroServerClass(SardanaDeviceClass):
     #    Command definitions
     cmd_list = {
         'GetMacroInfo':
-            [[DevVarStringArray, "Macro(s) name(s)"],
-             [DevVarStringArray, "Macro(s) description(s)"]],
+        [[DevVarStringArray, "Macro(s) name(s)"],
+         [DevVarStringArray, "Macro(s) description(s)"]],
         'ReloadMacro':
-            [[DevVarStringArray, "Macro(s) name(s)"],
-             [DevVarStringArray, "[OK] if successfull or a traceback "
-                "if there was a error (one string with complete traceback of "
-                "each error)"]],
+        [[DevVarStringArray, "Macro(s) name(s)"],
+         [DevVarStringArray,
+          "[OK] if successfull or a traceback "
+          "if there was a error (one string with complete traceback of "
+          "each error)"]],
         'ReloadMacroLib':
-            [[DevVarStringArray, "MacroLib(s) name(s)"],
-             [DevVarStringArray, "[OK] if successfull or a traceback "
-                "if there was a error (one string with complete traceback of "
-                "each error)"]],
+        [[DevVarStringArray, "MacroLib(s) name(s)"],
+         [DevVarStringArray,
+          "[OK] if successfull or a traceback "
+          "if there was a error (one string with complete traceback of "
+          "each error)"]],
         'GetMacroCode':
-            [[DevVarStringArray, "<MacroLib name> [, <Macro name>]"],
-             [DevVarStringArray, "result is a sequence of 3 strings:\n"
-                "<full path and file name>, <code>, <line number>"]],
+        [[DevVarStringArray, "<MacroLib name> [, <Macro name>]"],
+         [DevVarStringArray,
+          "result is a sequence of 3 strings:\n"
+          "<full path and file name>, <code>, <line number>"]],
         'SetMacroCode':
-            [[DevVarStringArray, "<MacroLib name>, <code> [, <Auto reload>=True]\n"
-                "- if macro lib is a simple module name:\n"
-                "  - if it exists, it is overwritten, otherwise a new python "
-                "file is created in the directory of the first element in "
-                "the MacroPath property"
-                "- if macro lib is the full path name:\n"
-                "  - if path is not in the MacroPath, an exception is thrown"
-                "  - if file exists it is overwritten otherwise a new file "
-                "is created"],
-             [DevVoid, ""]],
-    }
+        [[DevVarStringArray,
+          "<MacroLib name>, <code> [, <Auto reload>=True]\n"
+          "- if macro lib is a simple module name:\n"
+          "  - if it exists, it is overwritten, otherwise a new python "
+          "file is created in the directory of the first element in "
+          "the MacroPath property"
+          "- if macro lib is the full path name:\n"
+          "  - if path is not in the MacroPath, an exception is thrown"
+          "  - if file exists it is overwritten otherwise a new file "
+          "is created"],
+         [DevVoid, ""]], }
 
     #    Attribute definitions
     attr_list = {
