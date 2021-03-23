@@ -80,6 +80,7 @@ class SardanaDevice(LatestDeviceImpl, Logger):
 
             self._state = DevState.INIT
             self._status = 'Waiting to be initialized...'
+            self._server_init_hook_available = False
 
             # access to some tango API (like MultiAttribute and Attribute) is
             # still not thread safe so we have this lock to protect
@@ -169,6 +170,13 @@ class SardanaDevice(LatestDeviceImpl, Logger):
         detect_evts = "state", "status"
         non_detect_evts = ()
         self.set_change_events(detect_evts, non_detect_evts)
+
+    @property
+    def server_init_hook_available(self):
+        return self._server_init_hook_available
+
+    def server_init_hook(self):
+        self._server_init_hook_available = True
 
     def _get_nodb_device_info(self):
         """Internal method. Returns the device info when tango database is not
