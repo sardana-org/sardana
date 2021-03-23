@@ -282,6 +282,10 @@ def test_swmr_with_h5_session(tmpdir):
             reader.join()
 
 
+@pytest.mark.xfail(
+    condition=h5py.version.hdf5_version_tuple < (1, 10, 1),
+    reason="HDF5_USE_FILE_LOCKING not supported by hdf5<1.10.1"
+)
 def test_swmr_without_h5_session(tmpdir):
 
     @mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
