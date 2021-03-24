@@ -53,7 +53,10 @@ def _h5_start_session(macro, swmr_mode):
         except UnknownEnv:
             swmr_mode = False
     for file_path in _get_h5_scan_files(macro):
-        _h5_file_handler.open_file(file_path, swmr_mode)
+        fd = _h5_file_handler.open_file(file_path, swmr_mode)
+        macro.print("H5 session open for '{}'".format(file_path))
+        macro.print("\t SWMR mode: {}".format(swmr_mode))
+        macro.print("\t HDF5 version compatibility: {}".format(fd.libver))
 
 
 @macro([["swmr_mode", Type.Boolean, Optional, "Enable SWMR mode"]])
