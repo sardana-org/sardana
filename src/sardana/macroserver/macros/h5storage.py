@@ -81,9 +81,9 @@ def _h5_end_session(macro):
 
 @macro()
 def h5_end_session(self):
-    """End SWMR write session for HDF5 scan file(s)
+    """End write session for HDF5 scan file(s)
 
-    Close previously opened HDF5 scan files with the use ``h5_start_swmr``.
+    Close previously opened HDF5 scan files with the use ``h5_start_session``.
 
     Resolve configured H5 scan file names by inspecting ScanDir and ScanFile
     environment variables.
@@ -93,7 +93,7 @@ def h5_end_session(self):
 
 @macro()
 def h5_ls_session(self):
-    """List scan files opened for SWMR write session with ``h5_start_swmr``
+    """List scan files opened for write session with ``h5_start_session``
     """
     for file_path in _h5_file_handler.files:
         self.print(file_path)
