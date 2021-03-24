@@ -16,6 +16,7 @@
     env <macros/env>
     expconf <macros/expconf>
     expert <macros/expert>
+    h5storage <macros/h5storage>
     hkl <macros/hkl>
     ioregister <macros/ioregister>
     lists <macros/lists>

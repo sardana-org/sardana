@@ -1782,6 +1782,13 @@ class Macro(Logger):
     # Handle macro environment
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
+    def _getEnv(self, key=None, macro_name=None, door_name=None):
+        door_name = door_name or self.getDoorName()
+        macro_name = macro_name or self._name
+
+        return self.macro_server.get_env(key=key, macro_name=macro_name,
+                                         door_name=door_name)
+
     @mAPI
     def getEnv(self, key=None, macro_name=None, door_name=None):
         """**Macro API**. Gets the local environment matching the given
@@ -1810,11 +1817,7 @@ class Macro(Logger):
 
         :return: a :obj:`dict` containing the environment
         :rtype: :obj:`dict`"""
-        door_name = door_name or self.getDoorName()
-        macro_name = macro_name or self._name
-
-        return self.macro_server.get_env(key=key, macro_name=macro_name,
-                                         door_name=door_name)
+        return self._getEnv(key=key, macro_name=macro_name, door_name=door_name)
 
     @mAPI
     def getGlobalEnv(self):
