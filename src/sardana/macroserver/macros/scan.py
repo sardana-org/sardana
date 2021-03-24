@@ -997,14 +997,17 @@ class ascanh(aNscan, Macro):
                       mode=HybridMode, **opts)
 
 
-class rscan(Macro):
+class rscan(Macro, Hookable):
     """rscan.
     Do an absolute scan of the specified motor with different number of intervals for each region.
     It uses the gscan framework.
     """
 
-    hints = {'scan': 'rscan'}
-    env = ('ActiveMntGrp',)
+    hints = {'scan': 'rscan', 'allowsHooks': ('pre-scan', 'pre-move',
+                                              'post-move', 'pre-acq',
+                                              'post-acq', 'post-step',
+                                              'post-scan')}
+    # env = ('ActiveMntGrp',)
 
     param_def = [
         ['motor',      Type.Moveable, None, 'Motor to move'],
@@ -1012,7 +1015,7 @@ class rscan(Macro):
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
          [['next_pos',  Type.Float,   None, 'next position'],
-          ['region_nr_intervals',  Type.Float,   None,
+          ['region_nr_intervals',  Type.Integer,   None,
            'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
@@ -1025,14 +1028,20 @@ class rscan(Macro):
         self.regions_count = len(self.regions) // 2
 
         generator = self._generator
-        moveables = [motor]
+        self.motors = [motor]
         env = opts.get('env', {})
         constrains = []
-        self._gScan = SScan(self, generator, moveables, env, constrains)
+        self._gScan = SScan(self, generator, self.motors, env, constrains)
 
     def _generator(self):
         step = {}
         step["integ_time"] = self.integ_time
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        step["post-move-hooks"] = self.getHooks('post-move')
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
+        step["post-step-hooks"] = self.getHooks('post-step')
 
         point_id = 0
         region_start = self.start_pos
@@ -1058,14 +1067,17 @@ class rscan(Macro):
             yield step
 
 
-class r2scan(Macro):
+class r2scan(Macro, Hookable):
     """r2scan.
     Do an absolute scan of the specified motors with different number of intervals for each region.
     It uses the gscan framework. All the motors will be drived to the same position in each step
     """
 
-    hints = {'scan': 'r2scan'}
-    env = ('ActiveMntGrp',)
+    hints = {'scan': 'r2scan', 'allowsHooks': ('pre-scan', 'pre-move',
+                                               'post-move', 'pre-acq',
+                                               'post-acq', 'post-step',
+                                               'post-scan')}
+    # env = ('ActiveMntGrp',)
 
     param_def = [
         ['motor1',     Type.Moveable, None, 'Motor to move'],
@@ -1074,7 +1086,7 @@ class r2scan(Macro):
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
          [['next_pos', Type.Float, None, 'next position'],
-          ['region_nr_intervals', Type.Float, None,
+          ['region_nr_intervals', Type.Integer, None,
            'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
@@ -1087,14 +1099,20 @@ class r2scan(Macro):
         self.regions_count = len(self.regions) // 2
 
         generator = self._generator
-        moveables = [motor1, motor2]
+        self.motors = [motor1, motor2]
         env = opts.get('env', {})
         constrains = []
-        self._gScan = SScan(self, generator, moveables, env, constrains)
+        self._gScan = SScan(self, generator, self.motors, env, constrains)
 
     def _generator(self):
         step = {}
         step["integ_time"] = self.integ_time
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        step["post-move-hooks"] = self.getHooks('post-move')
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
+        step["post-step-hooks"] = self.getHooks('post-step')
 
         point_id = 0
         region_start = self.start_pos
@@ -1120,7 +1138,7 @@ class r2scan(Macro):
             yield step
 
 
-class r3scan(Macro):
+class r3scan(Macro, Hookable):
     """r3scan.
     Do an absolute scan of the specified motors with different number of
     intervals for each region. It uses the gscan framework.
@@ -1131,8 +1149,11 @@ class r3scan(Macro):
         input of parameters in Spock.
     """
 
-    hints = {'scan': 'r3scan'}
-    env = ('ActiveMntGrp',)
+    hints = {'scan': 'r3scan', 'allowsHooks': ('pre-scan', 'pre-move',
+                                               'post-move', 'pre-acq',
+                                               'post-acq', 'post-step',
+                                               'post-scan')}
+    # env = ('ActiveMntGrp',)
 
     param_def = [
         ['motor1',     Type.Moveable, None, 'Motor to move'],
@@ -1142,7 +1163,7 @@ class r3scan(Macro):
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
          [['next_pos',  Type.Float,   None, 'next position'],
-          ['region_nr_intervals',  Type.Float,   None,
+          ['region_nr_intervals',  Type.Integer,   None,
            'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
@@ -1155,14 +1176,20 @@ class r3scan(Macro):
         self.regions_count = len(self.regions) // 2
 
         generator = self._generator
-        moveables = [motor1, motor2, motor3]
+        self.motors = [motor1, motor2, motor3]
         env = opts.get('env', {})
         constrains = []
-        self._gScan = SScan(self, generator, moveables, env, constrains)
+        self._gScan = SScan(self, generator, self.motors, env, constrains)
 
     def _generator(self):
         step = {}
         step["integ_time"] = self.integ_time
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        step["post-move-hooks"] = self.getHooks('post-move')
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
+        step["post-step-hooks"] = self.getHooks('post-step')
 
         point_id = 0
         region_start = self.start_pos
