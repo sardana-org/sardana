@@ -80,20 +80,26 @@ def h5_start_session(self, swmr_mode):
     _h5_start_session(self, swmr_mode)
 
 
-def _h5_end_session(macro):
-    for file_path in _get_h5_scan_files(macro):
+def _h5_end_session(macro, path=None):
+    if path is None:
+        paths = _get_h5_scan_files(macro)
+    else:
+        paths = [path]
+    for file_path in paths:
         _h5_file_handler.close_file(file_path)
 
-@macro()
-def h5_end_session(self):
+
+@macro([["path", Type.String, Optional,
+         "File name for which the session should be ended"]])
+def h5_end_session(self, path):
     """End write session for HDF5 scan file(s)
 
     Close previously opened HDF5 scan files with the use ``h5_start_session``.
 
-    Resolve configured H5 scan file names by inspecting ScanDir and ScanFile
-    environment variables.
+    If the optional argument "path" is not passed, resolve configured H5 scan
+    file names by inspecting ScanDir and ScanFile environment variables.
     """
-    _h5_end_session(self)
+    _h5_end_session(self, path)
 
 
 @macro()
