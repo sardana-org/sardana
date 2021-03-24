@@ -31,6 +31,7 @@ from datetime import datetime
 
 import h5py
 import numpy
+import pytest
 from unittest import TestCase
 
 from sardana.macroserver.scan import ColumnDesc
@@ -193,3 +194,17 @@ class TestNXscanH5_FileRecorder(TestCase):
             os.remove(self.path)
         except OSError:
             pass
+
+
+@pytest.fixture
+def recorder(tmpdir):
+    path = str(tmpdir / "file.h5")
+    return NXscanH5_FileRecorder(filename=path)
+
+
+@pytest.mark.parametrize("custom_data", ["str_custom_data", 8, True])
+def test_addCustomData(recorder, custom_data):
+    name = "custom_data_name"
+    recorder.addCustomData(custom_data, name)
+    with h5py.File(recorder.filename) as fd:
+        assert fd["entry"]["custom_data"][name].value == custom_data

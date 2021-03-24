@@ -22,6 +22,7 @@
     
     pool <sardana/pool>
     macroserver <sardana/macroserver>
+    macro <sardana/macro>
 
 .. autofunction:: registerExtensions
 .. autofunction:: unregisterExtensions

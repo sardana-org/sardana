@@ -1613,8 +1613,9 @@ class MacroExecutor(Logger):
 
     def __runXMLMacro(self, xml):
         assert xml.tag == 'macro'
+        parent_macro = self.getRunningMacro()
         try:
-            macro_obj, _ = self._prepareXMLMacro(xml)
+            macro_obj, _ = self._prepareXMLMacro(xml, parent_macro)
         except AbortException as ae:
             raise ae
         except Exception as e:

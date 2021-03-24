@@ -107,6 +107,7 @@ class Channel:
         self.saving_enabled = False
         self.value_ref_pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
         self.value_ref_enabled = False
+        self.roi = [0, 0, 0, 0]
 
 
 class BaseValue(object):
@@ -164,7 +165,16 @@ class BasicDummyTwoDController(TwoDController):
             FSet: 'setAmplitude',
             Description: ("Amplitude. Maybe a number or a tango attribute "
                           "(must start with tango://)"),
-            DefaultValue: '1.0'}
+            DefaultValue: '1.0'
+        },
+        'RoI': {
+            Type: (int,),
+            FGet: 'getRoI',
+            FSet: 'setRoI',
+            Description: ("Region of Interest of image "
+                          "(begin_x, end_x, begin_y, end_y)"),
+            DefaultValue: [0, 0, 0, 0]
+        }
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -284,6 +294,9 @@ class BasicDummyTwoDController(TwoDController):
         y_size = self.BufferSize[1]
         amplitude = axis * self.integ_time * channel.amplitude.get()
         img = generate_img(x_size, y_size, amplitude)
+        roi = channel.roi
+        if roi != [0, 0, 0, 0]:
+            img = img[roi[0]:roi[1], roi[2]:roi[3]]
         if self._synchronization == AcqSynch.SoftwareTrigger:
             channel.value = img
             channel.acq_idx += 1
@@ -368,6 +381,45 @@ class BasicDummyTwoDController(TwoDController):
             klass = TangoValue
         channel.amplitude = klass(value)
 
+    def getRoI(self, axis):
+        idx = axis - 1
+        channel = self.channels[idx]
+        return channel.roi
+
+    def setRoI(self, axis, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        try:
+            value = value.tolist()
+        except AttributeError:
+            pass
+        if len(value) != 4:
+            raise ValueError("RoI is not a list of four elements")
+        if any(not isinstance(v, int) for v in value):
+            raise ValueError("RoI is not a list of integers")
+        if value != [0, 0, 0, 0]:
+            if value[1] <= value[0]:
+                raise ValueError("RoI[1] is lower or equal than RoI[0]")
+            if value[3] <= value[2]:
+                raise ValueError("RoI[3] is lower or equal than RoI[2]")
+        x_dim = self.BufferSize[0]
+        if value[0] > (x_dim - 1):
+            raise ValueError(
+                "RoI[0] exceeds detector X dimension - 1 ({})".format(
+                    x_dim - 1))
+        if value[1] > x_dim:
+            raise ValueError(
+                "RoI[1] exceeds detector X dimension ({})".format(x_dim))
+        y_dim = self.BufferSize[1]
+        if value[2] > (y_dim - 1):
+            raise ValueError(
+                "RoI[2] exceeds detector Y dimension - 1 ({})".format(
+                    y_dim - 1))
+        if value[3] > y_dim:
+            raise ValueError(
+                "RoI[3] exceeds detector Y dimension ({})".format(y_dim))
+        channel.roi = value
+
     def GetCtrlPar(self, par):
         if par == "synchronization":
             return self._synchronization
@@ -377,6 +429,15 @@ class BasicDummyTwoDController(TwoDController):
     def SetCtrlPar(self, par, value):
         if par == "synchronization":
             self._synchronization = value
+
+    def GetAxisPar(self, axis, par):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if par == "shape":
+            roi = channel.roi
+            if roi == [0, 0, 0, 0]:
+                return self.BufferSize
+            return [roi[1] - roi[0], roi[3] - roi[2]]
 
     def getSynchronizer(self):
         if self._synchronizer is None:
@@ -488,6 +549,9 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
         y_size = self.BufferSize[1]
         amplitude = axis * self.integ_time * channel.amplitude.get()
         img = generate_img(x_size, y_size, amplitude)
+        roi = channel.roi
+        if roi != [0, 0, 0, 0]:
+            img = img[roi[0]:roi[1], roi[2]:roi[3]]
         if self._synchronization == AcqSynch.SoftwareTrigger:
             channel.value = img
             if channel.value_ref_enabled:

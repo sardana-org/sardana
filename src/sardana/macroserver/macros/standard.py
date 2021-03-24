@@ -539,7 +539,6 @@ class umv(Macro, Hookable):
 
     def finish(self):
         self._clean()
-        self.printAllPos()
 
     def _clean(self):
         for motor, pos in self.getParameters()[0]:
