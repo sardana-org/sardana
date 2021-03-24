@@ -46,13 +46,17 @@ def _get_h5_scan_files(macro):
     return h5_scan_files
 
 
-def _h5_start_session(macro, swmr_mode):
+def _h5_start_session(macro, path=None, swmr_mode=None):
+    if path is None:
+        paths = _get_h5_scan_files(macro)
+    else:
+        paths = [path]
     if swmr_mode is None:
         try:
             swmr_mode = macro._getEnv("ScanH5SWMR")
         except UnknownEnv:
             swmr_mode = False
-    for file_path in _get_h5_scan_files(macro):
+    for file_path in paths:
         fd = _h5_file_handler.open_file(file_path, swmr_mode)
         macro.print("H5 session open for '{}'".format(file_path))
         macro.print("\t SWMR mode: {}".format(swmr_mode))
@@ -64,20 +68,43 @@ def h5_start_session(self, swmr_mode):
     """Start write session for HDF5 scan file(s)
 
     Open HDF5 scan files in write mode and keep them for the needs of
-    recorders until the session is closed by ``h5_end_swmr``.
+    recorders until the session is closed by ``h5_end_session``.
+
+    The session file path is obtained by inspecting ScanDir and ScanFile
+    environment variables. If you want to use a different file path, use
+    ``h5_start_session_path``
 
     Optionally, enable SWMR mode (either with ``swmr_mode`` parameter or
-    with ``ScanH5SWMR`` environment variable.
-
-    Resolve configured H5 scan file names by inspecting ScanDir and ScanFile
-    environment variables.
+    with ``ScanH5SWMR`` environment variable)
     """
-    if _h5_file_handler.files:
-        self.error(
-            "A session is already started. End it before starting a new one"
-        )
-        return
-    _h5_start_session(self, swmr_mode)
+    sessions = _h5_file_handler.files
+    if sessions:
+        self.print("Session(s) already started. Can be ended with: ")
+        for p in sessions:
+            self.print("\th5_end_session_path " + p )
+        self.print("")
+    _h5_start_session(self, None, swmr_mode)
+
+
+@macro([["path", Type.String, None,
+         "File name for which the session should be started"],
+        ["swmr_mode", Type.Boolean, Optional, "Enable SWMR mode"]])
+def h5_start_session_path(self, path, swmr_mode):
+    """Start write session for HDF5 file path
+
+    Open HDF5 files in write mode and keep them for the needs of
+    recorders until the session is closed by ``h5_end_session``.
+
+    Optionally, enable SWMR mode (either with ``swmr_mode`` parameter or
+    with ``ScanH5SWMR`` environment variable)
+    """
+    sessions = _h5_file_handler.files
+    if sessions:
+        self.print("Session(s) already started. Can be ended with: ")
+        for p in sessions:
+            self.print("\th5_end_session_path " + p)
+        self.print("")
+    _h5_start_session(self, path, swmr_mode)
 
 
 def _h5_end_session(macro, path=None):
@@ -89,15 +116,27 @@ def _h5_end_session(macro, path=None):
         _h5_file_handler.close_file(file_path)
 
 
-@macro([["path", Type.String, Optional,
-         "File name for which the session should be ended"]])
-def h5_end_session(self, path):
+@macro()
+def h5_end_session(self):
     """End write session for HDF5 scan file(s)
 
-    Close previously opened HDF5 scan files with the use ``h5_start_session``.
+    Close previously opened HDF5 scan files with the use ``h5_start_session``
+    or ``h5_start_session_path``.
 
-    If the optional argument "path" is not passed, resolve configured H5 scan
-    file names by inspecting ScanDir and ScanFile environment variables.
+    The session file path is obtained by inspecting ScanDir and ScanFile
+    environment variables. If you want to close a different file path, use
+    ``h5_end_session_path``
+    """
+    _h5_end_session(self, path=None)
+
+
+@macro([["path", Type.String, Optional,
+         "File name for which the session should be ended"]])
+def h5_end_session_path(self, path):
+    """End write session for HDF5 file path
+
+    Close previously opened HDF5 scan files with the use ``h5_start_session``
+    or ``h5_start_session_path``.
     """
     _h5_end_session(self, path)
 
@@ -111,7 +150,7 @@ def h5_ls_session(self):
 
 
 @contextlib.contextmanager
-def h5_write_session(macro, swmr_mode=False):
+def h5_write_session(macro, path=None, swmr_mode=False):
     """Context manager for HDF5 file write session.
 
     Maintains HDF5 file opened for the context lifetime.
@@ -130,14 +169,16 @@ def h5_write_session(macro, swmr_mode=False):
 
     :param macro: macro object
     :type macro: `~sardana.macroserver.macro.Macro`
+    :param path: file path (or None to use ScanDir and ScanFile)
+    :type path: str
     :param swmr_mode: Use SWMR write mode
     :type swmr_mode: bool
     """
-    _h5_start_session(macro, swmr_mode)
+    _h5_start_session(macro, path, swmr_mode)
     try:
         yield None
     finally:
-        _h5_end_session(macro)
+        _h5_end_session(macro, path)
 
 
 
