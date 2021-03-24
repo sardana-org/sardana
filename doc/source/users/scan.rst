@@ -239,8 +239,10 @@ The write sessions use case scenarios:
 
 * Manual session control with macros
     To start and end the session you can use
-    `~sardana.macroserver.macros.h5storage.h5_start_session` and
-    `~sardana.macroserver.macros.h5storage.h5_end_session` macros.
+    `~sardana.macroserver.macros.h5storage.h5_start_session` /
+    `~sardana.macroserver.macros.h5storage.h5_start_session_path` and
+    `~sardana.macroserver.macros.h5storage.h5_end_session` /
+    `~sardana.macroserver.macros.h5storage.h5_end_session_path` macros.
     You can list the active sessions with
     `~sardana.macroserver.macros.h5storage.h5_ls_session` macro.
 * Programmatic session control with context manager (for macro developers)
