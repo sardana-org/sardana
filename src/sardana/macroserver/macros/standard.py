@@ -520,13 +520,14 @@ class umv(Macro, Hookable):
     def prepare(self, motor_pos_list, **opts):
         self.all_names = []
         self.all_pos = []
+        self.motors = []
         self.print_pos = False
         for motor, pos in motor_pos_list:
             self.all_names.append([motor.getName()])
+            self.motors.append(motor)
             pos, posObj = motor.getPosition(force=True), motor.getPositionObj()
             self.all_pos.append([pos])
             posObj.subscribeEvent(self.positionChanged, motor)
-        self.motors = self.all_names
 
     def run(self, motor_pos_list):
         self.print_pos = True
