@@ -576,9 +576,10 @@ class mvr(Macro, Hookable):
     ]
 
     def run(self, motor_disp_list):
-        motor_pos_list = []
+        self.motors, motor_pos_list = [], []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
+            self.motors.append(motor)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
@@ -597,9 +598,10 @@ class umvr(Macro, Hookable):
     param_def = mvr.param_def
 
     def run(self, motor_disp_list):
-        motor_pos_list = []
+        self.motors, motor_pos_list = [], []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
+            self.motors.append(motor)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
