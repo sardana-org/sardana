@@ -35,7 +35,7 @@ import time
 import threading
 
 import PyTango.constants
-from PyTango import Device_4Impl, DeviceClass, Util, DevState, \
+from PyTango import LatestDeviceImpl, DeviceClass, Util, DevState, \
     AttrQuality, TimeVal, ArgType, ApiUtil, DevFailed, WAttribute
 
 from taurus.core.util.threadpool import ThreadPool
@@ -66,7 +66,7 @@ def get_thread_pool():
         return __thread_pool
 
 
-class SardanaDevice(Device_4Impl, Logger):
+class SardanaDevice(LatestDeviceImpl, Logger):
     """SardanaDevice represents the base class for all Sardana
     :class:`PyTango.DeviceImpl` classes"""
 
@@ -74,7 +74,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Constructor"""
         self.in_constructor = True
         try:
-            Device_4Impl.__init__(self, dclass, name)
+            LatestDeviceImpl.__init__(self, dclass, name)
             self.init(name)
             Logger.__init__(self, name)
 
@@ -512,7 +512,7 @@ class SardanaDeviceClass(DeviceClass):
         return dict(ProjectTitle="Sardana", Description="Generic description",
                     doc_url="http://sardana-controls.org/",
                     __icon=self.get_name().lower() + ".png",
-                    InheritedFrom=["Device_4Impl"])
+                    InheritedFrom=["Device_5Impl"])
 
     def write_class_property(self):
         """Write class properties ``ProjectTitle``, ``Description``,
