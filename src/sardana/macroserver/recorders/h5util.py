@@ -54,12 +54,15 @@ class _H5FileHandler:
 
     def open_file(self, fname, swmr_mode=False):
         if swmr_mode:
-            libver = 'latest'
+            try:
+                fd = _open_h5_file(fname, libver='latest')
+                fd.swmr_mode = True
+            except ValueError as e:
+                raise ValueError(
+                    "Cannot open '{}' in swmr mode: {}".format(fname, e)
+                )
         else:
-            libver ='earliest'
-        fd = _open_h5_file(fname, libver=libver)
-        if swmr_mode:
-            fd.swmr_mode = True
+            fd = _open_h5_file(fname)
         if not self._files:
             atexit.register(self.clean_up)
         self._files[fname] = fd
