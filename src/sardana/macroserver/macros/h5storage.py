@@ -72,6 +72,11 @@ def h5_start_session(self, swmr_mode):
     Resolve configured H5 scan file names by inspecting ScanDir and ScanFile
     environment variables.
     """
+    if _h5_file_handler.files:
+        self.error(
+            "A session is already started. End it before starting a new one"
+        )
+        return
     _h5_start_session(self, swmr_mode)
 
 
