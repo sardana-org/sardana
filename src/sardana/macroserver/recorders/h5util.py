@@ -59,8 +59,8 @@ class _H5FileHandler:
                 fd.swmr_mode = True
             except ValueError as e:
                 raise ValueError(
-                    "Cannot open '{}' in swmr mode: {}".format(fname, e)
-                )
+                    "Cannot open '{}' in swmr mode".format(fname)
+                ) from e
         else:
             fd = _open_h5_file(fname)
         if not self._files:
