@@ -1032,6 +1032,7 @@ class rscan(Macro, Hookable):
         env = opts.get('env', {})
         constrains = []
         self._gScan = SScan(self, generator, self.motors, env, constrains)
+        self._data = self._gScan.data
 
     def _generator(self):
         step = {}
@@ -1103,6 +1104,7 @@ class r2scan(Macro, Hookable):
         env = opts.get('env', {})
         constrains = []
         self._gScan = SScan(self, generator, self.motors, env, constrains)
+        self._data = self._gScan.data
 
     def _generator(self):
         step = {}
@@ -1180,6 +1182,7 @@ class r3scan(Macro, Hookable):
         env = opts.get('env', {})
         constrains = []
         self._gScan = SScan(self, generator, self.motors, env, constrains)
+        self._data = self._gScan.data
 
     def _generator(self):
         step = {}
