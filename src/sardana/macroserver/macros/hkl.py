@@ -48,7 +48,7 @@ import re
 import numpy as np
 
 from sardana.sardanautils import py2_round
-from sardana.macroserver.macro import Macro, iMacro, Type
+from sardana.macroserver.macro import Hookable, Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
 
@@ -218,6 +218,9 @@ class br(Macro, _diffrac, Hookable):
 
     def prepare(self, H, K, L, AnglesIndex, FlagNotBlocking, FlagPrinting):
         _diffrac.prepare(self)
+        self.motors = []
+        for name in self.angle_names:
+            self.motors.append(self.getMotor(name))
 
     def run(self, H, K, L, AnglesIndex, FlagNotBlocking, FlagPrinting):
         h_idx = 0
@@ -286,6 +289,9 @@ class ubr(Macro, _diffrac, Hookable):
 
     def prepare(self, hh, kk, ll, AnglesIndex):
         _diffrac.prepare(self)
+        self.motors = []
+        for name in self.angle_names:
+            self.motors.append(self.getMotor(name))
 
     def run(self, hh, kk, ll, AnglesIndex):
         if ll != "Not set":
