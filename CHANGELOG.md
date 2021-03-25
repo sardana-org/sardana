@@ -7,6 +7,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* _H5 write session_ to avoid file locking problems and to introduce SWMR mode support (#1124, #1457)
+  * `h5_start_session`, `h5_start_session_path`, `h5_end_session`, `h5_end_session_path`
+    and `h5_ls_session` macros
+  * `h5_write_session` context manager
 * `shape` controller axis parameter (plugin), `shape` experimental channel
   attribute (kernel) and `Shape` Tango attribute to the experimental channels
   (#1296, #1466)
