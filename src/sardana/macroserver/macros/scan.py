@@ -1011,16 +1011,16 @@ class rscan(Macro, Hookable):
 
     param_def = [
         ['motor',      Type.Moveable, None, 'Motor to move'],
-        ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
-        ['step_region',
+        ['regions',
          [['next_pos',  Type.Float,   None, 'next position'],
           ['region_nr_intervals',  Type.Integer,   None,
            'Region number of intervals']],
-         None, 'List of tuples: (next_pos, region_nr_intervals']
+         None, 'List of tuples: (next_pos, region_nr_intervals'],
+        ['integ_time', Type.Float,    None, 'Integration time']
     ]
 
-    def prepare(self, motor, integ_time, start_pos, regions, **opts):
+    def prepare(self, motor, start_pos, regions, integ_time, **opts):
         self.name = 'rscan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -1083,16 +1083,16 @@ class r2scan(Macro, Hookable):
     param_def = [
         ['motor1',     Type.Moveable, None, 'Motor to move'],
         ['motor2',     Type.Moveable, None, 'Motor to move'],
-        ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
-        ['step_region',
+        ['regions',
          [['next_pos', Type.Float, None, 'next position'],
           ['region_nr_intervals', Type.Integer, None,
            'Region number of intervals']],
-         None, 'List of tuples: (next_pos, region_nr_intervals']
+         None, 'List of tuples: (next_pos, region_nr_intervals'],
+        ['integ_time', Type.Float,    None, 'Integration time'],
     ]
 
-    def prepare(self, motor1, motor2, integ_time, start_pos, regions, **opts):
+    def prepare(self, motor1, motor2, start_pos, regions, integ_time, **opts):
         self.name = 'r2scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -1161,16 +1161,16 @@ class r3scan(Macro, Hookable):
         ['motor1',     Type.Moveable, None, 'Motor to move'],
         ['motor2',     Type.Moveable, None, 'Motor to move'],
         ['motor3',     Type.Moveable, None, 'Motor to move'],
-        ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
-        ['step_region',
+        ['regions',
          [['next_pos',  Type.Float,   None, 'next position'],
           ['region_nr_intervals',  Type.Integer,   None,
            'Region number of intervals']],
-         None, 'List of tuples: (next_pos, region_nr_intervals']
+         None, 'List of tuples: (next_pos, region_nr_intervals'],
+        ['integ_time', Type.Float,    None, 'Integration time'],
     ]
 
-    def prepare(self, motor1, motor2, motor3, integ_time, start_pos, regions, **opts):
+    def prepare(self, motor1, motor2, motor3, start_pos, regions, integ_time, **opts):
         self.name = 'r3scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
