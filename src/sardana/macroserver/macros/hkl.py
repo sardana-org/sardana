@@ -203,7 +203,6 @@ class br(MoveMacro, _diffrac):
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['H', Type.String, None, "H value"],
         ['K', Type.String, None, "K value"],
@@ -278,7 +277,6 @@ class ubr(MoveMacro, _diffrac):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ["hh", Type.String, "Not set", "H position"],
         ["kk", Type.String, "Not set", "K position"],

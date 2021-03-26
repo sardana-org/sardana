@@ -45,7 +45,6 @@ from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
-from sardana import sardanacustomsettings
 
 ##########################################################################
 #
@@ -463,7 +462,6 @@ class pwm(Macro):
 class mv(MoveMacro):
     """Move motor(s) to the specified position(s)"""
 
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_pos_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -471,25 +469,22 @@ class mv(MoveMacro):
          None, 'List of motor/position pairs'],
     ]
 
-    def run(self, motor_pos_list):
-        self.motors, positions = [], []
+    def prepare(self, motor_pos_list):
+        self.motors, self.positions = [], []
         for m, p in motor_pos_list:
             self.motors.append(m)
-            positions.append(p)
+            self.positions.append(p)
 
-        enable_hooks = getattr(sardanacustomsettings,
-                               'PRE_POST_MOVE_HOOK_IN_MV',
-                               True)
-
-        if enable_hooks:
+    def run(self, motor_pos_list):
+        if self.enable_hooks:
             for preMoveHook in self.getHooks('pre-move'):
                 preMoveHook()
 
-        for m, p in zip(self.motors, positions):
+        for m, p in zip(self.motors, self.positions):
             self.debug("Starting %s movement to %s", m.getName(), p)
 
         motion = self.getMotion(self.motors)
-        state, pos = motion.move(positions)
+        state, pos = motion.move(self.positions)
         if state != DevState.ON:
             self.warning("Motion ended in %s", state.name)
             msg = []
@@ -497,7 +492,7 @@ class mv(MoveMacro):
                 msg.append(motor.information())
             self.info("\n".join(msg))
 
-        if enable_hooks:
+        if self.enable_hooks:
             for postMoveHook in self.getHooks('post-move'):
                 postMoveHook()
 
@@ -514,17 +509,16 @@ class mstate(Macro):
 class umv(MoveMacro):
     """Move motor(s) to the specified position(s) and update"""
 
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mv.param_def
 
     def prepare(self, motor_pos_list, **opts):
         self.all_names = []
         self.all_pos = []
-        self.motors = []
+        # self.motors = []
         self.print_pos = False
         for motor, pos in motor_pos_list:
             self.all_names.append([motor.getName()])
-            self.motors.append(motor)
+            #self.motors.append(motor)
             pos, posObj = motor.getPosition(force=True), motor.getPositionObj()
             self.all_pos.append([pos])
             posObj.subscribeEvent(self.positionChanged, motor)
@@ -535,6 +529,7 @@ class umv(MoveMacro):
             mv, _ = self.createMacro('mv', motor_pos_list)
             mv._setHooks(self.hooks)
             self.runMacro(mv)
+            self.motors = mv.motors
         finally:
             self.finish()
 
@@ -567,7 +562,6 @@ class umv(MoveMacro):
 class mvr(MoveMacro):
     """Move motor(s) relative to the current position(s)"""
 
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_disp_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -594,7 +588,6 @@ class mvr(MoveMacro):
 class umvr(MoveMacro):
     """Move motor(s) relative to the current position(s) and update"""
 
-    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mvr.param_def
 
     def run(self, motor_disp_list):

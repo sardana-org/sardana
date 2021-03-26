@@ -66,6 +66,7 @@ from sardana.macroserver.msexception import StopException, AbortException, \
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
+from sardana import sardanacustomsettings
 
 
 class OverloadPrint(object):
@@ -2529,4 +2530,9 @@ class MacroFunc(Macro):
 
 
 class MoveMacro(Macro, Hookable):
-    pass
+
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
+
+    enable_hooks = getattr(sardanacustomsettings,
+                           'PRE_POST_MOVE_HOOK_IN_MV',
+                           True)
