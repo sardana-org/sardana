@@ -71,6 +71,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   and not part of the measurement group configuration (#1296, #1466)
 * Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
   devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
 
 ### Removed
 
