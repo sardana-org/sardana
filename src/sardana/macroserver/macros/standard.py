@@ -41,7 +41,7 @@ import PyTango
 from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
-    iMacro, Hookable
+    iMacro, Hookable, MoveMacro
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
@@ -460,7 +460,7 @@ class pwm(Macro):
         self.execMacro('wm', motor_list, **Table.PrettyOpts)
 
 
-class mv(Macro, Hookable):
+class mv(MoveMacro):
     """Move motor(s) to the specified position(s)"""
 
     hints = {'allowsHooks': ('pre-move', 'post-move')}
@@ -511,7 +511,7 @@ class mstate(Macro):
         self.info("Motor %s" % str(motor.stateObj.read().rvalue))
 
 
-class umv(Macro, Hookable):
+class umv(MoveMacro):
     """Move motor(s) to the specified position(s) and update"""
 
     hints = {'allowsHooks': ('pre-move', 'post-move')}
@@ -564,7 +564,7 @@ class umv(Macro, Hookable):
         self.flushOutput()
 
 
-class mvr(Macro, Hookable):
+class mvr(MoveMacro):
     """Move motor(s) relative to the current position(s)"""
 
     hints = {'allowsHooks': ('pre-move', 'post-move')}
@@ -591,7 +591,7 @@ class mvr(Macro, Hookable):
         self.runMacro(mv)
 
 
-class umvr(Macro, Hookable):
+class umvr(MoveMacro):
     """Move motor(s) relative to the current position(s) and update"""
 
     hints = {'allowsHooks': ('pre-move', 'post-move')}

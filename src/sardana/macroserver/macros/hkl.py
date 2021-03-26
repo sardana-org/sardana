@@ -48,7 +48,7 @@ import re
 import numpy as np
 
 from sardana.sardanautils import py2_round
-from sardana.macroserver.macro import Hookable, Macro, iMacro, Type
+from sardana.macroserver.macro import Hookable, Macro, iMacro, Type, MoveMacro
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
 
@@ -196,7 +196,7 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-class br(Macro, _diffrac, Hookable):
+class br(MoveMacro, _diffrac):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L.
     If a fourth parameter is given, the combination of angles to be set is
@@ -274,7 +274,7 @@ class br(Macro, _diffrac, Hookable):
                           hkl_values[l_idx], self.diffrac.WaveLength])
 
 
-class ubr(Macro, _diffrac, Hookable):
+class ubr(MoveMacro, _diffrac):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
