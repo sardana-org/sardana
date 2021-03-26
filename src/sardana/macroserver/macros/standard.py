@@ -518,7 +518,7 @@ class umv(MoveMacro):
         self.print_pos = False
         for motor, pos in motor_pos_list:
             self.all_names.append([motor.getName()])
-            #self.motors.append(motor)
+            #self.motors.append(motor) # here?
             pos, posObj = motor.getPosition(force=True), motor.getPositionObj()
             self.all_pos.append([pos])
             posObj.subscribeEvent(self.positionChanged, motor)
@@ -527,9 +527,9 @@ class umv(MoveMacro):
         self.print_pos = True
         try:
             mv, _ = self.createMacro('mv', motor_pos_list)
+            self.motors = mv.motors  # or here?
             mv._setHooks(self.hooks)
             self.runMacro(mv)
-            self.motors = mv.motors
         finally:
             self.finish()
 
