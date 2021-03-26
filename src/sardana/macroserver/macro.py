@@ -32,6 +32,7 @@ import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
+           "MoveMacro", "movemacro",
            "MacroFunc", "Type", "Table", "List", "ViewOption",
            "LibraryError", "Optional", "StopException", "AbortException",
            "InterruptException"]
@@ -2525,3 +2526,7 @@ class MacroFunc(Macro):
 
     def run(self, *args):
         return self._function(self, *args)
+
+
+class MoveMacro(Macro, Hookable):
+    pass
