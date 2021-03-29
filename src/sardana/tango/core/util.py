@@ -1218,12 +1218,20 @@ def prepare_rconsole(options, args, tango_args):
 
 
 def run_tango_server(tango_util=None, start_time=None):
+    # Import here to avoid circular import
+    from sardana.tango.core.SardanaDevice import SardanaDevice
+
     try:
         if tango_util is None:
             tango_util = Util(sys.argv)
         util = Util.instance()
         SardanaServer.server_state = State.Init
         util.server_init()
+
+        for device in util.get_device_list("*"):
+            if isinstance(device, SardanaDevice):
+                device.sardana_init_hook()
+
         SardanaServer.server_state = State.Running
         if start_time is not None:
             import datetime
