@@ -1794,12 +1794,12 @@ class Macro(Logger):
         """**Macro API**. Gets the local environment matching the given
         parameters:
 
-           - door_name and macro_name define the context where to look for
-             the environment. If both are None, the global environment is
-             used. If door name is None but macro name not, the given macro
-             environment is used and so on...
-           - If key is None it returns the complete environment, otherwise
-             key must be a string containing the environment variable name.
+        - door_name and macro_name define the context where to look for
+          the environment. If both are None, the global environment is
+          used. If door name is None but macro name not, the given macro
+          environment is used and so on...
+        - If key is None it returns the complete environment, otherwise
+          key must be a string containing the environment variable name.
 
         :raises: UnknownEnv
 

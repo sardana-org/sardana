@@ -247,15 +247,17 @@ class MacroServer(SardanaDevice):
         is_TypeList_allowed = is_Elements_allowed
 
     def GetMacroInfo(self, macro_names):
-        """GetMacroInfo(list<string> macro_names):
+        """Get macro information
 
-           Returns a list of string containing macro information.
-           Each string is a JSON encoded.
+       Returns a list of strings containing macro information.
+       Each string is a JSON encoded.
 
-           Params:
-               - macro_name: a list of strings with the macro(s) name(s)
-           Returns:
-               - a list of string containing macro information.
+       Args:
+           macro_names (list(str)): macro(s) name(s)
+
+       Returns:
+           list(str): macro(s) information
+
         """
         macro_server = self.macro_server
         codec = CodecFactory().getCodec('json')
