@@ -28,6 +28,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Allowed hooks to macro description in Spock (#1523)
 * Assert motor sign is -1 or 1 (#1345, #1507)
 * Documentation on how to write 1D and 2D controllers (#1494)
+* Machanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
@@ -39,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Subscribing to Pool's Elements attribute at Sardana server startup (#674, #1545)
 * Execute per measurement preparation in `mesh` scan macro (#1437)
 * Continously read value references in hardware synchronized acquisition 
   instead of reading only at the end (#1442, #1448)
