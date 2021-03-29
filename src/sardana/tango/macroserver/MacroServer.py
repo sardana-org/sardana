@@ -120,7 +120,6 @@ class MacroServer(SardanaDevice):
 
         macro_server.set_recorder_path(self.RecorderPath)
         macro_server.set_macro_path(self.MacroPath)
-        macro_server.set_pool_names(self.PoolNames)
 
         if self.RConsolePort:
             try:
