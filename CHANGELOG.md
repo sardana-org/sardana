@@ -34,6 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
 
 ### Fixed
@@ -57,6 +58,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Setting `Hookable.hooks` to empty list (#1522)
 * `Macro.hasResult()` and `Macro.hasParams()` what avoids adding empty _Parameters_ and _Result_
   sections in the macro description in Spock (#1524)
+* Apply position formatting (configured with `PosFormat` _view option_)
+  to the limits in the `wm` macro (#1529, #1530)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
