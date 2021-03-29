@@ -55,6 +55,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Allow running Spock without Qt bindings (#1462, #1463)
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
+* Respect timer/monitor passed in measurement group configuration (#1516, #1521)
 * Setting `Hookable.hooks` to empty list (#1522)
 * `Macro.hasResult()` and `Macro.hasParams()` what avoids adding empty _Parameters_ and _Result_
   sections in the macro description in Spock (#1524)
