@@ -7,6 +7,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* _H5 write session_ to avoid file locking problems and to introduce SWMR mode support (#1124, #1457)
+  * `h5_start_session`, `h5_start_session_path`, `h5_end_session`, `h5_end_session_path`
+    and `h5_ls_session` macros
+  * `h5_write_session` context manager
 * `shape` controller axis parameter (plugin), `shape` experimental channel
   attribute (kernel) and `Shape` Tango attribute to the experimental channels
   (#1296, #1466)
@@ -42,7 +46,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   e.g. pseudo counter's value, in controllers (#1440, #1446)
 * Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
 * Storing string values as custom data in NXscanH5_FileRecorder (#1485)
+* Stopping/aborting grouped movement when backlash correction would be applied (#1421, #1474, #1539)
 * Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
+* Remove redundant print of positions at the end of umv (#1526)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * Allow running Spock without Qt bindings (#1462, #1463)
@@ -63,6 +69,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Experimental channel shape is now considered as a result of the configuration
   and not part of the measurement group configuration (#1296, #1466)
+* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
+  devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
 
 ### Removed
 
