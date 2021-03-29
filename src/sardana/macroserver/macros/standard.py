@@ -328,6 +328,36 @@ class wm(Macro):
          None, 'List of motor to show'],
     ]
 
+    @staticmethod
+    def format_value(fmt, str_fmt, value):
+        """
+        Formats given value following the fmt and/or str_fmt rules.
+
+        Parameters
+        ----------
+        fmt : str
+            The value format.
+
+        str_fmt : str
+            The string format.
+
+        value : float
+            The value to be formatted.
+
+        Returns
+        -------
+        str
+            The string formatted value.
+        """
+
+        if fmt is not None:
+            fmt_value = fmt % value
+            fmt_value = str_fmt % fmt_value
+        else:
+            fmt_value = str_fmt % value
+
+        return fmt_value
+
     def prepare(self, motor_list, **opts):
         self.table_opts = {}
 
@@ -362,15 +392,17 @@ class wm(Macro):
             posObj = motor.getPositionObj()
             if pos_format > -1:
                 fmt = '%c.%df' % ('%', int(pos_format))
+            else:
+                fmt = None
 
-            try:
-                val1 = fmt % motor.getPosition(force=True)
-                val1 = str_fmt % val1
-            except:
-                val1 = str_fmt % motor.getPosition(force=True)
+            val1 = motor.getPosition(force=True)
+            val1 = self.format_value(fmt, str_fmt, val1)
 
-            val2 = str_fmt % posObj.getMaxRange().magnitude
-            val3 = str_fmt % posObj.getMinRange().magnitude
+            val2 = posObj.getMaxRange().magnitude
+            val2 = self.format_value(fmt, str_fmt, val2)
+
+            val3 = posObj.getMinRange().magnitude
+            val3 = self.format_value(fmt, str_fmt, val3)
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
