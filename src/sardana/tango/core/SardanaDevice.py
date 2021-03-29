@@ -170,6 +170,14 @@ class SardanaDevice(LatestDeviceImpl, Logger):
         non_detect_evts = ()
         self.set_change_events(detect_evts, non_detect_evts)
 
+    def sardana_init_hook(self):
+        """Hook that is called before the server event loop.
+        
+        The idea behind this hook is to be equivalent to server_init_hook from
+        Tango. Similar behaviour can be archived using post_init_callback.
+        """
+        pass
+
     def _get_nodb_device_info(self):
         """Internal method. Returns the device info when tango database is not
         being used (example: in demos)"""
