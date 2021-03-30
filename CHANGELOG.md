@@ -17,6 +17,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 * *scan information* and *scan point* forms to the *showscan online* widget (#1386, #1477, #1479)
 * `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
   widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
+* Handle `pre-move` and `post-move` hooks by: `mv`, `mvr`, `umv`, `umvr`, `br`, `ubr` (#1471, #1480)
+  * `motors` attribute to these macros which contains list of motors that will be moved
+  * `sardanacustomettings.PRE_POST_MOVE_HOOK_IN_MV` for disabling these hooks
 * Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
   * Add `PrepareOne()` to TriggerGate controller.
   * Call TriggerGate controller preparation methods in the _acquision action_
