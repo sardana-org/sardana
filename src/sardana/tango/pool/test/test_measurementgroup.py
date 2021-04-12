@@ -52,7 +52,7 @@ def _get_full_name(device_proxy, logger=None):
         host = device_proxy.get_db_host()  # this is FQDN
         port = device_proxy.get_db_port()
         db_name = host + ":" + port
-    full_name = db_name + "/" + device_proxy.name()
+    full_name = "//" + db_name + "/" + device_proxy.name()
     # try to use Taurus 4 to retrieve FQDN
     try:
         from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
