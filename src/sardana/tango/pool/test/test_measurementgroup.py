@@ -35,6 +35,7 @@ from PyTango import DeviceProxy
 import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana import sardanacustomsettings
 from sardana.pool import AcqSynchType, SynchDomain, SynchParam
@@ -53,13 +54,7 @@ def _get_full_name(device_proxy, logger=None):
         port = device_proxy.get_db_port()
         db_name = host + ":" + port
     full_name = "//" + db_name + "/" + device_proxy.name()
-    # try to use Taurus 4 to retrieve FQDN
-    try:
-        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
-        full_name, _, _ = TangoDeviceNameValidator().getNames(full_name)
-    # if Taurus3 in use just continue
-    except ImportError:
-        pass
+    full_name, _, _ = TangoDeviceNameValidator().getNames(full_name)
     return full_name
 
 
