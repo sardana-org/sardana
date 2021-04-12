@@ -24,6 +24,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Add `PrepareOne()` to TriggerGate controller.
   * Call TriggerGate controller preparation methods in the _acquision action_
 * Add `ScanUser` environment variable (#1355)
+* Support `PosFormat` _ViewOption_ in `umv` macro (#176, #1555)
 * Allow to programmatically disable *deterministic scan* optimization (#1426, #1427)
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
