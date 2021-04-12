@@ -74,6 +74,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
 * Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
+* Measurement group tango tests - wrong full name composition (#1557)
 
 ### Changed
 
