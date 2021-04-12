@@ -27,6 +27,7 @@ import copy
 import json
 import os
 import time
+import atexit
 import threading
 
 # TODO: decide what to use: taurus or PyTango
@@ -108,10 +109,17 @@ class TangoAttributeListener(AttributeListener):
 class MeasSarTestTestCase(SarTestTestCase):
     """ Helper class to setup the need environmet for execute """
 
+    _api_util_cleanup_registered = False
+
     def setUp(self, pool_properties=None):
         SarTestTestCase.setUp(self, pool_properties)
         self.event_ids = {}
         self.mg_name = '_test_mg_1'
+        if not MeasSarTestTestCase._api_util_cleanup_registered:
+            # remove whenever PyTango#390 gets fixed
+            atexit.register(PyTango.ApiUtil.cleanup)
+            MeasSarTestTestCase._api_util_cleanup_registered = True
+
 
     def create_meas(self, config):
         """ Create a meas with the given configuration
