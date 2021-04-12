@@ -73,6 +73,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
+* Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
 
 ### Changed
 
