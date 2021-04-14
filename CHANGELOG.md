@@ -31,6 +31,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
 * Allowed hooks to macro description in Spock (#1523)
 * Assert motor sign is -1 or 1 (#1345, #1507)
+* _last macro_ concept to the `MacroExecutor` (kernel) #1559
 * Documentation on how to write 1D and 2D controllers (#1494)
 * Machanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
@@ -58,6 +59,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Remove redundant print of positions at the end of umv (#1526)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
+* MacroServer crash at exit on Windows by avoiding the abort of the already finished macro (#1077, #1559)
 * Allow running Spock without Qt bindings (#1462, #1463)
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
