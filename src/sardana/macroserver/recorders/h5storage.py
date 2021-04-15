@@ -366,10 +366,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
-                first_reference = measurement[label][0]
-                # in some versions of h5py we get bytes
-                if isinstance(first_reference, bytes):
-                    first_reference = first_reference.decode()
+                try:
+                    dataset = measurement[label].asstr()
+                except AttributeError:
+                    # h5py < 3
+                    dataset = measurement[label]
+                first_reference = dataset[0]
                 group = re.match(self.pattern, first_reference)
                 if group is None:
                     msg = 'Unsupported reference %s' % first_reference
@@ -395,10 +397,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                             dtype=dd_env.dtype)
 
                 for i in range(nb_points):
-                    reference = measurement[label][i]
-                    # in some versions of h5py we get bytes
-                    if isinstance(reference, bytes):
-                        reference = reference.decode()
+                    reference = dataset[i]
                     group = re.match(self.pattern, reference)
                     if group is None:
                         msg = 'Unsupported reference %s' % first_reference
@@ -406,10 +405,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                         continue
                     uri_groups = group.groupdict()
                     filename = uri_groups["filepath"]
-                    dataset = uri_groups["dataset"]
-                    if dataset is None:
-                        dataset = "dataset"
-                    vsource = h5py.VirtualSource(filename, dataset,
+                    remote_dataset_name = uri_groups["dataset"]
+                    if remote_dataset_name is None:
+                        remote_dataset_name = "dataset"
+                    vsource = h5py.VirtualSource(filename, remote_dataset_name,
                                                  shape=(dim_1, dim_2))
                     layout[i] = vsource
 
