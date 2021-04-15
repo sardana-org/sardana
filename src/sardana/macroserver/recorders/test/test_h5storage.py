@@ -27,18 +27,49 @@
 
 import os
 import tempfile
+import contextlib
+import multiprocessing
 from datetime import datetime
 
 import h5py
 import numpy
 import pytest
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from sardana.macroserver.scan import ColumnDesc
 from sardana.macroserver.recorders.h5storage import NXscanH5_FileRecorder
+from sardana.macroserver.recorders.h5util import _h5_file_handler
+
+
+@contextlib.contextmanager
+def h5_write_session(fname, swmr_mode=False):
+    """Context manager for HDF5 file write session.
+
+    Maintains HDF5 file opened for the context lifetime.
+    It optionally can open the file as SWRM writer.
+
+    :param fname: Path of the file to be opened
+    :type fname: str
+    :param swmr_mode: Use SWMR write mode
+    :type swmr_mode: bool
+    """
+    fd = _h5_file_handler.open_file(fname, swmr_mode)
+    try:
+        yield fd
+    finally:
+        _h5_file_handler.close_file(fname)
+
 
 COL1_NAME = "col1"
 
+ENV = {
+    "serialno": 0,
+    "starttime": None,
+    "title": "test",
+    "user": "user",
+    "datadesc": None,
+    "endtime": None
+}
 
 class RecordList(dict):
 
@@ -66,14 +97,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         except OSError:
             pass
 
-        self.env = {
-            "serialno": 0,
-            "starttime": None,
-            "title": "test",
-            "user": "user",
-            "datadesc": None,
-            "endtime": None
-        }
+        self.env = ENV
         self.record_list = RecordList(self.env)
 
     def test_dtype_float64(self):
@@ -225,3 +249,80 @@ def test_addCustomData_str(recorder):
         except AttributeError:
             dset = fd["entry"]["custom_data"][name]
         assert dset[()] == custom_data
+
+
+def _scan(path, serialno=0):
+    env = ENV.copy()
+    env["serialno"] = serialno
+    record_list = RecordList(env)
+    nb_records = 2
+    # create description of channel data
+    data_desc = [
+        ColumnDesc(name=COL1_NAME,
+                   label=COL1_NAME,
+                   dtype="float64",
+                   shape=())
+    ]
+    env["datadesc"] = data_desc
+    # simulate sardana scan
+    recorder = NXscanH5_FileRecorder(filename=path)
+    env["starttime"] = datetime.now()
+    recorder._startRecordList(record_list)
+    for i in range(nb_records):
+        record = Record({COL1_NAME: 0.1}, i)
+        recorder._writeRecord(record)
+    env["endtime"] = datetime.now()
+    recorder._endRecordList(record_list)
+
+
+def test_swmr_with_h5_session(tmpdir):
+
+    def read_file(path, ready, done):
+        with h5py.File(path, mode="r"):
+            ready.set()
+            done.wait()
+
+    path = str(tmpdir / "file.h5")
+    reader_is_ready = multiprocessing.Event()
+    writer_is_done = multiprocessing.Event()
+    reader = multiprocessing.Process(
+        target=read_file, args=(path, reader_is_ready, writer_is_done)
+    )
+    with h5_write_session(path):
+        _scan(path, serialno=0)
+        reader.start()
+        reader_is_ready.wait()
+        try:
+            _scan(path, serialno=1)
+        finally:
+            writer_is_done.set()
+            reader.join()
+
+
+@pytest.mark.xfail(
+    condition=h5py.version.hdf5_version_tuple < (1, 10, 1),
+    reason="HDF5_USE_FILE_LOCKING not supported by hdf5<1.10.1"
+)
+def test_swmr_without_h5_session(tmpdir):
+
+    @mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
+    def read_file(path, ready, done):
+        with h5py.File(path, mode="r"):
+            ready.set()
+            done.wait()
+
+    path = str(tmpdir / "file.h5")
+    reader_is_ready = multiprocessing.Event()
+    writer_is_done = multiprocessing.Event()
+    reader = multiprocessing.Process(
+        target=read_file, args=(path, reader_is_ready, writer_is_done)
+    )
+
+    _scan(path, serialno=0)
+    reader.start()
+    reader_is_ready.wait()
+    try:
+        _scan(path, serialno=1)
+    finally:
+        writer_is_done.set()
+        reader.join()

@@ -241,7 +241,7 @@ class PoolBaseChannel(PoolElement):
             value
         :rtype:
             :class:`~sardana.sardanavalue.SardanaValue`"""
-        return self.acquisition.read_value()[self]
+        return self.acquisition.read_value(serial=True)[self]
 
     def put_value(self, value, quality=AttrQuality.Valid, propagate=1):
         """Sets a value.
@@ -692,7 +692,7 @@ class PoolBaseChannel(PoolElement):
                                    ElementType.TwoDExpChannel):
                 self.warning(
                     "not implementing shape axis parameter in 1D and 2D "
-                    "controllers is deprecated since Jan21")
+                    "controllers is deprecated since 3.1.0")
                 value = self.value.value
                 if value is None:
                     self.debug("could not get shape from value")

@@ -417,6 +417,8 @@ class PoolMotor(PoolElement):
         return self._sign
 
     def set_sign(self, sign, propagate=1):
+        assert sign in (-1, 1), \
+            "sign must be either -1 or 1 (not {})".format(sign)
         old_sign = self._sign.value
         self._sign.set_value(sign, propagate=propagate)
         # invert lower with upper limit switches and send event in case of

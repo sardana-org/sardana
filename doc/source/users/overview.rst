@@ -7,7 +7,11 @@ Overview
 Sardana is the control program initially developed at ALBA_. Our mission
 statement:
     
-    `Produce a modular, high performance, robust, and generic user environment for control applications in large and small installations. Make Sardana the generic user environment distributed in the Tango project and the standard basis of collaborations in control.`
+    Produce a modular, high performance, robust, and generic user environment
+    for control applications in large and small installations.
+    Make Sardana the generic user environment distributed in the Tango project
+    and the standard basis of collaborations in control.
+
 
 Up to now, control applications in large installations have been notoriously
 difficult to share. Inspired by the success of the Tango_ collaboration, ALBA_

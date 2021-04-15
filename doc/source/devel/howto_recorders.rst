@@ -22,28 +22,6 @@ element which is also identified by its name. Recorders are developed as
 Python classes, and recorder libraries are just Python modules aggregating these
 classes.
 
-Type of recorders
------------------
-
-Sardana defines some standard recorders e.g. the Spock output recorder or the 
-SPEC file recorder. From the other hand users may define their custom recorders.
-Sardana provides the following standard recorders (grouped by types):
-
-* file [*]
-    * FIO_FileRecorder
-    * NXscan_FileRecorder
-    * SPEC_FileRecorder
-
-* shared memory [*]
-    * SPSRecorder
-    * ShmRecorder
-
-* output
-    * JsonRecorder [*]
-    * OutputRecorder
-
-[*] Scan Framework provides mechanisms to enable and select this recorders using
-the environment variables.
 
 Writing a custom recorder
 -------------------------
