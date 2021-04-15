@@ -154,7 +154,12 @@ class TestNXscanH5_FileRecorder(TestCase):
         file_ = h5py.File(self.path)
         for i in range(nb_records):
             expected_data = "file:///tmp/test.edf"
-            data = file_["entry0"]["measurement"][COL1_NAME][i]
+            try:
+                dataset = file_["entry0"]["measurement"][COL1_NAME].asstr()
+            except AttributeError:
+                # h5py < 3
+                dataset = file_["entry0"]["measurement"][COL1_NAME]
+            data = dataset[i]
             msg = "data does not match"
             self.assertEqual(data, expected_data, msg)
 
@@ -226,12 +231,24 @@ def recorder(tmpdir):
     return NXscanH5_FileRecorder(filename=path)
 
 
-@pytest.mark.parametrize("custom_data", ["str_custom_data", 8, True])
+@pytest.mark.parametrize("custom_data", [8, True])
 def test_addCustomData(recorder, custom_data):
     name = "custom_data_name"
     recorder.addCustomData(custom_data, name)
     with h5py.File(recorder.filename) as fd:
-        assert fd["entry"]["custom_data"][name].value == custom_data
+        assert fd["entry"]["custom_data"][name][()] == custom_data
+
+
+def test_addCustomData_str(recorder):
+    name = "custom_data_name"
+    custom_data = "str_custom_data"
+    recorder.addCustomData(custom_data, name)
+    with h5py.File(recorder.filename) as fd:
+        try:
+            dset = fd["entry"]["custom_data"][name].asstr()
+        except AttributeError:
+            dset = fd["entry"]["custom_data"][name]
+        assert dset[()] == custom_data
 
 
 def _scan(path, serialno=0):
