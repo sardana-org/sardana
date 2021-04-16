@@ -259,13 +259,13 @@ def _scan(path, serialno=0):
     recorder._endRecordList(record_list)
 
 
+def read_file(path, ready, done):
+    with h5py.File(path, mode="r"):
+        ready.set()
+        done.wait()
+
+
 def test_swmr_with_h5_session(tmpdir):
-
-    def read_file(path, ready, done):
-        with h5py.File(path, mode="r"):
-            ready.set()
-            done.wait()
-
     path = str(tmpdir / "file.h5")
     reader_is_ready = multiprocessing.Event()
     writer_is_done = multiprocessing.Event()
@@ -283,23 +283,24 @@ def test_swmr_with_h5_session(tmpdir):
             reader.join()
 
 
+@mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
+def read_file_without_file_locking(path, ready, done):
+    with h5py.File(path, mode="r"):
+        ready.set()
+        done.wait()
+
+
 @pytest.mark.xfail(
     condition=h5py.version.hdf5_version_tuple < (1, 10, 1),
     reason="HDF5_USE_FILE_LOCKING not supported by hdf5<1.10.1"
 )
 def test_swmr_without_h5_session(tmpdir):
-
-    @mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
-    def read_file(path, ready, done):
-        with h5py.File(path, mode="r"):
-            ready.set()
-            done.wait()
-
     path = str(tmpdir / "file.h5")
     reader_is_ready = multiprocessing.Event()
     writer_is_done = multiprocessing.Event()
     reader = multiprocessing.Process(
-        target=read_file, args=(path, reader_is_ready, writer_is_done)
+        target=read_file_without_file_locking,
+        args=(path, reader_is_ready, writer_is_done)
     )
 
     _scan(path, serialno=0)
