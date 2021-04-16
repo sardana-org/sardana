@@ -160,6 +160,7 @@ def test_value_ref(recorder):
         assert data == expected_data, msg
 
 
+@pytest.mark.xfail(os.name == "nt", reason="VDS are buggy on Windows")
 @pytest.mark.skipif(not hasattr(h5py, "VirtualLayout"),
                     reason="VDS not available in this version of h5py")
 def test_VDS(recorder):
