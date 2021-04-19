@@ -63,13 +63,19 @@ def h5_write_session(fname, swmr_mode=False):
 COL1_NAME = "col1"
 
 ENV = {
-    "serialno": 0,
-    "starttime": None,
-    "title": "test",
-    "user": "user",
-    "datadesc": None,
-    "endtime": None
+        "serialno": 0,
+        "starttime": None,
+        "title": "test",
+        "user": "user",
+        "datadesc": None,
+        "endtime": None
 }
+
+@pytest.fixture
+def recorder(tmpdir):
+    path = str(tmpdir / "file.h5")
+    return NXscanH5_FileRecorder(filename=path)
+
 
 class RecordList(dict):
 
@@ -87,148 +93,127 @@ class Record(object):
         self.recordno = recordno
 
 
-class TestNXscanH5_FileRecorder(TestCase):
+def test_dtype_float64(recorder):
+    """Test creation of dataset with float64 data type"""
+    nb_records = 1
+    # create description of channel data
+    data_desc = [
+        ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
+                   shape=tuple())
+    ]
+    environ = ENV.copy()
+    environ["datadesc"] = data_desc
 
-    def setUp(self):
-        self.dir_name = tempfile.gettempdir()
-        self.path = os.path.join(self.dir_name, "test.h5")
+    # simulate sardana scan
+    environ["starttime"] = datetime.now()
+    record_list = RecordList(environ)
+    recorder._startRecordList(record_list)
+    for i in range(nb_records):
+        record = Record({COL1_NAME: 0.1}, i)
+        recorder._writeRecord(record)
+    environ["endtime"] = datetime.now()
+    recorder._endRecordList(record_list)
+
+    # assert if reading datasets from the sardana file access to the
+    # dataset of the partial files
+    file_ = h5py.File(recorder.filename)
+    for i in range(nb_records):
+        expected_data = 0.1
+        data = file_["entry0"]["measurement"][COL1_NAME][i]
+        msg = "data does not match"
+        assert data == expected_data, msg
+
+
+def test_value_ref(recorder):
+    """Test creation of dataset with str data type"""
+    nb_records = 1
+    # create description of channel data
+    data_desc = [
+        ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
+                   shape=(1024, 1024), value_ref_enabled=True)
+    ]
+    environ = ENV.copy()
+    environ["datadesc"] = data_desc
+
+    # simulate sardana scan
+    environ["starttime"] = datetime.now()
+    record_list = RecordList(environ)
+    recorder._startRecordList(record_list)
+    for i in range(nb_records):
+        record = Record({COL1_NAME: "file:///tmp/test.edf"}, i)
+        recorder._writeRecord(record)
+    environ["endtime"] = datetime.now()
+    recorder._endRecordList(record_list)
+
+    # assert if reading datasets from the sardana file access to the
+    # dataset of the partial files
+    file_ = h5py.File(recorder.filename)
+    for i in range(nb_records):
+        expected_data = "file:///tmp/test.edf"
         try:
-            os.remove(self.path)  # remove file just in case
-        except OSError:
-            pass
-
-        self.env = ENV
-        self.record_list = RecordList(self.env)
-
-    def test_dtype_float64(self):
-        """Test creation of dataset with float64 data type"""
-        nb_records = 1
-        # create description of channel data
-        data_desc = [
-            ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
-                       shape=tuple())
-        ]
-        self.env["datadesc"] = data_desc
-
-        # simulate sardana scan
-        recorder = NXscanH5_FileRecorder(filename=self.path)
-        self.env["starttime"] = datetime.now()
-        recorder._startRecordList(self.record_list)
-        for i in range(nb_records):
-            record = Record({COL1_NAME: 0.1}, i)
-            recorder._writeRecord(record)
-        self.env["endtime"] = datetime.now()
-        recorder._endRecordList(self.record_list)
-
-        # assert if reading datasets from the sardana file access to the
-        # dataset of the partial files
-        file_ = h5py.File(self.path)
-        for i in range(nb_records):
-            expected_data = 0.1
-            data = file_["entry0"]["measurement"][COL1_NAME][i]
-            msg = "data does not match"
-            self.assertEqual(data, expected_data, msg)
-
-    def test_value_ref(self):
-        """Test creation of dataset with str data type"""
-        nb_records = 1
-        # create description of channel data
-        data_desc = [
-            ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
-                       shape=(1024, 1024), value_ref_enabled=True)
-        ]
-        self.env["datadesc"] = data_desc
-
-        # simulate sardana scan
-        recorder = NXscanH5_FileRecorder(filename=self.path)
-        self.env["starttime"] = datetime.now()
-        recorder._startRecordList(self.record_list)
-        for i in range(nb_records):
-            record = Record({COL1_NAME: "file:///tmp/test.edf"}, i)
-            recorder._writeRecord(record)
-        self.env["endtime"] = datetime.now()
-        recorder._endRecordList(self.record_list)
-
-        # assert if reading datasets from the sardana file access to the
-        # dataset of the partial files
-        file_ = h5py.File(self.path)
-        for i in range(nb_records):
-            expected_data = "file:///tmp/test.edf"
-            try:
-                dataset = file_["entry0"]["measurement"][COL1_NAME].asstr()
-            except AttributeError:
-                # h5py < 3
-                dataset = file_["entry0"]["measurement"][COL1_NAME]
-            data = dataset[i]
-            msg = "data does not match"
-            self.assertEqual(data, expected_data, msg)
-
-    def test_VDS(self):
-        """Test creation of VDS when channel reports URIs (str) of h5file
-        scheme in a simulated sardana scan (3 points).
-        """
-        try:
-            h5py.VirtualLayout
+            dataset = file_["entry0"]["measurement"][COL1_NAME].asstr()
         except AttributeError:
-            self.skipTest("VDS not available in this version of h5py")
-        nb_records = 3
-        # create partial files
-        part_file_name_pattern = "test_vds_part{0}.h5"
-        part_file_paths = []
+            # h5py < 3
+            dataset = file_["entry0"]["measurement"][COL1_NAME]
+        data = dataset[i]
+        msg = "data does not match"
+        assert data == expected_data, msg
+
+
+@pytest.mark.xfail(os.name == "nt", reason="VDS are buggy on Windows")
+@pytest.mark.skipif(not hasattr(h5py, "VirtualLayout"),
+                    reason="VDS not available in this version of h5py")
+def test_VDS(recorder):
+    """Test creation of VDS when channel reports URIs (str) of h5file
+    scheme in a simulated sardana scan (3 points).
+    """
+    nb_records = 3
+    # create partial files
+    part_file_name_pattern = "test_vds_part{0}.h5"
+    part_file_paths = []
+    for i in range(nb_records):
+        path = os.path.join(os.path.dirname(recorder.filename),
+                            part_file_name_pattern.format(i))
+        part_file_paths.append(path)
+        part_file = h5py.File(path, "w")
+        img = numpy.array([[i, i], [i, i]])
+        dataset = "dataset"
+        part_file.create_dataset(dataset, data=img)
+        part_file.flush()
+        part_file.close()
+    try:
+        # create description of channel data
+        data_desc = [
+            ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
+                       shape=(2, 2), value_ref_enabled=True)
+        ]
+        environ = ENV.copy()
+        environ["datadesc"] = data_desc
+
+        # simulate sardana scan
+        environ["starttime"] = datetime.now()
+        record_list = RecordList(environ)
+        recorder._startRecordList(record_list)
         for i in range(nb_records):
-            path = os.path.join(self.dir_name,
-                                part_file_name_pattern.format(i))
-            part_file_paths.append(path)
-            part_file = h5py.File(path, "w")
-            img = numpy.array([[i, i], [i, i]])
-            dataset = "dataset"
-            part_file.create_dataset(dataset, data=img)
-            part_file.flush()
-            part_file.close()
-        try:
-            # create description of channel data
-            data_desc = [
-                ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
-                           shape=(2, 2), value_ref_enabled=True)
-            ]
-            self.env["datadesc"] = data_desc
+            ref = "h5file://" + part_file_paths[i] + "::" + dataset
+            record = Record({COL1_NAME: ref}, i)
+            recorder._writeRecord(record)
+        environ["endtime"] = datetime.now()
+        recorder._endRecordList(record_list)
 
-            # simulate sardana scan
-            recorder = NXscanH5_FileRecorder(filename=self.path)
-            self.env["starttime"] = datetime.now()
-            recorder._startRecordList(self.record_list)
-            for i in range(nb_records):
-                ref = "h5file://" + part_file_paths[i] + "::" + dataset
-                record = Record({COL1_NAME: ref}, i)
-                recorder._writeRecord(record)
-            self.env["endtime"] = datetime.now()
-            recorder._endRecordList(self.record_list)
-
-            # assert if reading datasets from the sardana file access to the
-            # dataset of the partial files
-            file_ = h5py.File(self.path)
-            for i in range(nb_records):
-                expected_img = numpy.array([[i, i], [i, i]])
-                img = file_["entry0"]["measurement"][COL1_NAME][i]
-                msg = "VDS extracted image does not match"
-                # TODO: check if this assert works well
-                numpy.testing.assert_array_equal(img, expected_img, msg)
-        finally:
-            # remove partial files
-            for path in part_file_paths:
-                os.remove(path)
-
-    def tearDown(self):
-        try:
-            os.remove(self.path)
-        except OSError:
-            pass
-
-
-@pytest.fixture
-def recorder(tmpdir):
-    path = str(tmpdir / "file.h5")
-    return NXscanH5_FileRecorder(filename=path)
+        # assert if reading datasets from the sardana file access to the
+        # dataset of the partial files
+        file_ = h5py.File(recorder.filename)
+        for i in range(nb_records):
+            expected_img = numpy.array([[i, i], [i, i]])
+            img = file_["entry0"]["measurement"][COL1_NAME][i]
+            msg = "VDS extracted image does not match"
+            # TODO: check if this assert works well
+            numpy.testing.assert_array_equal(img, expected_img, msg)
+    finally:
+        # remove partial files
+        for path in part_file_paths:
+            os.remove(path)
 
 
 @pytest.mark.parametrize("custom_data", [8, True])
@@ -275,13 +260,13 @@ def _scan(path, serialno=0):
     recorder._endRecordList(record_list)
 
 
+def read_file(path, ready, done):
+    with h5py.File(path, mode="r"):
+        ready.set()
+        done.wait()
+
+
 def test_swmr_with_h5_session(tmpdir):
-
-    def read_file(path, ready, done):
-        with h5py.File(path, mode="r"):
-            ready.set()
-            done.wait()
-
     path = str(tmpdir / "file.h5")
     reader_is_ready = multiprocessing.Event()
     writer_is_done = multiprocessing.Event()
@@ -299,23 +284,24 @@ def test_swmr_with_h5_session(tmpdir):
             reader.join()
 
 
+@mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
+def read_file_without_file_locking(path, ready, done):
+    with h5py.File(path, mode="r"):
+        ready.set()
+        done.wait()
+
+
 @pytest.mark.xfail(
     condition=h5py.version.hdf5_version_tuple < (1, 10, 1),
     reason="HDF5_USE_FILE_LOCKING not supported by hdf5<1.10.1"
 )
 def test_swmr_without_h5_session(tmpdir):
-
-    @mock.patch.dict(os.environ, {"HDF5_USE_FILE_LOCKING": "FALSE"})
-    def read_file(path, ready, done):
-        with h5py.File(path, mode="r"):
-            ready.set()
-            done.wait()
-
     path = str(tmpdir / "file.h5")
     reader_is_ready = multiprocessing.Event()
     writer_is_done = multiprocessing.Event()
     reader = multiprocessing.Process(
-        target=read_file, args=(path, reader_is_ready, writer_is_done)
+        target=read_file_without_file_locking,
+        args=(path, reader_is_ready, writer_is_done)
     )
 
     _scan(path, serialno=0)
