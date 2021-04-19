@@ -36,6 +36,7 @@ import sys
 import pickle
 import ast
 
+import traitlets
 from IPython.core.profiledir import ProfileDirError, ProfileDir
 
 from taurus.external.qt import Qt
@@ -277,7 +278,8 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     def _set_prompts(self):
         # If traitlets >= 5.0.0 then DeferredConfigString is used for values
         # that are not listed in the configurable classes. Get its value.
-        if self._config_passed_as_extra_arguments:
+        if (traitlets.version_info >= (5, 0, 0)
+                and self._config_passed_as_extra_arguments):
             self.kernel_client.execute(
                 "from sardana.spock.config import Spock", silent=True)
             var = "get_ipython().config.Spock.door_alias.get_value(Spock.door_alias)"  # noqa
