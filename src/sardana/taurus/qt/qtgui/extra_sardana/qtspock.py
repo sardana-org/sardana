@@ -180,6 +180,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         self._macro_server_alias = None
         self._door_name = None
         self._door_alias = None
+        self._config_passed_as_extra_arguments = False
 
         self.append_stream("Waiting for kernel to start")
 
@@ -207,6 +208,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
 
         if not self.use_model_from_profile:
             if self._macro_server_name and self._door_name:
+                self._config_passed_as_extra_arguments = True
                 extra_arguments.append("--Spock.macro_server={}".format(
                     self._macro_server_name))
                 extra_arguments.append("--Spock.macro_server_alias={}".format(
@@ -273,7 +275,14 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self._macro_server_alias = None
 
     def _set_prompts(self):
-        var = "get_ipython().config.Spock.door_alias"
+        # If traitlets >= 5.0.0 then DeferredConfigString is used for values
+        # that are not listed in the configurable classes. Get its value.
+        if self._config_passed_as_extra_arguments:
+            self.kernel_client.execute(
+                "from sardana.spock.config import Spock", silent=True)
+            var = "get_ipython().config.Spock.door_alias.get_value(Spock.door_alias)"  # noqa
+        else:
+            var = "get_ipython().config.Spock.door_alias"
         self._silent_exec_callback(
             var, self._set_prompts_callback)
 
