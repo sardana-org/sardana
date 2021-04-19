@@ -77,6 +77,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
+* h5storage tests so they pass on Windows and mark the `test_VDS` as xfail (#1562, #1563).
 * Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
 * Measurement group tango tests - wrong full name composition (#1557)
 
