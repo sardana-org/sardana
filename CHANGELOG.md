@@ -80,6 +80,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * h5storage tests so they pass on Windows and mark the `test_VDS` as xfail (#1562, #1563).
 * Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
 * Measurement group tango tests - wrong full name composition (#1557)
+* Avoid crashes of certain combinations of tests on Windows at process exit (#1558)
 
 ### Changed
 
