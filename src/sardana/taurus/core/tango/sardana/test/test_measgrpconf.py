@@ -91,7 +91,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(resutl, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                     "_test_2d_1_3",
@@ -146,7 +147,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(is_output, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
@@ -194,7 +196,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
@@ -268,7 +271,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, full_names, expected_result)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                    "_test_ct_1_3",
@@ -313,7 +317,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(result, full_names, "_test_ct_1_2")
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                      "_test_ct_1_3", "_test_2d_1_1",
@@ -355,7 +360,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, full_names, expected)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                           "_test_ct_1_3", "_test_2d_1_1",
@@ -405,7 +411,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Synchronization(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                              "_test_ct_1_3", "_test_2d_1_1",
@@ -457,7 +464,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
@@ -517,7 +525,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(enabled, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
@@ -570,4 +579,5 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
