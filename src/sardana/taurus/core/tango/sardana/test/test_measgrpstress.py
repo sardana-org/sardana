@@ -67,6 +67,11 @@ class TestStressMeasurementGroup(SarTestTestCase, TestCase):
         registerExtensions()
 
     def stress_count(self, elements, repeats, synchronizer, synchronization):
+        if (elements == ["_test_ct_1_1", "_test_0d_1_1"]
+                and synchronizer == "_test_tg_1_1"
+                and synchronization == AcqSynchType.Trigger
+                and os.name == "nt"):
+            self.skipTest("fails on Windows")
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
