@@ -155,21 +155,21 @@ class ProfileErrorOutputMixin(object):
             text = self.widget._control.toPlainText()
             matches = re.findall(r"^IPython \d\.\d", text, re.MULTILINE)
             return len(matches) == 1
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
     def test_ipython_prompt(self):
         def predicate():
             text = self.widget._control.toPlainText()
             matches = re.findall(r"^In.*\[(\d)\]", text, re.MULTILINE)
             return len(matches) == 1 and matches[0] == "1"
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
     def test_profile_error_info(self):
         def predicate():
             text = self.widget._control.toPlainText()
             matches = re.findall(r"^Spock profile error", text, re.MULTILINE)
             return len(matches) == 1
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
 
 class MissingProfileTestCase(QtSpockTestCase, ProfileErrorOutputMixin):
@@ -197,7 +197,7 @@ class CorrectProfileAfterRestartTestCase(
             text = cls.widget._control.toPlainText()
             matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
             return len(matches) == 1
-        assert waitFor(predicate, 5000)
+        assert waitFor(predicate, 10000)
 
         cls._create_profile()
 
@@ -228,7 +228,7 @@ class ProfileErrorAfterRestartTestCase(
             text = cls.widget._control.toPlainText()
             matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
             return len(matches) == 1
-        assert waitFor(predicate, 5000)
+        assert waitFor(predicate, 10000)
 
         # "Update" profile
         config_file = os.path.join(
@@ -265,7 +265,7 @@ class QtSpockNoModelTestCase(QtSpockBaseTestCase, ProfileErrorOutputMixin):
             text = self.widget._control.toPlainText()
             matches = re.findall(r"^No door selected", text, re.MULTILINE)
             return len(matches) == 1
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
 
 class QtSpockModelTestCase(QtSpockBaseTestCase, CorrectProfileOutputMixin):
@@ -300,7 +300,7 @@ class QtSpockModelAfterRestartTestCase(
             text = cls.widget._control.toPlainText()
             matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
             return len(matches) == 1
-        assert waitFor(predicate, 5000)
+        assert waitFor(predicate, 10000)
 
         cls.widget.setModel(UNITTEST_DOOR_NAME)
 
@@ -322,7 +322,7 @@ class QtSpockNoModelAfterRestartTestCase(QtSpockNoModelTestCase):
             text = cls.widget._control.toPlainText()
             matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
             return len(matches) == 1
-        assert waitFor(predicate, 5000)
+        assert waitFor(predicate, 10000)
 
         cls.widget.setModel("")
 
