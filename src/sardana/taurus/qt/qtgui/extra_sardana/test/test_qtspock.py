@@ -1,13 +1,14 @@
 import re
 import os
 import tempfile
+import qtconsole
 import numpy as np
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
 
-from taurus.external.unittest import TestCase, main
+from taurus.external.unittest import TestCase, main, skipIf
 from taurus.external import qt
 from taurus.external.qt import Qt
 from sardana.spock.ipython_01_00.genutils import _create_config_file, \
@@ -130,6 +131,9 @@ class CorrectProfileOutputMixin(object):
 
 
 class CorrectProfileTestCase(QtSpockTestCase, CorrectProfileOutputMixin):
+
+    @skipIf(qtconsole.version_info >= (4, 4, 0),
+            "blocking_client was removed in qtconsole#174")
     def test_get_value(self):
         msg_id = self.widget.blocking_client.execute(
             "a = arange(3)", silent=True)
