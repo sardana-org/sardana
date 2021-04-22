@@ -73,6 +73,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
+* Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
+  avoid server crashes (#540, #1567)
+
 
 ### Changed
 
