@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-
+import os
 import uuid
 import numpy
 
@@ -78,7 +78,8 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
                 self.assertTrue(is_numerical(value), msg)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)
@@ -107,7 +108,8 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         finally:
             channel.cleanUp()
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_value_ref_disabled(self):
         mg_name = str(uuid.uuid1())
@@ -126,7 +128,8 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         finally:
             channel.cleanUp()
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)

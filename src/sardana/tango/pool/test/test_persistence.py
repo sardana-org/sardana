@@ -22,6 +22,7 @@
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
+import os
 
 import PyTango
 import unittest
@@ -86,11 +87,13 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         cleanup_success = True
         if self.do_element_cleanup:
             try:
-                self.pool.DeleteElement(self.elem_name)
+                if os.name != "nt":
+                    self.pool.DeleteElement(self.elem_name)
             except:
                 cleanup_success = False
         try:
-            self.pool.DeleteElement(self.ctrl_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(self.ctrl_name)
         except:
             cleanup_success = False
         BasePoolTestCase.tearDown(self)

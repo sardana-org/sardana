@@ -282,7 +282,8 @@ class MeasSarTestTestCase(SarTestTestCase):
             channel.unsubscribe_event(event_id)
         try:
             # Delete the meas
-            self.pool.DeleteElement(self.mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(self.mg_name)
         except Exception as e:
             print('Impossible to delete MeasurementGroup: %s' %
                   self.mg_name)

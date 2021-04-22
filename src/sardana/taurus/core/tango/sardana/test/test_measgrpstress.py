@@ -90,7 +90,8 @@ class TestStressMeasurementGroup(SarTestTestCase, TestCase):
                     self.assertTrue(is_numerical(value), msg)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)
