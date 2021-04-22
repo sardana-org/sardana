@@ -70,6 +70,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   sections in the macro description in Spock (#1524)
 * Apply position formatting (configured with `PosFormat` _view option_)
   to the limits in the `wm` macro (#1529, #1530)
+* Prompt in QtSpock when used with new versions of the `traitlets` package (#1566)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
