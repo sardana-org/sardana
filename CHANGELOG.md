@@ -83,6 +83,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Avoid crashes of certain combinations of tests on Windows at process exit (#1558)
 * Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
   avoid server crashes (#540, #1567)
+* Skip qtspock's `test_get_value` if qtconsole >= 4.4.0 (#1564)
 
 ### Changed
 
