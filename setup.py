@@ -72,9 +72,6 @@ console_scripts = [
     "Sardana = sardana.tango:main",
     "sardanatestsuite = sardana.test.testsuite:main",
     "spock = sardana.spock:main",
-]
-
-gui_scripts = [
     "diffractometeralignment = sardana.taurus.qt.qtgui.extra_hkl.diffractometeralignment:main",
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
@@ -89,7 +86,6 @@ form_factories = [
 
 entry_points = {
     'console_scripts': console_scripts,
-    'gui_scripts': gui_scripts,
     'taurus.form.item_factories': form_factories,
 }
 
