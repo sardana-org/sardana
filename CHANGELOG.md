@@ -45,7 +45,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 #### Jul21
 
-* make PMTV relative move combobox accept only positive numbers
+* make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 
 #### Jan21
 
