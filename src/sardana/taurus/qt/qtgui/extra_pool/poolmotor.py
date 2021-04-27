@@ -789,7 +789,9 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.cb_step.setSizePolicy(Qt.QSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
         self.cb_step.setEditable(True)
-        self.cb_step.lineEdit().setValidator(Qt.QDoubleValidator(self))
+        cb_step_le_validator = Qt.QDoubleValidator(self)
+        cb_step_le_validator.setBottom(0)
+        self.cb_step.lineEdit().setValidator(cb_step_le_validator)
         self.cb_step.lineEdit().setAlignment(Qt.Qt.AlignRight)
         self.cb_step.addItem('1')
         self.qw_write_relative.layout().addWidget(self.cb_step)
