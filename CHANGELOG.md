@@ -43,6 +43,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+#### Jul21
+
+* make PMTV relative move combobox accept only positive numbers
+
+#### Jan21
+
 * Subscribing to Pool's Elements attribute at Sardana server startup (#674, #1545)
 * Execute per measurement preparation in `mesh` scan macro (#1437)
 * Continously read value references in hardware synchronized acquisition 
