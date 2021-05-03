@@ -1607,7 +1607,9 @@ class CScan(GScan):
         try:
             motor.setVelocity(v)
         except Exception:
-            pass
+            self.warning(
+                "failed setting max top velocity {} for {}".format(
+                    v, motor.name), exc_info=True)
 
     def get_min_pos(self, motor):
         '''Helper method to find the minimum position for a given motor.
