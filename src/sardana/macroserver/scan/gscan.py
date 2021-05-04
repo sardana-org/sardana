@@ -1391,7 +1391,8 @@ class CScan(GScan):
         triggered)"""
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
-            self._setFastMotions()
+            self._restore_motors()  # first restore motors backup
+            self._setFastMotions()  # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
         self.motion_end_event.set()
