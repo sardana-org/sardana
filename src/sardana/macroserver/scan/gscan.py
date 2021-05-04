@@ -1300,6 +1300,15 @@ class CScan(GScan):
         self._moveables_trees, \
             physical_moveables_names, \
             self._physical_moveables = data_structures
+
+        # Read ScanOvershootCorrection in case of not defined the scan will
+        # apply the overshoot correction for backward compatibility
+        try:
+            self._apply_overshoot = \
+                self.macro.getEnv('ScanOvershootCorrection')
+        except Exception as e:
+            self._apply_overshoot = True
+
         # The physical motion object contains only physical motors - no pseudo
         # motors (in case the pseudomotors are involved in the scan,
         # it comprarises the underneath physical motors)
@@ -1464,14 +1473,15 @@ class CScan(GScan):
             last_end_positions = end_path
 
         # add correct overshoot time
-        overshoot_duration = 0
-        for _path, start, end in zip(motion_paths, last_end_positions,
-                                     positions):
-            v_motor = _path.motor
-            path = MotionPath(v_motor, start, end)
-            overshoot_duration = max(overshoot_duration, path.duration)
+        if self._apply_overshoot:
+            overshoot_duration = 0
+            for _path, start, end in zip(motion_paths, last_end_positions,
+                                         positions):
+                v_motor = _path.motor
+                path = MotionPath(v_motor, start, end)
+                overshoot_duration = max(overshoot_duration, path.duration)
 
-        total_duration += overshoot_duration
+            total_duration += overshoot_duration
         return total_duration
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
@@ -1877,7 +1887,10 @@ class CSScan(CScan):
             if start_positions is None:
                 last_positions = positions
 
-        self.on_waypoints_end(positions)
+        if self._apply_overshoot:
+            self.on_waypoints_end(positions)
+        else:
+            self.on_waypoints_end()
 
     def scan_loop(self):
         motion = self.motion
@@ -2579,7 +2592,10 @@ class CTScan(CScan, CAcquisition):
             if start_positions is None:
                 last_positions = positions
 
-        self.on_waypoints_end(positions)
+        if self._apply_overshoot:
+            self.on_waypoints_end(positions)
+        else:
+            self.on_waypoints_end()
 
     def on_waypoints_end(self, restore_positions=None):
         """To be called by the waypoint thread to handle the end of waypoints
