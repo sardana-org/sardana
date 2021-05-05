@@ -720,8 +720,8 @@ class GScan(Logger):
                 except Exception:
                     instrument = ''
             try:
-                instrumentFullName = self.macro.findObjs(
-                    instrument, type_class=Type.Instrument)[0].getFullName()
+                instrumentFullName = \
+                    self.macro.getInstrument(instrument).getFullName()
             except InterruptException:
                 raise
             except Exception:
@@ -822,7 +822,7 @@ class GScan(Logger):
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
         env['instrumentlist'] = self.macro.findObjs(
-            '.*', type_class=Type.Instrument)
+            '.*', type_class=Type.Instrument, reserve=False)
 
         # env.update(self._getExperimentConfiguration) #add all the info from
         # the experiment configuration to the environment
