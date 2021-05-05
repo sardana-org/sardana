@@ -45,6 +45,7 @@ from sardana.macroserver.macro import Macro, macro, Type, ViewOption, \
 from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
+from sardana import sardanacustomsettings
 
 ##########################################################################
 #
@@ -328,6 +329,36 @@ class wm(Macro):
          None, 'List of motor to show'],
     ]
 
+    @staticmethod
+    def format_value(fmt, str_fmt, value):
+        """
+        Formats given value following the fmt and/or str_fmt rules.
+
+        Parameters
+        ----------
+        fmt : str
+            The value format.
+
+        str_fmt : str
+            The string format.
+
+        value : float
+            The value to be formatted.
+
+        Returns
+        -------
+        str
+            The string formatted value.
+        """
+
+        if fmt is not None:
+            fmt_value = fmt % value
+            fmt_value = str_fmt % fmt_value
+        else:
+            fmt_value = str_fmt % value
+
+        return fmt_value
+
     def prepare(self, motor_list, **opts):
         self.table_opts = {}
 
@@ -362,15 +393,17 @@ class wm(Macro):
             posObj = motor.getPositionObj()
             if pos_format > -1:
                 fmt = '%c.%df' % ('%', int(pos_format))
+            else:
+                fmt = None
 
-            try:
-                val1 = fmt % motor.getPosition(force=True)
-                val1 = str_fmt % val1
-            except:
-                val1 = str_fmt % motor.getPosition(force=True)
+            val1 = motor.getPosition(force=True)
+            val1 = self.format_value(fmt, str_fmt, val1)
 
-            val2 = str_fmt % posObj.getMaxRange().magnitude
-            val3 = str_fmt % posObj.getMinRange().magnitude
+            val2 = posObj.getMaxRange().magnitude
+            val2 = self.format_value(fmt, str_fmt, val2)
+
+            val3 = posObj.getMinRange().magnitude
+            val3 = self.format_value(fmt, str_fmt, val3)
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
@@ -459,9 +492,10 @@ class pwm(Macro):
         self.execMacro('wm', motor_list, **Table.PrettyOpts)
 
 
-class mv(Macro):
+class mv(Macro, Hookable):
     """Move motor(s) to the specified position(s)"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_pos_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -470,19 +504,34 @@ class mv(Macro):
     ]
 
     def run(self, motor_pos_list):
-        motors, positions = [], []
+        self.motors, positions = [], []
         for m, p in motor_pos_list:
-            motors.append(m)
+            self.motors.append(m)
             positions.append(p)
+
+        enable_hooks = getattr(sardanacustomsettings,
+                               'PRE_POST_MOVE_HOOK_IN_MV',
+                               True)
+
+        if enable_hooks:
+            for preMoveHook in self.getHooks('pre-move'):
+                preMoveHook()
+
+        for m, p in zip(self.motors, positions):
             self.debug("Starting %s movement to %s", m.getName(), p)
-        motion = self.getMotion(motors)
+
+        motion = self.getMotion(self.motors)
         state, pos = motion.move(positions)
         if state != DevState.ON:
             self.warning("Motion ended in %s", state.name)
             msg = []
-            for motor in motors:
+            for motor in self.motors:
                 msg.append(motor.information())
             self.info("\n".join(msg))
+
+        if enable_hooks:
+            for postMoveHook in self.getHooks('post-move'):
+                postMoveHook()
 
 
 class mstate(Macro):
@@ -494,17 +543,20 @@ class mstate(Macro):
         self.info("Motor %s" % str(motor.stateObj.read().rvalue))
 
 
-class umv(Macro):
+class umv(Macro, Hookable):
     """Move motor(s) to the specified position(s) and update"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mv.param_def
 
     def prepare(self, motor_pos_list, **opts):
         self.all_names = []
         self.all_pos = []
+        self.motors = []
         self.print_pos = False
         for motor, pos in motor_pos_list:
             self.all_names.append([motor.getName()])
+            self.motors.append(motor)
             pos, posObj = motor.getPosition(force=True), motor.getPositionObj()
             self.all_pos.append([pos])
             posObj.subscribeEvent(self.positionChanged, motor)
@@ -512,13 +564,14 @@ class umv(Macro):
     def run(self, motor_pos_list):
         self.print_pos = True
         try:
-            self.execMacro('mv', motor_pos_list)
+            mv, _ = self.createMacro('mv', motor_pos_list)
+            mv._setHooks(self.hooks)
+            self.runMacro(mv)
         finally:
             self.finish()
 
     def finish(self):
         self._clean()
-        self.printAllPos()
 
     def _clean(self):
         for motor, pos in self.getParameters()[0]:
@@ -543,9 +596,10 @@ class umv(Macro):
         self.flushOutput()
 
 
-class mvr(Macro):
+class mvr(Macro, Hookable):
     """Move motor(s) relative to the current position(s)"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['motor_disp_list',
          [['motor', Type.Moveable, None, 'Motor to move'],
@@ -554,34 +608,41 @@ class mvr(Macro):
     ]
 
     def run(self, motor_disp_list):
-        motor_pos_list = []
+        self.motors, motor_pos_list = [], []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
+            self.motors.append(motor)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
             else:
                 pos += disp
             motor_pos_list.append([motor, pos])
-        self.execMacro('mv', motor_pos_list)
+        mv, _ = self.createMacro('mv', motor_pos_list)
+        mv._setHooks(self.hooks)
+        self.runMacro(mv)
 
 
-class umvr(Macro):
+class umvr(Macro, Hookable):
     """Move motor(s) relative to the current position(s) and update"""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = mvr.param_def
 
     def run(self, motor_disp_list):
-        motor_pos_list = []
+        self.motors, motor_pos_list = [], []
         for motor, disp in motor_disp_list:
             pos = motor.getPosition(force=True)
+            self.motors.append(motor)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
             else:
                 pos += disp
             motor_pos_list.append([motor, pos])
-        self.execMacro('umv', motor_pos_list)
+        umv, _ = self.createMacro('umv', motor_pos_list)
+        umv._setHooks(self.hooks)
+        self.runMacro(umv)
 
 # TODO: implement tw macro with param repeats in order to be able to pass
 # multiple motors and multiple deltas. Also allow to pass the integration time

@@ -48,7 +48,7 @@ import re
 import numpy as np
 
 from sardana.sardanautils import py2_round
-from sardana.macroserver.macro import Macro, iMacro, Type
+from sardana.macroserver.macro import Hookable, Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
 
@@ -120,10 +120,9 @@ class _diffrac:
             self.type = v
 
         self.angle_device_names = {}
-        i = 0
-        for motor in motor_list:
+
+        for i, motor in enumerate(motor_list):
             self.angle_device_names[self.angle_names[i]] = motor.split(' ')[0]
-            i = i + 1
 
     # TODO: it should not be necessary to implement on_stop methods in the
     # macros in order to stop the moveables. Macro API should provide this kind
@@ -197,13 +196,14 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-class br(Macro, _diffrac):
+class br(Macro, _diffrac, Hookable):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L.
     If a fourth parameter is given, the combination of angles to be set is
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ['H', Type.String, None, "H value"],
         ['K', Type.String, None, "K value"],
@@ -217,6 +217,9 @@ class br(Macro, _diffrac):
 
     def prepare(self, H, K, L, AnglesIndex, FlagNotBlocking, FlagPrinting):
         _diffrac.prepare(self)
+        self.motors = []
+        for motor_name in self.angle_device_names.values():
+            self.motors.append(self.getMotor(motor_name))     
 
     def run(self, H, K, L, AnglesIndex, FlagNotBlocking, FlagPrinting):
         h_idx = 0
@@ -259,7 +262,9 @@ class br(Macro, _diffrac):
                 cmd = cmd + " " + str(angle)
             if FlagPrinting == 1:
                 cmd = "u" + cmd
-            self.execMacro(cmd)
+            mv, _ = self.createMacro(cmd)
+            mv._setHooks(self.hooks)
+            self.runMacro(mv)
         else:
             for name, angle in zip(self.angle_names, angles_list):
                 angle_dev = self.getObj(self.angle_device_names[name])
@@ -269,11 +274,11 @@ class br(Macro, _diffrac):
                           hkl_values[l_idx], self.diffrac.WaveLength])
 
 
-class ubr(Macro, _diffrac):
+class ubr(Macro, _diffrac, Hookable):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
-
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
     param_def = [
         ["hh", Type.String, "Not set", "H position"],
         ["kk", Type.String, "Not set", "K position"],
@@ -283,10 +288,15 @@ class ubr(Macro, _diffrac):
 
     def prepare(self, hh, kk, ll, AnglesIndex):
         _diffrac.prepare(self)
+        self.motors = []
+        for motor_name in self.angle_device_names.values():
+            self.motors.append(self.getMotor(motor_name))            
 
     def run(self, hh, kk, ll, AnglesIndex):
         if ll != "Not set":
-            self.execMacro("br", hh, kk, ll, AnglesIndex, 0, 1)
+            br, _ = self.prepareMacro("br", hh, kk, ll, AnglesIndex, 0, 1)
+            br._setHooks(self.hooks)
+            self.runMacro(br)
         else:
             self.output("usage:  ubr H K L [Trajectory]")
 

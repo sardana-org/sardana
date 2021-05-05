@@ -7,12 +7,19 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* _H5 write session_ to avoid file locking problems and to introduce SWMR mode support (#1124, #1457)
+  * `h5_start_session`, `h5_start_session_path`, `h5_end_session`, `h5_end_session_path`
+    and `h5_ls_session` macros
+  * `h5_write_session` context manager
 * `shape` controller axis parameter (plugin), `shape` experimental channel
   attribute (kernel) and `Shape` Tango attribute to the experimental channels
   (#1296, #1466)
 * *scan information* and *scan point* forms to the *showscan online* widget (#1386, #1477, #1479)
 * `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
   widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
+* Handle `pre-move` and `post-move` hooks by: `mv`, `mvr`, `umv`, `umvr`, `br`, `ubr` (#1471, #1480)
+  * `motors` attribute to these macros which contains list of motors that will be moved
+  * `sardanacustomettings.PRE_POST_MOVE_HOOK_IN_MV` for disabling these hooks
 * Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
   * Add `PrepareOne()` to TriggerGate controller.
   * Call TriggerGate controller preparation methods in the _acquision action_
@@ -21,28 +28,50 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Allowed hooks to macro description in Spock (#1523)
+* Assert motor sign is -1 or 1 (#1345, #1507)
 * Documentation on how to write 1D and 2D controllers (#1494)
+* Machanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
 
 ### Fixed
 
+#### Jul21
+
+* make PMTV relative move combobox accept only positive numbers (#1571, #1572)
+
+#### Jan21
+
+* Subscribing to Pool's Elements attribute at Sardana server startup (#674, #1545)
 * Execute per measurement preparation in `mesh` scan macro (#1437)
 * Continously read value references in hardware synchronized acquisition 
   instead of reading only at the end (#1442, #1448)
+* Ensure order of moveables is preserved in Motion object (#1505)
 * Avoid problems when defining different, e.g. shape, standard attributes,
   e.g. pseudo counter's value, in controllers (#1440, #1446)
 * Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
 * Storing string values as custom data in NXscanH5_FileRecorder (#1485)
+* Stopping/aborting grouped movement when backlash correction would be applied (#1421, #1474, #1539)
 * Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
+* Remove redundant print of positions at the end of umv (#1526)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * Allow running Spock without Qt bindings (#1462, #1463)
+* Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
+* MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
+* Respect timer/monitor passed in measurement group configuration (#1516, #1521)
+* Setting `Hookable.hooks` to empty list (#1522)
+* `Macro.hasResult()` and `Macro.hasParams()` what avoids adding empty _Parameters_ and _Result_
+  sections in the macro description in Spock (#1524)
+* Apply position formatting (configured with `PosFormat` _view option_)
+  to the limits in the `wm` macro (#1529, #1530)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
@@ -51,10 +80,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
 
+
 ### Changed
 
 * Experimental channel shape is now considered as a result of the configuration
   and not part of the measurement group configuration (#1296, #1466)
+* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
+  devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
 
 ### Removed
 

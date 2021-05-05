@@ -120,7 +120,6 @@ class MacroServer(SardanaDevice):
 
         macro_server.set_recorder_path(self.RecorderPath)
         macro_server.set_macro_path(self.MacroPath)
-        macro_server.set_pool_names(self.PoolNames)
 
         if self.RConsolePort:
             try:
@@ -130,6 +129,9 @@ class MacroServer(SardanaDevice):
                 self.warning("Failed to start rconsole")
                 self.debug("Details:", exc_info=1)
         self.set_state(DevState.ON)
+
+    def sardana_init_hook(self):
+        self.macro_server.set_pool_names(self.PoolNames)
 
     def _calculate_name(self, name):
         if name is None:
@@ -247,15 +249,17 @@ class MacroServer(SardanaDevice):
         is_TypeList_allowed = is_Elements_allowed
 
     def GetMacroInfo(self, macro_names):
-        """GetMacroInfo(list<string> macro_names):
+        """Get macro information
 
-           Returns a list of string containing macro information.
-           Each string is a JSON encoded.
+       Returns a list of strings containing macro information.
+       Each string is a JSON encoded.
 
-           Params:
-               - macro_name: a list of strings with the macro(s) name(s)
-           Returns:
-               - a list of string containing macro information.
+       Args:
+           macro_names (list(str)): macro(s) name(s)
+
+       Returns:
+           list(str): macro(s) information
+
         """
         macro_server = self.macro_server
         codec = CodecFactory().getCodec('json')
