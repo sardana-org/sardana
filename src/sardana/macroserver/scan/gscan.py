@@ -1551,9 +1551,8 @@ class CScan(GScan):
 
         top_vel_obj = motor.getVelocityObj()
         _, max_top_vel = top_vel_obj.getRange()
-        try:
-            max_top_vel = float(max_top_vel)
-        except ValueError:
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if np.isinf(max_top_vel):
             try:
                 # hack to avoid recursive velocity reduction
                 self._maxVelDict = getattr(self, '_maxVelDict', {})
@@ -1562,9 +1561,6 @@ class CScan(GScan):
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:
                 pass
-        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if np.isinf(max_top_vel):
-            max_top_vel = motor.getVelocity()
         return max_top_vel
 
     def get_min_acc_time(self, motor):
