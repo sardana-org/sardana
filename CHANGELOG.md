@@ -45,7 +45,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 #### Jul21
 
-* make PMTV relative move combobox accept only positive numbers (#1571, #1572)
+* Do not reserve _instruments_ in scans what avoids stopping them (#1577)
+* Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 
 #### Jan21
 
