@@ -46,7 +46,7 @@ class DiscretePseudoMotorConfiguration(dict):
         self.update(conf)
 
     def get_configuration(self):
-        value = self.pseudo.getAttribute('configuration').read().value
+        value = self.pseudo.getAttribute('configuration').read().rvalue
         fmt, data = self.json.decode(('json', value))
         return data
 

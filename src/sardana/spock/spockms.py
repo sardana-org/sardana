@@ -195,7 +195,7 @@ class GUIViewer(BaseGUIViewer):
         door = genutils.get_door()
 
         try:
-            env = dict(door.getEnvironmentObj().read().value)
+            env = dict(door.getEnvironmentObj().read().rvalue)
         except Exception as e:
             print('Unable to read environment. No plotting')
             print(str(e))
