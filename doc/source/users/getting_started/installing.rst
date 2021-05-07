@@ -50,31 +50,6 @@ You can test the installation by running::
 (see more detailed instructions in `this step-by-step howto
 <https://sourceforge.net/p/sardana/wiki/Howto-Sardana-on-Debian8/>`__)
 
-
-Windows
--------
-
-#. Download the latest windows binary from https://github.com/sardana-org/sardana/releases
-#. Run the installation executable
-#. test the installation::
-
-       C:\Python35\python3 -c "import sardana; print(sardana.Release.version)"
-
-Windows installation shortcut
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This chapter provides a quick shortcut to all windows packages which are
-necessary to run Sardana on your windows machine
-
-#. Install all dependencies:
-
-	#. Download and install latest `PyTango`_ from `PyTango downdoad page <http://pypi.python.org/pypi/PyTango>`_
-	#. Download and install latest `Taurus`_ from `Taurus downdoad page <http://pypi.python.org/pypi/taurus>`_
-	#. Download and install latest `lxml`_ from `lxml downdoad page <http://pypi.python.org/pypi/lxml>`_
-	#. Download and install latest itango from `itango download page <http://pypi.python.org/pypi/itango>`_
-
-#. Finally download and install latest Sardana from `Sardana downdoad page <http://pypi.python.org/pypi/sardana>`_
-
 =========================
 Working directly from Git
 =========================
