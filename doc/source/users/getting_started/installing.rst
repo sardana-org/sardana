@@ -26,21 +26,6 @@ On Debian this should work to prepare the build environment::
 
         apt-get install pkg-config libboost-python-dev libtango-dev
 
-Installing from PyPI manually (platform-independent)
-----------------------------------------------------
-
-You may alternatively install from a downloaded release package:
-
-#. Download the latest release of Sardana from http://pypi.python.org/pypi/sardana
-#. Extract the downloaded source into a temporary directory and change to it
-#. run::
-
-       python3 setup.py install
-
-You can test the installation by running::
-
-       python3 -c "import sardana; print(sardana.Release.version)"
-
 Linux (Debian-based)
 --------------------
 
