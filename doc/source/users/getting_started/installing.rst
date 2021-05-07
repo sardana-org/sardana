@@ -5,7 +5,7 @@
 Installing
 ==========
 
-Installing with pip [1]_ (platform-independent)
+Installing with pip (platform-independent)
 --------------------------------------------------------
 
 Sardana can be installed using pip. The following command will
@@ -19,7 +19,7 @@ You can test the installation by running::
        python3 -c "import sardana; print(sardana.Release.version)"
 
 
-Installing from PyPI manually [2]_ (platform-independent)
+Installing from PyPI manually (platform-independent)
 ---------------------------------------------------------
 
 You may alternatively install from a downloaded release package:
@@ -126,22 +126,6 @@ Sardana has dependencies on some python libraries:
 
 
 .. rubric:: Footnotes
-
-.. [1] This command requires super user previledges on linux systems. If your
-       user has them you can usually prefix the command with *sudo*:
-       ``sudo pip3 -U sardana``. Alternatively, if you don't have
-       administrator previledges, you can install locally in your user
-       directory with: ``pip3 --user sardana``
-       In this case the executables are located at <HOME_DIR>/.local/bin. Make
-       sure the PATH is pointing there or you execute from there.
-
-.. [2] *setup.py install* requires user previledges on linux systems. If your
-       user has them you can usually prefix the command with *sudo*: 
-       ``sudo python3 setup.py install``. Alternatively, if you don't have
-       administrator previledges, you can install locally in your user directory
-       with: ``python3 setup.py install --user``
-       In this case the executables are located at <HOME_DIR>/.local/bin. Make
-       sure the PATH is pointing there or you execute from there.
 
 .. [3] PyTango < 9 is compatible with itango >= 0.0.1 and < 0.1.0,
        while higher versions with itango >= 0.1.6.
