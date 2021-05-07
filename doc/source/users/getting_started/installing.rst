@@ -53,6 +53,8 @@ In a conda environment (we recommend creating one specifically for sardana)::
 
     conda install -c conda-forge -c sardana
 
+Note: for Windows, until PyTango is available on conda-forge, you may need to use
+`pip install pytango` for installing it.
 
 =========================
 Working directly from Git
