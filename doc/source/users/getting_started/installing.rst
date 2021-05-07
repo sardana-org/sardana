@@ -56,29 +56,20 @@ In a conda environment (we recommend creating one specifically for sardana)::
 Note: for Windows, until PyTango is available on conda-forge, you may need to use
 `pip install pytango` for installing it.
 
-=========================
-Working directly from Git
-=========================
+Working from Git source directly (in develop mode)
+--------------------------------------------------
  
 If you intend to do changes to Sardana itself, or want to try the latest
 developments, it is convenient to work directly from the git source in
 "develop" (aka "editable") mode, so that you do not need to re-install
-on each change.
+on each change::
 
-You can clone sardana from the main git repository::
+    # optional: if using a conda environment, pre-install dependencies with:
+    conda install --only-deps -c conda-forge sardana
 
-    git clone https://github.com/sardana-org/sardana.git sardana
-
-Then, to work in editable mode, just do::
-
-    pip3 install -e ./sardana
-
-Note that you can also fork the git repository in github to get your own
-github-hosted clone of the sardana repository to which you will have full
-access. This will create a new git repository associated to your personal account in
-github, so that your changes can be easily shared and eventually merged
-into the official repository.
-
+    # install sardana in develop mode
+    git clone https://github.com/sardana-org/sardana.git
+    pip3 install -e ./sardana  # <-- Note the -e !!
 
 .. _dependencies:
 
