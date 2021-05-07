@@ -59,6 +59,16 @@ Note: `python3-sardana` package is available starting from the Debian 11
 (Bullseye) release. For previous releases you can use `python-sardana`
 (compatible with Python 2 only).
 
+.. _sardana-getting-started-installing-in-conda:
+
+Installing in a conda environment (platform-independent)
+--------------------------------------------------------
+
+In a conda environment (we recommend creating one specifically for sardana)::
+
+    conda install -c conda-forge -c sardana
+
+
 =========================
 Working directly from Git
 =========================
