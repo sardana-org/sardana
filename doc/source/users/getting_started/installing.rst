@@ -77,33 +77,33 @@ on each change::
 Dependencies
 ============
 
-Sardana has dependencies on some python libraries:
+Sardana dependens on PyTango_, Taurus_, lxml_, itango_ and click_.
+However some Sardana features require additional dependencies. For example:
 
-- Sardana uses Tango as the middleware so you need PyTango_ 9.2.5 or later
-  installed. You can check it by doing::
+- Using the Sardana Qt_ widgets, requires either PyQt_ (v4 or v5)
+  or PySide_ (v1 or v2).
 
-    python3 -c 'import tango; print(tango.__version__)'
+- The macro plotting feature requires matplotlib_
 
-- Sardana clients are developed with Taurus so you need Taurus_ 4.5.4 or later
-  installed. You can check it by doing::
+- The showscan online widget requires pyqtgraph_
 
-      python3 -c 'import taurus; print(taurus.Release.version)'
+- The showscan offline widget requires PyMca5_.
 
-- Sardana operate some data in the XML format and requires lxml_ library 2.3 or
-  later. You can check it by doing::
+- HDF5 NeXus recorder requires h5py_
 
-      python3 -c 'import lxml.etree; print(lxml.etree.LXML_VERSION)'
-
-- spock (Sardana CLI) requires itango 0.1.6 or later [3]_.
+- The sardana editor widget requires spyder_.
 
 
-.. rubric:: Footnotes
-
-.. [3] PyTango < 9 is compatible with itango >= 0.0.1 and < 0.1.0,
-       while higher versions with itango >= 0.1.6.
-
-.. _lxml: http://lxml.de
-.. _SardanaPypi: http://pypi.python.org/pypi/sardana/
-.. _Tango: http://www.tango-controls.org/
 .. _PyTango: http://pytango.readthedocs.io/
 .. _Taurus: http://www.taurus-scada.org/
+.. _lxml: http://lxml.de
+.. _itango: https://pytango.readthedocs.io/en/stable/itango.html
+.. _click: https://pypi.org/project/click/
+.. _Qt: http://qt.nokia.com/products/
+.. _PyQt: http://www.riverbankcomputing.co.uk/software/pyqt/
+.. _PySide: https://wiki.qt.io/Qt_for_Python/
+.. _matplotlib: https://matplotlib.org/
+.. _pyqtgraph: http://www.pyqtgraph.org/
+.. _PyMca5: http://pymca.sourceforge.net/
+.. _h5py: https://www.h5py.org/
+.. _spyder: http://pythonhosted.org/spyder/
