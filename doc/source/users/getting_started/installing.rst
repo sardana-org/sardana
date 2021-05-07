@@ -6,7 +6,7 @@ Installing
 ==========
 
 Installing with pip (platform-independent)
---------------------------------------------------------
+------------------------------------------
 
 Sardana can be installed using pip. The following command will
 automatically download and install the latest release of Sardana (see
@@ -18,9 +18,16 @@ You can test the installation by running::
 
        python3 -c "import sardana; print(sardana.Release.version)"
 
+Note: Installing sardana with pip3 on Linux requires building PyTango (one of
+the sardana's dependencies). You could use :ref:`sardana-getting-started-installing-in-conda`_
+to avoid this. If you decide ton continue with pip3, please refer to
+`PyTango's installation guide <https://pytango.readthedocs.io/en/stable/start.html#pypi>`_.
+On Debian this should work to prepare the build environment::
+
+        apt-get install pkg-config libboost-python-dev libtango-dev
 
 Installing from PyPI manually (platform-independent)
----------------------------------------------------------
+----------------------------------------------------
 
 You may alternatively install from a downloaded release package:
 
