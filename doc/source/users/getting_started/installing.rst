@@ -19,8 +19,8 @@ You can test the installation by running::
        python3 -c "import sardana; print(sardana.Release.version)"
 
 Note: Installing sardana with pip3 on Linux requires building PyTango (one of
-the sardana's dependencies). You could use :ref:`sardana-getting-started-installing-in-conda`_
-to avoid this. If you decide ton continue with pip3, please refer to
+the sardana's dependencies). You could use :ref:`sardana-getting-started-installing-in-conda`
+to avoid this. If you decide to continue with pip3, please refer to
 `PyTango's installation guide <https://pytango.readthedocs.io/en/stable/start.html#pypi>`_.
 On Debian this should work to prepare the build environment::
 
@@ -35,11 +35,6 @@ doing (as root)::
 
        apt-get install python3-sardana
 
-You can test the installation by running::
-
-       python3 -c "import sardana; print(sardana.Release.version)"
-
-
 Note: `python3-sardana` package is available starting from the Debian 11
 (Bullseye) release. For previous releases you can use `python-sardana`
 (compatible with Python 2 only).
@@ -51,10 +46,10 @@ Installing in a conda environment (platform-independent)
 
 In a conda environment (we recommend creating one specifically for sardana)::
 
-    conda install -c conda-forge -c sardana
+    conda install -c conda-forge sardana
 
 Note: for Windows, until PyTango is available on conda-forge, you may need to use
-`pip install pytango` for installing it.
+`pip3 install pytango` for installing it.
 
 Working from Git source directly (in develop mode)
 --------------------------------------------------
@@ -77,7 +72,7 @@ on each change::
 Dependencies
 ============
 
-Sardana dependens on PyTango_, Taurus_, lxml_, itango_ and click_.
+Sardana depends on PyTango_, Taurus_, lxml_, itango_ and click_.
 However some Sardana features require additional dependencies. For example:
 
 - Using the Sardana Qt_ widgets, requires either PyQt_ (v4 or v5)
@@ -89,7 +84,7 @@ However some Sardana features require additional dependencies. For example:
 
 - The showscan offline widget requires PyMca5_.
 
-- HDF5 NeXus recorder requires h5py_
+- The HDF5 NeXus recorder requires h5py_
 
 - The sardana editor widget requires spyder_.
 
