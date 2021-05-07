@@ -37,18 +37,20 @@ You can test the installation by running::
 Linux (Debian-based)
 --------------------
 
-Since v1.4, Sardana is part of the official repositories of Debian (and Ubuntu
+Sardana is part of the official repositories of Debian (and Ubuntu
 and other Debian-based distros). You can install it and all its dependencies by
 doing (as root)::
 
-       aptitude install python-sardana
+       apt-get install python3-sardana
 
 You can test the installation by running::
 
        python3 -c "import sardana; print(sardana.Release.version)"
 
-(see more detailed instructions in `this step-by-step howto
-<https://sourceforge.net/p/sardana/wiki/Howto-Sardana-on-Debian8/>`__)
+
+Note: `python3-sardana` package is available starting from the Debian 11
+(Bullseye) release. For previous releases you can use `python-sardana`
+(compatible with Python 2 only).
 
 =========================
 Working directly from Git
