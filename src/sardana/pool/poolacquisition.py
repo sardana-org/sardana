@@ -581,6 +581,16 @@ class PoolAcquisition(PoolAction):
                             **self._synch_args.kwargs,
                             cb=self._synch._set_ready)
 
+    def abort(self, *args, **kwargs):
+        """Aborts SW and HW acquisition."""
+        if self._hw_acq_args is not None:
+            self._hw_acq.abort_action()
+
+        if self._sw_acq_args is not None\
+                or self._sw_start_acq_args is not None\
+                or self._0d_acq_args is not None:
+            self._sw_acq.abort_action()
+
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
@@ -1083,7 +1093,7 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
 
-        while True:
+        while True and not self._aborted:
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
@@ -1118,6 +1128,10 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
                                                propagate=2,
                                                safe=True)
             self.add_finish_hook(set_state_info, False)
+
+    def abort_action(self, *args, **kwargs):
+        """Aborts procedure for this action"""
+        self._aborted = True
 
 
 class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
@@ -1173,7 +1187,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
         nb_states_per_value = self._nb_states_per_value
 
         i = 0
-        while True:
+        while True and not self._aborted:
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
@@ -1227,6 +1241,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
                                                propagate=2,
                                                safe=True)
             self.add_finish_hook(set_state_info, False)
+
+    def abort_action(self, *args, **kwargs):
+        """Aborts procedure for this action"""
+        self._aborted = True
 
 
 class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):

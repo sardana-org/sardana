@@ -1383,4 +1383,5 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def abort(self):
         self._pending_starts = 0
+        self.acquisition.abort()
         PoolGroupElement.abort(self)
