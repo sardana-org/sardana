@@ -58,7 +58,7 @@ class PoolIORegisterReadWidget(TaurusLabel):
             ior_dev = taurus.Device(model)
         except:
             return
-        labels = ior_dev.getAttribute('Labels').read().value
+        labels = ior_dev.getAttribute('Labels').read().rvalue
         labels_list = labels.split(' ')
 
         # Update the mapping
@@ -116,7 +116,7 @@ class PoolIORegisterWriteWidget(TaurusValueComboBox):
         except:
             return
 
-        labels = ior_dev.getAttribute('Labels').read().value
+        labels = ior_dev.getAttribute('Labels').read().rvalue
         labels_list = labels.split(' ')
 
         # Update the mapping
@@ -252,7 +252,7 @@ class PoolIORegisterButtons(TaurusWidget):
             button.deleteLater()
         self.button_value_dict = {}
 
-        labels = self.ioreg_dev.getAttribute('Labels').read().value
+        labels = self.ioreg_dev.getAttribute('Labels').read().rvalue
         labels_list = labels.split(' ')
         # Update the mapping
         for label_and_value in labels_list:

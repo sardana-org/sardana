@@ -102,7 +102,7 @@ def _get_shape(channel):
         if attr_conf.data_format == PyTango.AttrDataFormat.SCALAR:
             return []
         try:
-            value = channel.read().value
+            value = channel.read().rvalue.magnitude
         except Exception:
             return [n for n in (attr_conf.max_dim_x,
                                 attr_conf.max_dim_y) if n > 0]
