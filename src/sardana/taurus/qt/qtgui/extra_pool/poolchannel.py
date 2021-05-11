@@ -102,7 +102,7 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         status_info = ""
         channel_dev = self.taurusValueBuddy().channel_dev
         if channel_dev is not None:
-            status = channel_dev.getAttribute("Status").read().rvalue.magnitude
+            status = channel_dev.getAttribute("Status").read().rvalue
             # MAKE IT LOOK LIKE THE STANDARD TABLE FOR TAURUS TOOLTIPS
             status_lines = status.split("\n")
             status_info = ("<TABLE width='500' border='0' cellpadding='1' "
