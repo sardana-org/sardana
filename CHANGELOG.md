@@ -40,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* More clear installation instructions (#727, #1580)
 * napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
 
@@ -85,6 +86,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
   avoid server crashes (#540, #1567)
 * Skip QtSpock `test_get_value` test if qtconsole >= 4.4.0 (#1564)
+* More clear installation instructions (#727, #1580)
 * Increase timeout for QtSpock tests (#1568)
 
 ### Changed
