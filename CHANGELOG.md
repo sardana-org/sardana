@@ -63,6 +63,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
 * MacroServer crash at exit on Windows by avoiding the abort of the already finished macro (#1077, #1559)
 * Allow running Spock without Qt bindings (#1462, #1463)
+* Spock issues at startup on Windows (#536)
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
 * Respect timer/monitor passed in measurement group configuration (#1516, #1521)
