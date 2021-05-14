@@ -61,6 +61,7 @@ install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
     'taurus>=4.7.0',
+    'taurus>=4.7.1.1 ; platform_system=="Windows"',
     'lxml>=2.3',
     'click',
 ]

@@ -51,6 +51,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
   devices (#1214, #1301, #1531)
 * Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
+* Bump taurus requirement to >= 4.7.1.1 on Windows (#1583)
 
 ### Removed
 
@@ -100,7 +101,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   avoid server crashes (#540, #1567)
 * Skip QtSpock `test_get_value` test if qtconsole >= 4.4.0 (#1564)
 * Increase timeout for QtSpock tests (#1568)
-
 
 ## [3.0.3] 2020-09-18
 
