@@ -1,3 +1,5 @@
+.. _pmtv:
+
 PoolMotorTV User’s Interface
 -----------------------------
 
