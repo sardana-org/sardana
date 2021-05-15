@@ -231,6 +231,8 @@ Exiting spock
 
 To exit spock type :kbd:`Control+d` or :samp:`exit()` inside a spock console.
 
+.. _sardana-spock-gettinghelp:
+
 Getting help
 ------------
 
@@ -478,6 +480,8 @@ Example accesing scan data:
 .. |br| raw:: html
 
     <br>
+
+.. _sardana-spock-viewoptions:
 
 Changing appearance with View Options
 -------------------------------------

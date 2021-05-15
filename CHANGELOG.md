@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-## [3.1.0] 2021-03-30
+## [3.1.0] 2021-05-17
 
 ### Added
 
@@ -33,7 +33,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Assert motor sign is -1 or 1 (#1345, #1507)
 * _last macro_ concept to the `MacroExecutor` (kernel) #1559
 * Documentation on how to write 1D and 2D controllers (#1494)
-* Machanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
+* Mechanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
@@ -43,6 +43,19 @@ This file follows the formats and conventions from [keepachangelog.com]
 * More clear installation instructions (#727, #1580)
 * napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
+
+### Changed
+
+* Experimental channel shape is now considered as a result of the configuration
+  and not part of the measurement group configuration (#1296, #1466)
+* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
+  devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
+* Bump taurus requirement to >= 4.7.1.1 on Windows (#1583)
+
+### Removed
+
+* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
 
 ### Fixed
 
@@ -87,21 +100,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
   avoid server crashes (#540, #1567)
 * Skip QtSpock `test_get_value` test if qtconsole >= 4.4.0 (#1564)
-* More clear installation instructions (#727, #1580)
 * Increase timeout for QtSpock tests (#1568)
-
-### Changed
-
-* Experimental channel shape is now considered as a result of the configuration
-  and not part of the measurement group configuration (#1296, #1466)
-* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
-  devices (#1214, #1301, #1531)
-* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
-* Bump taurus requirement to >= 4.7.1.1 on Windows (#1583)
-
-### Removed
-
-* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
 
 ## [3.0.3] 2020-09-18
 

@@ -1,3 +1,5 @@
+.. _pctv:
+
 PoolChannelTV User’s Interface
 ------------------------------
 
