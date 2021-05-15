@@ -40,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* "What's new?" section to docs (#1584)
 * More clear installation instructions (#727, #1580)
 * napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
