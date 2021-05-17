@@ -129,8 +129,15 @@ class MSDoor(MSObject):
 
     running_macro = property(get_running_macro)
 
+    def get_last_macro(self):
+        return self.macro_executor.getLastMacro()
+
+    last_macro = property(get_last_macro)
+
     def get_macro_data(self):
         macro = self.running_macro
+        if macro is None:
+            macro = self.last_macro
         if macro is None:
             raise MacroServerException("No macro has run so far " +
                                        "or the macro data was not preserved.")

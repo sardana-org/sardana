@@ -497,7 +497,7 @@ class BasicDummyTwoDController(TwoDController):
         e.g. start, active passive
         """
         # for the moment only react on first trigger
-        if type_.name.lower() == "active" and value == 0:
+        if type_.name.lower() == "start":
             self._armed = False
             for axis, channel in self.counting_channels.items():
                 channel.is_counting = True

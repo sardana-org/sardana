@@ -25,6 +25,7 @@
 
 import copy
 import time
+import atexit
 import threading
 import PyTango
 from sardana.macroserver.macros.test import BaseMacroExecutor
@@ -127,6 +128,8 @@ class TangoMacroExecutor(BaseMacroExecutor):
     Macro executor implemented using Tango communication with the Door device
     '''
 
+    _api_util_cleanup_registered = False
+
     def __init__(self, door_name=None):
         super(TangoMacroExecutor, self).__init__()
         if door_name is None:
@@ -134,6 +137,10 @@ class TangoMacroExecutor(BaseMacroExecutor):
         self._door = PyTango.DeviceProxy(door_name)
         self._done_event = None
         self._started_event = None
+        if not TangoMacroExecutor._api_util_cleanup_registered:
+            # remove whenever PyTango#390 gets fixed
+            atexit.register(PyTango.ApiUtil.cleanup)
+            TangoMacroExecutor._api_util_cleanup_registered = True
 
     def _clean(self):
         '''Recreates threading Events in case the macro executor is reused.'''
