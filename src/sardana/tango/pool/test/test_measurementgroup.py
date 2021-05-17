@@ -27,6 +27,7 @@ import copy
 import json
 import os
 import time
+import atexit
 import threading
 
 # TODO: decide what to use: taurus or PyTango
@@ -35,6 +36,7 @@ from PyTango import DeviceProxy
 import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana import sardanacustomsettings
 from sardana.pool import AcqSynchType, SynchDomain, SynchParam
@@ -52,14 +54,8 @@ def _get_full_name(device_proxy, logger=None):
         host = device_proxy.get_db_host()  # this is FQDN
         port = device_proxy.get_db_port()
         db_name = host + ":" + port
-    full_name = db_name + "/" + device_proxy.name()
-    # try to use Taurus 4 to retrieve FQDN
-    try:
-        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
-        full_name, _, _ = TangoDeviceNameValidator().getNames(full_name)
-    # if Taurus3 in use just continue
-    except ImportError:
-        pass
+    full_name = "//" + db_name + "/" + device_proxy.name()
+    full_name, _, _ = TangoDeviceNameValidator().getNames(full_name)
     return full_name
 
 
@@ -108,10 +104,17 @@ class TangoAttributeListener(AttributeListener):
 class MeasSarTestTestCase(SarTestTestCase):
     """ Helper class to setup the need environmet for execute """
 
+    _api_util_cleanup_registered = False
+
     def setUp(self, pool_properties=None):
         SarTestTestCase.setUp(self, pool_properties)
         self.event_ids = {}
         self.mg_name = '_test_mg_1'
+        if not MeasSarTestTestCase._api_util_cleanup_registered:
+            # remove whenever PyTango#390 gets fixed
+            atexit.register(PyTango.ApiUtil.cleanup)
+            MeasSarTestTestCase._api_util_cleanup_registered = True
+
 
     def create_meas(self, config):
         """ Create a meas with the given configuration
@@ -279,7 +282,8 @@ class MeasSarTestTestCase(SarTestTestCase):
             channel.unsubscribe_event(event_id)
         try:
             # Delete the meas
-            self.pool.DeleteElement(self.mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(self.mg_name)
         except Exception as e:
             print('Impossible to delete MeasurementGroup: %s' %
                   self.mg_name)

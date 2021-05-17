@@ -48,7 +48,8 @@ _FAKE_RECORDER_DIR = os.path.join(_TEST_DIR, 'res')
             extra_recorders=1)
 @insertTest(helper_name='getRecorderPath',
             recorder_path=["/tmp/foo", "#/tmp/foo2"], expected_num_path=2)
-@insertTest(helper_name='getRecorderPath', recorder_path=["/tmp/foo:/tmp/foo2"],
+@insertTest(helper_name='getRecorderPath',
+            recorder_path=["/tmp/foo" + os.pathsep + "/tmp/foo2"],
             expected_num_path=3)
 @insertTest(helper_name='getRecorderPath', recorder_path=["/tmp/foo"],
             expected_num_path=2)
