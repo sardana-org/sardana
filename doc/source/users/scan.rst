@@ -187,6 +187,69 @@ Scans are highly configurable using the environment variables
              Variables, check the 
              :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
+.. _sardana-users-scan-data-storage:
+
+Data storage
+------------
+
+Data being produced by scans can be optionally handled by *recorders* and
+sent to a variety of destinations. Typical use case is to store the scan data
+in a file.
+
+Built-in recorders
+^^^^^^^^^^^^^^^^^^
+
+Sardana defines some standard recorders e.g. the Spock output recorder or the
+SPEC file recorder. From the other hand users may define their custom recorders.
+Sardana provides the following standard recorders (grouped by types):
+
+* file [*]
+    * FIO_FileRecorder
+    * NXscanH5_FileRecorder
+    * SPEC_FileRecorder
+
+* shared memory [*]
+    * SPSRecorder
+    * ShmRecorder
+
+* output
+    * JsonRecorder [*]
+    * OutputRecorder
+
+[*] Scan Framework provides mechanisms to enable and select this recorders
+using the environment variables.
+
+.. _sardana-users-scan-data-storage-nxscanh5_filerecorder:
+
+NXscanH5_FileRecorder
+"""""""""""""""""""""
+
+NXscanH5_FileRecorder is a scan recorder which writes the scan data according
+to the NXscan `NeXus <http://nexusformat.org>`_ application definition
+in the `HDF5 <https://www.hdfgroup.org/solutions/hdf5/>`_ file format.
+
+Sardana scan recorders are instantiated per scan execution and therefore this
+recorder opens and closes the HDF5 file for writing when the scan starts
+and ends respectively. This may cause file locking issues with reading
+applications opened in between the scans. To overcome this issue
+the *write session* concept, with optional support of SWMR mode,
+was introduced for this particular recorder.
+
+The write sessions use case scenarios:
+
+* Manual session control with macros
+    To start and end the session you can use
+    `~sardana.macroserver.macros.h5storage.h5_start_session` /
+    `~sardana.macroserver.macros.h5storage.h5_start_session_path` and
+    `~sardana.macroserver.macros.h5storage.h5_end_session` /
+    `~sardana.macroserver.macros.h5storage.h5_end_session_path` macros.
+    You can list the active sessions with
+    `~sardana.macroserver.macros.h5storage.h5_ls_session` macro.
+* Programmatic session control with context manager (for macro developers)
+    You can use the `~sardana.macroserver.macros.h5storage.h5_write_session`
+    context manager to ensure that the write session is only active over a
+    specific part of your macro code.
+
 .. _sardana-users-scan-snapshot:
 
 Scan snapshots

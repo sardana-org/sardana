@@ -124,6 +124,40 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
+def _filter_ctrls(ctrls, enabled=None):
+    if enabled is None:
+        return ctrls
+
+    filtered_ctrls = []
+    for ctrl in ctrls:
+        if ctrl.enabled == enabled:
+            filtered_ctrls.append(ctrl)
+    return filtered_ctrls
+
+
+def _get_timerable_ctrls(ctrls, acq_synch=None, enabled=None):
+    timerable_ctrls = []
+    if acq_synch is None:
+        for ctrls in list(ctrls.values()):
+            timerable_ctrls += ctrls
+    elif isinstance(acq_synch, list):
+        acq_synch_list = acq_synch
+        for acq_synch in acq_synch_list:
+            timerable_ctrls += ctrls[acq_synch]
+    else:
+        timerable_ctrls = list(ctrls[acq_synch])
+
+    return _filter_ctrls(timerable_ctrls, enabled)
+
+
+def _get_timerable_channels(ctrls, acq_synch=None, enabled=None):
+    timerable_ctrls = _get_timerable_ctrls(ctrls, acq_synch, enabled)
+    timerable_channels = []
+    for ctrl in timerable_ctrls:
+        timerable_channels.extend(ctrl.get_channels(enabled))
+    return timerable_channels
+
+
 class ConfigurationItem(object):
     """Container of configuration attributes related to a given element.
 
@@ -482,16 +516,6 @@ class MeasurementConfiguration(object):
             controller = controller.element
         return self._ctrl_acq_synch[controller]
 
-    def _filter_ctrls(self, ctrls, enabled):
-        if enabled is None:
-            return ctrls
-
-        filtered_ctrls = []
-        for ctrl in ctrls:
-            if ctrl.enabled == enabled:
-                filtered_ctrls.append(ctrl)
-        return filtered_ctrls
-
     def get_timerable_ctrls(self, acq_synch=None, enabled=None):
         """Return timerable controllers.
 
@@ -512,18 +536,30 @@ class MeasurementConfiguration(object):
         :return: timerable controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        timerable_ctrls = []
-        if acq_synch is None:
-            for ctrls in list(self._timerable_ctrls.values()):
-                timerable_ctrls += ctrls
-        elif isinstance(acq_synch, list):
-            acq_synch_list = acq_synch
-            for acq_synch in acq_synch_list:
-                timerable_ctrls += self._timerable_ctrls[acq_synch]
-        else:
-            timerable_ctrls = list(self._timerable_ctrls[acq_synch])
+        return _get_timerable_ctrls(self._timerable_ctrls, acq_synch, enabled)
 
-        return self._filter_ctrls(timerable_ctrls, enabled)
+    def get_timerable_channels(self, acq_synch=None, enabled=None):
+        """Return timerable channels.
+
+        Allow to filter channels based on acquisition synchronization or
+        whether these are enabled/disabled.
+
+        :param acq_synch: (optional) filter controller based on acquisition
+         synchronization
+        :type acq_synch: :class:`~sardana.pool.pooldefs.AcqSynch`
+        :param enabled: (optional) filter controllers whether these are
+         enabled/disabled:
+
+         - :obj:`True` - enabled only
+         - :obj:`False` - disabled only
+         - :obj:`None` - all
+
+        :type enabled: :obj:`bool` or :obj:`None`
+        :return: timerable channels that fulfils the filtering criteria
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`>  # noqa
+        """
+        return _get_timerable_channels(self._timerable_ctrls, acq_synch,
+                                       enabled)
 
     def get_zerod_ctrls(self, enabled=None):
         """Return 0D controllers.
@@ -541,7 +577,7 @@ class MeasurementConfiguration(object):
         :return: 0D controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        return self._filter_ctrls(self._zerod_ctrls, enabled)
+        return _filter_ctrls(self._zerod_ctrls, enabled)
 
     def get_synch_ctrls(self, enabled=None):
         """Return synchronizer (currently only trigger/gate) controllers.
@@ -559,7 +595,7 @@ class MeasurementConfiguration(object):
         :return: synchronizer controllers that fulfils the filtering criteria
         :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
-        return self._filter_ctrls(self._synch_ctrls, enabled)
+        return _filter_ctrls(self._synch_ctrls, enabled)
 
     def get_master_timer_software(self):
         """Return master timer in software acquisition.
@@ -601,8 +637,9 @@ class MeasurementConfiguration(object):
         """Set measurement configuration from serializable data structure.
 
         Setting of the configuration includes the validation process. Setting
-        of invalid configuration raises an exception hence it is not necessary
-        that the client application does the validation.
+        of invalid configuration raises an exception and leaves the object
+        as it was before the setting process. Thanks to that it is not
+        necessary that the client application does the validation.
 
         The configuration parameters for given channels/controllers may differ
         depending on their types e.g. 0D channel does not support timer
@@ -842,29 +879,46 @@ class MeasurementConfiguration(object):
         # Fill user configuration with measurement group's timer & monitor
         # This is a backwards compatibility cause the measurement group's
         # timer & monitor are not used
-        if master_timer_sw is not None:
+        mnt_grp_timer = cfg.get('timer')
+        if mnt_grp_timer:
+            timerable_chs = _get_timerable_channels(timerable_ctrls,
+                                                    enabled=True)
+            if len(timerable_chs) > 0:
+                if mnt_grp_timer in [ch.full_name for ch in timerable_chs]:
+                    user_config['timer'] = mnt_grp_timer
+                else:
+                    raise ValueError(
+                        'timer {} is not present/enabled'.format(mnt_grp_timer)
+                    )
+        elif master_timer_sw is not None:
             user_config['timer'] = master_timer_sw.full_name
         elif master_timer_sw_start is not None:
             user_config['timer'] = master_timer_sw_start.full_name
-        else:  # Measurement Group with all channel synchronized by hardware
-            mnt_grp_timer = cfg.get('timer')
-            if mnt_grp_timer:
-                user_config['timer'] = mnt_grp_timer
-            else:
-                # for backwards compatibility use a random monitor
-                user_config['timer'] = user_config_ctrl['timer']
+        else:
+            # Measurement Group with all channel synchronized by hardware
+            # for backwards compatibility use a random monitor
+            user_config['timer'] = user_config_ctrl['timer']
 
-        if master_monitor_sw is not None:
+        mnt_grp_monitor = cfg.get('monitor')
+        if mnt_grp_monitor:
+            timerable_chs = _get_timerable_channels(timerable_ctrls,
+                                                    enabled=True)
+            if len(timerable_chs) > 0:
+                if mnt_grp_monitor in [ch.full_name for ch in timerable_chs]:
+                    user_config['monitor'] = mnt_grp_monitor
+                else:
+                    raise ValueError(
+                        'monitor {} is not present/enabled'.format(
+                            mnt_grp_monitor))
+        elif master_monitor_sw is not None:
             user_config['monitor'] = master_monitor_sw.full_name
         elif master_monitor_sw_start is not None:
             user_config['monitor'] = master_monitor_sw_start.full_name
-        else:  # Measurement Group with all channel synchronized by hardware
-            mnt_grp_monitor = cfg.get('monitor')
-            if mnt_grp_monitor:
-                user_config['monitor'] = mnt_grp_monitor
-            else:
-                # for backwards compatibility use a random monitor
-                user_config['monitor'] = user_config_ctrl['monitor']
+        else:
+            # Measurement Group with all channel synchronized by hardware
+            # for backwards compatibility use a random monitor
+            user_config['monitor'] = user_config_ctrl['monitor']
+
 
         # Update internals values
         self._label = label
@@ -953,7 +1007,7 @@ class MeasurementConfiguration(object):
         channel_data['normalization'] = channel_data.get('normalization',
                                                          Normalization.No)
         # TODO: think of filling other keys: data_type, data_units, nexus_path
-        # shape here instead of feeling them on the Taurus extension level
+        #  here instead of feeling them on the Taurus extension level
 
         if ctype != ElementType.External:
             ctrl_name = channel.controller.full_name

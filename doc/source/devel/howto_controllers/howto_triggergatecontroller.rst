@@ -89,6 +89,18 @@ The state should be a member of :obj:`~sardana.sardanadefs.State` (For backward
 compatibility reasons, it is also supported to return one of
 :class:`PyTango.DevState`). The status could be any string.
 
+.. _sardana-TriggerGateController-howto-prepare:
+
+Prepare for measurement
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To prepare a trigger for a measurement you can use the
+:meth:`~sardana.pool.controller.TriggerGateController.PrepareOne` method which
+receives as an argument the number of starts of the whole measurement.
+This information may be used to prepare the hardware for generating
+multiple events (triggers or gates) in a complex measurement
+e.g. :ref:`sardana-macros-scanframework-determscan`.
+
 .. _sardana-TriggerGateController-howto-load:
 
 Load synchronization description

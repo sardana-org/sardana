@@ -75,7 +75,6 @@ a given channel or its controller:
   process.
 * output - whether the channel acquisition results should be printed, for example,
   by the output recorder during the scan. Can be either True or False.
-* shape - shape of the data 
 * data type - type of the data
 * plot type - select the online scan plot type for the channel. Can have one
   of the following values:

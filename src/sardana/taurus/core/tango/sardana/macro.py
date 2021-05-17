@@ -32,6 +32,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import copy
+import uuid
 import types
 import tempfile
 
@@ -88,6 +89,9 @@ class MacroInfo(object):
         if self.hasResult():
             doc += '\n\nResult:\n\t'
             doc += '\n\t'.join(self.getResultDescr())
+        if self.allowsHooks():
+            doc += '\n\nAllows hooks:\n\t'
+            doc += '\n\t'.join(self.getAllowedHooks())
         self.doc = doc
 
     def _hasParamComplex(self, parameters=None):
@@ -136,7 +140,7 @@ class MacroInfo(object):
 
         :return: (bool) True if the macro has parameters or False otherwise
         """
-        return hasattr(self, 'parameters')
+        return hasattr(self, 'parameters') and len(self.parameters) > 0
 
     def getParamList(self):
         """Returs the list of parameters
@@ -222,7 +226,7 @@ class MacroInfo(object):
 
         :return: (bool) True if the macro has a result or False otherwise
         """
-        return hasattr(self, 'result')
+        return hasattr(self, 'result') and len(self.result) > 0
 
     def getResultList(self):
         """Returns the list of results
@@ -297,6 +301,31 @@ class MacroInfo(object):
             return res[0]
         else:
             return tuple(res)
+
+    def allowsHooks(self):
+        """Checks whether the macro allows hooks
+
+        :return: True or False depending if the macro allows hooks
+        :rtype: bool
+        """
+        try:
+            self.hints["allowsHooks"]
+        except KeyError:
+            return False
+        return True
+
+    def getAllowedHooks(self):
+        """Gets allowed hooks
+
+        :return: list with the allowed hooks or empty list if the macro
+            does not allow hooks
+        :rtype: list[str]
+        """
+        try:
+            allowed_hooks = self.hints["allowsHooks"]
+        except KeyError:
+            return []
+        return allowed_hooks
 
     def __str__(self):
         return self.name
@@ -833,7 +862,6 @@ class RepeatNode(BranchNode):
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
-    count = 0
 
     def __init__(self, parent=None, name=None, params_def=None,
                  macro_info=None):
@@ -867,7 +895,7 @@ class MacroNode(BranchNode):
         """
         Getter of macro's id property
 
-        :return: (int)
+        :return: (str)
 
         .. seealso: :meth:`MacroNode.setId`, assignId
         """
@@ -878,7 +906,7 @@ class MacroNode(BranchNode):
         """
         Setter of macro's id property
 
-        :param id: (int) new macro's id
+        :param id: (str) new macro's id
 
         See Also: id, assignId
         """
@@ -890,16 +918,13 @@ class MacroNode(BranchNode):
         If macro didn't have an assigned id it assigns it
         and return macro's id.
 
-        :return: (int)
+        :return: (str)
 
         See Also: id, setId
         """
-        id = self.id()
-        if id is not None:
-            return id
-        MacroNode.count += 1
-        self.setId(MacroNode.count)
-        return MacroNode.count
+        id_ = str(uuid.uuid1())
+        self.setId(id_)
+        return id_
 
     def name(self):
         return self._name
@@ -1160,7 +1185,7 @@ class MacroNode(BranchNode):
         if withId:
             id_ = self.id()
             if id_ is not None:
-                macroElement.set("id", str(self.id()))
+                macroElement.set("id", self.id())
         for hookPlace in self.hookPlaces():
             hookElement = etree.SubElement(macroElement, "hookPlace")
             hookElement.text = hookPlace

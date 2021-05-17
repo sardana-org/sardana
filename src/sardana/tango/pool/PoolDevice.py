@@ -33,6 +33,7 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
+from copy import deepcopy
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
     DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
@@ -690,7 +691,9 @@ class PoolElementDevice(PoolDevice):
             attr_name_lower = attr_name.lower()
             if attr_name_lower in std_attrs_lower:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
-                tg_info = dev_class.standard_attr_list[attr_name]
+                # copy in order to leave the class attributes untouched
+                # the downstream code can append MaxDimSize to the attr. info
+                tg_info = deepcopy(dev_class.standard_attr_list[attr_name])
                 std_attrs[attr_name] = attr_name, tg_info, data_info
             else:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
@@ -899,7 +902,7 @@ class PoolExpChannelDevice(PoolElementDevice):
     def initialize_dynamic_attributes(self):
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
-        non_detect_evts = "integrationtime",
+        non_detect_evts = "integrationtime", "shape"
 
         for attr_name in non_detect_evts:
             if attr_name in attrs:
@@ -938,6 +941,13 @@ class PoolExpChannelDevice(PoolElementDevice):
         :type attr: :class:`~PyTango.Attribute`"""
         self.element.integration_time = attr.get_write_value()
 
+    def read_Shape(self, attr):
+        """Reads the shape.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.get_shape(cache=False))
+
 
 class PoolExpChannelDeviceClass(PoolElementDeviceClass):
 
@@ -952,7 +962,14 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'ValueBuffer': [[DevEncoded, SCALAR, READ]]
+        'ValueBuffer': [[DevEncoded, SCALAR, READ]],
+        'Shape': [[DevLong64, SPECTRUM, READ, 2],
+                  {'label': "Shape (X,Y)",
+                   'description': "Shape of the value. It is an array with \n"
+                                  "at most 2 elements: X and Y dimensions. \n"
+                                  "0-element array - scalar\n"
+                                  "1-element array (X) - spectrum\n"
+                                  "2-element array (X, Y) - image"}],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

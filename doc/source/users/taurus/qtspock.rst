@@ -20,7 +20,7 @@ as a standalone application
 
 .. code-block:: console
 
-    python3 -m sardana.taurua.qt.qtgui.extran_sardana.qtspock
+    python3 -m sardana.taurus.qt.qtgui.extra_sardana.qtspock
 
 or embedded in the :ref:`taurusgui_ui`: (when :ref:`panelcreation` use:
 `sardana.taurus.qt.qtgui.extra_sardana.qtspock` module and

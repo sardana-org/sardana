@@ -37,10 +37,13 @@ UNITTEST_POOL_DS_NAME = "unittest1"
 #: UnitTests Pool Device name: Pool Device to use in unit tests.
 UNITTEST_POOL_NAME = "pool/demo1/1"
 
-#: Size and number of rotating backups of the log files.
-#: The Pool and MacroServer Device servers will use these values for their
-#: logs.
+#: Size of rotating backups of the log files.
+#: The Pool, MacroServer and Sardana device servers will use these values
+#: for their logs.
 LOG_FILES_SIZE = 1e7
+#: Number of rotating backups of the log files.
+#: The Pool, MacroServer and Sardana device servers will use these values
+#: for their logs.
 LOG_BCK_COUNT = 5
 
 #: Input handler for spock interactive macros. Accepted values are:
@@ -92,7 +95,7 @@ VALUE_REF_BUFFER_CODEC = "pickle"
 #: - "dumb" - worst performance but directly available with Python 3.
 MS_ENV_SHELVE_BACKEND = None
 
-#: macroexecutor maximum number of macros stored in the history. 
+#: macroexecutor maximum number of macros stored in the history.
 #: Available options:
 #:
 #: - None (or no setting) - unlimited history (may slow down the GUI operation
@@ -100,3 +103,13 @@ MS_ENV_SHELVE_BACKEND = None
 #: - 0 - history will not be filled
 #: - <int> - max number of macros stored in the history
 MACROEXECUTOR_MAX_HISTORY = 100
+
+#: pre-move and post-move hooks applied in simple mv-based macros
+#: Available options:
+#:
+#: - True (or no setting) - macros which are hooked to the pre-move and
+#:   post-move hook places are called before and/or after any move of a motor
+#: - False - macros which are hooked to the pre-move and post-move hook
+#:   places are not called in simple mv-based macros but only in scan-based
+#:   macros
+PRE_POST_MOVE_HOOK_IN_MV = True

@@ -3,6 +3,106 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
+## [3.1.0] 2021-05-17
+
+### Added
+
+* _H5 write session_ to avoid file locking problems and to introduce SWMR mode support (#1124, #1457)
+  * `h5_start_session`, `h5_start_session_path`, `h5_end_session`, `h5_end_session_path`
+    and `h5_ls_session` macros
+  * `h5_write_session` context manager
+* `shape` controller axis parameter (plugin), `shape` experimental channel
+  attribute (kernel) and `Shape` Tango attribute to the experimental channels
+  (#1296, #1466)
+* *scan information* and *scan point* forms to the *showscan online* widget (#1386, #1477, #1479)
+* `ScanPlotWidget`, `ScanPlotWindow`, `ScanInfoForm`, `ScanPointForm` and `ScanWindow`
+  widget classes for easier composition of custom GUIs involving online scan plotting (#1386)
+* Handle `pre-move` and `post-move` hooks by: `mv`, `mvr`, `umv`, `umvr`, `br`, `ubr` (#1471, #1480)
+  * `motors` attribute to these macros which contains list of motors that will be moved
+  * `sardanacustomettings.PRE_POST_MOVE_HOOK_IN_MV` for disabling these hooks
+* Include trigger/gate elements in the per-measurement preparation (#1432, #1443, #1468)
+  * Add `PrepareOne()` to TriggerGate controller.
+  * Call TriggerGate controller preparation methods in the _acquision action_
+* Add `ScanUser` environment variable (#1355)
+* Support `PosFormat` _ViewOption_ in `umv` macro (#176, #1555)
+* Allow to programmatically disable *deterministic scan* optimization (#1426, #1427)
+* Initial delay in position domain to the synchronization description
+  in *ct* like continuous scans (#1428)
+* Avoid double printing of user units in PMTV: read widget and units widget (#1424)
+* Allowed hooks to macro description in Spock (#1523)
+* Assert motor sign is -1 or 1 (#1345, #1507)
+* _last macro_ concept to the `MacroExecutor` (kernel) #1559
+* Documentation on how to write 1D and 2D controllers (#1494)
+* Mechanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
+* Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
+* Document how to properly deal with exceptions in macros in order to not interfer 
+  with macro stopping/aborting (#1461)
+* Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
+* Documentation example on how to more efficiently access Tango with PyTango
+  in macros/controllers (#1456)
+* "What's new?" section to docs (#1584)
+* More clear installation instructions (#727, #1580)
+* napoleon extension to the sphinx configuration (#1533)
+* LICENSE file to python source distribution (#1490)
+
+### Changed
+
+* Experimental channel shape is now considered as a result of the configuration
+  and not part of the measurement group configuration (#1296, #1466)
+* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
+  devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
+* Bump taurus requirement to >= 4.7.1.1 on Windows (#1583)
+
+### Removed
+
+* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
+
+### Fixed
+
+* Subscribing to Pool's Elements attribute at Sardana server startup (#674, #1545)
+* Execute per measurement preparation in `mesh` scan macro (#1437)
+* Continously read value references in hardware synchronized acquisition 
+  instead of reading only at the end (#1442, #1448)
+* Ensure order of moveables is preserved in Motion object (#1505)
+* Avoid problems when defining different, e.g. shape, standard attributes,
+  e.g. pseudo counter's value, in controllers (#1440, #1446)
+* Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
+* Storing string values as custom data in NXscanH5_FileRecorder (#1485)
+* Stopping/aborting grouped movement when backlash correction would be applied (#1421, #1474, #1539)
+* Storing string datasets with `h5py` > 3 (#1510)
+* Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
+* Remove redundant print of positions at the end of umv (#1526)
+* Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
+* `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
+* MacroServer crash at exit on Windows by avoiding the abort of the already finished macro (#1077, #1559)
+* Allow running Spock without Qt bindings (#1462, #1463)
+* Spock issues at startup on Windows (#536)
+* Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
+* MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
+* Respect timer/monitor passed in measurement group configuration (#1516, #1521)
+* Setting `Hookable.hooks` to empty list (#1522)
+* `Macro.hasResult()` and `Macro.hasParams()` what avoids adding empty _Parameters_ and _Result_
+  sections in the macro description in Spock (#1524)
+* Apply position formatting (configured with `PosFormat` _view option_)
+  to the limits in the `wm` macro (#1529, #1530)
+* Prompt in QtSpock when used with new versions of the `traitlets` package (#1566)
+* Use equality instead of identity checks for numbers and strings (#1491)
+* Docstring of QtSpockWidget (#1484)
+* Recorders tests helpers (#1439)
+* Disable flake8 job in travis CI (#1455)
+* `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
+* Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
+* String formatting when rising exceptions in pseudomotors (#1469)
+* h5storage tests so they pass on Windows and mark the `test_VDS` as xfail (#1562, #1563).
+* Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
+* Measurement group tango tests - wrong full name composition (#1557)
+* Avoid crashes of certain combinations of tests on Windows at process exit (#1558)
+* Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
+  avoid server crashes (#540, #1567)
+* Skip QtSpock `test_get_value` test if qtconsole >= 4.4.0 (#1564)
+* Increase timeout for QtSpock tests (#1568)
+
 ## [3.0.3] 2020-09-18
 
 ### Added
@@ -947,7 +1047,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/3.0.3...HEAD
+[3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4

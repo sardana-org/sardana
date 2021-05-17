@@ -25,6 +25,7 @@
     :columns: 3
 
     * :class:`Readable`
+    * :class:`Referable`
     * :class:`Startable`
     * :class:`Stopable`
     * :class:`Loadable`
@@ -44,6 +45,7 @@
     * :class:`OneDController`    
     * :class:`TwoDController`
     * :class:`PseudoCounterController`
+    * :class:`TriggerGateController`
     * :class:`IORegisterController`
 
 
@@ -54,6 +56,17 @@ Readable interface
     :parts: 1
     
 .. autoclass:: Readable
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+Referable interface
+-------------------
+
+.. inheritance-diagram:: Referable
+    :parts: 1
+
+.. autoclass:: Referable
     :show-inheritance:
     :members:
     :undoc-members:
@@ -215,6 +228,17 @@ Pseudo Counter Controller API
     :members:
     :undoc-members:
 
+
+Trigger/Gate Controller API
+---------------------------
+
+.. inheritance-diagram:: TriggerGateController
+    :parts: 1
+
+.. autoclass:: TriggerGateController
+    :show-inheritance:
+    :members:
+    :undoc-members:
 
 IO Register Controller API
 ----------------------------

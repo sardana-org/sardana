@@ -33,7 +33,8 @@ import numbers
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
            "MacroFunc", "Type", "Table", "List", "ViewOption",
-           "LibraryError", "Optional"]
+           "LibraryError", "Optional", "StopException", "AbortException",
+           "InterruptException"]
 
 __docformat__ = 'restructuredtext'
 
@@ -60,7 +61,7 @@ from sardana.util.thread import _asyncexc
 from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
     ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
-    LibraryError
+    LibraryError, InterruptException
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
@@ -256,17 +257,19 @@ class Hookable(Logger):
           contains the hooks that don't provide hints
 
         """
-        if not isinstance(hooks, list):
-            self.error(
-                'the hooks must be passed as a list<callable,list<str>>')
-            return
-
         if len(self.hooks) > 0:
             msg = ("This macro defines its own hooks. Previously defined "
                    "hooks, including the general ones, would be only called "
                    "if these own hooks were added using the appendHook "
                    "method or appended to the self.hooks.")
             self.warning(msg)
+        self._setHooks(hooks)
+
+    def _setHooks(self, hooks):
+        if not isinstance(hooks, list):
+            self.error(
+                'the hooks must be passed as a list<callable,list<str>>')
+            return
         # store self._hooks, making sure it is of type:
         # list<callable,list<str>>
         self._hooks = []
@@ -282,6 +285,8 @@ class Hookable(Logger):
         # delete _hookHintsDict to force its recreation on the next access
         if hasattr(self, '_hookHintsDict'):
             del self._hookHintsDict
+        if len(self._hooks) == 0:
+            return
         # create _hookHintsDict
         self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
         nohints = self._hookHintsDict['_NOHINTS_']
@@ -387,13 +392,24 @@ class macro(object):
         def where_moveable(self, moveable):
             self.output("Moveable %s is at %s", moveable.getName(), moveable.getPosition())"""
 
+    param_def = []
+    result_def = []
+    env = ()
+    hints = {}
+    interactive = False
+
     def __init__(self, param_def=None, result_def=None, env=None, hints=None,
                  interactive=None):
-        self.param_def = param_def
-        self.result_def = result_def
-        self.env = env
-        self.hints = hints
-        self.interactive = interactive
+        if param_def is not None:
+            self.param_def = param_def
+        if result_def is not None:
+            self.result_def = result_def
+        if env is not None:
+            self.env = env
+        if hints is not None:
+            self.hints = hints
+        if interactive is not None:
+            self.interactive = interactive
 
     def __call__(self, fn):
         fn.macro_data = {}
@@ -526,6 +542,8 @@ class Macro(Logger):
         self._id = kwargs.get('id')
         self._desc = "Macro '%s'" % self._macro_line
         self._macro_status = {'id': self._id,
+                              'name': self._name,
+                              'macro_line': self._macro_line,
                               'range': (0.0, 100.0),
                               'state': 'start',
                               'step': 0.0}
@@ -1121,35 +1139,35 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.createMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.createMacro('mv', [[motor.getName(), '0']])
+            self.createMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.createMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.createMacro('mv', [[motor.getName(), 0]])
+            self.createMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.createMacro('ascan', th, 0, 100, 10, 1.0)
+            self.createMacro('mv', [[th, 0]])
+            self.createMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.createMacro(['mv', [[motor.getName(), '0']]])
+            self.createMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.createMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.createMacro(['mv', [[motor.getName(), 0]]])
+            self.createMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.createMacro(['mv', [[th, 0]]])
+            self.createMacro(['mv', th, 0]) # backwards compatibility - see note
 
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.createMacro('ascan th 0 100 10 1.0')
+            self.createMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
@@ -1192,34 +1210,34 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.prepareMacro('mv', [[motor.getName(), '0']])
+            self.prepareMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[motor.getName(), 0]])
+            self.prepareMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[th, 0]])
+            self.prepareMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0'])
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.prepareMacro(['mv', [[motor.getName(), '0']]])
+            self.prepareMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.prepareMacro(['mv', [[motor.getName(), 0]]])
+            self.prepareMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.prepareMacro(['mv', [[th, 0]]])
+            self.prepareMacro(['mv', th, 0]) # backwards compatibility - see note
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.prepareMacro('ascan th 0 100 10 1.0')
+            self.prepareMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
@@ -1766,17 +1784,24 @@ class Macro(Logger):
     # Handle macro environment
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
+    def _getEnv(self, key=None, macro_name=None, door_name=None):
+        door_name = door_name or self.getDoorName()
+        macro_name = macro_name or self._name
+
+        return self.macro_server.get_env(key=key, macro_name=macro_name,
+                                         door_name=door_name)
+
     @mAPI
     def getEnv(self, key=None, macro_name=None, door_name=None):
         """**Macro API**. Gets the local environment matching the given
         parameters:
 
-           - door_name and macro_name define the context where to look for
-             the environment. If both are None, the global environment is
-             used. If door name is None but macro name not, the given macro
-             environment is used and so on...
-           - If key is None it returns the complete environment, otherwise
-             key must be a string containing the environment variable name.
+        - door_name and macro_name define the context where to look for
+          the environment. If both are None, the global environment is
+          used. If door name is None but macro name not, the given macro
+          environment is used and so on...
+        - If key is None it returns the complete environment, otherwise
+          key must be a string containing the environment variable name.
 
         :raises: UnknownEnv
 
@@ -1794,11 +1819,7 @@ class Macro(Logger):
 
         :return: a :obj:`dict` containing the environment
         :rtype: :obj:`dict`"""
-        door_name = door_name or self.getDoorName()
-        macro_name = macro_name or self._name
-
-        return self.macro_server.get_env(key=key, macro_name=macro_name,
-                                         door_name=door_name)
+        return self._getEnv(key=key, macro_name=macro_name, door_name=door_name)
 
     @mAPI
     def getGlobalEnv(self):
@@ -2321,6 +2342,12 @@ class Macro(Logger):
 
         # make sure a 0.0 progress is sent
         yield macro_status
+
+        # Avoid repeating same information on subsequent events. If, in the
+        # future, clients that connect in the middle of macro execution need
+        # this information, just simply remove the lines below
+        del macro_status['name']
+        del macro_status['macro_line']
 
         # allow any macro to be paused at the beginning of its execution
         self.pausePoint()

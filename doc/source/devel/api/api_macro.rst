@@ -42,3 +42,23 @@ imacro decorator
     :members:
     :undoc-members:
 
+StopException
+-------------
+
+.. autoclass:: StopException
+    :members:
+    :undoc-members:
+
+AbortException
+--------------
+
+.. autoclass:: AbortException
+    :members:
+    :undoc-members:
+
+InterruptException
+------------------
+
+.. autoclass:: InterruptException
+    :members:
+    :undoc-members:
