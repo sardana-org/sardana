@@ -488,6 +488,7 @@ class MeasurementConfiguration(object):
         # provide back. compatibility for value_ref_{enabled,pattern}
         # config parameters created with Sardana < 3.
         self._value_ref_compat = False
+        self._mg_error = None
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -1039,7 +1040,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         if configuration is None:
             user_elements = self.get_user_elements()
             configuration = build_measurement_configuration(user_elements)
-        self.set_configuration_from_user(configuration)
+        if self._verify_controllers(configuration):
+            self.set_configuration_from_user(configuration)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
@@ -1384,3 +1386,18 @@ class PoolMeasurementGroup(PoolGroupElement):
     def abort(self):
         self._pending_starts = 0
         PoolGroupElement.abort(self)
+
+    # -------------------------------------------------------------------------
+    # utils
+    # -------------------------------------------------------------------------
+
+    def _verify_controllers(self, cfg):
+        pool = self.pool
+        for ctrl_name, _ in list(cfg['controllers'].items()):
+            external = ctrl_name in ['__tango__']
+            if not external:
+                ctrl = pool.get_element_by_full_name(ctrl_name)
+                if ctrl.ctrl_info is None:
+                    self._mg_error = ctrl.get_ctrl_error()
+                    return False
+        return True
