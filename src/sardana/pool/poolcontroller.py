@@ -84,6 +84,8 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
+        if type(err) == str:
+            return err
         sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
         s = sio.getvalue()
@@ -341,8 +343,9 @@ class PoolController(PoolBaseController):
 
     def _init(self):
         if self._ctrl_info is None:
-            if self._lib_info is not None:
-                self._ctrl_error = self._lib_info.get_error()
+            self._ctrl_error = f"{self.get_class_name()} controller class NOT found in library {self.get_library_name()}."
+            if self._lib_info is not None and self._lib_info.get_error() is not None:
+                self._ctrl_error += "\n" +self._lib_info.get_error()
             return
         try:
             self._ctrl = self._create_controller()
@@ -585,6 +588,9 @@ class PoolController(PoolBaseController):
             for axis in axes:
                 element = self.get_element(axis=axis)
                 ctrl_states[element] = state_info
+            if ctrl is None:
+                ctrl_states[element] = ((State.Fault, f"Controller for {element} is not initialized!"), None)
+                return ctrl_states, True
             return ctrl_states, True
 
         error = False
