@@ -665,6 +665,8 @@ class PoolAcquisition(PoolAction):
         ret.update(self._0d_acq.get_pool_controllers())
         return ret
 
+    pool_controllers = property(get_pool_controllers)
+
     def read_value(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
 
