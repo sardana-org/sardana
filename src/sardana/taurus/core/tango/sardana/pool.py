@@ -478,7 +478,10 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
         try:
-            evt_wait.waitEvent(DevState.MOVING, equal=False)
+            if not evt_wait.waitEvent(DevState.MOVING, equal=False,
+                                      timeout=1.5, retries=1):
+                raise RuntimeError(
+                    "{} is Moving, can not proceed to start".format(self.name))
             # Clear event set to not confuse the value coming from the
             # connection with the event of of end of the operation
             # in the next wait event. This was observed on Windows where
