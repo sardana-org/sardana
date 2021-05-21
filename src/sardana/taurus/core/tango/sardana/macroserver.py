@@ -474,8 +474,9 @@ class BaseDoor(MacroServerDevice):
         try:
             time_stamp = time.time()
             self.command_inout("AbortMacro")
-            evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
-                               timeout=self.InteractiveTimeout)
+            evt_wait.waitForEvent((self.Running, ), equal=False,
+                                  after=time_stamp,
+                                  reactivity=self.InteractiveTimeout)
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()
@@ -500,9 +501,9 @@ class BaseDoor(MacroServerDevice):
                 # Macro already finished - no need to release
                 if df.args[0].reason == "API_CommandNotAllowed":
                     return
-            evt_wait.waitEvent(self.Running, equal=False,
-                               after=time_stamp,
-                               timeout=self.InteractiveTimeout)
+            evt_wait.waitForEvent((self.Running, ), equal=False,
+                                  after=time_stamp,
+                                  reactivity=self.InteractiveTimeout)
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()
@@ -517,8 +518,9 @@ class BaseDoor(MacroServerDevice):
         try:
             time_stamp = time.time()
             self.command_inout("StopMacro")
-            evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
-                               timeout=self.InteractiveTimeout)
+            evt_wait.waitForEvent((self.Running, ), equal=False,
+                                  after=time_stamp,
+                                  reactivity=self.InteractiveTimeout)
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()
@@ -598,7 +600,8 @@ class BaseDoor(MacroServerDevice):
         evt_wait.connect(self.getAttribute("state"))
         evt_wait.lock()
         try:
-            evt_wait.waitEvent(self.Running, equal=False, timeout=timeout)
+            evt_wait.waitForEvent((self.Running, ), equal=False,
+                                  reactivity=timeout)
             # Clear event set to not confuse the value coming from the
             # connection with the event of of end of the macro execution
             # in the next wait event. This was observed on Windows where
@@ -608,10 +611,11 @@ class BaseDoor(MacroServerDevice):
             result = self.command_inout("RunMacro",
                                         [etree.tostring(xml,
                                                         encoding='unicode')])
-            evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
+            evt_wait.waitForEvent((self.Running, ), after=ts,
+                                  reactivity=timeout)
             if synch:
-                evt_wait.waitEvent(self.Running, equal=False, after=ts,
-                                   timeout=timeout)
+                evt_wait.waitForEvent((self.Running, ), equal=False, after=ts,
+                                      reactivity=timeout)
         finally:
             self._clearRunMacro()
             evt_wait.unlock()
