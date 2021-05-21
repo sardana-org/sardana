@@ -53,14 +53,14 @@ provides = [
 requires = [
     'PyTango (>=9.2.5)',
     'itango (>=0.1.6)',
-    'taurus (>= 4.9.0dev0)',
+    'taurus (> 4.8.0)',
     'lxml (>=2.3)',
 ]
 
 install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
-    'taurus >=4.9.0dev0',
+    'taurus > 4.8.0',
     'lxml>=2.3',
     'click',
 ]
