@@ -1089,6 +1089,7 @@ class MacroExecutor(Logger):
         self._macro_stack = []
         self._xml_stack = []
         self._macro_pointer = None
+        self._last_macro = None
         self._abort_thread = None
         self._aborted = False
         self._stop_thread = None
@@ -1398,6 +1399,9 @@ class MacroExecutor(Logger):
 
     def getRunningMacro(self):
         return self._macro_pointer
+
+    def getLastMacro(self):
+        return self._last_macro
 
     def clearRunningMacro(self):
         """Clear pointer to the running macro.
@@ -1726,11 +1730,13 @@ class MacroExecutor(Logger):
             preserve_macro_data = macro_obj.getEnv(env_var_name)
         except UnknownEnv:
             preserve_macro_data = True
-        if not preserve_macro_data:
+        if preserve_macro_data:
+            self._last_macro = self._macro_pointer
+        else:
             self.debug('Macro data will not be preserved. ' +
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
-            self._macro_pointer = None
+        self._macro_pointer = None
 
         log_macro_manager.disable()
 

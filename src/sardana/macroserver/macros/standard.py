@@ -589,8 +589,12 @@ class umv(Macro, Hookable):
             self.printAllPos()
 
     def printAllPos(self):
-        motor_width = 10
-        table = Table(self.all_pos, elem_fmt=['%*.4f'],
+        motor_width = 10      
+        pos_format = self.getViewOption(ViewOption.PosFormat)
+        fmt = '%*.4f'
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
+        table = Table(self.all_pos, elem_fmt=[fmt],
                       col_head_str=self.all_names, col_head_width=motor_width)
         self.outputBlock(table.genOutput())
         self.flushOutput()

@@ -23,6 +23,8 @@
 ##
 ##############################################################################
 
+import os
+
 import PyTango
 import taurus
 
@@ -168,7 +170,8 @@ class SarTestTestCase(BasePoolTestCase):
             if elem_name in f.tango_alias_devs:
                 _cleanup_device(elem_name)
             try:
-                self.pool.DeleteElement(elem_name)
+                if os.name != "nt":
+                    self.pool.DeleteElement(elem_name)
             except Exception as e:
                 print(e)
                 dirty_elems.append(elem_name)
@@ -182,7 +185,8 @@ class SarTestTestCase(BasePoolTestCase):
             if ctrl_name in f.tango_alias_devs:
                 _cleanup_device(ctrl_name)
             try:
-                self.pool.DeleteElement(ctrl_name)
+                if os.name != "nt":
+                    self.pool.DeleteElement(ctrl_name)
             except:
                 dirty_ctrls.append(ctrl_name)
 

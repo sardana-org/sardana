@@ -17,6 +17,7 @@ scientific installations.
    users/index
    devel/index
    sep/index.rst
+   What's new? <news>
    Glossary <glossary>
    other_versions
    
