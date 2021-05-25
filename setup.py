@@ -50,13 +50,6 @@ provides = [
     # 'sardana.tango',
 ]
 
-requires = [
-    'PyTango (>=9.2.5)',
-    'itango (>=0.1.6)',
-    'taurus (>= 4.9.0dev0)',
-    'lxml (>=2.3)',
-]
-
 install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
@@ -64,7 +57,6 @@ install_requires = [
     'lxml>=2.3',
     'click',
 ]
-
 
 console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
@@ -125,6 +117,5 @@ setup(name='sardana',
       classifiers=classifiers,
       entry_points=entry_points,
       provides=provides,
-      requires=requires,
       install_requires=install_requires
       )
