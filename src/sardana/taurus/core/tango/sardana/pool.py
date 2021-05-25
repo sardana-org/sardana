@@ -478,7 +478,7 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
         try:
-            if not evt_wait.waitForEvent((DevState.MOVING, ), equal=False,
+            if not evt_wait.waitForEvent((DevState.ON, DevState.ALARM),
                                          timeout=3, reactivity=.1):
                 raise RuntimeError(
                     "{} is Moving, can not proceed to start".format(self.name))
