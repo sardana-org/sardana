@@ -447,6 +447,10 @@ class PoolElement(BaseElement, TangoDevice):
         """Returns the TangoAttributeEG object"""
         return self._attrEG.get(name)
 
+    def removeAttrEG(self, name):
+        """Remove the TangoAttributeEG object"""
+        self._attrEG.pop(name)
+
     def getAttrObj(self, name):
         """Returns the taurus.core.tangoattribute.TangoAttribute object"""
         attrEG = self._attrEG.get(name)
@@ -554,6 +558,18 @@ class PoolElement(BaseElement, TangoDevice):
                 self.waitReady(timeout=timeout)
         finally:
             state.unlock()
+
+    def release(self):
+        """Release hung element from its operation and make cleanup.
+
+        Before releasing you should try stopping/aborting the element.
+        """
+        # Remove state event generator to force subscription
+        # and synchronous state readout on the next start.
+        # This allows to reuse the element if the cause of the hung
+        # was fixed.
+        self.removeAttrEG("State")
+        self.command_inout("Release")
 
     def information(self, tab='    '):
         msg = self._information(tab=tab)
