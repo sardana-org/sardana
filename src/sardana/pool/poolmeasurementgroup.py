@@ -1356,6 +1356,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         if self._pending_starts == 0:
             msg = "prepare is mandatory before starting acquisition"
             raise RuntimeError(msg)
+        self._stopped = False
         self._aborted = False
         self._pending_starts -= 1
         if not self._simulation_mode:

@@ -283,6 +283,7 @@ class PoolMotorGroup(PoolGroupElement):
             self._in_start_move = False
 
     def _start_move(self, new_positions):
+        self._stopped = False
         self._aborted = False
         items = self.calculate_motion(new_positions)
         timestamp = time.time()
