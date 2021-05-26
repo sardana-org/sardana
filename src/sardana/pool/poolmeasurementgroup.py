@@ -1358,6 +1358,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             raise RuntimeError(msg)
         self._stopped = False
         self._aborted = False
+        self._released = False
         self._pending_starts -= 1
         if not self._simulation_mode:
             self.acquisition.run()
@@ -1385,3 +1386,20 @@ class PoolMeasurementGroup(PoolGroupElement):
     def abort(self):
         self._pending_starts = 0
         PoolGroupElement.abort(self)
+
+    # --------------------------------------------------------------------------
+    # release
+    # --------------------------------------------------------------------------
+
+    def release(self):
+        # override PoolBaseElement.releaes() cause the PoolAcquisition action
+        # is composed from many sub-actions and the default
+        # PoolBaseElement.get_operation() is not able to get the top action
+        operation = self.acquisition
+        if not operation.is_running():
+            self.warning("Operation is not running, can not release")
+            return
+        self._released = True
+        self._state_event = None
+        self.info("Release!")
+        operation.release_action()
