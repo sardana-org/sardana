@@ -10,6 +10,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
+* Stop/abort element in `ct` macro when used with channels (#1595)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
