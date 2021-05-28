@@ -1,0 +1,11 @@
+name: base
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8.5
+  - pytango=9.3.3
+  - boost
+  - boost-cpp
+  - pip=21.1
+prefix: /opt/conda
