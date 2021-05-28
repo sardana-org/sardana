@@ -333,7 +333,9 @@ implementation of all other start methods is optional and their default
 implementation does nothing (:meth:`~sardana.pool.controller.Startable.PreStartOne`
 actually returns ``True``).
 
-So, actually, the algorithm for counter acquisition start in sardana is::
+So, actually, the algorithm for counter acquisition start in sardana is:
+
+.. code-block:: text
 
     /FOR/ Each controller(s) implied in the acquisition
         - Call PreStartAll()

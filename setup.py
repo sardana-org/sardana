@@ -50,21 +50,13 @@ provides = [
     # 'sardana.tango',
 ]
 
-requires = [
-    'PyTango (>=9.2.5)',
-    'itango (>=0.1.6)',
-    'taurus (>= 4.7.0)',
-    'lxml (>=2.3)',
-]
-
 install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
-    'taurus>=4.7.0',
+    'taurus >=4.9.0dev0',
     'lxml>=2.3',
     'click',
 ]
-
 
 console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
@@ -72,9 +64,6 @@ console_scripts = [
     "Sardana = sardana.tango:main",
     "sardanatestsuite = sardana.test.testsuite:main",
     "spock = sardana.spock:main",
-]
-
-gui_scripts = [
     "diffractometeralignment = sardana.taurus.qt.qtgui.extra_hkl.diffractometeralignment:main",
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
@@ -89,7 +78,6 @@ form_factories = [
 
 entry_points = {
     'console_scripts': console_scripts,
-    'gui_scripts': gui_scripts,
     'taurus.form.item_factories': form_factories,
 }
 
@@ -129,6 +117,5 @@ setup(name='sardana',
       classifiers=classifiers,
       entry_points=entry_points,
       provides=provides,
-      requires=requires,
       install_requires=install_requires
       )

@@ -77,6 +77,7 @@ extensions = ['sphinx.ext.imgmath',
               'sardanaextension',
               'ipython_console_highlighting',
               'spock_console_highlighting',
+              'sphinx.ext.napoleon'
               ]
 
 try:

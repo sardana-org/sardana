@@ -478,7 +478,10 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
         try:
-            evt_wait.waitEvent(DevState.MOVING, equal=False)
+            if not evt_wait.waitForEvent((DevState.ON, DevState.ALARM),
+                                         timeout=3, reactivity=.1):
+                raise RuntimeError(
+                    "{} is Moving, can not proceed to start".format(self.name))
             # Clear event set to not confuse the value coming from the
             # connection with the event of of end of the operation
             # in the next wait event. This was observed on Windows where
@@ -488,7 +491,7 @@ class PoolElement(BaseElement, TangoDevice):
             self.__go_start_time = ts1 = time.time()
             self._start(*args, **kwargs)
             ts2 = time.time()
-            evt_wait.waitEvent(DevState.MOVING, after=ts1)
+            evt_wait.waitForEvent((DevState.MOVING, ), after=ts1)
         except:
             evt_wait.disconnect()
             raise
@@ -503,22 +506,12 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        if timeout is None:
-            # 0.1 s of timeout with infinite retries facilitates aborting
-            # by raising exceptions from a different threads
-            timeout = 0.1
-            retries = -1
-        else:
-            # Due to taurus-org/taurus #573 we need to divide the timeout
-            # in two intervals
-            timeout = timeout / 2
-            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         try:
-            evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=retries)
+            evt_wait.waitForEvent((DevState.MOVING, ), after=id, equal=False,
+                                  timeout=timeout, reactivity=0.1)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
@@ -1042,7 +1035,7 @@ class Motor(PoolElement, Moveable):
         evt_wait.connect(state)
         evt_wait.lock()
         try:
-            # evt_wait.waitEvent(DevState.MOVING, equal=False)
+            # evt_wait.waitForEvent((DevState.MOVING, ), equal=False)
             time_stamp = time.time()
             try:
                 self.getPositionObj().write(new_pos)
@@ -1056,8 +1049,8 @@ class Motor(PoolElement, Moveable):
             # putting timeout=0.1 and retries=1 is a patch for the case when
             # the initial moving event doesn't arrive do to an unknown
             # tango/pytango error at the time
-            evt_wait.waitEvent(DevState.MOVING, time_stamp,
-                               timeout=0.1, retries=1)
+            evt_wait.waitForEvent((DevState.MOVING, ), time_stamp,
+                                  timeout=0.2, reactivity=0.1)
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()

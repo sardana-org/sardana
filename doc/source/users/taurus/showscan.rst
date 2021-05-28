@@ -53,6 +53,8 @@ and offer online updates on the channel values of the current scan point
 and some general scan information e.g. scan file, start and end time, etc.
 respectively.
 
+.. _showscan-online-infopanels-figure:
+
 .. figure:: /_static/showscan-online-infopanels.png
 
     Showscan online plotting with separate plots and information panels.

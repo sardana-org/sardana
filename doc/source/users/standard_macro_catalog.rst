@@ -224,3 +224,8 @@ scan related macros
     * :class:`~sardana.macroserver.macros.standard.where`
     * :class:`~sardana.macroserver.macros.standard.pic`
     * :class:`~sardana.macroserver.macros.standard.cen`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_ls_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_start_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_start_session_path`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_end_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_end_session_path`

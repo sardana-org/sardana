@@ -64,7 +64,12 @@ class TaurusCounterTimerController(CounterTimerController):
 
     def ReadOne(self, axis):
         attr = Attribute(self._axes_taurus_attr[axis])
-        return attr.read().value
+        value = attr.read().rvalue
+        try:
+            value = value.magnitude
+        except:
+            pass
+        return value
 
     def AbortOne(self, axis):
         pass

@@ -42,6 +42,9 @@ import h5py
 from sardana.sardanautils import is_pure_str
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
+from sardana.macroserver.recorders.h5util import _h5_file_handler, \
+    _open_h5_file
+
 
 VDS_available = True
 try:
@@ -66,7 +69,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
-    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
+    try:
+        str_dt = h5py.string_dtype()
+    except AttributeError:
+        # h5py < 3
+        str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
     byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
@@ -97,6 +104,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                    + '($|(?=[/#?])))?(?P<path>%(path)s)$')
         self.pattern = pattern % dict(scheme=scheme, authority=authority,
                                       path=path)
+        self._close = False
 
     def getFormat(self):
         return 'HDF5::NXscan'
@@ -123,10 +131,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         """Open the file with given filename (create if it does not exist)
         Populate the root of the file with some metadata from the NXroot
         definition"""
-        if os.path.exists(fname):
-            fd = h5py.File(fname, mode='r+')
-        else:
-            fd = h5py.File(fname, mode='w-')
+        try:
+            fd = _h5_file_handler[fname]
+        except KeyError:
+            fd = _open_h5_file(fname)
+            self._close = True
+        try:
+            fd.attrs['NX_class']
+        except KeyError:
             fd.attrs['NX_class'] = 'NXroot'
             fd.attrs['file_name'] = fname
             fd.attrs['file_time'] = datetime.now().isoformat()
@@ -254,7 +266,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             pass
 
         self._createPreScanSnapshot(env)
-
+        self._populateInstrumentInfo()
+        self._createNXData()
         self.fd.flush()
 
     def _compression(self, shape, compfilter='gzip'):
@@ -350,9 +363,6 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         if self.filename is None:
             return
 
-        self._populateInstrumentInfo()
-        self._createNXData()
-
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
 
@@ -362,8 +372,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
-                first_reference = measurement[label][0]
-
+                try:
+                    dataset = measurement[label].asstr()
+                except AttributeError:
+                    # h5py < 3
+                    dataset = measurement[label]
+                first_reference = dataset[0]
                 group = re.match(self.pattern, first_reference)
                 if group is None:
                     msg = 'Unsupported reference %s' % first_reference
@@ -389,7 +403,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                             dtype=dd_env.dtype)
 
                 for i in range(nb_points):
-                    reference = measurement[label][i]
+                    reference = dataset[i]
                     group = re.match(self.pattern, reference)
                     if group is None:
                         msg = 'Unsupported reference %s' % first_reference
@@ -397,8 +411,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                         continue
                     uri_groups = group.groupdict()
                     filename = uri_groups["filepath"]
-                    dataset = uri_groups.get("dataset", "dataset")
-                    vsource = h5py.VirtualSource(filename, dataset,
+                    remote_dataset_name = uri_groups["dataset"]
+                    if remote_dataset_name is None:
+                        remote_dataset_name = "dataset"
+                    vsource = h5py.VirtualSource(filename, remote_dataset_name,
                                                  shape=(dim_1, dim_2))
                     layout[i] = vsource
 
@@ -417,7 +433,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.fd.flush()
         self.debug('Finishing recording %d on file %s:',
                    env['serialno'], self.filename)
-        self.fd.close()
+        if self._close:
+            self.fd.close()
         self.currentlist = None
 
     def writeRecordList(self, recordlist):

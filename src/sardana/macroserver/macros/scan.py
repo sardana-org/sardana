@@ -854,8 +854,8 @@ class fscan(Macro, Hookable):
     -all funcs must evaluate to the same number of points
 
 
-    >>> fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
-    >>> fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 \
+    >>> fscan "x=[1,3,5,7,9],y=arange(5)" 0.1 motor1 x**2 motor2 sqrt(y*x+3)
+    >>> fscan "x=[1,3,5,7,9],y=arange(5)" [0.1,0.2,0.3,0.4,0.5] motor1 x**2 \
 motor2 sqrt(y*x+3)
     """
 

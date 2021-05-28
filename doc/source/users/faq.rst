@@ -92,6 +92,8 @@ write Sardana controllers and pseudo controllers can be found
 This documentation also includes the :term:`API` which can be used to interface
 to the specific hardware item.
 
+.. _faq_how_to_access_tango_from_macros_and_controllers:
+
 How to access Tango from within macros or controllers
 --------------------------------------------------------------------------------
 In your macros and controllers almost certainly you will need to access Tango

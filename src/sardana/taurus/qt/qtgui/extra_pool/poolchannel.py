@@ -47,7 +47,6 @@ from taurus.qt.qtgui.input import TaurusValueLineEdit
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.container import TaurusWidget
-from taurus.qt.qtgui.resource import getIcon
 from sardana.taurus.qt.qtgui.extra_pool.poolmotor import \
     LabelWidgetDragsDeviceAndAttribute, TaurusAttributeListener
 
@@ -103,7 +102,7 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         status_info = ""
         channel_dev = self.taurusValueBuddy().channel_dev
         if channel_dev is not None:
-            status = channel_dev.getAttribute("Status").read().value
+            status = channel_dev.getAttribute("Status").read().rvalue
             # MAKE IT LOOK LIKE THE STANDARD TABLE FOR TAURUS TOOLTIPS
             status_lines = status.split("\n")
             status_info = ("<TABLE width='500' border='0' cellpadding='1' "
@@ -123,7 +122,7 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         menu = Qt.QMenu(self)
         action_tango_attributes = Qt.QAction(self)
         action_tango_attributes.setIcon(
-            getIcon(":/categories/preferences-system.svg"))
+            Qt.QIcon("categories:preferences-system.svg"))
         action_tango_attributes.setText("Tango Attributes")
         menu.addAction(action_tango_attributes)
         action_tango_attributes.triggered.connect(
@@ -197,12 +196,12 @@ class PoolChannelTVExtraWidget(TaurusWidget):
         if state == tango.DevState.MOVING:
             btn_start_stop.setToolTip("Stop the channel")
             btn_start_stop.setIcon(
-                getIcon(":/actions/media_playback_stop.svg"))
+                Qt.QIcon("actions:media_playback_stop.svg"))
             self.btn_start_stop_clicked_slot = self.abort
         else:
             btn_start_stop.setToolTip("Start the channel")
             btn_start_stop.setIcon(
-                getIcon(":/actions/media_playback_start.svg"))
+                Qt.QIcon("actions:media_playback_start.svg"))
             self.btn_start_stop_clicked_slot = self.start
         btn_start_stop.clicked.connect(self.btn_start_stop_clicked_slot)
 

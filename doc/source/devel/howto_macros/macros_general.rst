@@ -1105,7 +1105,7 @@ example::
         x = linspace(0, 20, 200)
         y = j0(x)
         x1 = x[::10]
-        y1 = map(j0i, x1)
+        y1 = list(map(j0i, x1))
         self.pyplot.plot(x, y, label=r'$J_0(x)$') # 
         self.pyplot.plot(x1, y1, 'ro', label=r'$J_0^{integ}(x)$')
         self.pyplot.title(r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
