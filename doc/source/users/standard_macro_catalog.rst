@@ -192,6 +192,9 @@ scan macros
     * :class:`~sardana.macroserver.macros.scan.dmultiscan`
     * :class:`~sardana.macroserver.macros.scan.mesh`
     * :class:`~sardana.macroserver.macros.scan.fscan`
+    * :class:`~sardana.macroserver.macros.scan.rscan`
+    * :class:`~sardana.macroserver.macros.scan.r2scan`
+    * :class:`~sardana.macroserver.macros.scan.r3scan`
     * :class:`~sardana.macroserver.macros.scan.scanhist`
 
     * :class:`~sardana.macroserver.macros.scan.ascanc`
