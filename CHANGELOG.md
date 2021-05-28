@@ -5,6 +5,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+
+* `rscan`, `r2scan` and `r3scan` scan macros (formerly available as examples
+   under different names `regscan`, `reg2scan` and `reg3scan`)
+   * added _hooks_ and _scan data_ support to these macros
+   * changed `region_nr_intervals` macro parameter type to integer
+   * moved `integ_time` macro parameter at the end of the parameters list
+
+### Removed
+
+* `regscan`, `reg2scan` and `reg3scan` scan macro examples
+
 ### Fixed
 
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
