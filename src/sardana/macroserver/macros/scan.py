@@ -1146,9 +1146,6 @@ class r3scan(Macro, Hookable):
     intervals for each region. It uses the gscan framework.
     All the motors will be drived to the same position in each step
 
-    .. note::
-        integration time is specified before the regions to facilitate
-        input of parameters in Spock.
     """
 
     hints = {'scan': 'r3scan', 'allowsHooks': ('pre-scan', 'pre-move',
