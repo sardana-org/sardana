@@ -750,11 +750,9 @@ class ct(Macro, Hookable, _ct):
                 self.countable_elem_name = self.getEnv('ActiveMntGrp')
             except UnknownEnv:
                 return
-            self.countable_elem = self.getObj(
-                self.countable_elem_name, type_class=Type.MeasurementGroup)
         else:
             self.countable_elem_name = countable_elem.name
-            self.countable_elem = countable_elem
+        self.countable_elem = self.getObj(self.countable_elem_name)
 
     def run(self, integ_time, countable_elem):
         if self.countable_elem is None:
