@@ -12,6 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
    * added _hooks_ and _scan data_ support to these macros
    * changed `region_nr_intervals` macro parameter type to integer
    * moved `integ_time` macro parameter at the end of the parameters list
+* `lsp` macro: list Pools the MacroServer is connected to (#1599)
+
 
 ### Removed
 
