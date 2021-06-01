@@ -8,4 +8,6 @@ dependencies:
   - boost
   - boost-cpp
   - pip=21.1
+  - pip:
+    - pydevd=2.4.1
 prefix: /opt/conda
