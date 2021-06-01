@@ -105,6 +105,9 @@ class EventGenerator(object):
             return False
         return len(self._listeners) > 0
 
+    def get_listeners(self):
+        return self._listeners
+
     def fire_event(self, event_type, event_value, listeners=None):
         self.flush_queue()
         self._fire_event(event_type, event_value, listeners=listeners)
