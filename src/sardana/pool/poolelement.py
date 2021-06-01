@@ -88,6 +88,18 @@ class PoolElement(PoolBaseElement):
     def get_source(self):
         return "{0}/{1}".format(self.full_name, self.get_default_acquisition_channel())
 
+    def get_dependent_elements(self):
+        pool_base_elements = []
+        for listener in self.get_listeners():
+            listener = listener()
+            if isinstance(listener.__self__, PoolBaseElement):
+                pool_base_elements.append(listener.__self__.get_name())
+        
+        return pool_base_elements
+
+    def has_dependent_elements(self):
+        return len(self.get_dependent_elements()) > 0
+
     # --------------------------------------------------------------------------
     # instrument
     # --------------------------------------------------------------------------
