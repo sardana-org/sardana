@@ -101,6 +101,7 @@ list related macros
 
     * :class:`~sardana.macroserver.macros.env.lsenv`
     * :class:`~sardana.macroserver.macros.lists.lsa`
+    * :class:`~sardana.macroserver.macros.lists.lsp`
     * :class:`~sardana.macroserver.macros.lists.lsm`
     * :class:`~sardana.macroserver.macros.lists.lspm`
     * :class:`~sardana.macroserver.macros.lists.lsexp`
