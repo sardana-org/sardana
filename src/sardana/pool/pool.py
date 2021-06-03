@@ -558,11 +558,13 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 raise Exception("There is no element with name '%s'" % name)
 
         elem_type = elem.get_type()
-        
+
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
             raise Exception("The element {} can't be deleted because {} depend"
-                " on it.".format(name, ", ".join(dependent_elements)))
+                " on it. '_mg_ms_*' are motor groups, use any tango client"
+                " (e.g. Jive) to delete them and restart server."
+                    .format(name, ", ".join(dependent_elements)))
             
         if elem_type == ElementType.Controller:
             if len(elem.get_elements()) > 0:
@@ -589,6 +591,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.fire_event(EventType("ElementDeleted"), elem)
         if hasattr(elem, "get_controller"):
             elem.set_deleted(True)
+
 
     def create_instrument(self, full_name, klass_name, id=None):
         is_root = full_name.count('/') == 1
