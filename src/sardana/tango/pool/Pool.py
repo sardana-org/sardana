@@ -538,8 +538,6 @@ class Pool(PyTango.LatestDeviceImpl, Logger):
         self._check_element(name, full_name)
 
         util = PyTango.Util.instance()
-        import pydevd
-        pydevd.settrace(suspend=False, trace_only_current_thread=True)
         def create_element_cb(device_name):
             try:
                 db = util.get_database()
