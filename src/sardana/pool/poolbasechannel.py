@@ -802,8 +802,6 @@ class PoolTimerableChannel(PoolBaseChannel):
 
     def start_acquisition(self):
         """Start software triggered acquisition"""
-        self._aborted = False
-        self._stopped = False
         if self._simulation_mode:
             return
         if self.timer is None:

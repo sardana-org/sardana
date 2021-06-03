@@ -150,6 +150,10 @@ class BaseMotion(Moveable):
             if moveable is not None:
                 return moveable
 
+    def release(self):
+        for moveable in self.moveable_list:
+            moveable.release()
+
 
 class MotionGroup(BaseMotion):
     """ A virtual motion group object """

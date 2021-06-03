@@ -86,6 +86,17 @@ start acquisition()
 
     :meth:`~PoolMeasurementGroup.start_acquisition`
 
+stop()
+    stops the acquisition in an orderly fashion
+
+abort()
+    stops the acquisition as fast as possible
+
+release()
+    Release hung acquisition e.g. due to the hardware controller that
+    got hung. You should first try stop/abort.
+
+
 
 .. seealso::
 

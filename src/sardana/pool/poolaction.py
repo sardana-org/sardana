@@ -203,6 +203,7 @@ class PoolAction(Logger):
         self._main_element = weakref.ref(main_element)
         self._aborted = False
         self._stopped = False
+        self._released = False
         self._elements = []
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
@@ -420,6 +421,9 @@ class PoolAction(Logger):
         for pool_ctrl, elements in list(self.pool_controllers.items()):
             pool_ctrl.abort_elements(elements)
 
+    def release_action(self):
+        self._released = True
+
     def emergency_break(self):
         """Tries to execute a stop. If it fails try an abort"""
         self._stopped = True
@@ -439,6 +443,14 @@ class PoolAction(Logger):
         :return: True if action has been aborted from outside or False otherwise
         :rtype: bool"""
         return self._aborted
+
+    def was_released(self):
+        """Determines if the action has been released from outside
+
+        :return: True if action has been released from outside or False
+            otherwise
+        :rtype: bool"""
+        return self._released
 
     def was_action_interrupted(self):
         """Determines if the action has been interruped from outside (either

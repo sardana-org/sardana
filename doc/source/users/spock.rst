@@ -218,9 +218,6 @@ scene with informative messages:
     Motion(['mot01']) stopped
     Stopping mntgrp_expconf reserved by ascan
     mntgrp_expconf stopped
-    Stopping /monitor reserved by ascan
-    Stopping /mirror reserved by ascan
-    Stopping /slit reserved by ascan
     Operation saved in /tmp/test.h5 (HDF5::NXscan)
     Scan #342 ended at Wed Sep  9 23:01:15 2020, taking 0:00:01.055814. Dead time 33.7% (motion dead time 12.8%)
     Executing ascan.on_stop method...
