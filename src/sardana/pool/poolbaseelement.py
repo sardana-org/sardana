@@ -99,6 +99,9 @@ class PoolBaseElement(PoolObject):
         ret = PoolObject.serialize(self, *args, **kwargs)
         return ret
 
+    def get_dependent_elements(self):
+        return []
+
     # --------------------------------------------------------------------------
     # simulation mode
     # --------------------------------------------------------------------------

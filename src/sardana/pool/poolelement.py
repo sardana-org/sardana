@@ -91,9 +91,12 @@ class PoolElement(PoolBaseElement):
     def get_dependent_elements(self):
         pool_base_elements = []
         for listener in self.get_listeners():
-            listener = listener()
-            if isinstance(listener.__self__, PoolBaseElement):
-                pool_base_elements.append(listener.__self__.get_name())
+            try:
+                dependent_elem = listener().__self__
+            except AttributeError:
+                continue
+            if isinstance(dependent_elem, PoolBaseElement):
+                pool_base_elements.append(dependent_elem.name)
         
         return pool_base_elements
 
