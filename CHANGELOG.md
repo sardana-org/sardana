@@ -13,6 +13,11 @@ This file follows the formats and conventions from [keepachangelog.com]
    * changed `region_nr_intervals` macro parameter type to integer
    * moved `integ_time` macro parameter at the end of the parameters list
 * `lsp` macro: list Pools the MacroServer is connected to (#1599)
+* Possibility to _release_ hung operations e.g. motion or acquisition due to a hung element (#1582)
+   * _release_ element and _release_ action concepts to the core
+   * `Release` Tango command to Pool element devices
+   * `release()` method to the Taurus extensions
+   * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
 
 
 ### Removed
