@@ -562,8 +562,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
             raise Exception("The element {} can't be deleted because {} depend"
-                " on it. '_mg_ms_*' are motor groups, use any tango client"
-                " (e.g. Jive) to delete them and restart server."
+                " on it. \n\nIf the name of the dependent element starts with" 
+                "'_mg_ms_*' it means that are motor groups, use any tango " 
+                "client (e.g. Jive) to delete them and restart the server."
                     .format(name, ", ".join(dependent_elements)))
             
         if elem_type == ElementType.Controller:
