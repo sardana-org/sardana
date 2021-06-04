@@ -203,6 +203,7 @@ class PoolAction(Logger):
         self._main_element = weakref.ref(main_element)
         self._aborted = False
         self._stopped = False
+        self._released = False
         self._elements = []
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
@@ -303,6 +304,8 @@ class PoolAction(Logger):
         :rtype: dict<sardana.pool.poolelement.PoolController,
                      seq<sardana.pool.poolelement.PoolElement>>"""
         return self._pool_ctrl_dict
+
+    pool_controllers = property(get_pool_controllers)
 
     def _is_in_action(self, state):
         """Determines if the given state is a busy state (Moving or Running) or
@@ -409,19 +412,22 @@ class PoolAction(Logger):
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
         self._stopped = True
-        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
+        for pool_ctrl, elements in list(self.pool_controllers.items()):
             pool_ctrl.stop_elements(elements)
 
     def abort_action(self, *args, **kwargs):
         """Aborts procedure for this action"""
         self._aborted = True
-        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
+        for pool_ctrl, elements in list(self.pool_controllers.items()):
             pool_ctrl.abort_elements(elements)
+
+    def release_action(self):
+        self._released = True
 
     def emergency_break(self):
         """Tries to execute a stop. If it fails try an abort"""
         self._stopped = True
-        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
+        for pool_ctrl, elements in list(self.pool_controllers.items()):
             pool_ctrl.emergency_break(elements)
 
     def was_stopped(self):
@@ -437,6 +443,14 @@ class PoolAction(Logger):
         :return: True if action has been aborted from outside or False otherwise
         :rtype: bool"""
         return self._aborted
+
+    def was_released(self):
+        """Determines if the action has been released from outside
+
+        :return: True if action has been released from outside or False
+            otherwise
+        :rtype: bool"""
+        return self._released
 
     def was_action_interrupted(self):
         """Determines if the action has been interruped from outside (either
@@ -499,21 +513,21 @@ class PoolAction(Logger):
         state_info = self._state_info
 
         with state_info:
-            state_info.init(len(self._pool_ctrl_dict))
+            state_info.init(len(self.pool_controllers))
             read(ret)
             state_info.wait()
         return ret
 
     def _raw_read_state_info_serial(self, ret):
         """Internal method. Read state in a serial mode"""
-        for pool_ctrl in self._pool_ctrl_dict:
+        for pool_ctrl in self.pool_controllers:
             self._raw_read_ctrl_state_info(ret, pool_ctrl)
         return ret
 
     def _raw_read_state_info_concurrent(self, ret):
         """Internal method. Read state in a concurrent mode"""
         th_pool = get_thread_pool()
-        for pool_ctrl in self._pool_ctrl_dict:
+        for pool_ctrl in self.pool_controllers:
             th_pool.add(self._raw_read_ctrl_state_info, None, ret, pool_ctrl)
         return ret
 
@@ -535,7 +549,7 @@ class PoolAction(Logger):
         """Internal method. Read controller information and store it in ret
         parameter"""
         try:
-            axes = [elem.axis for elem in self._pool_ctrl_dict[pool_ctrl]]
+            axes = [elem.axis for elem in self.pool_controllers[pool_ctrl]]
             state_infos, error = pool_ctrl.raw_read_axis_states(axes)
             if error:
                 pool_ctrl.warning("Read state error")
@@ -549,14 +563,13 @@ class PoolAction(Logger):
                        "by ctrl.read_axis_states")
             self.debug("Details: ", exc_info=1)
             state_info = self._get_ctrl_error_state_info(pool_ctrl)
-            for elem in self._pool_ctrl_dict[pool_ctrl]:
+            for elem in self.pool_controllers[pool_ctrl]:
                 ret[elem] = state_info
         finally:
             self._state_info.finish_one()
 
     def get_read_value_ctrls(self):
-        return self._pool_ctrl_dict
-
+        return self.pool_controllers
     def read_value(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
 
@@ -620,14 +633,14 @@ class PoolAction(Logger):
         """Internal method. Read controller value information and store it in
         ret parameter"""
         try:
-            axes = [elem.axis for elem in self._pool_ctrl_dict[pool_ctrl]]
+            axes = [elem.axis for elem in self.pool_controllers[pool_ctrl]]
             value_infos = pool_ctrl.raw_read_axis_values(axes)
             ret.update(value_infos)
         finally:
             self._value_info.finish_one()
 
     def get_read_value_loop_ctrls(self):
-        return self._pool_ctrl_dict
+        return self.pool_controllers
 
     def read_value_loop(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action

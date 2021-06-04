@@ -370,6 +370,7 @@ class PoolAcquisition(PoolAction):
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
+                    self._0d_acq._released = False
                     get_thread_pool().add(self._0d_acq.run,
                                           self._0d_acq._set_ready,
                                           *self._0d_acq_args.args,
@@ -581,6 +582,13 @@ class PoolAcquisition(PoolAction):
                             **self._synch_args.kwargs,
                             cb=self._synch._set_ready)
 
+    def release_action(self):
+        self._synch.release_action()
+        self._hw_acq.release_action()
+        self._sw_start_acq.release_action()
+        self._sw_acq.release_action()
+        self._0d_acq.release_action()
+
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
@@ -664,6 +672,8 @@ class PoolAcquisition(PoolAction):
         ret.update(self._sw_start_acq.get_pool_controllers())
         ret.update(self._0d_acq.get_pool_controllers())
         return ret
+
+    pool_controllers = property(get_pool_controllers)
 
     def read_value(self, ret=None, serial=False):
         """Reads value information of all elements involved in this action
@@ -893,6 +903,7 @@ class PoolAcquisitionTimerable(PoolAcquisitionBase):
         pool = self.pool
         self._aborted = False
         self._stopped = False
+        self._released = False
 
         self._index = index
 
@@ -1083,7 +1094,7 @@ class PoolAcquisitionHardware(PoolAcquisitionTimerable):
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
 
-        while True:
+        while not self.was_released():
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
@@ -1173,7 +1184,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionTimerable):
         nb_states_per_value = self._nb_states_per_value
 
         i = 0
-        while True:
+        while not self.was_released():
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
@@ -1270,7 +1281,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionTimerable):
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
 
-        while True:
+        while not self.was_released():
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
@@ -1488,7 +1499,7 @@ class Pool0DAcquisition(PoolAcquisitionBase):
             values[element] = None
 
         nap = self._acq_sleep_time
-        while True:
+        while not self.was_released():
             self.read_value(ret=values)
             for acquirable, value in list(values.items()):
                 acquirable.put_current_value(value, propagate=0)

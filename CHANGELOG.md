@@ -5,10 +5,32 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+
+* `rscan`, `r2scan` and `r3scan` scan macros (formerly available as examples
+   under different names `regscan`, `reg2scan` and `reg3scan`)
+   * added _hooks_ and _scan data_ support to these macros
+   * changed `region_nr_intervals` macro parameter type to integer
+   * moved `integ_time` macro parameter at the end of the parameters list
+* `lsp` macro: list Pools the MacroServer is connected to (#1599)
+* Possibility to _release_ hung operations e.g. motion or acquisition due to a hung element (#1582)
+   * _release_ element and _release_ action concepts to the core
+   * `Release` Tango command to Pool element devices
+   * `release()` method to the Taurus extensions
+   * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+
+
+### Removed
+
+* `regscan`, `reg2scan` and `reg3scan` scan macro examples
+
 ### Fixed
 
-#### Jul21
-
+* Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
+* Prevent start of operation e.g. motion or acquisition already on the client side when the
+  state is not On or Alarm (#1592, #1594)
+* Stop/abort element in `ct` macro when used with channels (#1595)
+* Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
