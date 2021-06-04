@@ -84,7 +84,7 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
-        if type(err) == str:
+        if isinstance(err, str):
             return err
         sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
@@ -345,7 +345,7 @@ class PoolController(PoolBaseController):
         if self._ctrl_info is None:
             self._ctrl_error = f"{self.get_class_name()} controller class NOT found in library {self.get_library_name()}."
             if self._lib_info is not None and self._lib_info.get_error() is not None:
-                self._ctrl_error += "\n" +self._lib_info.get_error()
+                self._ctrl_error += "\n" + self._lib_info.get_error()
             return
         try:
             self._ctrl = self._create_controller()

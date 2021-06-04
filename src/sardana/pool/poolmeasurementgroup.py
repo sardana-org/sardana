@@ -1395,7 +1395,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def _verify_controllers(self, cfg):
         pool = self.pool
-        for ctrl_name, _ in list(cfg['controllers'].items()):
+        for ctrl_name in cfg['controllers']:
             external = ctrl_name in ['__tango__']
             if not external:
                 ctrl = pool.get_element_by_full_name(ctrl_name)

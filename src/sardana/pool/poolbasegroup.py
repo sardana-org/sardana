@@ -100,7 +100,7 @@ class PoolBaseGroup(PoolContainer):
         none, unknown = set(), set()
         fault, alarm, on, moving = set(), set(), set(), set()
         status = []
-        if state_info is None or not state_info:
+        if not state_info:
             state_info = {}
             for elem in user_elements:
                 if elem.get_type() == ElementType.External:
