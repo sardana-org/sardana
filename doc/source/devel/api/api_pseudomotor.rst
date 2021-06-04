@@ -56,6 +56,12 @@ abort
     Stops the pseudo motor motion, by stopping all the physical motors, as
     fast as possible (possibly without deceleration time and loss of position).
 
+release
+-------
+
+    Release hung motion e.g. due to the hardware controller that
+    got hung. You should first try stop/abort.
+
 
 .. seealso::
 

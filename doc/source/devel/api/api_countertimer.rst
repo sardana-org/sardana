@@ -42,6 +42,10 @@ stop
 abort
     stops the counter/timer acquisition as fast as possible
 
+release
+    Release hung acquisition e.g. due to the hardware controller that
+    got hung. You should first try stop/abort.
+
 .. seealso::
 
     :ref:`sardana-countertimer-overview`
