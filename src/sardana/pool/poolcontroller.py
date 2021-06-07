@@ -343,8 +343,11 @@ class PoolController(PoolBaseController):
 
     def _init(self):
         if self._ctrl_info is None:
-            self._ctrl_error = f"{self.get_class_name()} controller class NOT found in library {self.get_library_name()}."
-            if self._lib_info is not None and self._lib_info.get_error() is not None:
+            self._ctrl_error = \
+                "{} controller class NOT found in library {}.".format(
+                    self.get_class_name(), self.get_library_name())
+            if (self._lib_info is not None
+                    and self._lib_info.get_error() is not None):
                 self._ctrl_error += "\n" + self._lib_info.get_error()
             return
         try:
