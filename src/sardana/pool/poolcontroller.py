@@ -584,16 +584,17 @@ class PoolController(PoolBaseController):
             for axis in axes:
                 ctrl.PreStateOne(axis)
             ctrl.StateAll()
-        except:
-            exc_info = sys.exc_info()
-            status = self._format_exception(exc_info)
+        except Exception:
+            if ctrl is None:
+                status = "Controller is not initialized!"
+                exc_info = None
+            else:
+                exc_info = sys.exc_info()
+                status = self._format_exception(exc_info)
             state_info = (State.Fault, status), exc_info
             for axis in axes:
                 element = self.get_element(axis=axis)
                 ctrl_states[element] = state_info
-            if ctrl is None:
-                ctrl_states[element] = ((State.Fault, f"Controller for {element} is not initialized!"), None)
-                return ctrl_states, True
             return ctrl_states, True
 
         error = False
