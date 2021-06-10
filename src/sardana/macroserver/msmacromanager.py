@@ -1602,8 +1602,8 @@ class MacroExecutor(Logger):
         except Exception:
             self.sendState(Macro.Exception)
         finally:
-            self._macro_stack = None
-            self._xml_stack = None
+            self._macro_stack = []
+            self._xml_stack = []
 
     def __runStatelessXML(self, xml=None):
         if xml is None:
