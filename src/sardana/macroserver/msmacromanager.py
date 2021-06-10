@@ -1088,7 +1088,6 @@ class MacroExecutor(Logger):
 #        self._xml_stack = None
         self._macro_stack = []
         self._xml_stack = []
-        self._macro_pointer = None
         self._last_macro = None
         self._abort_thread = None
         self._aborted = False
@@ -1119,6 +1118,13 @@ class MacroExecutor(Logger):
     @property
     def macro_manager(self):
         return self.macro_server.macro_manager
+
+    @property
+    def macro_pointer(self):
+        macro_stack = self._macro_stack
+        if not macro_stack:
+            return None
+        return macro_stack[-1]
 
     def getGeneralHooks(self):
         """Get data structure containing definition of the general hooks.
@@ -1398,7 +1404,7 @@ class MacroExecutor(Logger):
         return macro_obj, prepare_result
 
     def getRunningMacro(self):
-        return self._macro_pointer
+        return self.macro_pointer
 
     def getLastMacro(self):
         return self._last_macro
@@ -1407,8 +1413,18 @@ class MacroExecutor(Logger):
         """Clear pointer to the running macro.
 
         ..warning:: Do not call it while the macro is running.
+
+        .. deprecated: Use clearMacroStack() instead.
         """
-        self._macro_pointer = None
+        self.warning("Deprecated since 3.1.1. Use clearMacroStack() instead.")
+        self._macro_stack = []
+
+    def clearMacroStack(self):
+        """Clear macro stack
+
+        ..warning:: Do not call it while the macro is running.
+        """
+        self._macro_stack = []
 
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
@@ -1568,7 +1584,6 @@ class MacroExecutor(Logger):
         # reset the stacks
         self._macro_stack = []
         self._xml_stack = []
-        self._macro_pointer = None
         self._stop_done = threading.Event()
         self._abort_done = threading.Event()
         self._aborted = False
@@ -1586,7 +1601,6 @@ class MacroExecutor(Logger):
             return self._xml
         else:
             self.__runXML()
-            # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
         self.debug("Job ended (stopped=%s, aborted=%s)",
@@ -1654,7 +1668,6 @@ class MacroExecutor(Logger):
         macro_exp, tb, result = None, None, None
         try:
             self.debug("[START] runMacro %s" % desc)
-            self._macro_pointer = macro_obj
             self._macro_stack.append(macro_obj)
             for step in macro_obj.exec_():
                 self.sendMacroStatus((step,))
@@ -1701,7 +1714,7 @@ class MacroExecutor(Logger):
             macro_obj._stopOnError()
             self.sendMacroStatusStop()
 
-        self.returnObjs(self._macro_pointer)
+        self.returnObjs(self.macro_pointer)
 
         # From this point on don't call any method of macro_obj which is part
         # of the mAPI (methods decorated with @mAPI) to avoid throwing an
@@ -1722,7 +1735,6 @@ class MacroExecutor(Logger):
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
-        self._popMacro()
 
         # decide whether to preserve the macro data
         env_var_name = 'PreserveMacroData'
@@ -1731,12 +1743,13 @@ class MacroExecutor(Logger):
         except UnknownEnv:
             preserve_macro_data = True
         if preserve_macro_data:
-            self._last_macro = self._macro_pointer
+            self._last_macro = self.macro_pointer
         else:
             self.debug('Macro data will not be preserved. ' +
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
-        self._macro_pointer = None
+            self._last_macro = None
+        self._popMacro()
 
         log_macro_manager.disable()
 
@@ -1744,9 +1757,6 @@ class MacroExecutor(Logger):
 
     def _popMacro(self):
         self._macro_stack.pop()
-        length = len(self._macro_stack)
-        if length > 0:
-            self._macro_pointer = self._macro_stack[-1]
 
     def sendState(self, state):
         return self.door.set_state(state)
@@ -1758,7 +1768,7 @@ class MacroExecutor(Logger):
         return self.door.set_result(result)
 
     def getLastMacroStatus(self):
-        return self._macro_pointer._getMacroStatus()
+        return self.macro_pointer._getMacroStatus()
 
     def sendMacroStatusFinish(self):
         ms = self.getLastMacroStatus()
