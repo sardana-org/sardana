@@ -1461,6 +1461,10 @@ class MacroExecutor(Logger):
                     obj.abort()
                 except AttributeError:
                     pass
+                except ReleaseException:
+                    self.warning("Unable to abort {} - it may be hung. "
+                                 "Releasing it.".format(obj))
+                    obj.release()
                 except:
                     self.warning("Unable to abort %s" % obj)
                     self.debug("Details:", exc_info=1)

@@ -57,6 +57,7 @@ class PoolBaseElement(PoolObject):
         self._action_cache = None
         self._aborted = False
         self._stopped = False
+        self._released = False
 
         lock_name = kwargs['name'] + "Lock"
 
@@ -325,6 +326,26 @@ class PoolBaseElement(PoolObject):
         return self._aborted
 
     # --------------------------------------------------------------------------
+    # release
+    # --------------------------------------------------------------------------
+
+    def release(self):
+        if not self.is_in_local_operation():
+            self.warning("Not in local operation, can not release")
+            return
+        operation = self.get_operation()
+        if not operation.is_running():
+            self.warning("Operation is not running, can not release")
+            return
+        self._released = True
+        self._state_event = None
+        self.info("Release!")
+        operation.release_action()
+
+    def was_released(self):
+        return self._released
+
+    # --------------------------------------------------------------------------
     # interrupted
     # --------------------------------------------------------------------------
 
@@ -357,6 +378,7 @@ class PoolBaseElement(PoolObject):
         if operation is not None:
             self._aborted = False
             self._stopped = False
+            self._released = False
         self._operation = operation
 
     def clear_operation(self):

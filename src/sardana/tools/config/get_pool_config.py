@@ -76,7 +76,7 @@ def checkPoolElements(pool):
         info_splitted = json.loads(info)
         mg_name = str(info_splitted["name"])
         mg_dev = taurus.Device(mg_name)
-        config = mg_dev.getAttribute('configuration').read().value
+        config = mg_dev.getAttribute('configuration').read().rvalue
         config = json.loads(config)
         controllers = config['controllers']
         elements = {}
