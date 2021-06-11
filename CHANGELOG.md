@@ -35,6 +35,16 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
 
+## [3.1.1] 2021-06-11
+
+### Fixed
+
+* Allow to stop/abort macro executing other hooked macros (#1603, #1608)
+
+### Deprecated
+
+* `MacroExecutor.clearRunningMacro()` in favor of `MacroExecutor.clearMacroStack()` (#1608)
+
 ## [3.1.0] 2021-05-17
 
 ### Added
@@ -1080,6 +1090,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 [keepachangelog.com]: http://keepachangelog.com
 [Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.0...HEAD
+[3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
