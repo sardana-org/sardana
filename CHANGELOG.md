@@ -34,6 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
+* Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
 
 ## [3.1.1] 2021-06-11
 
