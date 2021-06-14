@@ -243,6 +243,10 @@ class MeasurementGroup(PoolGroupDevice):
         else:
             self.measurement_group._config._value_ref_compat = False
         self.measurement_group.set_configuration_from_user(cfg)
+        db = util.get_database()
+        elem_ids = self.measurement_group.user_element_ids
+        data = {"elements": elem_ids}
+        db.put_device_property(self.get_name(), data)
 
     def read_NbStarts(self, attr):
         nb_starts = self.measurement_group.nb_starts
