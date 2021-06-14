@@ -649,6 +649,13 @@ class MeasurementConfiguration(object):
             Raise exceptions when setting _Synchronization_ parameter for
             external channels, 0D and PSeudoCounters.
         """
+        if not self._parent._is_online(cfg):
+            self._parent.error("Some controllers of this measurement group are offline!")
+            # Return because it won't be possible to know the controller types.
+            # Before returning, assign "user configuration" to at least be able to
+            # read it from the client (spock etc.).
+            self._user_config = cfg
+            return
 
         pool = self._parent.pool
 
@@ -1126,9 +1133,6 @@ class PoolMeasurementGroup(PoolGroupElement):
                         config)
 
     def set_configuration_from_user(self, cfg, propagate=1):
-        if not self._is_online(cfg):
-            self.warning("The controllers for this measurement group are not verifiable!")
-            return
         self._config.set_configuration_from_user(cfg)
         self._config_dirty = True
         if not propagate:
