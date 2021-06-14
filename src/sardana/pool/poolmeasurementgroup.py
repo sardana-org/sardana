@@ -1126,6 +1126,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                         config)
 
     def set_configuration_from_user(self, cfg, propagate=1):
+        if not self._is_online(cfg):
+            self.warning("The controllers for this measurement group are not verifiable!")
+            return
         self._config.set_configuration_from_user(cfg)
         self._config_dirty = True
         if not propagate:
@@ -1387,6 +1390,19 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._pending_starts = 0
         PoolGroupElement.abort(self)
 
+    # -------------------------------------------------------------------------
+    # utils
+    # -------------------------------------------------------------------------
+
+    def _is_online(self, cfg):
+        pool = self.pool
+        for ctrl_name in cfg['controllers']:
+            external = ctrl_name in ['__tango__']
+            if not external:
+                ctrl = pool.get_element_by_full_name(ctrl_name)
+                if not ctrl.is_online():
+                    return False
+        return True
     # --------------------------------------------------------------------------
     # release
     # --------------------------------------------------------------------------
