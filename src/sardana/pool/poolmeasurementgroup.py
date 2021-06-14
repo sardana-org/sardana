@@ -649,6 +649,13 @@ class MeasurementConfiguration(object):
             Raise exceptions when setting _Synchronization_ parameter for
             external channels, 0D and PSeudoCounters.
         """
+        if not self._parent._is_online(cfg):
+            self._parent.error("Some controllers of this measurement group are offline!")
+            # Return because it won't be possible to know the controller types.
+            # Before returning, assign "user configuration" to at least be able to
+            # read it from the client (spock etc.).
+            self._user_config = cfg
+            return
 
         pool = self._parent.pool
 
@@ -1387,6 +1394,19 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._pending_starts = 0
         PoolGroupElement.abort(self)
 
+    # -------------------------------------------------------------------------
+    # utils
+    # -------------------------------------------------------------------------
+
+    def _is_online(self, cfg):
+        pool = self.pool
+        for ctrl_name in cfg['controllers']:
+            external = ctrl_name in ['__tango__']
+            if not external:
+                ctrl = pool.get_element_by_full_name(ctrl_name)
+                if not ctrl.is_online():
+                    return False
+        return True
     # --------------------------------------------------------------------------
     # release
     # --------------------------------------------------------------------------
