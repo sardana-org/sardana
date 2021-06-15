@@ -19,6 +19,10 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
 
+### Changed
+
+* Execute post-scan also in case of an exception (#1538)
+
 
 ### Removed
 
