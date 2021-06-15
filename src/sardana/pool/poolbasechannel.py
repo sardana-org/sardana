@@ -40,6 +40,7 @@ from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
     ControllerConfiguration
 from sardana.sardanaevent import EventType
 from sardana.pool import AcqSynch, AcqMode
+import weakref
 
 class ValueBuffer(SardanaBuffer):
 
@@ -106,6 +107,7 @@ class PoolBaseChannel(PoolElement):
 
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
+                
         self._value = self.ValueAttributeClass(self, listeners=self.on_change)
         self._value_buffer = self.ValueBufferClass(self,
                                                    listeners=self.on_change)
@@ -150,7 +152,7 @@ class PoolBaseChannel(PoolElement):
         """
         if not self.has_pseudo_elements():
             self.get_value_buffer().persistent = True
-        self._pseudo_elements.append(element)
+        self._pseudo_elements.append(weakref.ref(element))
 
     def remove_pseudo_element(self, element):
         """Removes pseudo element e.g. pseudo counters that this channel
