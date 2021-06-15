@@ -73,6 +73,7 @@ class PseudoMotor(PoolElementDevice):
         pseudo_motor = self.pseudo_motor
         if pseudo_motor is not None:
             pseudo_motor.remove_listener(self.on_pseudo_motor_changed)
+        self.pseudo_motor = None
 
     @DebugIt()
     def init_device(self):

@@ -68,6 +68,7 @@ class MeasurementGroup(PoolGroupDevice):
         mg = self.measurement_group
         if mg is not None:
             mg.remove_listener(self.on_measurement_group_changed)
+        self.measurement_group = None
 
     @DebugIt()
     def init_device(self):
