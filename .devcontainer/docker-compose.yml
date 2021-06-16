@@ -23,7 +23,7 @@ services:
     build:
       context: ./sardana_dev
       args: 
-        INSTALL_NODE: false
+        INSTALL_NODE: "false"
     cap_add:
         - SYS_PTRACE
     security_opt:
