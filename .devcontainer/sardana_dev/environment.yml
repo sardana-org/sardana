@@ -1,6 +1,5 @@
 name: base
 channels:
-  - defaults
   - conda-forge
 dependencies:
   - python=3.8.5
@@ -8,6 +7,6 @@ dependencies:
   - boost
   - boost-cpp
   - pip=21.1
-  - pip:
-    - pydevd=2.4.1
+  - taurus
+  - itango
 prefix: /opt/conda
