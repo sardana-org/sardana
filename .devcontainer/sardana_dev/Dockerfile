@@ -17,4 +17,5 @@ RUN if [ -f "/tmp/conda-tmp/environment.yml" ]; then /opt/conda/bin/conda env up
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends pkg-config make build-essential iputils-ping
 
-RUN su vscode -c "conda init bash"
+RUN conda init bash
+RUN sed -i 's/${gitbranch}//'  /root/.bashrc
