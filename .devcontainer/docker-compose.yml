@@ -22,6 +22,8 @@ services:
       TANGO_HOST: databaseds:10000
     build:
       context: ./sardana_dev
+      args: 
+        INSTALL_NODE: false
     cap_add:
         - SYS_PTRACE
     security_opt:
