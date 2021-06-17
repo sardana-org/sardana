@@ -421,6 +421,8 @@ def build_measurement_configuration(user_elements):
         if elem_type == ElementType.External:
             external_user_elements.append((index, element))
             continue
+        if elem_type == ElementType.TriggerGate:
+            continue
 
         ctrl = element.controller
         ctrl_data = controllers.get(ctrl.full_name)
