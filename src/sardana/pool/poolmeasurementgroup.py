@@ -649,6 +649,13 @@ class MeasurementConfiguration(object):
             Raise exceptions when setting _Synchronization_ parameter for
             external channels, 0D and PSeudoCounters.
         """
+        if not self._parent._is_online(cfg):
+            self._parent.error("Some controllers of this measurement group are offline!")
+            # Return because it won't be possible to know the controller types.
+            # Before returning, assign "user configuration" to at least be able to
+            # read it from the client (spock etc.).
+            self._user_config = cfg
+            return
 
         pool = self._parent.pool
 
@@ -1356,7 +1363,9 @@ class PoolMeasurementGroup(PoolGroupElement):
         if self._pending_starts == 0:
             msg = "prepare is mandatory before starting acquisition"
             raise RuntimeError(msg)
+        self._stopped = False
         self._aborted = False
+        self._released = False
         self._pending_starts -= 1
         if not self._simulation_mode:
             self.acquisition.run()
@@ -1384,3 +1393,33 @@ class PoolMeasurementGroup(PoolGroupElement):
     def abort(self):
         self._pending_starts = 0
         PoolGroupElement.abort(self)
+
+    # -------------------------------------------------------------------------
+    # utils
+    # -------------------------------------------------------------------------
+
+    def _is_online(self, cfg):
+        pool = self.pool
+        for ctrl_name in cfg['controllers']:
+            external = ctrl_name in ['__tango__']
+            if not external:
+                ctrl = pool.get_element_by_full_name(ctrl_name)
+                if not ctrl.is_online():
+                    return False
+        return True
+    # --------------------------------------------------------------------------
+    # release
+    # --------------------------------------------------------------------------
+
+    def release(self):
+        # override PoolBaseElement.releaes() cause the PoolAcquisition action
+        # is composed from many sub-actions and the default
+        # PoolBaseElement.get_operation() is not able to get the top action
+        operation = self.acquisition
+        if not operation.is_running():
+            self.warning("Operation is not running, can not release")
+            return
+        self._released = True
+        self._state_event = None
+        self.info("Release!")
+        operation.release_action()

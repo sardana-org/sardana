@@ -13,6 +13,15 @@ This file follows the formats and conventions from [keepachangelog.com]
    * changed `region_nr_intervals` macro parameter type to integer
    * moved `integ_time` macro parameter at the end of the parameters list
 * `lsp` macro: list Pools the MacroServer is connected to (#1599)
+* Possibility to _release_ hung operations e.g. motion or acquisition due to a hung element (#1582)
+   * _release_ element and _release_ action concepts to the core
+   * `Release` Tango command to Pool element devices
+   * `release()` method to the Taurus extensions
+   * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+
+### Changed
+
+* Execute post-scan also in case of an exception (#1538)
 
 
 ### Removed
@@ -24,11 +33,26 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
+* Allow to recreate measurement group with the same name but other channels so the MacroServer
+  correctly reports the channels involved in the measurement group (#145, #1528, #1607)
+* Ensure controller, element and group state are set to Fault and details are reported in the status
+  whenever plugin code i.e. controller library, is missing (#1588)
 * Stop/abort element in `ct` macro when used with channels (#1595)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
+* Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
+
+## [3.1.1] 2021-06-11
+
+### Fixed
+
+* Allow to stop/abort macro executing other hooked macros (#1603, #1608)
+
+### Deprecated
+
+* `MacroExecutor.clearRunningMacro()` in favor of `MacroExecutor.clearMacroStack()` (#1608)
 
 ## [3.1.0] 2021-05-17
 
@@ -1075,6 +1099,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 [keepachangelog.com]: http://keepachangelog.com
 [Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.0...HEAD
+[3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5

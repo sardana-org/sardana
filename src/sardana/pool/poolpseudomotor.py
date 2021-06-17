@@ -583,6 +583,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     def _start_move(self, new_position):
         self._aborted = False
         self._stopped = False
+        self._released = False
         items = self.calculate_motion(new_position)
         timestamp = time.time()
         for item, position_info in list(items.items()):

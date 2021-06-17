@@ -1066,10 +1066,9 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus == ScanEndStatus.Normal:
-                if hasattr(macro, 'getHooks'):
-                    for hook in macro.getHooks('post-scan'):
-                        hook()
+            if hasattr(macro, 'getHooks'):
+                for hook in macro.getHooks('post-scan'):
+                    hook()
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '

@@ -6,6 +6,21 @@ Below you will find the most relevant news that brings the Sardana releases.
 For a complete list of changes consult the Sardana `CHANGELOG.md \
 <https://github.com/sardana-org/sardana/blob/develop/CHANGELOG.md>`_ file.
 
+****************************
+What's new in Sardana 3.1.1?
+****************************
+
+Date: 2021-06-11
+
+Type: hotfix release
+
+Fixed
+=====
+
+- Correctly handle stop/abort of macros e.g. ``Ctrl+c`` in Spock in case
+  the macro was executing another hooked macros e.g. a scan executing a general
+  hook.
+
 **************************
 What's new in Sardana 3.1?
 **************************
