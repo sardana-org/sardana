@@ -562,9 +562,10 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         if len(dependent_elements) > 0:
             raise Exception(
                 "The element {} can't be deleted because {} depend on it."
-                "\n\nIf the name of the dependent element starts with" 
-                "'_mg_ms_*' it means that are motor groups, use any tango " 
-                "client (e.g. Jive) to delete them and restart the server."
+                "\n\nIf the name of the dependent element starts with " 
+                "'_mg_ms_*' it means that are motor groups, execute "
+                "DeleteElement(<motor_group_name>) command on the Pool e.g. "
+                "Pool_demo1_1.DeleteElement('_mg_ms_20671_1') in Spock."
                 .format(name, ", ".join(dependent_elements)))
             
         if elem_type == ElementType.Controller:
