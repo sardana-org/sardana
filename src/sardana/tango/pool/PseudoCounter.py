@@ -51,6 +51,9 @@ class PseudoCounter(PoolExpChannelDevice):
         PoolExpChannelDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
+    def __del__(self):
+        print("PseudoCounter.__del__")
+
     def init(self, name):
         PoolExpChannelDevice.init(self, name)
 
@@ -71,9 +74,7 @@ class PseudoCounter(PoolExpChannelDevice):
         pseudo_counter = self.pseudo_counter
         if pseudo_counter is not None:
             pseudo_counter.remove_listener(self.on_pseudo_counter_changed)
-        self.element = None
         self.pseudo_counter = None
-        self.ctrl = None
 
     @DebugIt()
     def init_device(self):
