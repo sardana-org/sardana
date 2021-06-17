@@ -165,7 +165,7 @@ class PoolBaseChannel(PoolElement):
         """
         for pseudo_element in self._pseudo_elements:
             if pseudo_element() == element:
-                self._pseudo_elements.remove(element)
+                self._pseudo_elements.remove(pseudo_element)
                 if not self.has_pseudo_elements():
                     self.get_value_buffer().persistent = False
                 break
