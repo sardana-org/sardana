@@ -89,16 +89,16 @@ class PoolElement(PoolBaseElement):
         return "{0}/{1}".format(self.full_name, self.get_default_acquisition_channel())
 
     def get_dependent_elements(self):
-        pool_base_elements = []
+        dependent_elements = []
         for listener in self.get_listeners():
             try:
-                dependent_elem = listener().__self__
+                elem = listener().__self__
             except AttributeError:
                 continue
-            if isinstance(dependent_elem, PoolBaseElement):
-                pool_base_elements.append(dependent_elem.name)
+            if isinstance(elem, PoolBaseElement):
+                dependent_elements.append(elem.name)
         
-        return pool_base_elements
+        return dependent_elements
 
     def has_dependent_elements(self):
         return len(self.get_dependent_elements()) > 0
