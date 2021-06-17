@@ -56,7 +56,7 @@ class ValueBuffer(SardanaBuffer):
         :rtype: bool
         """
         for element in self.obj.get_pseudo_elements():
-            if element.get_value_buffer().next_idx <= idx:
+            if element().get_value_buffer().next_idx <= idx:
                 return True
         return False
 
@@ -138,8 +138,8 @@ class PoolBaseChannel(PoolElement):
         """Returns list of pseudo elements e.g. pseudo counters that this
         channel belongs to.
 
-        :return: pseudo elements
-        :rtype: seq<:class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`>
+        :return: weak references to pseudo elements
+        :rtype: seq<:class:`weakref.ref`>
         """
         return self._pseudo_elements
 
@@ -163,10 +163,17 @@ class PoolBaseChannel(PoolElement):
         :type element:
             :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
         """
-
-        self._pseudo_elements.remove(element)
-        if not self.has_pseudo_elements():
-            self.get_value_buffer().persistent = False
+        for pseudo_element in self._pseudo_elements:
+            if pseudo_element() == element:
+                self._pseudo_elements.remove(element)
+                if not self.has_pseudo_elements():
+                    self.get_value_buffer().persistent = False
+                break
+        else:
+            raise ValueError(
+                "{} is not a pseudo element of {}".format(
+                    element.name, self.name)
+            )
 
     def get_value_attribute(self):
         """Returns the value attribute object for this experiment channel
