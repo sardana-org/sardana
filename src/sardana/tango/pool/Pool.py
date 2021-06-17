@@ -538,6 +538,7 @@ class Pool(PyTango.LatestDeviceImpl, Logger):
         self._check_element(name, full_name)
 
         util = PyTango.Util.instance()
+
         def create_element_cb(device_name):
             try:
                 db = util.get_database()

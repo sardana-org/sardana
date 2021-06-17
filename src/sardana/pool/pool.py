@@ -40,7 +40,6 @@ from taurus.core.util.containers import CaselessDict
 
 from sardana import InvalidId, ElementType, TYPE_ACQUIRABLE_ELEMENTS, \
     TYPE_PSEUDO_ELEMENTS, TYPE_PHYSICAL_ELEMENTS, TYPE_MOVEABLE_ELEMENTS
-from sardana.pool.poolbaseelement import PoolBaseElement
 from sardana.sardanamanager import SardanaElementManager, SardanaIDManager
 from sardana.sardanamodulemanager import ModuleManager
 from sardana.sardanaevent import EventType
@@ -561,11 +560,12 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
-            raise Exception("The element {} can't be deleted because {} depend"
-                " on it. \n\nIf the name of the dependent element starts with" 
+            raise Exception(
+                "The element {} can't be deleted because {} depend on it."
+                "\n\nIf the name of the dependent element starts with" 
                 "'_mg_ms_*' it means that are motor groups, use any tango " 
                 "client (e.g. Jive) to delete them and restart the server."
-                    .format(name, ", ".join(dependent_elements)))
+                .format(name, ", ".join(dependent_elements)))
             
         if elem_type == ElementType.Controller:
             if len(elem.get_elements()) > 0:
@@ -592,7 +592,6 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.fire_event(EventType("ElementDeleted"), elem)
         if hasattr(elem, "get_controller"):
             elem.set_deleted(True)
-
 
     def create_instrument(self, full_name, klass_name, id=None):
         is_root = full_name.count('/') == 1

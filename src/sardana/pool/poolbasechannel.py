@@ -30,6 +30,8 @@ __all__ = ["Value", "PoolBaseChannel"]
 
 __docformat__ = 'restructuredtext'
 
+import weakref
+
 from sardana.sardanadefs import AttrQuality, ElementType
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
@@ -40,7 +42,7 @@ from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
     ControllerConfiguration
 from sardana.sardanaevent import EventType
 from sardana.pool import AcqSynch, AcqMode
-import weakref
+
 
 class ValueBuffer(SardanaBuffer):
 
@@ -107,7 +109,6 @@ class PoolBaseChannel(PoolElement):
 
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
-                
         self._value = self.ValueAttributeClass(self, listeners=self.on_change)
         self._value_buffer = self.ValueBufferClass(self,
                                                    listeners=self.on_change)
