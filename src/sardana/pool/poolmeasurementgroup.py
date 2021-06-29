@@ -1345,16 +1345,13 @@ class PoolMeasurementGroup(PoolGroupElement):
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
-        kwargs = {'head': self}
-
         self.acquisition.prepare(self.configuration,
                                  self.acquisition_mode,
                                  value,
                                  self._synch_description,
                                  self._moveable_obj,
                                  self.sw_synch_initial_domain,
-                                 self.nb_starts,
-                                 **kwargs)
+                                 self.nb_starts)
 
     def start_acquisition(self, value=None):
         """Start measurement.
