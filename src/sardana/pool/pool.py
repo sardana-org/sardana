@@ -32,6 +32,7 @@ __all__ = ["Pool"]
 
 __docformat__ = 'restructuredtext'
 
+import gc
 import os.path
 import logging.handlers
 
@@ -557,7 +558,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 raise Exception("There is no element with name '%s'" % name)
 
         elem_type = elem.get_type()
-
+        dependent_elements = elem.get_dependent_elements()
+        if len(dependent_elements) > 0:
+            gc.collect()
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
             raise Exception(
