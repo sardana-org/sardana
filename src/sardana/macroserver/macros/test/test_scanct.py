@@ -24,6 +24,7 @@
 ##############################################################################
 
 """Tests for continuous scans (ct-like)"""
+import json
 import time
 import PyTango
 import unittest
@@ -333,6 +334,8 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_stopped(self)
 
     def tearDown(self):
+        for mg in self.pool.MotorGroupList:
+            self.pool.DeleteElement(json.loads(mg)['name'])
         ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)
 
@@ -388,5 +391,7 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_stopped(self)
 
     def tearDown(self):
+        for mg in self.pool.MotorGroupList:
+            self.pool.DeleteElement(json.loads(mg)['name'])
         ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)
