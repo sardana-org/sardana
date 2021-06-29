@@ -22,6 +22,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Changed
 
 * Execute post-scan also in case of an exception (#1538)
+* `IntegrationTime`, `MonitorCount`, `NbStarts` and `SynchDescription`
+  MeasurementGroup's Tango attributes to not memorized (#1611)
 
 
 ### Removed
