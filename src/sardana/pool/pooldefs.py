@@ -117,8 +117,7 @@ AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])
 AcqSynchType.__doc__ = \
     """Enumeration of synchronization types.
 
-
-Options:
+    Options:
 
     - Trigger - Start each acquisition (experimental channel will decide on
       itself when to end, based on integration time / monitor count)
