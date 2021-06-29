@@ -335,10 +335,10 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
     #    Attribute definitions
     attr_list = {
         'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE],
-                            {'Memorized': "true",
+                            {'Memorized': "false",
                              'Display level': DispLevel.OPERATOR}],
         'MonitorCount': [[DevLong, SCALAR, READ_WRITE],
-                         {'Memorized': "true",
+                         {'Memorized': "false",
                           'Display level': DispLevel.OPERATOR}],
         'AcquisitionMode': [[DevString, SCALAR, READ_WRITE],
                             {'Memorized': "true",
@@ -347,14 +347,14 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                           {'Memorized': "true",
                            'Display level': DispLevel.EXPERT}],
         'NbStarts': [[DevLong, SCALAR, READ_WRITE],
-                     {'Memorized': "true",
+                     {'Memorized': "false",
                       'Display level': DispLevel.OPERATOR}],
+        # TODO: Does it have sense to memorize Moveable?
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
-        # TODO: Does it have sense to memorize SynchDescription?
         'SynchDescription': [[DevString, SCALAR, READ_WRITE],
-                             {'Memorized': "true",
+                             {'Memorized': "false",
                               'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
