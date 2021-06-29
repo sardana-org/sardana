@@ -442,10 +442,10 @@ class PoolController(PoolBaseController):
 
            :param operator: the new operator object
            :type operator: object"""
-        self._operator = operator
+        self._operator = weakref.ref(operator)
 
     def get_operator(self):
-        return self._operator
+        return self._operator()
 
     operator = property(fget=get_operator, fset=set_operator,
                         doc="current controller operator")
