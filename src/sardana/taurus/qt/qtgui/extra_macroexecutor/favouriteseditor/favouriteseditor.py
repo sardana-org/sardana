@@ -28,11 +28,10 @@ favouriteseditor.py:
 """
 import copy
 
-from taurus.external.qt import Qt
-from taurus.qt.qtgui.resource import getIcon
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
-from model import MacrosListModel
+from .model import MacrosListModel
 
 
 class FavouritesMacrosEditor(TaurusWidget):
@@ -103,38 +102,36 @@ class FavouritesMacrosEditor(TaurusWidget):
 
 class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
-    def __init__(self, parent):
+    favouriteSelected = Qt.pyqtSignal(compat.PY_OBJECT)
+
+    def __init__(self, parent=None):
         Qt.QListView.__init__(self, parent)
 
         self.setSelectionMode(Qt.QListView.ExtendedSelection)
 
-        self.removeAction = Qt.QAction(getIcon(":/actions/list-remove.svg"),
+        self.removeAction = Qt.QAction(Qt.QIcon("actions:list-remove.svg"),
                                        "Remove from favourites", self)
-        self.connect(self.removeAction, Qt.SIGNAL("triggered()"),
-                     self.removeMacros)
+        self.removeAction.triggered.connect(self.removeMacros)
         self.removeAction.setToolTip(
             "Clicking this button will remove selected macros "
             "from favourites.")
 
-        self.removeAllAction = Qt.QAction(getIcon(":/places/user-trash.svg"),
+        self.removeAllAction = Qt.QAction(Qt.QIcon("places:user-trash.svg"),
                                           "Remove all from favourites", self)
-        self.connect(self.removeAllAction, Qt.SIGNAL(
-            "triggered()"), self.removeAllMacros)
+        self.removeAllAction.triggered.connect(self.removeAllMacros)
         self.removeAllAction.setToolTip(
             "Clicking this button will remove all macros from favourites.")
 
-        self.moveUpAction = Qt.QAction(getIcon(":/actions/go-up.svg"),
+        self.moveUpAction = Qt.QAction(Qt.QIcon("actions:go-up.svg"),
                                        "Move up", self)
-        self.connect(self.moveUpAction, Qt.SIGNAL(
-            "triggered()"), self.upMacro)
+        self.moveUpAction.triggered.connect(self.upMacro)
         self.moveUpAction.setToolTip(
             "Clicking this button will move the macro up "
             "in the favourites hierarchy.")
 
-        self.moveDownAction = Qt.QAction(getIcon(":/actions/go-down.svg"),
+        self.moveDownAction = Qt.QAction(Qt.QIcon("actions:go-down.svg"),
                                          "Move down", self)
-        self.connect(self.moveDownAction, Qt.SIGNAL(
-            "triggered()"), self.downMacro)
+        self.moveDownAction.triggered.connect(self.downMacro)
         self.moveDownAction.setToolTip(
             "Clicking this button will move the macro down "
             "in the favourites hierarchy.")
@@ -143,7 +140,7 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
     def currentChanged(self, current, previous):
         macro = copy.deepcopy(self.currentIndex().internalPointer())
-        self.emit(Qt.SIGNAL("favouriteSelected"), macro)
+        self.favouriteSelected.emit(macro)
         Qt.QListView.currentChanged(self, current, previous)
 
     def selectionChanged(self, old, new):
@@ -174,7 +171,7 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
         clickedIndex = self.indexAt(e.pos())
         if clickedIndex.isValid():
             macro = copy.deepcopy(self.currentIndex().internalPointer())
-            self.emit(Qt.SIGNAL("favouriteSelected"), macro)
+            self.favouriteSelected.emit(macro)
         Qt.QListView.mousePressEvent(self, e)
 
     def disableActions(self):
@@ -223,9 +220,11 @@ def test():
     import sys
     import taurus
     import time
+    from taurus.core.util.argparse import get_taurus_parser
     from taurus.qt.qtgui.application import TaurusApplication
 
-    app = TaurusApplication(sys.argv)
+    parser = get_taurus_parser()
+    app = TaurusApplication(sys.argv, cmd_line_parser=parser)
 
     favouritesEditor = FavouritesMacrosEditor()
 

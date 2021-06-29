@@ -45,7 +45,6 @@ class ScanPlotter(TaurusTrend):
     def __init__(self, parent=None, designMode=False):
 
         TaurusTrend.__init__(self, parent, designMode)
-        self.setUseParentModel(False)
         self._plotables = CaselessDict()
         self._movingMotors = []
         self._macroNames = []
@@ -127,7 +126,7 @@ class ScanPlotter(TaurusTrend):
             mntgrp = taurus.Device(mntgrp_name)
             channels = mntgrp.getAttribute('Channels').read()
             channelsList = channels.value
-            timer_name = mntgrp.getAttribute('Timer').read().value.lower()
+            timer_name = mntgrp.getAttribute('Timer').read().rvalue.lower()
             plotables += [('%s/%s_value' % (mntgrp_name, ch)).lower()
                           for ch in channelsList if ch.lower() != timer_name]
 

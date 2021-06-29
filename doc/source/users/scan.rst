@@ -183,92 +183,113 @@ Scans are highly configurable using the environment variables
 (on how to use environment variables see environment related macros in
 :ref:`sardana-standard-macro-catalog`).
 
-Following variables are supported:
+.. seealso:: For further information about the available Sardana Environment
+             Variables, check the 
+             :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
-**ApplyExtrapolation**
-    Enable/disable the extrapolation method to fill the missing parts of the
-    very first scan records in case the software synchronized acquisition could
-    not follow the pace. Can be used only with the continuous acquisition
-    macros e.g. *ct* type of continuous scans or timescan. Its value is of
-    boolean type.
+.. _sardana-users-scan-data-storage:
 
-    .. note::
-        The ApplyExtrapolation environment variable has been included in
-        Sardana on a provisional basis. Backwards incompatible changes
-        (up to and including removal of this variable) may occur if deemed
-        necessary by the core developers.
+Data storage
+------------
 
-**ApplyInterpolation**
-    Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
-    method to fill the missing parts of the scan records in case the software
-    synchronized acquisition could not follow the pace. Can be used only
-    with the continuous acquisition macros *ct* type of continuous scans or
-    timescan. Its value is of boolean type.
+Data being produced by scans can be optionally handled by *recorders* and
+sent to a variety of destinations. Typical use case is to store the scan data
+in a file.
 
-    .. note::
-        The ApplyInterpolation environment variable has been included in
-        Sardana on a provisional basis with SEP6_. Backwards incompatible
-        changes (up to and including removal of this variable) may occur if
-        deemed necessary by the core developers.
+Built-in recorders
+^^^^^^^^^^^^^^^^^^
 
-**DirectoryMap**
-    In case that the server and the client do not run on the same host, the scan
-    data may be easily shared between them using the NFS. Since some of the
-    tools e.g. showscan rely on the scan data file the DirectoryMap may help in
-    overcoming the shared directory naming issues between the hosts.
+Sardana defines some standard recorders e.g. the Spock output recorder or the
+SPEC file recorder. From the other hand users may define their custom recorders.
+Sardana provides the following standard recorders (grouped by types):
 
-    Its value is a dictionary with keys pointing to the server side directory
-    and values to the client side directory/ies (string or list of strings).
+* file [*]
+    * FIO_FileRecorder
+    * NXscanH5_FileRecorder
+    * SPEC_FileRecorder
 
-**ScanDir**
-    Its value is of string type and indicates an absolute path to the directory
-    where scan data will be stored.
+* shared memory [*]
+    * SPSRecorder
+    * ShmRecorder
 
-**ScanFile**
-    Its value may be either of type string or of list of strings. In the second
-    case data will be duplicated in multiple files (different file formats may
-    be used). Recorder class is implicitly selected based on the file extension.
-    For example "myexperiment.spec" will by default store data in SPEC
-    compatible format (see more about the extension to recorder map in
-    :ref:`sardana-writing-recorders`).
+* output
+    * JsonRecorder [*]
+    * OutputRecorder
 
-**ScanRecorder**
-    Its value may be either of type string or of list of strings. If
-    ScanRecorder variable is defined, it explicitly indicates which recorder
-    class should be used and for which file defined by ScanFile (based on the 
-    order).
+[*] Scan Framework provides mechanisms to enable and select this recorders
+using the environment variables.
 
-    Example 1:
-	
-	::
+.. _sardana-users-scan-data-storage-nxscanh5_filerecorder:
 
-		ScanFile = myexperiment.spec
-		ScanRecorder = FIO_FileRecorder
+NXscanH5_FileRecorder
+"""""""""""""""""""""
 
-        FIO_FileRecorder will write myexperiment.spec file.
+NXscanH5_FileRecorder is a scan recorder which writes the scan data according
+to the NXscan `NeXus <http://nexusformat.org>`_ application definition
+in the `HDF5 <https://www.hdfgroup.org/solutions/hdf5/>`_ file format.
 
-    Example 2:
+Sardana scan recorders are instantiated per scan execution and therefore this
+recorder opens and closes the HDF5 file for writing when the scan starts
+and ends respectively. This may cause file locking issues with reading
+applications opened in between the scans. To overcome this issue
+the *write session* concept, with optional support of SWMR mode,
+was introduced for this particular recorder.
 
-	::
-	
-		ScanFile = myexperiment.spec, myexperiment.h5
-		ScanRecorder = FIO_FileRecorder
+The write sessions use case scenarios:
 
-        FIO_FileRecorder will write myexperiment.spec file and
-        NXscan_FileRecorder will write the myexpriment.h5. The selection of the
-        second recorder is based on the extension.
+* Manual session control with macros
+    To start and end the session you can use
+    `~sardana.macroserver.macros.h5storage.h5_start_session` /
+    `~sardana.macroserver.macros.h5storage.h5_start_session_path` and
+    `~sardana.macroserver.macros.h5storage.h5_end_session` /
+    `~sardana.macroserver.macros.h5storage.h5_end_session_path` macros.
+    You can list the active sessions with
+    `~sardana.macroserver.macros.h5storage.h5_ls_session` macro.
+* Programmatic session control with context manager (for macro developers)
+    You can use the `~sardana.macroserver.macros.h5storage.h5_write_session`
+    context manager to ensure that the write session is only active over a
+    specific part of your macro code.
 
-**SharedMemory**
-    Its value is of string type and it indicates which shared memory recorder should
-    be used during the scan e.g. "sps" will use SPSRecorder (sps Python module
-    must be installed on the PC where the MacroServer runs).
+.. _sardana-users-scan-snapshot:
+
+Scan snapshots
+--------------
+
+Snapshots are used for saving data (or metadata) from elements and devices not
+necessarily related to the scan itself. A scan saves only the values of the involved
+elements, that is positions of motors being moved, and values read from experiment
+channels in the active measurement group. If you want your scans to include
+something more you can use the snapshot.
+
+Snapshot group can be configured via :ref:`Experiment Configuration widget <expconf_ui_snapshot_group>`
+and :ref:`prescansnapshot` environment variable. It can include both Sardana
+elements as well as external (Tango) data sources.
+
+The snapshot is saved only once during a scan, on the very beginning. The exact
+way the snapshot data is saved depends on the :ref:`recorder <sardana-writing-recorders>`
+and scan file format being used.
+
+Scan statistics
+---------------
+
+Sardana may automatically calculate some basic statistics over the scan
+results e.g., max, mean, FWHM, etc.
+
+In order to enable the statistics calculation you just need to attach
+the :class:`~sardana.macroserver.macros.scan.scanstats` macro to the
+``post-scan`` hook place (see :ref:`hook documentation <sardana-macros-hooks>`
+for more info).
+
+Apart from printing the statistics by the scanstats macro these are stored in
+the door's :ref:`scanstats` environment variable. This way some other macro
+can use them e.g.,
+
+* move the scanned motor to the position where a given channel
+  reached the maximum value (:class:`~sardana.macroserver.macros.standard.pic`)
+* move the scanned motor to center position of FWHM
+  (:class:`~sardana.macroserver.macros.standard.cen`)
 
 
 
-.. seealso:: For more information about the implementation details of the scan
-             macros in Sardana, see 
-             :ref:`scan framework <sardana-macros-scanframework>`
-
-.. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
 .. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org

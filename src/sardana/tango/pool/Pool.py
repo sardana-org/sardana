@@ -45,14 +45,15 @@ from sardana import State, SardanaServer, ElementType, Interface, \
 from sardana.pool.pool import Pool as POOL
 from sardana.pool.poolmetacontroller import TYPE_MAP_OBJ
 from sardana.tango.core.util import get_tango_version_number
+import collections
 
 
-class Pool(PyTango.Device_4Impl, Logger):
+class Pool(PyTango.LatestDeviceImpl, Logger):
 
     ElementsCache = None
 
     def __init__(self, cl, name):
-        PyTango.Device_4Impl.__init__(self, cl, name)
+        PyTango.LatestDeviceImpl.__init__(self, cl, name)
         Logger.__init__(self, name)
         self.init(name)
         self.init_device()
@@ -84,7 +85,7 @@ class Pool(PyTango.Device_4Impl, Logger):
         always FQDN.
 
         :return: this device full name
-        :rtype: str
+        :rtype: :obj:`str`
         """
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
@@ -116,10 +117,10 @@ class Pool(PyTango.Device_4Impl, Logger):
         p = self.pool
         p.set_python_path(self.PythonPath)
         p.set_path(self.PoolPath)
-        p.set_motion_loop_sleep_time(self.MotionLoop_SleepTime / 1000.0)
+        p.set_motion_loop_sleep_time(self.MotionLoop_SleepTime / 1000)
         p.set_motion_loop_states_per_position(
             self.MotionLoop_StatesPerPosition)
-        p.set_acq_loop_sleep_time(self.AcqLoop_SleepTime / 1000.0)
+        p.set_acq_loop_sleep_time(self.AcqLoop_SleepTime / 1000)
         p.set_acq_loop_states_per_value(self.AcqLoop_StatesPerValue)
         p.set_drift_correction(self.DriftCorrection)
         if self.RemoteLog is None:
@@ -249,7 +250,7 @@ class Pool(PyTango.Device_4Impl, Logger):
         if cache and value is not None:
             return value
         value = dict(new=self.pool.get_elements_info())
-        value = CodecFactory().encode('json', ('', value))
+        value = CodecFactory().encode('utf8_json', ('', value))
         self.ElementsCache = value
         return value
 
@@ -339,7 +340,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                             "interface" % (class_name, type_str))
 
         # check that necessary property values are set
-        for prop_name, prop_info in ctrl_class.ctrl_properties.items():
+        for prop_name, prop_info in list(ctrl_class.ctrl_properties.items()):
             prop_value = properties.get(prop_name)
             if prop_value is None:
                 if prop_info.default_value is None:
@@ -383,7 +384,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 info = dict(id=pm_id, name=pm_name, ctrl_name=name, axis=i + 1,
                             type='PseudoMotor', elements=motor_ids)
                 if pm_name.count(',') > 0:
-                    n, fn = map(str.strip, pm_name.split(',', 1))
+                    n, fn = list(map(str.strip, pm_name.split(',', 1)))
                     info['name'], info['full_name'] = n, fn
                 pseudo_motor_infos[klass_pseudo_role] = info
                 pseudo_motor_ids.append(pm_id)
@@ -423,7 +424,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 info = dict(id=pc_id, name=pc_name, ctrl_name=name, axis=i + 1,
                             type='PseudoCounter', elements=counter_ids)
                 if pc_name.count(',') > 0:
-                    n, fn = map(str.strip, pc_name.split(',', 1))
+                    n, fn = list(map(str.strip, pc_name.split(',', 1)))
                     info['name'], info['full_name'] = n, fn
                 pseudo_counter_infos[klass_pseudo_role] = info
                 pseudo_counter_ids.append(pc_id)
@@ -450,7 +451,7 @@ class Pool(PyTango.Device_4Impl, Logger):
         # Determine which controller writtable attributes have default value
         # and apply them to the newly created controller
         attrs = []
-        for attr_name, attr_info in ctrl_class.ctrl_attributes.items():
+        for attr_name, attr_info in list(ctrl_class.ctrl_attributes.items()):
             default_value = attr_info.default_value
             if default_value is None:
                 continue
@@ -466,10 +467,10 @@ class Pool(PyTango.Device_4Impl, Logger):
         # for pseudo motor/counter controller also create pseudo
         # motor(s)/counter(s) automatically
         if elem_type == ElementType.PseudoMotor:
-            for pseudo_motor_info in pseudo_motor_infos.values():
+            for pseudo_motor_info in list(pseudo_motor_infos.values()):
                 self._create_single_element(pseudo_motor_info)
         elif elem_type == ElementType.PseudoCounter:
-            for pseudo_counter_info in pseudo_counter_infos.values():
+            for pseudo_counter_info in list(pseudo_counter_infos.values()):
                 self._create_single_element(pseudo_counter_info)
 
     #@DebugIt()
@@ -621,7 +622,8 @@ class Pool(PyTango.Device_4Impl, Logger):
         # them to the newly created element
         ctrl_class_info = ctrl.get_ctrl_info()
         attrs = []
-        for attr_name, attr_info in ctrl_class_info.getAxisAttributes().items():
+        for attr_name, attr_info in \
+                list(ctrl_class_info.getAxisAttributes().items()):
             default_value = attr_info.default_value
             if default_value is None:
                 continue
@@ -762,7 +764,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 key = 'change'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.push_change_event('Elements', *value)
         elif evt_name == "elementschanged":
             # force the element list cache to be rebuild next time someone reads
@@ -781,16 +783,16 @@ class Pool(PyTango.Device_4Impl, Logger):
                 deleted_values.append(json_elem)
             value = {"new": new_values, "change": changed_values,
                      "del": deleted_values}
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.push_change_event('Elements', *value)
 
     def _format_create_json_arguments(self, argin):
         elems, ret = json.loads(argin[0]), []
-        if operator.isMappingType(elems):
+        if isinstance(elems, collections.Mapping):
             elems = [elems]
         for elem in elems:
             d = {}
-            for k, v in elem.items():
+            for k, v in list(elem.items()):
                 d[str(k)] = str(v)
             ret.append(d)
         return ret
@@ -814,15 +816,15 @@ class Pool(PyTango.Device_4Impl, Logger):
             raise Exception(msg)
         if len(argin) == 1:
             ret = self._format_create_json_arguments(argin)
-            if not ret.has_key('type'):
+            if 'type' not in ret:
                 raise KeyError("Missing key 'type'")
-            if not ret.has_key('library'):
+            if 'library' not in ret:
                 raise KeyError("Missing key 'library'")
-            if not ret.has_key('klass'):
+            if 'klass' not in ret:
                 raise KeyError("Missing key 'klass'")
-            if not ret.has_key('name'):
+            if 'name' not in ret:
                 raise KeyError("Missing key 'name'")
-            if not ret.has_key('properties'):
+            if 'properties' not in ret:
                 ret['properties'] = CaselessDict()
             return ret
 
@@ -861,11 +863,11 @@ class Pool(PyTango.Device_4Impl, Logger):
                 elems = json.loads(argin[0])
             except:
                 elems = argin
-            if operator.isMappingType(elems):
+            if isinstance(elems, collections.Mapping):
                 elems = [elems]
             for elem in elems:
                 d = {}
-                for k, v in elem.items():
+                for k, v in list(elem.items()):
                     d[str(k)] = str(v)
                 ret.append(d)
             return ret
@@ -886,11 +888,11 @@ class Pool(PyTango.Device_4Impl, Logger):
                 elems = json.loads(argin[0])
             except:
                 elems = argin
-            if operator.isMappingType(elems):
+            if isinstance(elems, collections.Mapping):
                 elems = [elems]
             for elem in elems:
                 d = {}
-                for k, v in elem.items():
+                for k, v in list(elem.items()):
                     d[str(k)] = str(v)
                 ret.append(d)
             return ret
@@ -1128,7 +1130,7 @@ Tango command to create motor group.
     {1}
 """.format(CREATE_MOTOR_GROUP_PAR_IN_DOC, CREATE_MOTOR_GROUP_PAR_OUT_DOC)
 
-Pool.CreateMotorGroup.__func__.__doc__ = CREATE_MOTOR_GROUP_DOC
+Pool.CreateMotorGroup.__doc__ = CREATE_MOTOR_GROUP_DOC
 
 CREATE_MEASUREMENT_GROUP_PAR_IN_DOC = """\
 Must give either:
@@ -1174,7 +1176,7 @@ Tango command to delete element.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(DELETE_ELEMENT_PAR_IN_DOC, DELETE_ELEMENT_PAR_OUT_DOC)
@@ -1202,10 +1204,10 @@ Tango command to get detailed information about a controller class.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
-:rtype: str
+:rtype: :obj:`str`
 """.format(GET_CONTROLLER_CLASS_INFO_PAR_IN_DOC, GET_CONTROLLER_CLASS_INFO_PAR_OUT_DOC)
 
 RELOAD_CONTROLLER_LIB_PAR_IN_DOC = """\
@@ -1219,7 +1221,7 @@ Tango command to reload the controller library code.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_LIB_PAR_IN_DOC, RELOAD_CONTROLLER_LIB_PAR_OUT_DOC)
@@ -1236,7 +1238,7 @@ where the class is described).
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_CLASS_PAR_IN_DOC, RELOAD_CONTROLLER_CLASS_PAR_OUT_DOC)
@@ -1299,18 +1301,18 @@ Sends a string to a controller.
     {1}
 """.format(SEND_TO_CONTROLLER_PAR_IN_DOC, SEND_TO_CONTROLLER_PAR_OUT_DOC)
 
-Pool.CreateController.__func__.__doc__ = CREATE_CONTROLLER_DOC
-Pool.CreateElement.__func__.__doc__ = CREATE_ELEMENT_DOC
-Pool.CreateInstrument.__func__.__doc__ = CREATE_INSTRUMENT_DOC
-Pool.CreateMotorGroup.__func__.__doc__ = CREATE_MOTOR_GROUP_DOC
-Pool.CreateMeasurementGroup.__func__.__doc__ = CREATE_MEASUREMENT_GROUP_DOC
-Pool.DeleteElement.__func__.__doc__ = DELETE_ELEMENT_DOC
-Pool.GetControllerClassInfo.__func__.__doc__ = GET_CONTROLLER_CLASS_INFO_DOC
-Pool.ReloadControllerLib.__func__.__doc__ = RELOAD_CONTROLLER_LIB_INFO_DOC
-Pool.ReloadControllerClass.__func__.__doc__ = RELOAD_CONTROLLER_CLASS_INFO_DOC
-Pool.RenameElement.__func__.__doc__ = RENAME_ELEMENT_CLASS_INFO_DOC
-Pool.Stop.__func__.__doc__ = STOP_DOC
-Pool.Abort.__func__.__doc__ = ABORT_DOC
+Pool.CreateController.__doc__ = CREATE_CONTROLLER_DOC
+Pool.CreateElement.__doc__ = CREATE_ELEMENT_DOC
+Pool.CreateInstrument.__doc__ = CREATE_INSTRUMENT_DOC
+Pool.CreateMotorGroup.__doc__ = CREATE_MOTOR_GROUP_DOC
+Pool.CreateMeasurementGroup.__doc__ = CREATE_MEASUREMENT_GROUP_DOC
+Pool.DeleteElement.__doc__ = DELETE_ELEMENT_DOC
+Pool.GetControllerClassInfo.__doc__ = GET_CONTROLLER_CLASS_INFO_DOC
+Pool.ReloadControllerLib.__doc__ = RELOAD_CONTROLLER_LIB_INFO_DOC
+Pool.ReloadControllerClass.__doc__ = RELOAD_CONTROLLER_CLASS_INFO_DOC
+Pool.RenameElement.__doc__ = RENAME_ELEMENT_CLASS_INFO_DOC
+Pool.Stop.__doc__ = STOP_DOC
+Pool.Abort.__doc__ = ABORT_DOC
 
 
 class PoolClass(PyTango.DeviceClass):
@@ -1324,7 +1326,9 @@ class PoolClass(PyTango.DeviceClass):
         'PoolPath':
             [PyTango.DevVarStringArray,
              "list of directories to search for controllers (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'PythonPath':
             [PyTango.DevVarStringArray,
@@ -1375,7 +1379,17 @@ class PoolClass(PyTango.DeviceClass):
              None],
         'LogstashPort':
             [PyTango.DevLong,
-             "Port on which Logstash will listen on events. "
+             "Port on which Logstash will listen on events [default: 12345]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             12345],
+        'LogstashCacheDbPath':
+            [PyTango.DevString,
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
              "This property has been included in Sardana on a provisional "
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "
@@ -1562,7 +1576,7 @@ class PoolClass(PyTango.DeviceClass):
     def _get_class_properties(self):
         return dict(ProjectTitle="Sardana", Description="Device Pool management class",
                     doc_url="http://sardana-controls.org/",
-                    InheritedFrom="Device_4Impl")
+                    InheritedFrom="Device_5Impl")
 
     def write_class_property(self):
         util = PyTango.Util.instance()

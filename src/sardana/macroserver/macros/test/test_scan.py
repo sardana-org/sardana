@@ -25,7 +25,7 @@
 
 """Tests for scan macros"""
 
-from taurus.external import unittest
+import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase,
                                              testRun, testStop, getMotors)
 
@@ -167,3 +167,16 @@ class MeshTest(RunStopMacroTestCase, unittest.TestCase):
     stoped. See :class:`.RunStopMacroTestCase` for requirements.
     """
     macro_name = 'mesh'
+
+
+@testRun(macro_params=['10', '0.1'], wait_timeout=30)
+class TimescanTest(RunStopMacroTestCase, unittest.TestCase):
+
+    macro_name = 'timescan'
+
+
+@testRun(macro_params=["'x=[1,2]'", "0.1", _m1, "x**2"], wait_timeout=30)
+@testStop(macro_params=["'x=[1,2]'", "0.1", _m1, "x**2"], wait_timeout=30)
+class FscanTest(RunStopMacroTestCase, unittest.TestCase):
+
+    macro_name = 'fscan'

@@ -24,8 +24,10 @@
 ##############################################################################
 
 """Tests Read Position from Sardana using PyTango"""
+import os
+
 import PyTango
-from taurus.external import unittest
+import unittest
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
 import numbers
@@ -70,6 +72,7 @@ class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
     def tearDown(self):
         """Remove motor element and motor controller
         """
-        self.pool.DeleteElement(self.elem_name)
-        self.pool.DeleteElement(self.ctrl_name)
+        if os.name != "nt":
+            self.pool.DeleteElement(self.elem_name)
+            self.pool.DeleteElement(self.ctrl_name)
         super(ReadMotorPositionOutsideLim, self).tearDown()

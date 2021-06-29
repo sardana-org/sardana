@@ -1,10 +1,19 @@
 .. currentmodule:: sardana.pool.controller
 
-.. _sardana-countertimercontroller-howto-basics:
+.. _sardana-countertimercontroller:
 
 =======================================
 How to write a counter/timer controller
 =======================================
+
+This chapter provides the necessary information to write a counter/timer
+controller in Sardana.
+
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
+.. _sardana-countertimercontroller-howto-basics:
 
 The basics
 ----------
@@ -12,7 +21,7 @@ The basics
 An example of a hypothetical *Springfield* counter/timer controller will be build
 incrementally from scratch to aid in the explanation.
 
-By now you should have read the general controller basics chapter. You should
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. You should
 be able to create a CounterTimerController with:
 
 - a proper constructor,
@@ -23,9 +32,11 @@ be able to create a CounterTimerController with:
 .. code-block:: python
 
     import springfieldlib
-
+		
     from sardana.pool.controller import CounterTimerController
 
+    from sardana import State
+		
     class SpringfieldCounterTimerController(CounterTimerController):
 
         def __init__(self, inst, props, *args, **kwargs):
@@ -107,7 +118,7 @@ Here is an example of the possible implementation of
 
     class SpringfieldCounterTimerController(CounterTimerController):
 
-        def LoadOne(self, axis, value, repetitions):
+        def LoadOne(self, axis, value, repetitions, latency):
             self.springfield.LoadChannel(axis, value)
 
 .. _sardana-countertimercontroller-howto-value:
@@ -208,10 +219,15 @@ Here is an example of the possible implementation of
         def AbortOne(self, axis):
             self.springfield.AbortChannel(axis)
 
+.. _sardana-countertimercontroller-howto-advanced:
+
+Advanced topics
+---------------
+
 .. _sardana-countertimercontroller-howto-timermonitor:
 
 Timer and monitor roles
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Usually counters can work in either of two modes: timer or monitor. In both of
 them, one counter in a group is assigned a special role to control when
@@ -223,10 +239,8 @@ this configuration (axis number) via the controller parameter ``timer``
 and ``monitor``. The currently used acquisition mode is set via the controller
 parameter ``acquisition_mode``.
 
-.. _sardana-countertimercontroller-howto-advanced:
-
-Advanced topics
----------------
+Controller may announce its default timer axis with the
+:obj:`~sardana.pool.controller.Loadable.default_timer` class attribute.
 
 .. _sardana-countertimercontroller-howto-timestamp-value:
 
@@ -319,23 +333,38 @@ implementation of all other start methods is optional and their default
 implementation does nothing (:meth:`~sardana.pool.controller.Startable.PreStartOne`
 actually returns ``True``).
 
-So, actually, a simplified algorithm for counter acquisition start in sardana is::
+So, actually, the algorithm for counter acquisition start in sardana is:
+
+.. code-block:: text
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call PreStartAll()
-    /END FOR/
-
-    /FOR/ Each counter(s) implied in the acquisition
-         - ret = PreStartOne(counter to acquire, new position)
-         - /IF/ ret is not true
-            /RAISE/ Cannot start. Counter PreStartOne returns False
-         - /END IF/
-         - Call StartOne(counter to acquire, new position)
+        - Call PreStartAll()
     /END FOR/
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call StartAll()
+        /FOR/ Each counter(s) implied in the acquisition
+            - ret = PreStartOne(counter to acquire, new position)
+            - /IF/ ret is not true
+                /RAISE/ Cannot start. Counter PreStartOne returns False
+            - /END IF/
+            - Call StartOne(counter to acquire, new position)
+        /END FOR/
     /END FOR/
+
+    /FOR/ Each controller(s) implied in the acquisition
+        - Call StartAll()
+    /END FOR/
+
+The controllers over which we iterate in the above pseudo code are organized
+so the master timer/monitor controller is the last one to be called. Similar order of
+iteration applies to the counters of a given controller, so the timer/monitor
+is the last one to be called.
+
+You can assign the master controller role with the order of the controllers
+in the measurement group. There is one master per each of the following
+synchronization modes: :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`
+and :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart`. This order must be
+set within the measurement group :ref:`sardana-measurementgroup-overview-configuration`.
 
 So, for the example above where we acquire two counters, the complete sequence of
 calls to the controller is:
@@ -384,8 +413,10 @@ We can modify our counter controller to take profit of this hardware feature:
         def StartAll(self):
             self.springfield.startCounters(self._counters_info)
 
-Hardware synchronization
-~~~~~~~~~~~~~~~~~~~~~~~~
+.. _sardana-countertimercontroller-howto-external-synchronization:
+
+External (hardware) synchronization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The synchronization achieved in :ref:`sardana-countertimercontroller-howto-mutliple-acquisition`
 may not be enough when it comes to acquiring with multiple controllers at the
@@ -422,8 +453,10 @@ Here is an example of the possible implementation of
         SynchMap = {
             AcqSynch.SoftwareTrigger : 1,
             AcqSynch.SoftwareGate : 2,
-            AcqSynch.HardwareTrigger: 3,
-            AcqSynch.HardwareGate: 4
+            AcqSynch.SoftwareStart : 3,
+            AcqSynch.HardwareTrigger: 4,
+            AcqSynch.HardwareGate: 5,
+            AcqSynch.HardwareStart: 6
         }
 
         def SetCtrlPar(self, name, value):
@@ -439,7 +472,7 @@ Multiple acquisitions
 It is a very common scenario to execute multiple hardware synchronized
 acquisitions in a row. One example of this type of measurements are the
 :ref:`sardana-users-scan-continuous`. The controller receives the number of
-acquisitions via the third argument of the
+acquisitions via the ``repetitions`` argument of the
 :meth:`~sardana.pool.controller.Loadable.LoadOne` method.
 
 Here is an example of the possible implementation of
@@ -450,10 +483,66 @@ Here is an example of the possible implementation of
 
     class SpringfieldCounterTimerController(CounterTimerController):
 
-        def LoadOne(self, axis, value, repetitions):
+        def LoadOne(self, axis, value, repetitions, latency):
             self.springfield.LoadChannel(axis, value)
             self.springfield.SetRepetitions(repetitions)
             return value
+
+In order to make the acquisition flow smoothly the synchronizer and
+the counter/timer controllers needs to agree on the synchronization pace.
+The counter/timer controller manifest what is the maximum allowed pace for him
+by means of the ``latency_time`` controller parameter (in seconds). This parameter
+corresponds to the minimum time necessary by the hardware controller to re-arm
+for the next acquisition.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Controller.GetCtrlPar`:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def GetCtrlPar(self, name):
+            if name == "latency_time":
+                return self.springfield.GetLatencyTime()
+
+.. warning::
+    By default, the `~sardana.pool.controller.CounterTimerController`
+    base classes return zero latency time controller parameter.
+    If in your controller you override
+    the :meth:`~sardana.pool.controller.Controller.GetCtrlPar` method
+    remember to always call the super class method as fallback:
+
+    .. code-block:: python
+        :emphasize-lines: 5
+
+        def GetCtrlPar(self, name):
+            if name == "some_par":
+                return "some_val"
+            else:
+                return super().GetCtrlPar(name)
+
+
+In the case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareStart` or
+:attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart` synchronizations
+the counter/timer hardware *auto* triggers itself during the measurement process.
+In order to fully configure the hardware and set the re-trigger pace you can
+use the ``latency`` argument (in seconds)
+of the :meth:`~sardana.pool.controller.Loadable.LoadOne` method:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def LoadOne(self, axis, value, repetitions, latency):
+            self.springfield.LoadChannel(axis, value)
+            self.springfield.SetRepetitions(repetitions)
+            self.springfield.SetLatency(latency)
+            return value
+
+.. _sardana-countertimercontroller-howto-external-synchronization-get-values:
 
 Get counter values
 """"""""""""""""""
@@ -477,13 +566,42 @@ can be:
        :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` synchronization
 
      - a sequence of counter values: either :class:`float` or :obj:`~sardana.sardanavalue.SardanaValue`
-       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger` or
-       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate` synchronization
+       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger`,
+       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate`,
+       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareStart` or
+       :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart`
+       synchronization
 
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
 
-.. todo:: document how to skip the readouts while acquiring
+.. _sardana-countertimercontroller-per-measurement-preparation:
+
+Per measurement preparation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since SEP18_ counter/timer controllers may take a profit from the per measurement
+preparation and reserve resources for a sequence of
+:attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`
+or :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` acquisitions
+already in the :meth:`~sardana.pool.controller.Loadable.PrepareOne` method.
+This method is called only once at the beginning of the measurement e.g.
+:ref:`Deterministic step scans <sardana-macros-scanframework-determscan>`
+or :ref:`sardana-users-scan-continuous`.
+It enables an opportunity for significant dead time optimization thanks to the
+single per measurement configuration instead of the multiple per acquisition
+preparation using the :meth:`~sardana.pool.controller.Loadable.LoadOne`.
+
+Here is an example of the possible implementation of
+:meth:`~sardana.pool.controller.Loadable.PrepareOne`:
+
+.. code-block:: python
+    :emphasize-lines: 3
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+        def PrepareOne(self, value, repetitions, latency, nb_starts):
+            return self.springfield.SetNbStarts()
 
 
 .. _ALBA: http://www.cells.es/
@@ -510,3 +628,4 @@ and that there are no gaps in between them.
 .. _numpy: http://numpy.scipy.org/
 .. _SPEC: http://www.certif.com/
 .. _EPICS: http://www.aps.anl.gov/epics/
+.. _SEP18: http://www.sardana-controls.org/sep/?SEP18.md

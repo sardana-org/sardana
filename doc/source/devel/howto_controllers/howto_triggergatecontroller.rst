@@ -12,7 +12,7 @@ The basics
 An example of a hypothetical *Springfield* trigger/gate controller will be build
 incrementally from scratch to aid in the explanation.
 
-By now you should have read the general controller basics chapter. You should
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. You should
 be able to create a TriggerGateController with:
 
 - a proper constructor
@@ -88,6 +88,18 @@ receives an axis as parameter and should return either:
 The state should be a member of :obj:`~sardana.sardanadefs.State` (For backward
 compatibility reasons, it is also supported to return one of
 :class:`PyTango.DevState`). The status could be any string.
+
+.. _sardana-TriggerGateController-howto-prepare:
+
+Prepare for measurement
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To prepare a trigger for a measurement you can use the
+:meth:`~sardana.pool.controller.TriggerGateController.PrepareOne` method which
+receives as an argument the number of starts of the whole measurement.
+This information may be used to prepare the hardware for generating
+multiple events (triggers or gates) in a complex measurement
+e.g. :ref:`sardana-macros-scanframework-determscan`.
 
 .. _sardana-TriggerGateController-howto-load:
 

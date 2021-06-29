@@ -23,14 +23,15 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv", "genv",
            "lsvo", "setvo", "usetvo",
            "lsgh", "defgh", "udefgh"]
 
 __docformat__ = 'restructuredtext'
 
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 from taurus.console.list import List
-from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Type
 from sardana.macroserver.msexception import UnknownEnv
 
 ##########################################################################
@@ -56,7 +57,7 @@ class dumpenv(Macro):
     def run(self):
         env = self.getGlobalEnv()
         out = List(['Name', 'Value', 'Type'])
-        for k, v in env.iteritems():
+        for k, v in env.items():
             str_v = reprValue(v)
             type_v = type(v).__name__
             out.appendRow([str(k), str_v, type_v])
@@ -71,7 +72,7 @@ class lsvo(Macro):
     def run(self):
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
-        for key, value in vo.items():
+        for key, value in list(vo.items()):
             out.appendRow([key, str(value)])
 
         for line in out.genOutput():
@@ -79,7 +80,20 @@ class lsvo(Macro):
 
 
 class setvo(Macro):
-    """Sets the given view option to the given value"""
+    """Sets the given view option to the given value.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm, wa and umv. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+
+    """
+
+
 
     param_def = [['name', Type.String, None, 'View option name'],
                  ['value', Type.String, None, 'View option value']]
@@ -93,7 +107,17 @@ class setvo(Macro):
 
 
 class usetvo(Macro):
-    """Resets the value of the given view option"""
+    """Resets the value of the given view option.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm, wa and umv. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+    """
 
     param_def = [['name', Type.String, None, 'View option name']]
 
@@ -105,8 +129,8 @@ class lsenv(Macro):
     """Lists the environment in alphabetical order"""
 
     param_def = [
-        ['macro_list',
-         ParamRepeat(['macro', Type.MacroClass, None, 'macro name'], min=0),
+        ['macro_list', [['macro', Type.MacroClass, None, 'macro name'],
+                        {'min': 0}],
          None, 'List of macros to show environment'],
     ]
 
@@ -151,17 +175,19 @@ class lsenv(Macro):
 class senv(Macro):
     """Sets the given environment variable to the given value"""
 
-    param_def = [['name', Type.Env, None,
-                  'Environment variable name. Can be one of the following:\n'
-                  ' - <name> - global variable\n'
-                  ' - <full door name>.<name> - variable value for a specific door\n'
-                  ' - <macro name>.<name> - variable value for a specific macro\n'
-                  ' - <full door name>.<macro name>.<name> - variable value for a specific macro running on a specific door'],
-                 ['value_list',
-                  ParamRepeat(['value', Type.String, None,
-                               'environment value item'], min=1),
-                  None, 'value(s). one item will eval to a single element. More than one item will eval to a tuple of elements'],
-                 ]
+    param_def = [
+        ['name', Type.Env, None,
+         'Environment variable name. Can be one of the following:\n'
+         ' - <name> - global variable\n'
+         ' - <full door name>.<name> - variable value for a specific door\n'
+         ' - <macro name>.<name> - variable value for a specific macro\n'
+         ' - <full door name>.<macro name>.<name> - variable value for a '
+         'specific macro running on a specific door'],
+        ['value_list', [['value', Type.String, None,
+                         'environment value item'], {'min': 1}],
+         None, 'value(s). one item will eval to a single element. More than '
+               'one item will eval to a tuple of elements'],
+    ]
 
     def run(self, env, value):
         if len(value) == 1:
@@ -173,12 +199,49 @@ class senv(Macro):
         self.output(line)
 
 
+class genv(Macro):
+    """Gets the given environment variable"""
+
+    param_def = [
+        ["name", Type.Env, None,
+         "Environment variable name. Can be one of the following:\n"
+         " - <name> - global variable\n"
+         " - <full door name>.<name> - variable value for a specific "
+         "door\n"
+         " - <macro name>.<name> - variable value for a specific"
+         " macro\n"
+         " - <full door name>.<macro name>.<name> - variable value"
+         " for a specific macro running on a specific door"],
+                 ]
+
+    def run(self, var):
+        pars = var.split(".")
+        door_name = None
+        macro_name = None
+        if len(pars) == 1:
+            key = pars[0]
+        elif len(pars) > 1:
+            _, door_name, _ = TangoDeviceNameValidator().getNames(pars[0])
+            if door_name is None:  # first string is a Macro name
+                macro_name = pars[0]
+            if len(pars) == 3:
+                macro_name = pars[1]
+                key = pars[2]
+            else:
+                key = pars[1]
+
+        env = self.getEnv(key=key,
+                          macro_name=macro_name,
+                          door_name=door_name)
+
+        self.output("{:s} = {:s}".format(str(key), str(env)))
+
+
 class usenv(Macro):
     """Unsets the given environment variable"""
     param_def = [
-        ['environment_list',
-         ParamRepeat(
-             ['env', Type.Env, None, 'Environment variable name'], min=1),
+        ['environment_list', [['env', Type.Env, None,
+                               'Environment variable name'], {'min': 1}],
          None, 'List of environment items to be removed'],
     ]
 
@@ -321,10 +384,10 @@ class lsgh(Macro):
             name = hook[0]
             places = hook[1]
             for place in places:
-                if place not in default_dict.keys():
+                if place not in list(default_dict.keys()):
                     default_dict[place] = []
                 default_dict[place].append(name)
-        for pos in default_dict.keys():
+        for pos in list(default_dict.keys()):
             pos_set = 0
             for hook in default_dict[pos]:
                 if pos_set:
@@ -337,13 +400,13 @@ class lsgh(Macro):
 
 
 class defgh(Macro):
-    """Define general hook.
-    Ex.
-        defgh "mv [[mot02 9]]" pre-scan
-        defgh "ct 0.1" pre-scan
-        defgh lsm pre-scan
-        defgh "mv mot03 10" pre-scan
-        defgh "Print 'Hello world'" pre-scan
+    """Define general hook:
+
+    >>> defgh "mv [[mot02 9]]" pre-scan
+    >>> defgh "ct 0.1" pre-scan
+    >>> defgh lsm pre-scan
+    >>> defgh "mv mot03 10" pre-scan
+    >>> defgh "Print 'Hello world'" pre-scan
 
     .. note::
         The `defgh` macro has been included in Sardana
@@ -356,8 +419,8 @@ class defgh(Macro):
     param_def = [
         ['macro_name', Type.String, None, ('Macro name with parameters. '
                                            'Ex.: "mv exp_dmy01 10"')],
-        ['hookpos_list',
-         ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
+        ['hookpos_list', [['position', Type.String, None, 'macro name'],
+                          {'min': 1}],
          None, 'List of positions where the hook has to be executed'],
     ]
 

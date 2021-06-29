@@ -12,7 +12,7 @@ Proposals list
   ------------| --------- | ---------------------------------------------------------
   [SEP0][]    | OBSOLETE     | Introducing Sardana Enhancement Proposal
   [SEP1][]    | OBSOLETE     | Reorganization of code repos
-  [SEP2][]    | DRAFT     | Lima integration
+  [SEP2][]    | ACCEPTED     | Improve integration of 1D and 2D experimental channels
   [SEP3][]    | REJECTED (handled in [#297][]) | Adapt to [TEP3][] (Tango-independent taurus.core)
   [SEP4][]    | ACCEPTED     | HKL integration
   [SEP5][]    | ACCEPTED     | Implementation of tests infrastructure
@@ -26,6 +26,10 @@ Proposals list
   [SEP13][]    | REJECTED (moved to [TEP13][])     | Unified plugins support in Taurus & Sardana
   [SEP14][]    | DRAFT     | MSENV taurus schema
   [SEP15][]   | ACCEPTED     | Moving Sardana to Github
+  [SEP16][]   | ACCEPTED    | Plugins (controllers, macros, etc.) catalogue
+  [SEP17][]   | DRAFT     | Ongoing acquisition formalization and implementation 
+  [SEP18][]   | ACCEPTED     | Extend acquisition and synchronization concepts for SEP2 needs
+  [SEP19][]   | DRAFT        | Refactor plugin system
 
 
 
@@ -46,7 +50,10 @@ Proposals list
 [SEP13]: http://www.sardana-controls.org/sep/?SEP13.md
 [SEP14]: http://www.sardana-controls.org/sep/?SEP14.md
 [SEP15]: http://www.sardana-controls.org/sep/?SEP15.md
-
+[SEP16]: http://www.sardana-controls.org/sep/?SEP16.md
+[SEP17]: https://github.com/reszelaz/sardana/blob/sep17/doc/source/sep/SEP17.md
+[SEP18]: http://www.sardana-controls.org/sep/?SEP18.md
+[SEP19]: https://github.com/reszelaz/sardana/blob/sep19/doc/source/sep/SEP19.md
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP13]: http://www.taurus-scada.org/tep/?TEP13.md

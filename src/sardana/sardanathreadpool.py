@@ -25,8 +25,8 @@
 
 """This module contains the function to access sardana thread pool"""
 
-from __future__ import with_statement
-from __future__ import absolute_import
+
+
 
 __all__ = ["get_thread_pool"]
 
@@ -34,10 +34,34 @@ __docformat__ = 'restructuredtext'
 
 import threading
 
-from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.threadpool import ThreadPool, Worker
+
 
 __thread_pool_lock = threading.Lock()
 __thread_pool = None
+
+
+class OmniWorker(Worker):
+
+    def run(self):
+        try:
+            import tango
+        except ImportError:
+            Worker.run(self)
+        # Tango is not thread safe when using threading.Thread. One must
+        # use omni threads instead. This was confirmed for parallel
+        # event subscriptions in PyTango#307. Use EnsureOmniThread introduced
+        # in PyTango#327 whenever available.
+        else:
+            if hasattr(tango, "EnsureOmniThread"):
+                with tango.EnsureOmniThread():
+                    Worker.run(self)
+            else:
+                import taurus
+                taurus.warning("Your Sardana system is affected by bug "
+                               "tango-controls/pytango#307. Please use "
+                               "PyTango with tango-controls/pytango#327.")
+                Worker.run(self)
 
 
 def get_thread_pool():
@@ -50,5 +74,16 @@ def get_thread_pool():
     global __thread_pool_lock
     with __thread_pool_lock:
         if __thread_pool is None:
-            __thread_pool = ThreadPool(name="SardanaTP", Psize=10)
+            # protect older versions of Taurus (without the worker_cls
+            # argument) remove it whenever we bump Taurus dependency
+            try:
+                __thread_pool = ThreadPool(name="SardanaTP", Psize=10,
+                                           worker_cls=OmniWorker)
+            except TypeError:
+                import taurus
+                taurus.warning("Your Sardana system is affected by bug "
+                               "tango-controls/pytango#307. Please use "
+                               "Taurus with taurus-org/taurus#1081.")
+                __thread_pool = ThreadPool(name="SardanaTP", Psize=10)
+
         return __thread_pool

@@ -13,6 +13,10 @@ Writing macros
 This chapter provides the necessary information to write macros in sardana. The
 complete macro :term:`API` can be found :ref:`here <sardana-macro-api>`.
 
+.. contents:: Table of contents
+    :depth: 3
+    :backlinks: entry
+
 What is a macro
 ---------------
 
@@ -45,7 +49,7 @@ a macro class you can benefit from all advantages of object-oriented
 programming. This means that, in theory:
 
     - it would reduce the amount of code you need to write
-    - reduce the complexity of your code y by dividing it into small,
+    - reduce the complexity of your code by dividing it into small,
       reasonably independent and re-usable components, that talk to each other
       using only well-defined interfaces
     - Improvement of productivity by using easily adaptable pre-defined
@@ -108,7 +112,9 @@ to write your macros. Unless configured otherwise, spock will use the editor
 specified by the system environment variable :envvar:`EDITOR`. If this variable
 is not set, it will default to vi under Linux/Unix and to notepad under
 Windows. The following line explains how to set the :envvar:`EDITOR`
-environment variable to gedit under linux using bash shell::
+environment variable to gedit under linux using bash shell:
+
+.. code-block:: bash
 
     $ export EDITOR=gedit
 
@@ -210,7 +216,7 @@ the macro function version of *Hello, World!*::
     
 .. note::
     If you already know a little about Python_ your are probably wondering why
-    not use ``print "Hello, World!"``?
+    not use ``print("Hello, World!")``?
 
     Remember that your macro will be executed by a Sardana server which may be
     running in a different computer than the computer you are working on.
@@ -223,9 +229,6 @@ the macro function version of *Hello, World!*::
     function (it is a bit more powerful than 
     :meth:`~sardana.macroserver.macro.Macro.output`\, and has a slightly
     different syntax) ::
-
-        # mandatory first line in your code if you use Python < 3.0
-        from __future__ import print_function
         
         from sardana.macroserver.macro import macro
         
@@ -250,6 +253,8 @@ includes :keyword:`for` and :keyword:`while` loops, :keyword:`if` ...
             wave = wave_device.wave
             wave_fft = numpy.fft.fft(wave)
             
+
+.. _sardana-macro-parameters:
 
 Adding parameters to your macro
 -------------------------------
@@ -296,7 +301,11 @@ being a composed of four elements:
 
     - parameter name
     - parameter type
-    - parameter default value (None means no default value)
+    - parameter default value:
+        - ``None`` means no default value
+        - ``Optional`` means that
+          :ref:`the parameter value is optional <sardana-macro-optional-parameters>`
+
     - parameter description
     
 Here is a list of the most common allowed parameter types:
@@ -318,6 +327,44 @@ Here is a list of the most common allowed parameter types:
 The complete list of types distributed with sardana is made up by these five
 simple types: ``Integer``, ``Float``, ``Boolean``, ``String``, ``Any``, plus
 all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
+
+.. _sardana-macro-optional-parameters:
+
+Optional parameters
+~~~~~~~~~~~~~~~~~~~
+
+A special parameter default value is the ``Optional`` keyword. A parameter 
+whose default value is set to ``Optional`` behaves just as one with a default 
+value, except that if the user does not provide a value explicitly, the 
+handling of its value is deferred to the run method (which gets ``None`` as
+the parameter value). This allows for more complex handling of the value 
+(e.g. interactive prompting to the user, system introspection, reading from 
+files, etc.)
+
+So, here is an example how to define and use the optional parameter::
+
+    from sardana.macroserver.macro import Macro, Type, Optional
+
+    class count(Macro):
+
+        param_def = [
+            ['itime', Type.Float, 1, 'integration time'],
+            ['mntgrp', Type.MeasurementGroup, Optional, 'MntGrp to use']
+        ]
+
+        def run(self, itime, mntgrp):
+            bkp_active_mntgrp = None
+            try:
+                if mntgrp is not None:
+                    bkp_active_mntgrp = self.getEnv('ActiveMntGrp')
+                    mntgrp_name = mntgrp.name
+                    self.setEnv('ActiveMntGrp', mntgrp_name)
+                self.info('Use "{0}" measurement group'.format(mntgrp_name))
+                self.ct(itime)
+            finally:
+                if bkp_active_mntgrp is not None:
+                    self.setEnv('ActiveMntGrp', bkp_active_mntgrp)
+
 
 .. _sardana-macro-repeat-parameters:
 
@@ -371,6 +418,46 @@ each item is an internal list of the members.
 A set of macro parameter examples can be found
 :ref:`here <sardana-devel-macro-parameter-examples>`.
 
+.. _sardana-macro-result:
+
+Returning a macro result
+------------------------
+
+A macro can produce one or more results to be returned.
+The macro :term:`API` enforces to specify certain information about
+these result values.
+Here's an example of how to define and return the results::
+
+  class twice(Macro):
+    """A macro that returns its input and twice its input."""
+
+    param_def = [ [ "value", Type.Float, 23, "value to be doubled" ] ]
+    result_def = [ [ "input_value", Type.Float, None, "the input value" ],
+    [ "result", Type.Float, None, "the double of the given value" ] ]
+
+    def run(self, n):
+        ret = 2*n
+        return n, ret
+
+If a macro with a result is called from another macro the results can be
+retrieved as shown in this example::
+
+  class get_result(Macro):
+    """Different ways of getting the result of a macro"""
+
+    def run(self):
+
+        mymacro, pars= self.createMacro("twice 1")
+        value = self.runMacro(mymacro)
+        self.output(value)
+
+	value = self.execMacro("twice 1")
+        self.output(value.getResult())
+
+        value = self.twice(1)
+        self.output(value.getResult())
+
+
 .. _sardana-macro-context:
 
 Macro context
@@ -382,8 +469,11 @@ sardana elements by means of the first parameter on your macro (you can give
 this parameter any name but usually, by convention it is called ``self``).
 
 ``self`` provides access to an extensive catalog of functions you can use in
-your macro to do all kinds of things. The complete catalog of functions can be
-found :ref:`here <sardana-macro-api>`.
+your macro to do all kinds of things, among others, to obtain the sardana
+elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
+these functions and the
+:ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
+describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
 to a certain position. You could write a macro which receives the motor as
@@ -473,6 +563,8 @@ outputs the new ``ScanID`` value:
         scan_id = self.getEnv('ScanID')
         self.output("ScanID is now %d", scan_id)
 
+
+
 .. _sardana-macro-logging:
 
 Logging
@@ -493,7 +585,7 @@ messages with different levels:
     * :meth:`~Macro.output`
     
 As you've seen, the special :meth:`~Macro.output` function has the same effect
-as a print statement (with slightly different arguments).
+as a print function (with slightly different arguments).
 
 Log messages may have several destinations depending on how your sardana server
 is configured. At least, one destination of each log message is the client(s)
@@ -622,7 +714,7 @@ parameters with different *flavors*:
 
 
 Accessing macro data
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 Sometimes it is desirable to access data generated by the macro we just called.
 For these cases, the Macro :term:`API` provides a pair of low level methods
@@ -650,7 +742,7 @@ using :meth:`~Macro.data`:
         # and the result of the Macro.prepare method
         my_scan, _ = ret 
         self.runMacro(my_scan)
-        print len(my_scan.data)
+        self.print(len(my_scan.data))
 
 A set of macro call examples can be found
 :ref:`here <sardana-devel-macro-call-examples>`.
@@ -680,7 +772,7 @@ macro. So, without further delay, here is the *Hello, World!* example::
         """Hello, World! macro"""
         
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-add-parameters:
 
@@ -729,7 +821,232 @@ prepare HelloWorld to run only after year 1989:
                 raise Exception("HelloWorld can only run after year 1989")
     
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
+
+.. _sardana-macro-handling-macro-stop-and-abort:
+
+Handling macro stop and abort
+-----------------------------
+
+While macro is being executed the user has a possibility to stop or abort it
+at any time. The way of performing this operation may vary between the
+client application being used, for example see :ref:`sardana-spock-stopping`
+in Spock.
+
+It may be desired to stop or abort objects in use when the macro
+execution gets interrupted. This does not need to be implemented by
+each of the macros. One simply needs to use a special :term:`API` to reserve
+this objects in the macro context and the magic will happen to stop or abort
+them when needed. For example if you get an object using the
+:meth:`~sardana.macroserver.macro.Macro.getObj` method it is automatically
+reserved. It is also worth mentioning the difference between the
+:meth:`~sardana.macroserver.macro.Macro.getMotion` and
+:meth:`~sardana.macroserver.macro.Macro.getMotor` methods. The first one
+will reserve the moveable while the second will not.
+
+And of course we need to clarify the difference between the stop and the abort
+operations. It is commonly agreed that stop is more gentle and
+respectful than abort and is supposed to bring the system to a stable state
+according to a particular protocol and respecting a nominal configuration e.g.
+stop motors respecting the nominal deceleration time. While abort is
+foreseen for more emergency situations and is supposed to bring the system
+to a stable state as fast as possible e.g. stop motors instantly, possibly
+loosing track of position.
+
+While the reserved objects are stopped or aborted immediately after user's
+interruption, the macro execution is not. The macro will not stop until its
+execution thread encounters the next *Macro API* call e.g.
+:meth:`~sardana.macroserver.macro.Macro.output` or
+:meth:`~sardana.macroserver.macro.Macro.getMotor`. There is also a special
+method :meth:`~sardana.macroserver.macro.Macro.checkPoint` that does nothing
+else but mark this place in your code as suitable for stopping or aborting.
+
+If you want to execute a special procedure that should be executed in case
+of user's interruption you must override the
+:meth:`~sardana.macroserver.macro.Macro.on_stop` or
+:meth:`~sardana.macroserver.macro.Macro.on_abort` methods.
+
+.. note:: Currently it is not possible to use any of the *Macro API* calls
+    withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
+    :meth:`~sardana.macroserver.macro.Macro.on_abort`.
+
+.. _sardana-macro-exception-handling:
+
+Handling exceptions
+-------------------
+
+Please refer to the
+`Python Errors and Exceptions <https://docs.python.org/3/tutorial/errors.html>`_
+documentation on how to deal with exceptions in your macro code.
+
+.. important::
+    :ref:`sardana-macro-handling-macro-stop-and-abort` is internally implemented
+    using Python exceptions. So, your ``except`` clause can not simply catch any
+    exception type without re-raising it - this would ignore the macro stop/abort
+    request done in the ``try ... except`` block. If you still would like to
+    use the broad catching, you need to catch and raise the stop/abort exception
+    first:
+
+    .. code-block:: python
+        :emphasize-lines: 7
+
+        import time
+
+        from sardana.macroserver.macro import macro, StopException
+
+        @macro()
+        def exception_macro(self):
+            self.output("Starting stoppable process")
+            try:
+                for i in range(10):
+                    self.output("In iteration: {}".format(i))
+                    time.sleep(1)
+            except StopException:
+                raise
+            except Exception:
+                self.warning("Exception, but we continue")
+            self.output("After 'try ... except' block")
+
+    If you do not program lines 12-13 and you stop your macro within
+    the ``try ... except`` block then the macro will continue and print the
+    output from line 16.
+
+    You may choose to catch and re-raise:
+    `~sardana.macroserver.macro.StopException`,
+    `~sardana.macroserver.macro.AbortException` or
+    `~sardana.macroserver.macro.InterruptException`. The last one will
+    take care of stopping and aborting at the same time.
+
+
+
+.. _sardana-macro-adding-hooks-support:
+
+Adding hooks support
+--------------------
+
+Your macros may accept to :ref:`attach an arbitrary <sardana-macros-hooks>`
+code, a simple Python callable or even another macro, that will be executed
+at given places. In Sardana this code are called *hooks*, and the places are
+called *hook places*.
+
+In order to allow attaching hooks to your macro you must :ref:`write you
+macro as a class <sardana-macro-class-writing>` while at the same time
+inheriting from the :class:`~sardana.macroserver.macro.Hookable` class.
+
+The hook places can be defined in the ``hints`` class member dictionary with
+the ``allowsHooks`` key and a tuple of strings with the hook places
+identifiers::
+
+    class hookable_macro(Macro, Hookable):
+        """A macro that accepts and executes hooks."""
+
+        hints = {"allowsHooks": ("hook-place", "another-hook-place")}
+
+        def run(self):
+            for hook in self.getHooks("hook-place"):
+                hook()
+            self.info("In between hook places")
+            for hook in self.getHooks("another-hook-place"):
+                hook()
+
+Hooks can be programmatically attached to a macro before its execution either
+using the :attr:`~sardana.macroserver.macro.Hookable.hooks` property or
+using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
+
+    def hook_function():
+        pass
+
+    class wrapping_macro(Macro):
+        """A wrapping macro that attaches hooks to a hookable macro
+        and executes it."""
+
+        def run(self):
+            hookable_macro, _ = self.createMacro("hookable_macro")
+            hook_macro = ExecMacroHook(self, "mv", [["mot01", 1]])
+            hookable_macro.hooks = [(hook_macro, ["hook-place"])]
+            hookable_macro.appendHook((hook_function, ["another-hook-place"]))
+            self.runMacro(hookable_macro)
+
+.. note:: Be aware of the following difference between setting the
+    :attr:`~sardana.macroserver.macro.Hookable.hooks` property and using the
+    :meth:`~sardana.macroserver.macro.Hookable.appendHook` method.
+    Setting the property applies all hooks at once but may override
+    :ref:`general hooks<sardana-macros-hooks-general>` eventually attached to
+    the macro. Using the method appends just one hook but does not affect
+    the general hooks eventually attached to the macro.
+
+.. _sardana-macro-accessing-tango:
+
+Accessing Tango from your macros
+--------------------------------
+
+Your macros almost certainly will need to access Tango_ devices, either
+external, for example, coming from the vacuum system or any other
+arbitrary system integrated with Tango Device Server or internal to Sardana
+(Sardana elements are currently exported as Tango devices) e.g.: motors,
+measurement group, etc.
+
+There exists different :term:`API` to access to Tango_ devices.
+
+First, to access Sardana elements it is recommended to use the Sardana
+:term:`API`: e.g.: `~sardana.macroserver.macro.Macro.getMoveable` to obtain
+any moveable (motor or pseudo motor),
+`~sardana.macroserver.macro.Macro.getMeasurementGroup` to obtain a measurement
+group.
+
+.. note::
+    By :ref:`adding parameters to your macro <sardana-macro-parameters>`
+    you get the same objects as if you were using the above methods.
+    Their classes are documented in:
+    :ref:`Sardana-Taurus model API reference <sardana-taurus-api>`
+
+Any external Tango device could be accessed with Taurus_ (using
+`taurus.Device`) or simply with PyTango_ (using `tango.DeviceProxy`).
+Taurus gives you some benefits over PyTango:
+
+- seamless attribute configuration management e.g.: unit aware attribute
+  read and write, simplified way to read/write attribute configuration, etc.
+- unique way to access different data sources e.g. Tango_, EPICS_,
+  `hdf5 <https://github.com/taurus-org/h5file-scheme>`_, etc.
+- simplified way to use Tango_ events
+
+However the above benefits are not for free and more precisely are for some
+extra time overhead (in milliseconds range).
+
+As a rule of thumb, if you you don't mind the extra overhead and value the
+simplified usage you should use Taurus. If you strive for very optimal access
+to Tango and don't need these benefits then most probably PyTango will work
+better for you.
+
+.. hint::
+    If you go for PyTango and wonder if creating a new `tango.DeviceProxy`
+    in frequent macro executions is inefficient from the I/O point of view you
+    should not worry about it cause Tango (more precisely CORBA) is taking
+    care about recycling the connection during a period of 120 s (default).
+
+    If you still would like to optimize your code in order to avoid creation
+    of a new `tango.DeviceProxy` you may consider using the
+    `functools.lru_cache` as a singleton cache mechanism::
+
+        import functools
+        import tango
+        from sardana.macroserver.macro import macro
+
+        Device = functools.lru_cache(maxsize=1024)(tango.DeviceProxy)
+
+        @macro()
+        def switch_states(self):
+            """Switch TangoTest device state"""
+            proxy = Device('sys/tg_test/1')
+            proxy.SwitchStates()
+
+    Here you don't need to worry about the opened connection to the
+    Tango device server in case you don't execute the macro for a while.
+    Again, Tango (more precisely CORBA) will take care about it.
+    See more details about the CORBA scavanger thread in:
+    `Tango client threading <https://tango-controls.readthedocs.io/en/latest/development/advanced/threading.html#client-process>`_
+    and `CORBA idle connection shutdown <http://omniorb.sourceforge.net/omni42/omniORB/omniORB006.html#sec%3AconnShutdown>`_.
+
 
 .. _sardana-macro-using-external-libraries:
 
@@ -788,12 +1105,16 @@ example::
         x = linspace(0, 20, 200)
         y = j0(x)
         x1 = x[::10]
-        y1 = map(j0i, x1)
+        y1 = list(map(j0i, x1))
         self.pyplot.plot(x, y, label=r'$J_0(x)$') # 
         self.pyplot.plot(x1, y1, 'ro', label=r'$J_0^{integ}(x)$')
         self.pyplot.title(r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
         self.pyplot.xlabel('$x$')
         self.pyplot.legend()
+        self.pyplot.draw()
+
+The last call to ``pyplot.draw()`` is important to ensure the client updates
+the figure properly.
 
 Running this macro from spock will result in something like:
 
@@ -825,6 +1146,7 @@ Just for fun, the following macro computes a fractal and plots it as an image::
             mask = (fractal == 255) & (abs(z) > 10)
             fractal[mask] = 254 * n / finteractions
         self.pyplot.imshow(fractal)
+        self.pyplot.draw()
 
 And the resulting image (interactions=20, density=512):
 
@@ -856,6 +1178,11 @@ This means that the following code which works in a normal IPython_ console will
 Also consider that each time you plot the complete data to be plotted is sent
 from the server to the client... so please avoid plotting arrays of 10,000,000
 points!
+
+Clients like spock receive the requests to plot in a separate thread.
+Matplotlib has a long history of issues concerning plot updates using different
+threads. To mitigate these effects please be sure to call ``self.pyplot.draw()``
+on your macro every time you need to be sure the matplotlib figure is up to date.
 
 .. _sardana-macro-input:
 
@@ -1241,17 +1568,126 @@ You may notice that this way, the range can be changed dynamically. A progress
 bar in a :term:`GUI` is programmed to adjust not only the current progress
 value but also the ranges so it is safe to change them if necessary.
 
+Simultaneous actions
+--------------------
 
+There is a facility for parallel execution of operations within a macro. For the
+motion and acquisition you can use the asynchronous methods from the
+:code:`Motion` and :code:`MeasurementGroup` objects. For simultaneous execution
+of any other tasks you can use the job manager.
 
+When using this feature, you should keep a few things in mind:
 
+- The job execution may not start immediately, as this depends on a worker
+  process availability (this is generally true also for the execution of the macro
+  itself)
+- Exceptions raised in a job will not be catched, and therefore will not stop
+  any reserved element; ideally you should implement your own exception handling
+  inside a job
+- You should pay careful attention to synchronization between the jobs and the
+  macro
+
+**Asynchronous motion and acquisition**
+
+You can move the motor asynchronously by using the :code:`Motion` object:
+
+.. code-block:: python
+    :emphasize-lines: 5, 7
+
+    @macro([["mot", Type.Moveable, None, "moveable"],
+            ["pos", Type.Float, None, "position"]])
+    def move_async(self, mot, pos):
+        motion = self.getMotion([mot])
+        _id = motion.startMove([pos])
+        self.info("The motion is now started.")
+        motion.waitMove(id=_id)
+        self.info("The motion has finished.")
+
+In above example, the asynchronous movement is started using
+:code:`Motion.startMove` method and then it is synchronized using
+:code:`Motion.waitMove`. In between you can perform other operations, the
+:code:`waitMove` call will wait for the motion to finish or return immediately
+if it's already finished. :code:`startMove` will return an identificator, that
+can be later used to wait for the motion.
+
+The :code:`MeasurementGroup` provides a similar interface for asynchronous
+acquisition:
+
+.. code-block:: python
+    :emphasize-lines: 7, 9
+
+    @macro([["mg", Type.MeasurementGroup, None, "measurement group"],
+            ["it", Type.Float, None, "integration time"]])
+    def acq_async(self, mg, it):
+        mg.putIntegrationTime(it)
+        mg.setNbStarts(1)
+        mg.prepare()
+        id_ = mg.startCount()
+        self.info("The acquisition is now started.")
+        mg.waitCount(id=_id)
+        self.info("The acquisition has finished.")
+
+After the measurement group is configured for acquisition, you can start
+asynchronous acquisition by using :code:`MeasurementGroup.startCount` method. To
+synchronize the acquisition use :code:`MeasurementGroup.waitCount`. The usage is
+analogous to asynchronous motion.
+
+Take a look at the example macro libraries for some more examples.
+
+**Arbitrary asynchronous operations**
+
+There are two methods for asynchronous execution of arbitrary code. First one is
+to use the MacroServer's job manager:
+
+.. code-block:: python
+    :emphasize-lines: 6, 9, 10, 12
+
+    from threading import Event
+
+    class async_attached(Macro):
+        def _job(self):
+            self.info("Doing something...")
+            self._event.set()
+
+        def run(self):
+            self._event = Event()
+            self.getManager().add_job(self._job)
+            self.info("The job is now running.")
+            self._event.wait(60)
+            self.output("The job has finished (or timeout occured).")
+
+In the :code:`run` method, first we create the :code:`Event` object which will
+be used for the synchronization. Then we get the manager object and add a job to
+it. The job begins to run when added. When the job finishes, it sets the
+:code:`Event` to notify the macro. The macro waits for the event to become set.
+
+.. caution::
+    If you do not wait for the job to finish, you are running in the
+    "detached mode". This is not recommended, as it requires more elaborated
+    synchronization methods. Use at your own risk!
+
+The second method is to use standard Python threading_ library.
+
+Adding your macros to Sardana
+-----------------------------
+
+To add your macros to Sardana, you need to configure the macro plugin discovery
+path (MacroPath property)::
+
+  _MACRO_SERVER.put_property({"MacroPath":["<Your macro dir path>"]})
+
+.. note::
+  You can add more than one path, but be careful! The path order is important.
+  Macros in the higher position paths will take precedence over the lower position paths.
 
 .. rubric:: Footnotes
 
 .. [#f1] To find the absolute path for sardana's source code type on the
-         command line ``python -c "import sys, sardana; sys.stdout.write(str(sardana.__path__))"``
+         command line ``python3 -c "import sys, sardana; sys.stdout.write
+         (str(sardana.__path__))"``
 
 .. [#f2] To check which version of Python_ you are using type on the command
-         line ``python -c "import sys; sys.stdout.write(sys.version)"``
+         line ``python3 -c "import sys; sys.stdout.write(sys.version)"``
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle
@@ -1297,3 +1733,4 @@ value but also the ranges so it is safe to change them if necessary.
 .. _numpy: http://numpy.scipy.org/
 .. _SPEC: http://www.certif.com/
 .. _EPICS: http://www.aps.anl.gov/epics/
+.. _threading: https://docs.python.org/2/library/threading.html

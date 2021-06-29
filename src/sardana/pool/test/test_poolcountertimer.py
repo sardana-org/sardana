@@ -23,7 +23,12 @@
 ##
 ##############################################################################
 
-from taurus.external import unittest
+import time
+
+import pytest
+import unittest
+
+from sardana import State
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolCounterTimer, dummyCounterTimerConf01,
@@ -47,6 +52,45 @@ class PoolCounterTimerTestCase(unittest.TestCase):
               'PoolCounterTimer instance'
         self.assertIsInstance(self.pct, PoolCounterTimer, msg)
 
+    def test_acquisition(self):
+        self.pct.integration_time = 0.1
+        self.pct.start_acquisition()
+        while self.pct.acquisition.is_running():
+            time.sleep(0.01)
+        msg = "wrong value after acquisition"
+        self.assertEqual(self.pct.value.value, 0.1, msg)
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
         self.pct = None
+
+
+def StateOne_state(self, axis):
+    return State.On
+
+
+def StateOne_state_status(self, axis):
+    return State.On, "Status"
+
+
+@pytest.mark.parametrize("mock_StateOne", [StateOne_state,
+                                           StateOne_state_status])
+def test_state(monkeypatch, mock_StateOne):
+    """Test variants of StateOne return value:
+    - state
+    - state, status
+    """
+    pool = FakePool()
+    # when SEP19 gets implemented it should be possible to mock directly
+    # the imported class
+    DummyCounterTimerController = pool.ctrl_manager.getControllerClass(
+        "DummyCounterTimerController")
+    monkeypatch.setattr(DummyCounterTimerController, "StateOne",
+                        mock_StateOne)
+    ct_ctrl = createPoolController(pool, dummyPoolCTCtrlConf01)
+    ct = createPoolCounterTimer(pool, ct_ctrl, dummyCounterTimerConf01)
+    ct_ctrl.add_element(ct)
+    pool.add_element(ct_ctrl)
+    pool.add_element(ct)
+    assert ct.state == State.On
+    assert type(ct.status) == str

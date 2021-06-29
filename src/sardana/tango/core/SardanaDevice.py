@@ -25,7 +25,7 @@
 
 """Generic Sardana Tango device module"""
 
-from __future__ import with_statement
+
 
 __all__ = ["SardanaDevice", "SardanaDeviceClass"]
 
@@ -35,7 +35,7 @@ import time
 import threading
 
 import PyTango.constants
-from PyTango import Device_4Impl, DeviceClass, Util, DevState, \
+from PyTango import LatestDeviceImpl, DeviceClass, Util, DevState, \
     AttrQuality, TimeVal, ArgType, ApiUtil, DevFailed, WAttribute
 
 from taurus.core.util.threadpool import ThreadPool
@@ -66,7 +66,7 @@ def get_thread_pool():
         return __thread_pool
 
 
-class SardanaDevice(Device_4Impl, Logger):
+class SardanaDevice(LatestDeviceImpl, Logger):
     """SardanaDevice represents the base class for all Sardana
     :class:`PyTango.DeviceImpl` classes"""
 
@@ -74,7 +74,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Constructor"""
         self.in_constructor = True
         try:
-            Device_4Impl.__init__(self, dclass, name)
+            LatestDeviceImpl.__init__(self, dclass, name)
             self.init(name)
             Logger.__init__(self, name)
 
@@ -96,7 +96,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """initialize the device once in the object lifetime. Override when
         necessary but **always** call the method from your super class
 
-        :param str name: device name"""
+        :param :obj:`str` name: device name"""
 
         db = self.get_database()
         if db is None:
@@ -113,7 +113,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Returns this device alias name
 
         :return: this device alias
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self._alias
 
     alias = property(get_alias, doc="the device alias name")
@@ -130,7 +130,7 @@ class SardanaDevice(Device_4Impl, Logger):
         always FQDN.
 
         :return: this device full name
-        :rtype: str
+        :rtype: :obj:`str`
         """
         db = self.get_database()
         if db.get_from_env_var():
@@ -170,6 +170,14 @@ class SardanaDevice(Device_4Impl, Logger):
         non_detect_evts = ()
         self.set_change_events(detect_evts, non_detect_evts)
 
+    def sardana_init_hook(self):
+        """Hook that is called before the server event loop.
+        
+        The idea behind this hook is to be equivalent to server_init_hook from
+        Tango. Similar behaviour can be archived using post_init_callback.
+        """
+        pass
+
     def _get_nodb_device_info(self):
         """Internal method. Returns the device info when tango database is not
         being used (example: in demos)"""
@@ -184,7 +192,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Internal method. Initialize the device when tango database is not
         being used (example: in demos)"""
         _, _, props = self._get_nodb_device_info()
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             setattr(self, prop_name, prop_value)
 
     def delete_device(self):
@@ -229,7 +237,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Gets the attribute for the given name.
 
         :param attr_name: attribute name
-        :type attr_name: str
+        :type attr_name: :obj:`str`
         :return: the attribute object
         :rtype: :class:`~PyTango.Attribute`"""
         return self.get_device_attr().get_attr_by_name(attr_name)
@@ -238,7 +246,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Gets the writable attribute for the given name.
 
         :param attr_name: attribute name
-        :type attr_name: str
+        :type attr_name: :obj:`str`
         :return: the attribute object
         :rtype: :class:`~PyTango.WAttribute`"""
         return self.get_device_attr().get_w_attr_by_name(attr_name)
@@ -254,12 +262,12 @@ class SardanaDevice(Device_4Impl, Logger):
         try:
             attr.set_write_value(w_value)
         except DevFailed as df:
-            df0 = df[0]
+            df0 = df.args[0]
             reason = df0.reason
             # if outside limit prefix the description with the device name
             if reason == PyTango.constants.API_WAttrOutsideLimit:
                 desc = self.alias + ": " + df0.desc
-                _df = DevFailed(*df[1:])
+                _df = DevFailed(*df.args[1:])
                 PyTango.Except.re_throw_exception(
                     _df, df0.reason, desc, df0.origin)
             raise df
@@ -405,7 +413,7 @@ class SardanaDevice(Device_4Impl, Logger):
                 try:
                     attr.set_write_value(w_value)
                 except DevFailed as df:
-                    error = df[0]
+                    error = df.args[0]
                     reason = error.reason
                     if reason == PyTango.constants.API_WAttrOutsideLimit and\
                        attr_name == 'position':
@@ -450,14 +458,17 @@ class SardanaDevice(Device_4Impl, Logger):
         return state
 
     def calculate_tango_status(self, ctrl_status, update=False):
-        """Calculate tango status based on the controller status.
+        """
+        Calculate tango status based on the controller status.
 
-        :param str ctrl_status: the status returned by the controller
-        :param bool update:
-            if True, set the state of this device with the calculated tango
-            state [default: False:
+        :param ctrl_status: the status returned by the controller
+        :type ctrl_status: :obj:`str`
+        :param bool update: if True, set the state of this device with the
+                            calculated tango state (by default is False)
+
         :return: the corresponding tango state
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         self._status = status = ctrl_status
         if update:
             self.set_status(status)
@@ -509,7 +520,7 @@ class SardanaDeviceClass(DeviceClass):
         return dict(ProjectTitle="Sardana", Description="Generic description",
                     doc_url="http://sardana-controls.org/",
                     __icon=self.get_name().lower() + ".png",
-                    InheritedFrom=["Device_4Impl"])
+                    InheritedFrom=["Device_5Impl"])
 
     def write_class_property(self):
         """Write class properties ``ProjectTitle``, ``Description``,

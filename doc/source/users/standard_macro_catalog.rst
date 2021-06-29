@@ -45,6 +45,7 @@ counting macros
 
 diffractometer related macros
 -----------------------------
+.. _sardana-diffractometer-macros:
 
 .. hlist::
     :columns: 5
@@ -87,6 +88,7 @@ environment related macros
     :columns: 5
     
     * :class:`~sardana.macroserver.macros.env.lsenv`
+    * :class:`~sardana.macroserver.macros.env.genv`
     * :class:`~sardana.macroserver.macros.env.senv`
     * :class:`~sardana.macroserver.macros.env.usenv`
     * :class:`~sardana.macroserver.macros.env.dumpenv`
@@ -99,6 +101,7 @@ list related macros
 
     * :class:`~sardana.macroserver.macros.env.lsenv`
     * :class:`~sardana.macroserver.macros.lists.lsa`
+    * :class:`~sardana.macroserver.macros.lists.lsp`
     * :class:`~sardana.macroserver.macros.lists.lsm`
     * :class:`~sardana.macroserver.macros.lists.lspm`
     * :class:`~sardana.macroserver.macros.lists.lsexp`
@@ -116,8 +119,9 @@ list related macros
     * :class:`~sardana.macroserver.macros.lists.lsmac`
     * :class:`~sardana.macroserver.macros.lists.lsmaclib`
     * :class:`~sardana.macroserver.macros.env.lsgh`
+    * :class:`~sardana.macroserver.macros.env.lssnap`
 
-measurement configuration macros
+experiment configuration macros
 --------------------------------
 
 .. hlist::
@@ -125,6 +129,14 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
+    * :class:`~sardana.macroserver.macros.expconf.set_meas`
+    * :class:`~sardana.macroserver.macros.expconf.get_meas`
+    * :class:`~sardana.macroserver.macros.expconf.set_meas_conf`
+    * :class:`~sardana.macroserver.macros.expconf.get_meas_conf`
+    * :class:`~sardana.macroserver.macros.expconf.defsnap`
+    * :class:`~sardana.macroserver.macros.expconf.udefsnap`
+    * :class:`~sardana.macroserver.macros.expconf.lssnap`
+    * :class:`~sardana.macroserver.macros.standard.plotselect`
 
 general hooks macros
 --------------------
@@ -181,6 +193,9 @@ scan macros
     * :class:`~sardana.macroserver.macros.scan.dmultiscan`
     * :class:`~sardana.macroserver.macros.scan.mesh`
     * :class:`~sardana.macroserver.macros.scan.fscan`
+    * :class:`~sardana.macroserver.macros.scan.rscan`
+    * :class:`~sardana.macroserver.macros.scan.r2scan`
+    * :class:`~sardana.macroserver.macros.scan.r3scan`
     * :class:`~sardana.macroserver.macros.scan.scanhist`
 
     * :class:`~sardana.macroserver.macros.scan.ascanc`
@@ -201,3 +216,20 @@ scan macros
     * :class:`~sardana.macroserver.macros.scan.d2scanct`
     * :class:`~sardana.macroserver.macros.scan.d3scanct`
     * :class:`~sardana.macroserver.macros.scan.d4scanct`
+
+scan related macros
+-------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.standard.newfile`
+    * :class:`~sardana.macroserver.macros.scan.scanstats`
+    * :class:`~sardana.macroserver.macros.standard.where`
+    * :class:`~sardana.macroserver.macros.standard.pic`
+    * :class:`~sardana.macroserver.macros.standard.cen`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_ls_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_start_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_start_session_path`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_end_session`
+    * :class:`~sardana.macroserver.macros.h5storage.h5_end_session_path`

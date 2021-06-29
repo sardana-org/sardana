@@ -25,7 +25,7 @@
 
 import os
 
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 
 from sardana.macroserver.macroserver import MacroServer
@@ -48,7 +48,8 @@ _FAKE_RECORDER_DIR = os.path.join(_TEST_DIR, 'res')
             extra_recorders=1)
 @insertTest(helper_name='getRecorderPath',
             recorder_path=["/tmp/foo", "#/tmp/foo2"], expected_num_path=2)
-@insertTest(helper_name='getRecorderPath', recorder_path=["/tmp/foo:/tmp/foo2"],
+@insertTest(helper_name='getRecorderPath',
+            recorder_path=["/tmp/foo" + os.pathsep + "/tmp/foo2"],
             expected_num_path=3)
 @insertTest(helper_name='getRecorderPath', recorder_path=["/tmp/foo"],
             expected_num_path=2)
@@ -149,7 +150,7 @@ class RecorderManagerTest(unittest.TestCase):
         self._updateRecorderManager(recorder_path)
         klasses = self.manager.getRecorderMetaClasses(filter=BaseFileRecorder,
                                                       extension='.spec')
-        klass = klasses.values()[0]
+        klass = list(klasses.values())[0]
         # retrieve path to the recorder library
         path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
         msg = 'Ordered path precedence is not maintained by RecorderManager'

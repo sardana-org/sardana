@@ -22,9 +22,10 @@
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
+import os
 
 import PyTango
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
@@ -68,7 +69,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
                                  self.elem_name])
         # Restart Pool
         self._starter.stopDs(hard_kill=True)
-        self._starter.startDs()
+        self._starter.startDs(wait_seconds=20)
         # Check if the element exists
         try:
             obj = PyTango.DeviceProxy(self.elem_name)
@@ -86,11 +87,13 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         cleanup_success = True
         if self.do_element_cleanup:
             try:
-                self.pool.DeleteElement(self.elem_name)
+                if os.name != "nt":
+                    self.pool.DeleteElement(self.elem_name)
             except:
                 cleanup_success = False
         try:
-            self.pool.DeleteElement(self.ctrl_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(self.ctrl_name)
         except:
             cleanup_success = False
         BasePoolTestCase.tearDown(self)

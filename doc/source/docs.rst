@@ -17,9 +17,9 @@ scientific installations.
    users/index
    devel/index
    sep/index.rst
+   What's new? <news>
    Glossary <glossary>
-   To do <todo>
-   History of changes <revision>
+   other_versions
    
 
 * :ref:`genindex`

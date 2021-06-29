@@ -37,8 +37,8 @@ def checkPoolElements(pool):
         try:
             ctrl_library = pool_ctrl_classes[ctrl_class][0]
         except KeyError:
-            print ("#WARNING: There is no controller class %s for controller %s" %
-                   (ctrl_class, ctrl_name))
+            print(("#WARNING: There is no controller class %s for "
+                   "controller %s" % (ctrl_class, ctrl_name)))
             continue
         ctrl_type = str(info['main_type'])
         # sardana script is not compatible with the new type CTExpChannel
@@ -76,14 +76,14 @@ def checkPoolElements(pool):
         info_splitted = json.loads(info)
         mg_name = str(info_splitted["name"])
         mg_dev = taurus.Device(mg_name)
-        config = mg_dev.getAttribute('configuration').read().value
+        config = mg_dev.getAttribute('configuration').read().rvalue
         config = json.loads(config)
         controllers = config['controllers']
         elements = {}
-        for ctrl, c_data in controllers.items():
-            if c_data.has_key('units'):
+        for ctrl, c_data in list(controllers.items()):
+            if 'units' in c_data:
                 c_data = c_data['units']['0']
-            for _, data in c_data['channels'].items():
+            for _, data in list(c_data['channels'].items()):
                 index = int(data['index'])
                 if ctrl == '__tango__':
                     elements[index] = data['full_name']
@@ -103,7 +103,7 @@ def checkPoolElements(pool):
 
     db = taurus.Database()
     pool_elements_detail = {}
-    for element_type in pool_elements.keys():
+    for element_type in list(pool_elements.keys()):
         elements = pool_elements[element_type]
         for info in elements:
             info_splitted = json.loads(info)
@@ -133,13 +133,15 @@ def checkPoolElements(pool):
             attrs = element_dev.get_attribute_list()
             for attr, attr_dict in db.get_device_attribute_property(
                 normal_name,
-                map(str, attrs)
-            ).iteritems():
+                list(map(str, attrs))
+            ).items():
                 if len(attr_dict) > 0:
                     pool_elements_detail[alias]['attr_dicts'][attr] = attr_dict
                 else:
                     if attr.lower() in ['position', 'value']:
-                        print '***', specific_element_type, alias, attr,  'NO MEMORIZED ATTRIBUTES OR ATTRIBUTE CONFIGURATIONS ***'
+                        print('***', specific_element_type, alias, attr,
+                              'NO MEMORIZED ATTRIBUTES OR ATTRIBUTE '
+                              'CONFIGURATIONS ***')
 
     # print '\n'
     # print '----------------------------------------------------------------'
@@ -148,7 +150,7 @@ def checkPoolElements(pool):
     # print pool_instruments
 
     # CHECK ELEMENTS WITHOUT INSTRUMENT
-    for element_type in pool_elements.keys():
+    for element_type in list(pool_elements.keys()):
         elements = pool_elements[element_type]
         elements_with_no_instrument = []
         for info in elements:
@@ -164,8 +166,8 @@ def checkPoolElements(pool):
             try:
                 ctrl = pool_controllers[ctrl_name]
             except KeyError:
-                print ("#WARNING: There is no controller %s for element %s" %
-                       (ctrl_name, alias))
+                print(("#WARNING: There is no controller %s for element %s" %
+                       (ctrl_name, alias)))
                 continue
             ctrl['ctrl_pool_elements'].append(alias)
             if specific_element_type in ['PseudoMotor', 'PseudoCounter']:
@@ -244,7 +246,7 @@ def checkPoolElements(pool):
     row = '\t'.join(columns)
     parameters_sheet += row + '\n'
 
-    for ctrl_type, controllers in pool_controllers_by_type.iteritems():
+    for ctrl_type, controllers in pool_controllers_by_type.items():
         if len(controllers) == 0:
             continue
         for ctrl in controllers:
@@ -260,7 +262,7 @@ def checkPoolElements(pool):
                 ctrl_details['properties'] = ''
             else:
                 properties = []
-                for k, v in ctrl_details['properties'].iteritems():
+                for k, v in ctrl_details['properties'].items():
                     properties.append(k + ':' + v)
                 ctrl_details['properties'] = ';'.join(properties)
 
@@ -279,9 +281,9 @@ def checkPoolElements(pool):
                 elem_type = elem_details['type']
                 attr_dicts = elem_details['attr_dicts']
                 attribute_values = []
-                for attr in attr_dicts.keys():
+                for attr in list(attr_dicts.keys()):
                     attr_dict = attr_dicts[attr]
-                    if attr_dict.has_key('__value'):
+                    if '__value' in attr_dict:
                         # skip memorized values of DialPosition and Position
                         # DialPosition because it is read only attribute and the
                         # current version of sardana script would not be able to se it
@@ -317,7 +319,7 @@ def checkPoolElements(pool):
                         'event_period', [''])[0]
                     elem_params['event'] = attr_dict.get('abs_change', [''])[0]
 
-                    for k, v in elem_params.iteritems():
+                    for k, v in elem_params.items():
                         if v != '' and k not in ['pool', 'element', 'parameter']:
                             params_row_template = '{pool}\t{element}\t{parameter}\t{label}\t{format}\t{min_value}\t{min_alarm}\t{min_warning}\t{max_warning}\t{max_alarm}\t{max_value}\t{unit}\t{polling}\t{event}'
                             row = params_row_template.format(**elem_params)
@@ -346,7 +348,7 @@ def checkPoolElements(pool):
         instruments_sheet += row + '\n'
 
     acq_row_template = '{type}\t{pool}\t{name}\tAutomatic\t{channels}'
-    for mg_name, mg_channels in pool_measurement_groups.iteritems():
+    for mg_name, mg_channels in pool_measurement_groups.items():
         mg_details = {}
         mg_details['type'] = 'MeasurementGroup'
         mg_details['pool'] = pool
@@ -355,46 +357,53 @@ def checkPoolElements(pool):
         row = acq_row_template.format(**mg_details)
         acquisition_sheet += row + '\n'
 
-    print '\n' * 2
-    print '################################ CONTROLLERS ################################\n' * 4
-    print '\n' * 2
-    print controllers_sheet
-    print '\n' * 2
-    print '################################ INSTRUMENTS ################################\n' * 4
-    print '\n' * 2
-    print instruments_sheet
-    print '\n' * 2
-    print '################################    MOTORS   ################################\n' * 4
-    print '\n' * 2
-    print motors_sheet
-    print '\n' * 2
-    print '################################    IOREGS   ################################\n' * 4
-    print '\n' * 2
-    print ioregs_sheet
-    print '\n' * 2
-    print '################################   CHANNELS  ################################\n' * 4
-    print '\n' * 2
-    print channels_sheet
-    print '\n' * 2
-    print '################################ ACQUISITION ################################\n' * 4
-    print '\n' * 2
-    print acquisition_sheet
-    print '\n' * 2
-    print '################################ PARAMETERS  ################################\n' * 4
-    print '\n' * 2
-    print parameters_sheet
+    print('\n' * 2)
+    print('################################ CONTROLLERS '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(controllers_sheet)
+    print('\n' * 2)
+    print('################################ INSTRUMENTS '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(instruments_sheet)
+    print('\n' * 2)
+    print('################################    MOTORS   '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(motors_sheet)
+    print('\n' * 2)
+    print('################################    IOREGS   '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(ioregs_sheet)
+    print('\n' * 2)
+    print('################################   CHANNELS  '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(channels_sheet)
+    print('\n' * 2)
+    print('################################ ACQUISITION '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(acquisition_sheet)
+    print('\n' * 2)
+    print('################################ PARAMETERS  '
+          '################################\n' * 4)
+    print('\n' * 2)
+    print(parameters_sheet)
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2 or sys.argv[1] == '?':
-        print '----------------------------------------'
-        print 'Invalid number of arguments.'
-        print ''
-        print 'Example of usage:'
-        print '    python get_pool_config pool'
-        print ''
-        print '    where pool is the device name of the pool'
-        print '----------------------------------------'
+        print('----------------------------------------')
+        print('Invalid number of arguments.')
+        print('')
+        print('Example of usage:')
+        print('    python get_pool_config pool')
+        print('')
+        print('    where pool is the device name of the pool')
+        print('----------------------------------------')
 
     pool = sys.argv[1]
     checkPoolElements(pool)

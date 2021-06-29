@@ -68,9 +68,12 @@ class DummyTriggerGateController(TriggerGateController):
                 status = "Moving"
             self._log.debug('StateOne(%d): returning (%s, %s)' %
                             (axis, sta, status))
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         return sta, status
+
+    def PrepareOne(self, axis, nb_starts):
+        self._log.debug('PrepareOne(%d): entering...' % axis)
 
     def PreStartAll(self):
         pass

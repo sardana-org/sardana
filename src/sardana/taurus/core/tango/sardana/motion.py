@@ -30,8 +30,29 @@ __all__ = ["Moveable", "MoveableSource", "Motion", "MotionGroup"]
 __docformat__ = 'restructuredtext'
 
 import time
+from collections import OrderedDict
 
 from taurus.core.util.containers import CaselessDict
+
+
+def _get_tango_devstate_match(states):
+    """
+    Retrieve PyTango.DevState match
+    :param states:
+    :return:
+    """
+
+    import PyTango
+    state = PyTango.DevState.ON
+    if PyTango.DevState.FAULT in states:
+        state = PyTango.DevState.FAULT
+    elif PyTango.DevState.ALARM in states:
+        state = PyTango.DevState.ALARM
+    elif PyTango.DevState.UNKNOWN in states:
+        state = PyTango.DevState.UNKNOWN
+    elif PyTango.DevState.MOVING in states:
+        state = PyTango.DevState.MOVING
+    return state
 
 
 class Moveable:
@@ -116,7 +137,7 @@ class BaseMotion(Moveable):
 
         first_elem = elements[0]
 
-        if isinstance(first_elem, (str, unicode)):
+        if isinstance(first_elem, str):
             self.init_by_names(elements, moveable_srcs, allow_repeat,
                                allow_unknown)
         else:
@@ -128,6 +149,10 @@ class BaseMotion(Moveable):
             moveable = source.getMoveable(name)
             if moveable is not None:
                 return moveable
+
+    def release(self):
+        for moveable in self.moveable_list:
+            moveable.release()
 
 
 class MotionGroup(BaseMotion):
@@ -181,16 +206,7 @@ class MotionGroup(BaseMotion):
             res = moveable.move(pos, timeout=timeout)
             states.append(res[0])
             positions.extend(res[1])
-        import PyTango
-        state = PyTango.DevState.ON
-        if PyTango.DevState.FAULT in states:
-            state = PyTango.DevState.FAULT
-        elif PyTango.DevState.ALARM in states:
-            state = PyTango.DevState.ALARM
-        elif PyTango.DevState.UNKNOWN in states:
-            state = PyTango.DevState.UNKNOWN
-        elif PyTango.DevState.MOVING in states:
-            state = PyTango.DevState.MOVING
+        state = _get_tango_devstate_match(states)
         self.__total_motion_time = time.time() - start_time
         return state, positions
 
@@ -259,13 +275,13 @@ class Motion(BaseMotion):
                                                           allow_repeat=allow_repeat, allow_unknown=allow_unknown)
 
         # map<MoveableSource, Moveable>
-        ms_moveables = {}
-        for moveable_source, ms_names in ms_elem_names.items():
+        ms_moveables = OrderedDict()
+        for moveable_source, ms_names in list(ms_elem_names.items()):
             moveable = moveable_source.getMoveable(ms_names)
             ms_moveables[moveable_source] = moveable
 
         # list<Moveable>
-        moveable_list = ms_moveables.values()
+        moveable_list = list(ms_moveables.values())
 
         # list<tuple(int moveable_index, int position_index)>
         pos_to_moveable = len(names) * [None, ]
@@ -319,7 +335,7 @@ class Motion(BaseMotion):
         belong to the that motion source.
         """
 
-        ms_elems = {}
+        ms_elems = OrderedDict()
 
         for name in names:
             moveable = None
@@ -327,7 +343,7 @@ class Motion(BaseMotion):
             for moveable_source in moveable_sources:
                 moveable = moveable_source.getMoveable([name])
                 if not moveable is None:
-                    if not ms_elems.has_key(moveable_source):
+                    if moveable_source not in ms_elems:
                         ms_elems[moveable_source] = []
                     moveable_source_moveables = ms_elems.get(moveable_source)
                     present = name in moveable_source_moveables
@@ -388,18 +404,9 @@ class Motion(BaseMotion):
             for moveable, id in zip(self.moveable_list, ids):
                 moveable.waitMove(id=id, timeout=timeout)
             states, positions = self.readState(), self.readPosition()
-            import PyTango
-            state = PyTango.DevState.ON
-            if PyTango.DevState.FAULT in states:
-                state = PyTango.DevState.FAULT
-            elif PyTango.DevState.ALARM in states:
-                state = PyTango.DevState.ALARM
-            elif PyTango.DevState.UNKNOWN in states:
-                state = PyTango.DevState.UNKNOWN
-            elif PyTango.DevState.MOVING in states:
-                state = PyTango.DevState.MOVING
+            state = _get_tango_devstate_match(states)
             ret = state, positions
-        self.__total_motion_time = time.time()
+        self.__total_motion_time = time.time() - start_time
         return ret
 
     def iterMove(self, new_pos, timeout=None):
@@ -563,18 +570,18 @@ def test():
     try:
         m = Motion(["m1", "m2"], [ms1, ms2, ms3], read_only=True)
         m.startMove([0.5, 20.4])
-    except Exception, e:
-        assert(e.message == "Trying to move read only motion")
+    except Exception as e:
+        assert(str(e) == "Trying to move read only motion")
 
     try:
         m = Motion(["m1", "m1"], [ms1, ms2, ms3])
-    except Exception, e:
-        assert(e.message == "Moveable item m1 appears more than once")
+    except Exception as e:
+        assert(str(e) == "Moveable item m1 appears more than once")
 
     try:
         m = Motion(["m1", "m999"], [ms1, ms2, ms3])
-    except Exception, e:
-        assert(e.message == "Moveable item m999 not found")
+    except Exception as e:
+        assert(str(e) == "Moveable item m999 not found")
 
 if __name__ == "__main__":
     test()

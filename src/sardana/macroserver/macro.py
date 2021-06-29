@@ -26,13 +26,15 @@
 """This module contains the class definition for the MacroServer generic
 scan"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+import collections
+import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
-           "MacroFunc", "Type", "ParamRepeat", "Table", "List", "ViewOption",
-           "LibraryError"]
+           "MacroFunc", "Type", "Table", "List", "ViewOption",
+           "LibraryError", "Optional", "StopException", "AbortException",
+           "InterruptException"]
 
 __docformat__ = 'restructuredtext'
 
@@ -43,7 +45,7 @@ import types
 import ctypes
 import weakref
 import operator
-import StringIO
+import io
 import threading
 import traceback
 
@@ -54,18 +56,15 @@ from taurus.console.list import List
 
 from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
+from sardana.util.thread import _asyncexc
 
-from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat
+from sardana.macroserver.msparameter import Type, ParamType, Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
-    MacroWrongParameterType, UnknownEnv, UnknownMacro, LibraryError
+    ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
+    LibraryError, InterruptException
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
-
-asyncexc = ctypes.pythonapi.PyThreadState_SetAsyncExc
-# first define the async exception function args. This is
-# absolutely necessary for 64 bits machines.
-asyncexc.argtypes = (ctypes.c_long, ctypes.py_object)
 
 
 class OverloadPrint(object):
@@ -184,19 +183,20 @@ class Hookable(Logger):
         return self.__class__.hints.get('allowsHooks')
 
     def getHints(self):
-        return self._getHookHintsDict().keys()
+        return list(self._getHookHintsDict().keys())
 
     def getHooks(self, hint=None):
-        '''This will return a list of hooks that have the given hint. Two reserved
+        """This will return a list of hooks that have the given hint. Two reserved
         hints are always valid:
-          - "_ALL_": which contains all the hooks
-          - "_NOHINTS_": which contains the hooks that don't provide any hint
+
+        - "_ALL_": which contains all the hooks
+        - "_NOHINTS_": which contains the hooks that don't provide any hint
 
         :param hint: (str) a hint. If None is passed, it returns a list of
                      (hook,hints) tuples
 
         :return: (list) an ordered list of hooks that have the given hint
-        '''
+        """
         if hint is None:
             return self._getHooks()
         else:
@@ -228,57 +228,77 @@ class Hookable(Logger):
                 except KeyError:
                     self._hookHintsDict[hint] = [hook]
 
-    @propertx
-    def hooks():
-        def get(self):
-            return self._getHooks()
+    @property
+    def hooks(self):
+        """Hooks (callables) attached to the macro object together with the
+        hook places (places where they will be called).
 
-        def set(self, hooks):
-            '''hooks must be list<callable,list<str>>. Exceptionally, for
-            backwards compatibility, list<callable> is also admitted, but may
-            not be supported in the future.
-            "two variables are created:
-                - self._hooks (list<callable,list<str>>) (will be a tuple
-                              regardless of what was passed)
-                - self._hookHintsDict (dict<str,list>) a dict of key=hint and
-                                      value=list of hooks with that hint.
-                                      self._hookHintsDict also stores two
-                                      special keys: "_ALL_": which contains all
-                                      the hooks "_NOHINTS_": which contains the
-                                      hooks that don't provide hints
-            '''
-            if not isinstance(hooks, list):
-                self.error(
-                    'the hooks must be passed as a list<callable,list<str>>')
-                return
+        :getter: Return all hooks attached to the macro object (including
+            general hooks).
+        :setter: Set hooks to the object. **This may override eventual
+            general hooks.**
+            Use :meth:`~sardana.macroserver.macro.Hookable.appendHook`
+            if the general hooks want to be kept. For backwards compatibility
+            accepts hook in the :obj:`list`\<callable\> format.
+        :type: :obj:`list`\<:obj:`tuple`\> where each tuple has two
+            elements: callable and :obj:`list`\<:obj:`str`\>
+        """  # noqa
+        return self._getHooks()
 
-            # store self._hooks, making sure it is of type:
-            # list<callable,list<str>>
-            self._hooks = []
-            for h in hooks:
-                if isinstance(h, (tuple, list)) and len(h) == 2:
-                    self._hooks.append(h)
-                else:  # we assume that hooks is a list<callable>
-                    self._hooks.append((h, []))
-                    self.info(
-                        'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
+    @hooks.setter
+    def hooks(self, hooks):
+        """Sets hooks. Internally two variables instance members are created:
 
-            # delete _hookHintsDict to force its recreation on the next access
-            if hasattr(self, '_hookHintsDict'):
-                del self._hookHintsDict
-            # create _hookHintsDict
-            self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
-            nohints = self._hookHintsDict['_NOHINTS_']
-            for hook, hints in self._hooks:
-                if len(hints) == 0:
-                    nohints.append(hook)
-                else:
-                    for hint in hints:
-                        try:
-                            self._hookHintsDict[hint].append(hook)
-                        except KeyError:
-                            self._hookHintsDict[hint] = [hook]
-        return get, set
+        - _hooks (list<callable,list<str>>) (will be a tuple regardless of
+          what was passed)
+        - _hookHintsDict (dict<str,list>) a dict of key=hint and value=list
+          of hooks with that hint. _hookHintsDict also stores two special
+          keys: "_ALL_": which contains all the hooks "_NOHINTS_": which
+          contains the hooks that don't provide hints
+
+        """
+        if len(self.hooks) > 0:
+            msg = ("This macro defines its own hooks. Previously defined "
+                   "hooks, including the general ones, would be only called "
+                   "if these own hooks were added using the appendHook "
+                   "method or appended to the self.hooks.")
+            self.warning(msg)
+        self._setHooks(hooks)
+
+    def _setHooks(self, hooks):
+        if not isinstance(hooks, list):
+            self.error(
+                'the hooks must be passed as a list<callable,list<str>>')
+            return
+        # store self._hooks, making sure it is of type:
+        # list<callable,list<str>>
+        self._hooks = []
+        for h in hooks:
+            if isinstance(h, (tuple, list)) and len(h) == 2:
+                self._hooks.append(h)
+            else:  # we assume that hooks is a list<callable>
+                self._hooks.append((h, []))
+                msg = ("Deprecation warning: hooks should be set with a"
+                       " list of hints. See Hookable API docs")
+                self.info(msg)
+
+        # delete _hookHintsDict to force its recreation on the next access
+        if hasattr(self, '_hookHintsDict'):
+            del self._hookHintsDict
+        if len(self._hooks) == 0:
+            return
+        # create _hookHintsDict
+        self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
+        nohints = self._hookHintsDict['_NOHINTS_']
+        for hook, hints in self._hooks:
+            if len(hints) == 0:
+                nohints.append(hook)
+            else:
+                for hint in hints:
+                    try:
+                        self._hookHintsDict[hint].append(hook)
+                    except KeyError:
+                        self._hookHintsDict[hint] = [hook]
 
 
 class ExecMacroHook(object):
@@ -372,20 +392,31 @@ class macro(object):
         def where_moveable(self, moveable):
             self.output("Moveable %s is at %s", moveable.getName(), moveable.getPosition())"""
 
+    param_def = []
+    result_def = []
+    env = ()
+    hints = {}
+    interactive = False
+
     def __init__(self, param_def=None, result_def=None, env=None, hints=None,
                  interactive=None):
-        self.param_def = param_def
-        self.result_def = result_def
-        self.env = env
-        self.hints = hints
-        self.interactive = interactive
+        if param_def is not None:
+            self.param_def = param_def
+        if result_def is not None:
+            self.result_def = result_def
+        if env is not None:
+            self.env = env
+        if hints is not None:
+            self.hints = hints
+        if interactive is not None:
+            self.interactive = interactive
 
     def __call__(self, fn):
         fn.macro_data = {}
         fn.param_def = self.param_def
         fn.result_def = self.result_def
-        fn.hints = self.env
-        fn.env = self.hints
+        fn.hints = self.hints
+        fn.env = self.env
         fn.interactive = self.interactive
         return fn
 
@@ -511,6 +542,8 @@ class Macro(Logger):
         self._id = kwargs.get('id')
         self._desc = "Macro '%s'" % self._macro_line
         self._macro_status = {'id': self._id,
+                              'name': self._name,
+                              'macro_line': self._macro_line,
                               'range': (0.0, 100.0),
                               'state': 'start',
                               'step': 0.0}
@@ -753,7 +786,12 @@ class Macro(Logger):
         """**Macro API**.
         Sends the given data to the RecordData attribute of the Door
 
-        :param data: (sequence) the data to be sent"""
+        :param data: data to be sent (must be compatible with the codec)
+        :type data: object
+        :param codec: codec to encode data (in Tango server None defaults
+            to "utf8_json")
+        :type codec: str or None
+        """
         self._sendRecordData(data, codec)
 
     def _sendRecordData(self, data, codec=None):
@@ -828,7 +866,7 @@ class Macro(Logger):
         """
         fd = kwargs.get('file', sys.stdout)
         if fd in (sys.stdout, sys.stderr):
-            out = StringIO.StringIO()
+            out = io.StringIO()
             kwargs['file'] = out
             end = kwargs.get('end', '\n')
             if end == '\n':
@@ -1101,35 +1139,35 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.createMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.createMacro('mv', [[motor.getName(), '0']])
+            self.createMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.createMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.createMacro('mv', [[motor.getName(), 0]])
+            self.createMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.createMacro('ascan', th, 0, 100, 10, 1.0)
+            self.createMacro('mv', [[th, 0]])
+            self.createMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.createMacro(['mv', [[motor.getName(), '0']]])
+            self.createMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.createMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.createMacro(['mv', [[motor.getName(), 0]]])
+            self.createMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.createMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.createMacro(['mv', [[th, 0]]])
+            self.createMacro(['mv', th, 0]) # backwards compatibility - see note
 
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.createMacro('ascan th 0 100 10 1.0')
+            self.createMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
@@ -1172,34 +1210,34 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
-            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
-            self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.prepareMacro('mv', [[motor.getName(), '0']])
+            self.prepareMacro('mv', motor.getName(), '0') # backwards compatibility - see note
+            self.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[motor.getName(), 0]])
+            self.prepareMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0) # backwards compatibility - see note
+            self.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+            self.prepareMacro('mv', [[th, 0]])
+            self.prepareMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
-            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
-            self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0'])
+            self.prepareMacro(['mv', [[motor.getName(), '0']]])
+            self.prepareMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
+            self.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.prepareMacro(['mv', [[motor.getName(), 0]]])
+            self.prepareMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
-            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
-            self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
+            self.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.prepareMacro(['mv', [[th, 0]]])
+            self.prepareMacro(['mv', th, 0]) # backwards compatibility - see note
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
             # parameter must be the last one):
-            self.execMacro('ascan th 0 100 10 1.0')
-            self.execMacro('mv %s 0' % motor.getName())
+            self.prepareMacro('ascan th 0 100 10 1.0')
+            self.prepareMacro('mv %s 0' % motor.getName())
 
         .. note:: From Sardana 2.0 the repeat parameter values must be passed
             as lists of items. An item of a repeat parameter containing more
@@ -1250,7 +1288,7 @@ class Macro(Logger):
             return macro
 
         :param name: name of the macro to be prepared
-        :type name: str
+        :type name: :obj:`str`
         :param args: list of parameter objects
         :param kwargs: list of keyword parameters
 
@@ -1310,10 +1348,10 @@ class Macro(Logger):
         macro_name = None
         arg0 = args[0]
         if len(args) == 1:
-            if type(arg0) in types.StringTypes:
+            if isinstance(arg0, str):
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
-            elif operator.isSequenceType(arg0):
+            elif isinstance(arg0, collections.Sequence):
                 # dealing with sth like args = (['ascan', 'th', '0', '100',
                 # '10', '1.0'],)
                 macro_name = arg0[0]
@@ -1369,10 +1407,10 @@ class Macro(Logger):
     def outputBlock(self, line):
         """**Macro API**. Sends an line tagged as a block to the output
 
-        :param str line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        :param :obj:`str` line: line to be sent"""
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -1414,7 +1452,8 @@ class Macro(Logger):
         executed the stop method of the given object will be called.
 
         :param obj_list: list of objects to be controlled
-        :type obj_list: sequence"""
+        :type obj_list: :obj:`collections.Sequence`
+        """
         for o in obj_list:
             self.addObj(o)
 
@@ -1451,7 +1490,7 @@ class Macro(Logger):
             automatically reserve the object for this macro [default: True]
 
         :return: the object or None if no compatible object is found"""
-        if not isinstance(name, (str, unicode)):
+        if not isinstance(name, str):
             raise self._buildWrongParamExp("getObj", "name", "string",
                                            str(type(name)))
 
@@ -1569,7 +1608,7 @@ class Macro(Logger):
 
         :param lib_name:
             library name
-        :type lib_name: str
+        :type lib_name: :obj:`str`
         :return:
             a macro library :class:`~sardana.macroserver.msmetamacro.MacroLibrary`
         :rtype: :class:`~sardana.macroserver.msmetamacro.MacroLibrary`"""
@@ -1745,39 +1784,42 @@ class Macro(Logger):
     # Handle macro environment
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
-    @mAPI
-    def getEnv(self, key=None, macro_name=None, door_name=None):
-        """**Macro API**. Gets the local environment matching the given
-        parameters:
-
-           - door_name and macro_name define the context where to look for
-             the environment. If both are None, the global environment is
-             used. If door name is None but macro name not, the given macro
-             environment is used and so on...
-           - If key is None it returns the complete environment, otherwise
-             key must be a string containing the environment variable name.
-
-        :raises: UnknownEnv
-
-        :param key:
-            environment variable name [default: None, meaning all environment]
-        :type key: str
-        :param door_name:
-            local context for a given door [default: None, meaning no door
-            context is used]
-        :type door_name: str
-        :param macro_name:
-            local context for a given macro [default: None, meaning no macro
-            context is used]
-        :type macro_name: str
-
-        :return: a :obj:`dict` containing the environment
-        :rtype: :obj:`dict`"""
+    def _getEnv(self, key=None, macro_name=None, door_name=None):
         door_name = door_name or self.getDoorName()
         macro_name = macro_name or self._name
 
         return self.macro_server.get_env(key=key, macro_name=macro_name,
                                          door_name=door_name)
+
+    @mAPI
+    def getEnv(self, key=None, macro_name=None, door_name=None):
+        """**Macro API**. Gets the local environment matching the given
+        parameters:
+
+        - door_name and macro_name define the context where to look for
+          the environment. If both are None, the global environment is
+          used. If door name is None but macro name not, the given macro
+          environment is used and so on...
+        - If key is None it returns the complete environment, otherwise
+          key must be a string containing the environment variable name.
+
+        :raises: UnknownEnv
+
+        :param key:
+            environment variable name [default: None, meaning all environment]
+        :type key: :obj:`str`
+        :param door_name:
+            local context for a given door [default: None, meaning no door
+            context is used]
+        :type door_name: :obj:`str`
+        :param macro_name:
+            local context for a given macro [default: None, meaning no macro
+            context is used]
+        :type macro_name: :obj:`str`
+
+        :return: a :obj:`dict` containing the environment
+        :rtype: :obj:`dict`"""
+        return self._getEnv(key=key, macro_name=macro_name, door_name=door_name)
 
     @mAPI
     def getGlobalEnv(self):
@@ -1954,7 +1996,7 @@ class Macro(Logger):
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
-        if not view_options.has_key(name):
+        if name not in view_options:
             ViewOption.reset_option(view_options, name)
             self.setEnv('_ViewOptions', view_options)
         return view_options[name]
@@ -2034,10 +2076,10 @@ class Macro(Logger):
         """**Unofficial Macro API**.
         Sends a line tagged as a block to the output
 
-        :param str line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        :param :obj:`str` line: line to be sent"""
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -2215,15 +2257,14 @@ class Macro(Logger):
         """**Unofficial Macro API**."""
         return self._pause_event.isPaused()
 
-    @classmethod
-    def hasResult(cls):
+    def hasResult(self):
         """**Unofficial Macro API**. Returns True if the macro should return
         a result or False otherwise
 
         :return: True if the macro should return a result or False otherwise
         :rtype: bool
         """
-        return len(cls.result_def) > 0
+        return len(self.result_def) > 0
 
     def getResult(self):
         """**Unofficial Macro API**. Returns the macro result object (if any)
@@ -2286,7 +2327,7 @@ class Macro(Logger):
         macro"""
         for obj in args:
             # isiterable
-            if not type(obj) in map(type, ([], ())):
+            if not type(obj) in list(map(type, ([], ()))):
                 # if not operator.isSequenceType(obj) or type(obj) in
                 # types.StringTypes:
                 obj = (obj,)
@@ -2302,6 +2343,12 @@ class Macro(Logger):
         # make sure a 0.0 progress is sent
         yield macro_status
 
+        # Avoid repeating same information on subsequent events. If, in the
+        # future, clients that connect in the middle of macro execution need
+        # this information, just simply remove the lines below
+        del macro_status['name']
+        del macro_status['macro_line']
+
         # allow any macro to be paused at the beginning of its execution
         self.pausePoint()
 
@@ -2313,14 +2360,14 @@ class Macro(Logger):
         if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
-                if operator.isMappingType(i):
+                if isinstance(i, collections.Mapping):
                     new_range = i.get('range')
                     if new_range is not None:
                         macro_status['range'] = new_range
                     new_step = i.get('step')
                     if new_step is not None:
                         macro_status['step'] = new_step
-                elif operator.isNumberType(i):
+                elif isinstance(i, numbers.Number):
                     macro_status['step'] = i
                 macro_status['state'] = 'step'
                 yield macro_status
@@ -2342,8 +2389,8 @@ class Macro(Logger):
         """
         if out is None:
             out = ()
-        if operator.isSequenceType(out) and not type(out) in types.StringTypes:
-            out = map(str, out)
+        if isinstance(out, collections.Sequence) and not type(out) in str:
+            out = list(map(str, out))
         else:
             out = (str(out),)
         return out
@@ -2363,6 +2410,8 @@ class Macro(Logger):
         protecting it against exceptions"""
         try:
             self.on_abort()
+        except ReleaseException:
+            pass
         except Exception:
             Logger.error(self, "Error in on_abort(): %s",
                          traceback.format_exc())
@@ -2390,7 +2439,7 @@ class Macro(Logger):
             th = self._macro_thread
             th_id = ctypes.c_long(th.ident)
             Logger.debug(self, "Sending AbortException to %s", th.name)
-            ret = asyncexc(th_id, ctypes.py_object(AbortException))
+            ret = _asyncexc(th_id, ctypes.py_object(AbortException))
             i += 1
             if ret == 0:
                 # try again
@@ -2464,7 +2513,7 @@ class MacroFunc(Macro):
     def __init__(self, *args, **kwargs):
         function = kwargs['function']
         self._function = function
-        kwargs['as'] = self._function.func_name
+        kwargs['as'] = self._function.__name__
         if function.param_def is not None:
             self.param_def = function.param_def
         if function.result_def is not None:

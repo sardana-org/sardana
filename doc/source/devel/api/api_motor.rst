@@ -134,6 +134,10 @@ abort
     stops the motor motion as fast as possible (possibly without
     deceleration time and loss of position)
 
+release
+    Release hung motion e.g. due to the hardware controller that
+    got hung. You should first try stop/abort.
+
 Motor state
 -----------
 
@@ -144,6 +148,8 @@ sequence of calls.
 .. image:: /_static/sardana_server_internal_motor_read_state_flow.png
     :width: 680
     :align: center
+
+.. _sardana-motor-api-position:
 
 Motor position
 --------------

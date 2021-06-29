@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import Except, DevVoid, DevLong, DevDouble, DevString, \
-    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR
+    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR, Util
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.log import DebugIt
@@ -73,9 +73,14 @@ class MeasurementGroup(PoolGroupDevice):
     def init_device(self):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
-        detect_evts = "latencytime", "moveable", "synchronization"
+        detect_evts = "moveable", "synchdescription", \
+                      "softwaresynchronizerinitialdomain"
+        # TODO: nbstarts could be moved to detect events with
+        # abs_change criteria of 1, but be careful with
+        # tango-controls/pytango#302
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist", "repetitions"
+                          "acquisitionmode", "elementlist", "latencytime", \
+                          "nbstarts"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -137,9 +142,11 @@ class MeasurementGroup(PoolGroupDevice):
             cfg = self.measurement_group.get_user_configuration()
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', cfg))
-        elif name == "synchronization":
+        elif name == "synchdescription":
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', event_value))
+        elif name == "moveable" and event_value is None:
+            event_value = 'None'
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -151,26 +158,36 @@ class MeasurementGroup(PoolGroupDevice):
                            quality=quality, priority=priority, error=error,
                            synch=False)
 
-    def _synchronization_str2enum(self, synchronization):
-        '''Translates synchronization data structure so it uses SynchDomain
-        enums as keys instead of strings.
-        '''
+    def _synch_description_str2enum(self, _synch_description_str):
+        """Translates synchronization description data structure so it uses
+        SynchParam and SynchDomain enums as keys instead of strings.
 
-        new_synchronization = []
-        for group in synchronization:
-            new_group = {}
-            for param, conf in group.iteritems():
-                param = SynchParam.fromStr(param)
-                if param == SynchParam.Repeats:
-                    new_group[param] = conf
+        .. todo:: At some point remove the backwards compatibility
+          for memorized values created with Python 2. In Python 2 IntEnum was
+          serialized to "<class>.<attr>" e.g. "SynchDomain.Time" and we were
+          using a class method `fromStr` to interpret the enumeration objects.
+        """
+        synch_description = []
+        for group_str in _synch_description_str:
+            group = {}
+            for param_str, conf_str in group_str.items():
+                try:
+                    param = SynchParam(int(param_str))
+                except ValueError:
+                    param = SynchParam.fromStr(param_str)
+                if isinstance(conf_str, dict):
+                    conf = {}
+                    for domain_str, value in conf_str.items():
+                        try:
+                            domain = SynchDomain(int(domain_str))
+                        except ValueError:
+                            domain = SynchDomain.fromStr(domain_str)
+                        conf[domain] = value
                 else:
-                    new_conf = {}
-                    for domain, value in conf.iteritems():
-                        domain = SynchDomain.fromStr(domain)
-                        new_conf[domain] = value
-                    new_group[param] = dict(new_conf)
-            new_synchronization.append(dict(new_group))
-        return new_synchronization
+                    conf = conf_str
+                group[param] = conf
+            synch_description.append(group)
+        return synch_description
 
     def always_executed_hook(self):
         pass
@@ -208,7 +225,7 @@ class MeasurementGroup(PoolGroupDevice):
             acq_mode = AcqMode.lookup[acq_mode_str]
         except KeyError:
             raise Exception("Invalid acquisition mode. Must be one of " +
-                            ", ".join(AcqMode.keys()))
+                            ", ".join(list(AcqMode.keys())))
         self.measurement_group.acquisition_mode = acq_mode
 
     def read_Configuration(self, attr):
@@ -219,17 +236,26 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_Configuration(self, attr):
         data = attr.get_write_value()
-        cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
+        cfg = CodecFactory().decode(('json', data))
+        util = Util.instance()
+        if util.is_svr_starting():
+            self.measurement_group._config._value_ref_compat = True
+        else:
+            self.measurement_group._config._value_ref_compat = False
         self.measurement_group.set_configuration_from_user(cfg)
+        db = util.get_database()
+        elem_ids = self.measurement_group.user_element_ids
+        data = {"elements": elem_ids}
+        db.put_device_property(self.get_name(), data)
 
-    def read_Repetitions(self, attr):
-        repetitions = self.measurement_group.repetitions
-        if repetitions is None:
-            repetitions = int('nan')
-        attr.set_value(repetitions)
+    def read_NbStarts(self, attr):
+        nb_starts = self.measurement_group.nb_starts
+        if nb_starts is None:
+            nb_starts = int('nan')
+        attr.set_value(nb_starts)
 
-    def write_Repetitions(self, attr):
-        self.measurement_group.repetitions = attr.get_write_value()
+    def write_NbStarts(self, attr):
+        self.measurement_group.nb_starts = attr.get_write_value()
 
     def read_Moveable(self, attr):
         moveable = self.measurement_group.moveable
@@ -238,25 +264,44 @@ class MeasurementGroup(PoolGroupDevice):
         attr.set_value(moveable)
 
     def write_Moveable(self, attr):
-        self.measurement_group.moveable = attr.get_write_value()
+        moveable = attr.get_write_value()
+        if moveable == 'None':
+            moveable = None
+        self.measurement_group.moveable = moveable
 
-    def read_Synchronization(self, attr):
-        synchronization = self.measurement_group.synchronization
+    def read_SynchDescription(self, attr):
+        synch_description = self.measurement_group.synch_description
         codec = CodecFactory().getCodec('json')
-        data = codec.encode(('', synchronization))
+        data = codec.encode(('', synch_description))
         attr.set_value(data[1])
 
-    def write_Synchronization(self, attr):
+    def write_SynchDescription(self, attr):
         data = attr.get_write_value()
-        synchronization = CodecFactory().decode(('json', data),
-                                                ensure_ascii=True)
+        synch_description = CodecFactory().decode(('json', data))
         # translate dictionary keys
-        synchronization = self._synchronization_str2enum(synchronization)
-        self.measurement_group.synchronization = synchronization
+        synch_description = \
+            self._synch_description_str2enum(synch_description)
+        self.measurement_group.synch_description = synch_description
 
     def read_LatencyTime(self, attr):
         latency_time = self.measurement_group.latency_time
         attr.set_value(latency_time)
+
+    def read_SoftwareSynchronizerInitialDomain(self, attr):
+        domain = self.measurement_group.sw_synch_initial_domain
+        d = SynchDomain(domain).name
+        attr.set_value(d)
+
+    def write_SoftwareSynchronizerInitialDomain(self, attr):
+        data = attr.get_write_value()
+        try:
+            domain = SynchDomain[data]
+        except KeyError:
+            raise Exception("Invalid domain (can be either Position or Time)")
+        self.measurement_group.sw_synch_initial_domain = domain
+
+    def Prepare(self):
+        self.measurement_group.prepare()
 
     def Start(self):
         try:
@@ -267,13 +312,6 @@ class MeasurementGroup(PoolGroupDevice):
 
     def Stop(self):
         self.measurement_group.stop()
-
-    def StartMultiple(self, n):
-        try:
-            self.wait_for_operation()
-        except Exception:
-            raise Exception("Cannot acquire: already involved in an operation")
-        self.measurement_group.start_acquisition(multiple=n)
 
 
 class MeasurementGroupClass(PoolGroupDeviceClass):
@@ -289,8 +327,8 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start': [[DevVoid, ""], [DevVoid, ""]],
-        'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
+        'Prepare': [[DevVoid, ""], [DevVoid, ""]],
+        'Start': [[DevVoid, ""], [DevVoid, ""]]
     }
     cmd_list.update(PoolGroupDeviceClass.cmd_list)
 
@@ -308,17 +346,23 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Configuration': [[DevString, SCALAR, READ_WRITE],
                           {'Memorized': "true",
                            'Display level': DispLevel.EXPERT}],
-        'Repetitions': [[DevLong, SCALAR, READ_WRITE],
-                        {'Memorized': "true",
-                         'Display level': DispLevel.OPERATOR}],
+        'NbStarts': [[DevLong, SCALAR, READ_WRITE],
+                     {'Memorized': "true",
+                      'Display level': DispLevel.OPERATOR}],
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
-        'Synchronization': [[DevString, SCALAR, READ_WRITE],
-                            {'Memorized': "true",
-                             'Display level': DispLevel.EXPERT}],
+        # TODO: Does it have sense to memorize SynchDescription?
+        'SynchDescription': [[DevString, SCALAR, READ_WRITE],
+                             {'Memorized': "true",
+                              'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
+        'SoftwareSynchronizerInitialDomain': [[DevString, SCALAR, READ_WRITE],
+                                              {'Memorized': "true",
+                                               'Display level':
+                                               DispLevel.OPERATOR}],
+
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

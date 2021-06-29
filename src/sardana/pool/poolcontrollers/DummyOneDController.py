@@ -44,6 +44,7 @@ class Channel:
         self.active = True
         self.amplitude = BaseValue('1.0')
         self._counter = 0
+        self.roi = [0, 0]
 
 
 class BaseValue(object):
@@ -89,7 +90,15 @@ class DummyOneDController(OneDController):
             FGet: 'getAmplitude',
             FSet: 'setAmplitude',
             Description: 'Amplitude. Maybe a number or a tango attribute(must start with tango://)',
-            DefaultValue: '1.0'},
+            DefaultValue: '1.0'
+        },
+        'RoI': {
+            Type: (int,),
+            FGet: 'getRoI',
+            FSet: 'setRoI',
+            Description: "Region of Interest of spectrum (begin, end)",
+            DefaultValue: [0, 0]
+        }
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -170,11 +179,15 @@ class DummyOneDController(OneDController):
                 t = self.integ_time
             x = numpy.linspace(-10, 10, self.BufferSize[0])
             amplitude = axis * t * channel.amplitude.get()
-            channel.value = gauss(x, 0, amplitude, 4)
+            spectrum = gauss(x, 0, amplitude, 4)
+            roi = channel.roi
+            if roi != [0, 0]:
+                spectrum = spectrum[roi[0]:roi[1]]
+            channel.value = spectrum
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate):
             if self.integ_time is not None:
-                n = int(t / self.integ_time)
+                n = int(t // self.integ_time)
                 cp = 0
                 if n > self._repetitions:
                     cp = n - self._repetitions
@@ -187,7 +200,7 @@ class DummyOneDController(OneDController):
 
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
-            for axis, channel in self.counting_channels.items():
+            for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
         else:
@@ -212,7 +225,7 @@ class DummyOneDController(OneDController):
         if self.counting_channels:
             now = time.time()
             elapsed_time = now - self.start_time
-            for axis, channel in self.read_channels.items():
+            for axis, channel in list(self.read_channels.items()):
                 self._updateChannelState(axis, elapsed_time)
                 if channel.is_counting:
                     self._updateChannelValue(axis, elapsed_time)
@@ -248,7 +261,7 @@ class DummyOneDController(OneDController):
     def StartAll(self):
         self.start_time = time.time()
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency_time):
         idx = axis - 1
         if value > 0:
             self.integ_time = value
@@ -277,3 +290,39 @@ class DummyOneDController(OneDController):
         if value.startswith("tango://"):
             klass = TangoValue
         channel.amplitude = klass(value)
+
+    def getRoI(self, axis):
+        idx = axis - 1
+        channel = self.channels[idx]
+        return channel.roi
+
+    def setRoI(self, axis, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        try:
+            value = value.tolist()
+        except AttributeError:
+            pass
+        if len(value) != 2:
+            raise ValueError("RoI is not a list of two elements")
+        if any(not isinstance(v, int) for v in value):
+            raise ValueError("RoI is not a list of integers")
+        if value != [0, 0] and value[1] <= value[0]:
+            raise ValueError("RoI[1] is lower or equal than RoI[0]")
+        dim = self.BufferSize[0]
+        if value[0] > (dim - 1):
+            raise ValueError(
+                "RoI[0] exceeds detector dimension - 1 ({})".format(dim - 1))
+        if value[1] > dim:
+            raise ValueError(
+                "RoI[1] exceeds detector dimension ({})".format(dim))
+        channel.roi = value
+
+    def GetAxisPar(self, axis, par):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if par == "shape":
+            roi = channel.roi
+            if roi == [0, 0]:
+                return self.BufferSize
+            return [roi[1] - roi[0]]

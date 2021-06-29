@@ -36,41 +36,37 @@ from sardana import DataAccess
 from sardana.pool.controller import PseudoMotorController
 from sardana.pool.controller import Type, Access, Description
 
-CALIBRATION = 'Calibration'
-LABELS = 'Labels'
-
 
 class DiscretePseudoMotorController(PseudoMotorController):
-    """A discrete pseudo motor controller which converts physical motor positions
-    to discrete values"""
+    """
+    A discrete pseudo motor controller which converts physical motor
+    positions to discrete values"""
 
     gender = "DiscretePseudoMotorController"
     model = "PseudoMotor"
     organization = "Sardana team"
     image = ""
 
-    pseudo_motor_roles = ("OutputMotor",)
-    motor_roles = ("InputMotor",)
+    pseudo_motor_roles = ("DiscreteMoveable",)
+    motor_roles = ("ContinuousMoveable",)
 
-    axis_attributes = {CALIBRATION:  # type hackish until arrays supported
+    axis_attributes = {'Configuration':
+                       # type hackish until encoded attributes supported
                        {Type: str,
-                        Description: 'Flatten list of a list of triples and [min,cal,max]',
-                        Access: DataAccess.ReadWrite,
-                        'fget': 'get%s' % CALIBRATION,
-                        'fset': 'set%s' % CALIBRATION},
-                       LABELS:  # type hackish until arrays supported
-                       {Type: str,
-                        Description: 'String list with the meaning of each discrete position',
-                        Access: DataAccess.ReadWrite,
-                        'fget': 'get%s' % LABELS,
-                        'fset': 'set%s' % LABELS}
+                        Description: 'String dictionary mapping the labels'
+                                     ' and discrete positions',
+                        Access: DataAccess.ReadWrite}
                        }
 
     def __init__(self, inst, props, *args, **kwargs):
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
-        self._calibration = None
-        self._positions = None
-        self._labels = None
+        self._calibration = []
+        self._positions = []
+        self._labels = []
+        self._configuration = None
+        self._calibration_cfg = None
+        self._positions_cfg = None
+        self._labels_cfg = None
 
     def GetAxisAttributes(self, axis):
         axis_attrs = PseudoMotorController.GetAxisAttributes(self, axis)
@@ -79,9 +75,11 @@ class DiscretePseudoMotorController(PseudoMotorController):
         return axis_attrs
 
     def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
-        llabels = len(self._labels)
-        positions = self._positions
-        calibration = self._calibration
+        positions = self._positions_cfg
+        calibration = self._calibration_cfg
+        labels = self._labels_cfg
+
+        llabels = len(labels)
         lcalibration = len(calibration)
 
         value = physical_pos[0]
@@ -94,7 +92,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             value = int(value)
             try:
                 positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             else:
                 return value
@@ -110,10 +108,12 @@ class DiscretePseudoMotorController(PseudoMotorController):
             raise Exception("Bad configuration on axis attributes.")
 
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
+        positions = self._positions_cfg
+        calibration = self._calibration_cfg
+        labels = self._labels_cfg
+
         # If Labels is well defined, the write value must be one this struct
-        llabels = len(self._labels)
-        positions = self._positions
-        calibration = self._calibration
+        llabels = len(labels)
         lcalibration = len(calibration)
         value = pseudo_pos[0]
 
@@ -125,7 +125,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("Value = %s", value)
             try:
                 positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             return value
         # case 1+fussy: the write to the to the DiscretePseudoMotorController
@@ -134,7 +134,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("Value = %s", value)
             try:
                 destination = positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             self._log.debug("destination = %s", destination)
             calibrated_position = calibration[
@@ -142,34 +142,28 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("calibrated_position = %s", calibrated_position)
             return calibrated_position
 
-    def getLabels(self, axis):
-        # hackish until we support DevVarDoubleArray in extra attrs
-        labels = self._labels
-        positions = self._positions
-        labels_str = ""
-        for i in range(len(labels)):
-            labels_str += "%s:%d " % (labels[i], positions[i])
-        return labels_str[:-1]  # remove the final space
+    def getConfiguration(self, axis):
+        return json.dumps(self._configuration)
 
-    def setLabels(self, axis, value):
-        # hackish until we support DevVarStringArray in extra attrs
-        labels = []
-        positions = []
-        for pair in value.split():
-            l, p = pair.split(':')
-            labels.append(l)
-            positions.append(int(p))
-        if len(labels) == len(positions):
-            self._labels = labels
-            self._positions = positions
-        else:
-            raise Exception("Rejecting labels: invalid structure")
-
-    def getCalibration(self, axis):
-        return json.dumps(self._calibration)
-
-    def setCalibration(self, axis, value):
+    def setConfiguration(self, axis, value):
         try:
-            self._calibration = json.loads(value)
-        except:
-            raise Exception("Rejecting calibration: invalid structure")
+            mapping = json.loads(value)
+            labels = []
+            positions = []
+            calibration = []
+            for k, v in list(mapping.items()):
+                labels.append(k)
+                pos = int(v['pos'])
+                if pos in positions:
+                    msg = 'position {0} is already used'.format(pos)
+                    raise ValueError(msg)
+                positions.append(pos)
+                if all([x in list(v.keys()) for x in ['min', 'set', 'max']]):
+                    calibration.append([v['min'], v['set'], v['max']])
+            self._labels_cfg = labels
+            self._positions_cfg = positions
+            self._calibration_cfg = calibration
+            self._configuration = json.loads(value)
+        except Exception as e:
+            msg = "invalid configuration: {0}".format(e)
+            raise Exception(msg)

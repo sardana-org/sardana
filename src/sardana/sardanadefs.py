@@ -25,11 +25,12 @@
 
 """This module contains the most generic sardana constants and enumerations"""
 
-from __future__ import absolute_import
+
+import collections
 
 __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",
-           "DataType", "DataFormat", "DataAccess", "DTYPE_MAP", "R_DTYPE_MAP",
-           "DACCESS_MAP",
+           "DataType", "DataFormat", "DataAccess", "AttrQuality",
+           "DTYPE_MAP", "R_DTYPE_MAP", "DACCESS_MAP",
            "from_dtype_str", "from_access_str", "to_dtype_dformat",
            "to_daccess", "InvalidId", "InvalidAxis", "ElementType",
            "Interface", "Interfaces", "InterfacesExpanded",
@@ -42,6 +43,7 @@ __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",
 __docformat__ = 'restructuredtext'
 
 import math
+from enum import IntEnum
 
 from taurus.core.util.enumeration import Enumeration
 
@@ -119,12 +121,26 @@ DataAccess = Enumeration("DataAccess", (
     "ReadWrite",
     "Invalid"))
 
+
+class AttrQuality(IntEnum):
+    """Attribute quality factor"""
+
+    #: Attribute is valid
+    Valid = 0
+    #: Attribute is invalid
+    Invalid = 1
+    #: Attribute is in alarm
+    Alarm = 2
+    #: Attribute is changing e.g. element is in operation
+    Changing = 3
+    #: Attribute is in warning
+    Warning = 4
+
 #: dictionary dict<data type, :class:`sardana.DataType`>
 DTYPE_MAP = {
     'int': DataType.Integer,
     'integer': DataType.Integer,
     int: DataType.Integer,
-    long: DataType.Integer,
     'long': DataType.Integer,
     DataType.Integer: DataType.Integer,
     'float': DataType.Double,
@@ -146,7 +162,6 @@ R_DTYPE_MAP = {
     'int': int,
     'integer': int,
     int: int,
-    long: int,
     'long': int,
     DataType.Integer: int,
     'float': float,
@@ -187,13 +202,13 @@ def from_dtype_str(dtype):
           (:obj:`DataType`, :obj:`DataFormat.Scalar`)
 
     :param dtype: the data type to be transformed
-    :type dtype: str or None or :obj:`DataType`
+    :type dtype: :obj:`str` or None or :obj:`DataType`
     :return: a tuple <str, :obj:`DataFormat`> for the given dtype
     :rtype: tuple<str, :obj:`DataFormat`>"""
     dformat = DataFormat.Scalar
     if dtype is None:
         dtype = 'float'
-    elif isinstance(dtype, (str, unicode)):
+    elif isinstance(dtype, str):
         dtype = dtype.lower()
         if dtype.startswith("pytango."):
             dtype = dtype[len("pytango."):]
@@ -212,10 +227,10 @@ def from_access_str(access):
     a simplified data access string.
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a simple string for the given access
-    :rtype: str"""
-    if isinstance(access, (str, unicode)):
+    :rtype: :obj:`str`"""
+    if isinstance(access, str):
         access = access.lower()
         if access.startswith("pytango."):
             access = access[len("pytango."):]
@@ -228,22 +243,22 @@ def to_dtype_dformat(data):
     elements (:obj:`DataType`, :obj:`DataFormat`).
 
     :param data: the data information to be transformed
-    :type data: str or seq<str> or seq<seq<str>>
+    :type data: :obj:`str` or seq<str> or seq<seq<str>>
     :return: a tuple <:obj:`DataType`, :obj:`DataFormat`> for the given data
     :rtype: tuple<:obj:`DataType`, :obj:`DataFormat`>
     """
     import operator
     dtype, dformat = data, DataFormat.Scalar
-    if isinstance(data, (str, unicode)):
+    if isinstance(data, str):
         dtype, dformat = from_dtype_str(data)
-    elif operator.isSequenceType(data):
+    elif isinstance(data, collections.Sequence):
         dformat = DataFormat.OneD
         dtype = data[0]
         if isinstance(dtype, str):
             dtype, dformat2 = from_dtype_str(dtype)
             if dformat2 == DataFormat.OneD:
                 dformat = DataFormat.TwoD
-        elif operator.isSequenceType(dtype):
+        elif isinstance(dtype, collections.Sequence):
             dformat = DataFormat.TwoD
             dtype = dtype[0]
             if isinstance(dtype, str):
@@ -257,12 +272,12 @@ def to_daccess(daccess):
     :obj:`DataAccess`. If None is given returns :obj:`DataAccess.ReadWrite`
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a :obj:`DataAccess` for the given access
     :rtype: :obj:`DataAccess`"""
     if daccess is None:
         daccess = DataAccess.ReadWrite
-    elif isinstance(daccess, (str, unicode)):
+    elif isinstance(daccess, str):
         daccess = DACCESS_MAP.get(
             from_access_str(daccess), DataAccess.ReadWrite)
     return daccess
@@ -309,45 +324,51 @@ ET = ElementType
 
 #: a set containning all "controllable" element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                     ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
-                     ET.ComChannel, ET.IORegister, ET.PseudoMotor,
-                     ET.PseudoCounter, ET.Constraint))
+TYPE_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
+                 ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
+                 ET.ComChannel, ET.IORegister, ET.PseudoMotor,
+                 ET.PseudoCounter, ET.Constraint}
 
 #: a set containing all group element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_GROUP_ELEMENTS = set((ET.MotorGroup, ET.MeasurementGroup))
+TYPE_GROUP_ELEMENTS = {ET.MotorGroup, ET.MeasurementGroup}
 
 #: a set containing the type of elements which are moveable.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_MOVEABLE_ELEMENTS = set((ET.Motor, ET.PseudoMotor, ET.MotorGroup))
+TYPE_MOVEABLE_ELEMENTS = {ET.Motor, ET.PseudoMotor, ET.MotorGroup}
 
 #: a set containing the possible types of physical elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_PHYSICAL_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                              ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
-                              ET.ComChannel, ET.IORegister))
+TYPE_PHYSICAL_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
+                          ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
+                          ET.ComChannel, ET.IORegister}
 
 #: a set containing the possible types of acquirable elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_ACQUIRABLE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                                ET.OneDExpChannel, ET.TwoDExpChannel,
-                                ET.ComChannel, ET.IORegister, ET.PseudoMotor,
-                                ET.PseudoCounter))
+TYPE_ACQUIRABLE_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
+                            ET.OneDExpChannel, ET.TwoDExpChannel,
+                            ET.ComChannel, ET.IORegister, ET.PseudoMotor,
+                            ET.PseudoCounter}
+
+#: a set containing the possible measure-able elements.
+#: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
+TYPE_COUNTABLE_ELEMENTS = {ET.CTExpChannel, ET.OneDExpChannel,
+                           ET.TwoDExpChannel, ET.MeasurementGroup}
 
 #: a set containing the possible types of experimental channel elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_EXP_CHANNEL_ELEMENTS = set((ET.CTExpChannel, ET.ZeroDExpChannel,
-                                 ET.OneDExpChannel, ET.TwoDExpChannel, ET.PseudoCounter))
+TYPE_EXP_CHANNEL_ELEMENTS = {ET.CTExpChannel, ET.ZeroDExpChannel,
+                             ET.OneDExpChannel, ET.TwoDExpChannel,
+                             ET.PseudoCounter}
 
 #: a set containing the possible timer-able elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_TIMERABLE_ELEMENTS = set((ET.CTExpChannel, ET.OneDExpChannel,
-                               ET.TwoDExpChannel))
+TYPE_TIMERABLE_ELEMENTS = {ET.CTExpChannel, ET.OneDExpChannel,
+                           ET.TwoDExpChannel}
 
 #: a set containing the possible types of pseudo elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
-TYPE_PSEUDO_ELEMENTS = set((ET.PseudoMotor, ET.PseudoCounter))
+TYPE_PSEUDO_ELEMENTS = {ET.PseudoMotor, ET.PseudoCounter}
 
 # : An enumeration describing the all possible sardana interfaces
 # SardanaInterface = Enumeration("SardanaInterface", ( \
@@ -391,46 +412,54 @@ TYPE_PSEUDO_ELEMENTS = set((ET.PseudoMotor, ET.PseudoCounter))
 INTERFACES = {
     "Meta": (set(), "A generic sardana meta object"),
     "Object": (set(), "A generic sardana object"),
-    "Element": (set(("Object",)), "A generic sardana element"),
-    "Class": (set(("Object",)), "A generic sardana class"),
-    "Function": (set(("Object",)), "A generic sardana function"),
-    "Library": (set(("Object",)), "A generic sardana library"),
-    "PoolObject": (set(("Object",)), "A Pool object"),
-    "PoolElement": (set(("Element", "PoolObject")), "A Pool element"),
-    "Pool": (set(("PoolElement",)), "A Pool"),
-    "Controller": (set(("PoolElement",)), "A controller"),
-    "Moveable": (set(("PoolElement",)), "A moveable element"),
-    "Acquirable": (set(("PoolElement",)), "An acquirable element"),
-    "Instrument": (set(("PoolElement",)), "An instrument"),
-    "Motor": (set(("Moveable", "Acquirable")), "a motor"),
-    "PseudoMotor": (set(("Moveable", "Acquirable")), "A pseudo motor"),
-    "IORegister": (set(("Acquirable",)), "An IO register"),
-    "ExpChannel": (set(("Acquirable",)), "A generic experimental channel"),
-    "CTExpChannel": (set(("ExpChannel",)), "A counter/timer experimental channel"),
-    "ZeroDExpChannel": (set(("ExpChannel",)), "A 0D experimental channel"),
-    "OneDExpChannel": (set(("ExpChannel",)), "A 1D experimental channel"),
-    "TwoDExpChannel": (set(("ExpChannel",)), "A 2D experimental channel"),
-    "TriggerGate": (set(("PoolElement",)), "A trigger/gate"),
-    "PseudoCounter": (set(("ExpChannel",)), "A pseudo counter"),
-    "ComChannel": (set(("PoolElement",)), "A communication channel"),
+    "Element": ({"Object"}, "A generic sardana element"),
+    "Class": ({"Object"}, "A generic sardana class"),
+    "Function": ({"Object"}, "A generic sardana function"),
+    "Library": ({"Object"}, "A generic sardana library"),
+    "PoolObject": ({"Object"}, "A Pool object"),
+    "PoolElement": ({"Element", "PoolObject"}, "A Pool element"),
+    "Pool": ({"PoolElement"}, "A Pool"),
+    "Controller": ({"PoolElement"}, "A controller"),
+    "Moveable": ({"PoolElement"}, "A moveable element"),
+    "Acquirable": ({"PoolElement"}, "An acquirable element"),
+    "Countable": ({"PoolElement"}, "A countable element"),
+    "Instrument": ({"PoolElement"}, "An instrument"),
+    "Motor": ({"Moveable", "Acquirable"}, "a motor"),
+    "PseudoMotor": ({"Moveable", "Acquirable"}, "A pseudo motor"),
+    "IORegister": ({"Acquirable"}, "An IO register"),
+    "ExpChannel": ({"Acquirable"}, "A generic experimental channel"),
+    "CTExpChannel": ({"ExpChannel", "Countable"},
+                     "A counter/timer experimental channel"),
+    "ZeroDExpChannel": ({"ExpChannel"}, "A 0D experimental channel"),
+    "OneDExpChannel": ({"ExpChannel", "Countable"},
+                       "A 1D experimental channel"),
+    "TwoDExpChannel": ({"ExpChannel", "Countable"},
+                       "A 2D experimental channel"),
+    "TriggerGate": ({"PoolElement"}, "A trigger/gate"),
+    "PseudoCounter": ({"ExpChannel"}, "A pseudo counter"),
+    "ComChannel": ({"PoolElement"}, "A communication channel"),
     "MotorGroup": (set(("PoolElement",),), "A motor group"),
-    "MeasurementGroup": (set(("PoolElement",),), "A measurement group"),
-    "ControllerLibrary": (set(("Library", "PoolObject")), "A controller library"),
-    "ControllerClass": (set(("Class", "PoolObject")), "A controller class"),
-    "Constraint": (set(("PoolObject",)), "A constraint"),
-    "External": (set(("Object",)), "An external object"),
+    "MeasurementGroup": ({"PoolElement", "Countable"},
+                         "A measurement group"),
+    "ControllerLibrary": ({"Library", "PoolObject"}, "A controller library"),
+    "ControllerClass": ({"Class", "PoolObject"}, "A controller class"),
+    "Constraint": ({"PoolObject"}, "A constraint"),
+    "External": ({"Object"}, "An external object"),
 
-    "MacroServerObject": (set(("Object",)), "A generic macro server object"),
-    "MacroServerElement": (set(("Element", "MacroServerObject")), "A generic macro server element"),
-    "MacroServer": (set(("MacroServerElement",)), "A MacroServer"),
-    "Door": (set(("MacroServerElement",)), "A macro server door"),
-    "MacroLibrary": (set(("Library", "MacroServerObject")), "A macro server library"),
-    "MacroCode": (set(("MacroServerObject",)), "A macro server macro code"),
-    "MacroClass": (set(("Class", "MacroCode")), "A macro server macro class"),
-    "MacroFunction": (set(("Function", "MacroCode")), "A macro server macro function"),
-    "Macro": (set(("MacroClass", "MacroFunction")), "A macro server macro"),
+    "MacroServerObject": ({"Object"}, "A generic macro server object"),
+    "MacroServerElement": ({"Element", "MacroServerObject"},
+                           "A generic macro server element"),
+    "MacroServer": ({"MacroServerElement"}, "A MacroServer"),
+    "Door": ({"MacroServerElement"}, "A macro server door"),
+    "MacroLibrary": ({"Library", "MacroServerObject"},
+                     "A macro server library"),
+    "MacroCode": ({"MacroServerObject"}, "A macro server macro code"),
+    "MacroClass": ({"Class", "MacroCode"}, "A macro server macro class"),
+    "MacroFunction": ({"Function", "MacroCode"},
+                      "A macro server macro function"),
+    "Macro": ({"MacroClass", "MacroFunction"}, "A macro server macro"),
 
-    "ParameterType": (set(("Meta",)), "A generic macro server parameter type"),
+    "ParameterType": ({"Meta"}, "A generic macro server parameter type"),
 }
 
 #: a dictionary containing the *all* interfaces supported by each type
@@ -440,7 +469,7 @@ INTERFACES_EXPANDED = {}
 
 def __expand(name):
     direct_expansion, _ = INTERFACES[name]
-    if isinstance(direct_expansion, (str, unicode)):
+    if isinstance(direct_expansion, str):
         direct_expansion = direct_expansion,
     exp = set(direct_expansion)
     for e in direct_expansion:
@@ -472,7 +501,7 @@ def __expand_sardana_interface_data(si_map, name, curr_id):
             curr_id = __expand_sardana_interface_data(
                 si_map, interface, curr_id)
         d |= si_map[interface]
-    si_map[name] = long(d | curr_id)
+    si_map[name] = int(d | curr_id)
     return 2 * curr_id
 
 
@@ -485,7 +514,7 @@ def __root_expand_sardana_interface_data():
 
 #: An enumeration describing the all possible sardana interfaces
 Interface = Enumeration("Interface",
-                        __root_expand_sardana_interface_data().items())
+                        list(__root_expand_sardana_interface_data().items()))
 
 
 def __create_sardana_interfaces():

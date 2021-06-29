@@ -26,7 +26,7 @@
 """This module is part of the Python Pool libray. It defines the base classes
 for a pool container element"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaContainer"]
 
@@ -132,11 +132,11 @@ class SardanaContainer(object):
 
            :throw: KeyError
         """
-        if kwargs.has_key("id"):
+        if "id" in kwargs:
             id = kwargs.pop("id")
             return self.get_element_by_id(id, **kwargs)
 
-        if kwargs.has_key("full_name"):
+        if "full_name" in kwargs:
             full_name = kwargs.pop("full_name")
             return self.get_element_by_full_name(full_name, **kwargs)
 
@@ -147,7 +147,7 @@ class SardanaContainer(object):
         """Returns a reference to the requested pool object
 
            :param name: pool object name
-           :type name: str
+           :type name: :obj:`str`
 
            :return: the pool object
            :rtype: pool.PoolObject
@@ -163,7 +163,7 @@ class SardanaContainer(object):
         """Returns a reference to the requested pool object
 
            :param name: pool object full name
-           :type name: str
+           :type name: :obj:`str`
 
            :return: the pool object
            :rtype: pool.PoolObject
@@ -204,7 +204,7 @@ class SardanaContainer(object):
         elem_types_dict = self._element_types.get(t)
         if elem_types_dict is None:
             return []
-        return elem_types_dict.values()
+        return list(elem_types_dict.values())
 
     def get_element_names_by_type(self, t):
         """Returns a list of all pool object names of the given type
@@ -221,9 +221,9 @@ class SardanaContainer(object):
         """Rename an object
 
            :param old_name: old object name
-           :type old_name: str
+           :type old_name: :obj:`str`
            :param new_name: new object name
-           :type new_name: str
+           :type new_name: :obj:`str`
         """
         element = self._element_names.pop(old_name, None)
         if element is None:

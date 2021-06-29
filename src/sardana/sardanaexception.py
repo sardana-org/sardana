@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana libray. It defines the base classes
 for sardana exceptions"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["AbortException", "SardanaException", "SardanaExceptionList",
            "UnknownCode", "UnknownLibrary", "LibraryError",

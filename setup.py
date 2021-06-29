@@ -50,26 +50,13 @@ provides = [
     # 'sardana.tango',
 ]
 
-requires = [
-    'PyTango (>=7.2.3)',
-    # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
-    # when using PyTango >= 9 the dependency is >= 0.1.6
-    'itango (>=0.0.1)',
-    # for Taurus3 requires >= 3.7.5; for Taurus4 requires >= 4.3.0
-    'taurus (>= 3.7.5)',
-    'lxml (>=2.1)',
-    # ordereddict is necessary for Python < 2.6
-    'ordereddict'
-]
-
 install_requires = [
-    'PyTango>=7.2.3',
-    'itango>=0.0.1',
-    # for Taurus3 requires >= 3.7.5; for Taurus4 requires >= 4.3.0
-    'taurus>=3.7.5,!=4.0.0,!=4.0.1,!=4.0.3,!=4.1.0,!=4.1.1',
-    'lxml>=2.1'
+    'PyTango>=9.2.5',
+    'itango>=0.1.6',
+    'taurus >=4.9.0dev0',
+    'lxml>=2.3',
+    'click',
 ]
-
 
 console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
@@ -77,19 +64,22 @@ console_scripts = [
     "Sardana = sardana.tango:main",
     "sardanatestsuite = sardana.test.testsuite:main",
     "spock = sardana.spock:main",
-]
-
-gui_scripts = [
     "diffractometeralignment = sardana.taurus.qt.qtgui.extra_hkl.diffractometeralignment:main",
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
     "sequencer = sardana.taurus.qt.qtgui.extra_macroexecutor.sequenceeditor:main",
-    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main"
+    "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main",
+    "showscan = sardana.taurus.qt.qtgui.extra_sardana.showscanonline:main"
 ]
 
-entry_points = {'console_scripts': console_scripts,
-                'gui_scripts': gui_scripts,
-                }
+form_factories = [
+    "sardana.pool = sardana.taurus.qt.qtgui.extra_pool.formitemfactory:pool_item_factory"  # noqa
+]
+
+entry_points = {
+    'console_scripts': console_scripts,
+    'taurus.form.item_factories': form_factories,
+}
 
 classifiers = [
     'Development Status :: 4 - Beta',
@@ -104,7 +94,7 @@ classifiers = [
     'Operating System :: POSIX :: Linux',
     'Operating System :: Unix',
     'Operating System :: OS Independent',
-    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.5',
     'Topic :: Scientific/Engineering',
     'Topic :: Software Development :: Libraries',
 ]
@@ -127,7 +117,5 @@ setup(name='sardana',
       classifiers=classifiers,
       entry_points=entry_points,
       provides=provides,
-      requires=requires,
-      install_requires=install_requires,
-      test_suite='sardana.test.testsuite.get_sardana_unitsuite',
+      install_requires=install_requires
       )

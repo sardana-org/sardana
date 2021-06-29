@@ -91,6 +91,10 @@ Glossary
             >>> sum(i*i for i in range(10))       # sum of squares 0, 1, 4, ... 81
             285
 
+    IDE
+        Integrated Development Environment is a software application that provides
+        comprehensive facilities to computer programmers for software development.
+
     interactive
         Python has an interactive interpreter which means you can enter
         statements and expressions at the interpreter prompt, immediately
@@ -243,12 +247,12 @@ Glossary
         people unfamiliar with Python sometimes use a numerical counter instead::
 
             for i in range(len(food)):
-                print food[i]
+                print(food[i])
 
         As opposed to the cleaner, Pythonic method::
 
             for piece in food:
-                print piece
+                print(piece)
              
     sequence
         An :term:`iterable` which supports efficient element access using integer
@@ -259,6 +263,11 @@ Glossary
         supports :meth:`__getitem__` and :meth:`__len__`, but is considered a
         mapping rather than a sequence because the lookups use arbitrary
         :term:`immutable` keys rather than integers.
+
+    singleton pattern
+        Singleton pattern is a software design pattern that restricts the
+        instantiation of a class to one "single" instance. This is useful when
+        exactly one object is needed to coordinate actions across the system.
 
     slice
         An object usually containing a portion of a :term:`sequence`.  A slice is
@@ -420,6 +429,10 @@ Glossary
     
     dial
         See :term:`dial position`
+
+    RoI
+        *Region of Interest* are samples within a data set identified for a
+        particular purpose.
         
 .. _plug-in: http://en.wikipedia.org/wiki/Plug-in_(computing)
 .. _CCD: http://en.wikipedia.org/wiki/Charge-coupled_device

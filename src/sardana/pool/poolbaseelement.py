@@ -57,6 +57,7 @@ class PoolBaseElement(PoolObject):
         self._action_cache = None
         self._aborted = False
         self._stopped = False
+        self._released = False
 
         lock_name = kwargs['name'] + "Lock"
 
@@ -189,7 +190,8 @@ class PoolBaseElement(PoolObject):
         """Looks at the current cached value of status
 
         :return: the current object status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         return self._status
 
     def get_status(self, cache=True, propagate=1):
@@ -208,7 +210,8 @@ class PoolBaseElement(PoolObject):
             [default: 1]
         :type propagate: int
         :return: the current object status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         if not cache or self._status is None:
             state_info = self.read_state_info()
             self._set_state_info(state_info, propagate=propagate)
@@ -237,7 +240,7 @@ class PoolBaseElement(PoolObject):
     # state information
     # --------------------------------------------------------------------------
 
-    _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+    _STD_STATUS = "{name} is {state}"
 
     def calculate_state_info(self, status_info=None):
         """Transforms the given state information. This specific base
@@ -248,7 +251,8 @@ class PoolBaseElement(PoolObject):
         status information.
 
         :param status_info:
-            given status information [default: None, meaning use current state status.
+            given status information [default: None, meaning use current state
+            status.
         :type status_info: tuple<State, str>
         :return: a transformed state information
         :rtype: tuple<State, str>"""
@@ -256,12 +260,17 @@ class PoolBaseElement(PoolObject):
             status_info = self._state, self._status
         state, status = status_info
         state_str = State[state]
-        new_status = self._STD_STATUS.format(name=self.name, state=state_str,
-                                             ctrl_status=status)
+        new_status = self._STD_STATUS.format(name=self.name, state=state_str)
+        if status is not None and len(status) > 0:
+            new_status += "\n{}".format(status)  # append ctrl status
         return status_info[0], new_status
 
-    def set_state_info(self, state_info, propagate=1):
-        self._set_state_info(state_info, propagate=propagate)
+    def set_state_info(self, state_info, propagate=1, safe=False):
+        if safe:
+            with self:
+                self._set_state_info(state_info, propagate=propagate)
+        else:
+            self._set_state_info(state_info, propagate=propagate)
 
     def _set_state_info(self, state_info, propagate=1):
         state_info = self.calculate_state_info(state_info)
@@ -278,15 +287,9 @@ class PoolBaseElement(PoolObject):
         self.set_state_info(state_info, propagate=0)
 
     def _from_ctrl_state_info(self, state_info):
-        try:
-            state_str = State.whatis(state_info)
-            return int(state_info), "{0} is in {1}".format(self.name, state_str)
-        except KeyError:
-            pass
-        state_info, _ = state_info
-        state, status = state_info[:2]
-        state = int(state)
-        return state, status
+        state_info, _ = state_info  # ignoring exc_info
+        state, status = state_info
+        return int(state), status
 
     # --------------------------------------------------------------------------
     # default attribute
@@ -323,6 +326,26 @@ class PoolBaseElement(PoolObject):
         return self._aborted
 
     # --------------------------------------------------------------------------
+    # release
+    # --------------------------------------------------------------------------
+
+    def release(self):
+        if not self.is_in_local_operation():
+            self.warning("Not in local operation, can not release")
+            return
+        operation = self.get_operation()
+        if not operation.is_running():
+            self.warning("Operation is not running, can not release")
+            return
+        self._released = True
+        self._state_event = None
+        self.info("Release!")
+        operation.release_action()
+
+    def was_released(self):
+        return self._released
+
+    # --------------------------------------------------------------------------
     # interrupted
     # --------------------------------------------------------------------------
 
@@ -355,6 +378,7 @@ class PoolBaseElement(PoolObject):
         if operation is not None:
             self._aborted = False
             self._stopped = False
+            self._released = False
         self._operation = operation
 
     def clear_operation(self):

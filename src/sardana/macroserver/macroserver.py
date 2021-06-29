@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from __future__ import with_statement
+
 
 import os
 import re
@@ -79,7 +79,7 @@ class TypeData(object):
 #: dictionary
 #: dict<:data:`~sardana.ElementType`, :class:`~sardana.macroserver.macroserver.TypeData`>
 TYPE_MAP_OBJ = {}
-for t, d in TYPE_MAP.items():
+for t, d in list(TYPE_MAP.items()):
     o = TypeData(type=t, name=d[0], family=d[1], klass=d[2],
                  auto_full_name=d[3])
     TYPE_MAP_OBJ[t] = o
@@ -180,8 +180,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param env_db:
             environment database name
-        :type env_db:
-            str
+        :type env_db: :obj:`str`
         """
         self.environment_manager.setEnvironmentDb(environment_db)
 
@@ -294,7 +293,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param pool_names: sequence of pool names
         :type pool_names: seq<str>"""
-        for pool in self._pools.values():
+        for pool in list(self._pools.values()):
             elements_attr = pool.getAttribute("Elements")
             elements_attr.removeListener(self.on_pool_elements_changed)
 
@@ -316,14 +315,14 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             the list of names of the pools this macro server is connected to
         :rtype:
             seq<str>"""
-        return self._pools.keys()
+        return list(self._pools.keys())
 
     def get_pool(self, pool_name):
         """Returns the device pool object corresponding to the given device name
         or None if no match is found.
 
         :param pool_name: device pool name
-        :type pool_name: str
+        :type pool_name: :obj:`str`
         :return: Pool object or None if no match is found"""
         return self._pools.get(pool_name)
 
@@ -332,7 +331,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :return: the list of pools this macro server is connected to
         :rtype: seq<Pool>"""
-        return self._pools.values()
+        return list(self._pools.values())
 
     def on_pool_elements_changed(self, evt_src, evt_type, evt_value):
         if evt_type not in CHANGE_EVT_TYPES:
@@ -386,13 +385,13 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     def get_local_elements_info(self):
         # fill macro library info
         ret = [macrolib.serialize()
-               for macrolib in self.get_macro_libs().values()]
+               for macrolib in list(self.get_macro_libs().values())]
         # fill macro info
         ret += [macro.serialize()
-                for macro in self.get_macros().values()]
+                for macro in list(self.get_macros().values())]
         # fill parameter type info
         ret += [paramtype.serialize()
-                for paramtype in self.get_data_types().values()]
+                for paramtype in list(self.get_data_types().values())]
 
         return ret
 
@@ -456,8 +455,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             new_elements.append(new_lib)
         else:
             changed_elements.append(new_lib)
-            new_names = set([macro.name for macro in new_lib.get_macros()])
-            old_names = set([macro.name for macro in old_lib.get_macros()])
+            new_names = {macro.name for macro in new_lib.get_macros()}
+            old_names = {macro.name for macro in old_lib.get_macros()}
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
@@ -527,7 +526,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     def get_macro_libs_summary_info(self):
         libs = self.get_macro_libs()
         ret = []
-        for module_name, macro_lib_info in libs.items():
+        for module_name, macro_lib_info in list(libs.items()):
             elem = "%s (%s)" % (macro_lib_info.name, macro_lib_info.file_path)
             ret.append(elem)
         return ret
@@ -547,12 +546,12 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param lib_name:
             module name, python file name, or full file name (with path)
-        :type lib_name: str
+        :type lib_name: :obj:`str`
         :param macro_name:
             an optional macro name. If given a macro template code is appended
             to the end of the file (default is None meaning no macro code is
             added)
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return:
             a sequence with three items: full_filename, code, line number is 0
@@ -617,15 +616,15 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param key:
             environment variable name [default: None, meaning all environment]
-        :type key: str
+        :type key: :obj:`str`
         :param door_name:
             local context for a given door [default: None, meaning no door
             context is used]
-        :type door_name: str
+        :type door_name: :obj:`str`
         :param macro_name:
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return: a :obj:`dict` containing the environment
         :rtype: :obj:`dict`
@@ -663,7 +662,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         env_man = self.environment_manager
 
         new, change = {}, {}
-        for key, value in data.items():
+        for key, value in list(data.items()):
             d = new
             if env_man.hasEnv(key):
                 d = change
@@ -682,7 +681,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         del_env = data.get('del', [])
 
         new, change = {}, {}
-        for key, value in new_change_env.items():
+        for key, value in list(new_change_env.items()):
             d = new
             if env_man.hasEnv(key):
                 d = change
@@ -741,7 +740,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
                 type_name_list = type_class
         obj_set = set()
         param = ['^%s$' % x for x in param]
-        re_objs = map(re.compile, param, len(param) * (re.IGNORECASE,))
+        re_objs = list(map(re.compile, param, len(param) * (re.IGNORECASE,)))
         re_subtype = re.compile(subtype, re.IGNORECASE)
         for type_name in type_name_list:
             type_class_name = type_name
@@ -751,14 +750,14 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             if not type_inst.hasCapability(ParamType.ItemList):
                 continue
             if self.is_macroserver_interface(type_class_name):
-                for name, obj in type_inst.getObjDict(pool=pool).items():
+                for name, obj in list(type_inst.getObjDict(pool=pool).items()):
                     for re_obj in re_objs:
                         if re_obj.match(name) is not None:
                             obj_type = ElementType[obj.get_type()]
                             if subtype is MacroServer.All or re_subtype.match(obj_type):
                                 obj_set.add(obj)
             else:
-                for name, obj in type_inst.getObjDict(pool=pool).items():
+                for name, obj in list(type_inst.getObjDict(pool=pool).items()):
                     for re_obj in re_objs:
                         if re_obj.match(name) is not None:
                             obj_type = obj.getType()

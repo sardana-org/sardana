@@ -26,17 +26,13 @@
 """This module is part Sardana Python library. It defines the base clases
 for Sardana buffers"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaBuffer", "LateValueException", "EarlyValueException"]
 
 import weakref
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from .sardanavalue import SardanaValue
 from .sardanaevent import EventGenerator, EventType
@@ -75,7 +71,7 @@ class SardanaBuffer(EventGenerator):
         :param obj: the object which owns this buffer
         :type obj: obj
         :param name: object name
-        :type name: str
+        :type name: :obj:`str`
         :param persistent: whether values are kept in the buffer until
             being explicitly removed (True) or just until firing the next event
             (False)
@@ -128,7 +124,7 @@ class SardanaBuffer(EventGenerator):
         try:
             return self._buffer[idx]
         except KeyError:
-            msg = "value with %s index is not in buffer"
+            msg = "value with %s index is not in buffer" % idx
             if self.next_idx > idx:
                 raise LateValueException(msg)
             else:
@@ -161,12 +157,12 @@ class SardanaBuffer(EventGenerator):
         """Extend buffer with a list of objects assigning them consecutive
         indexes.
 
-        :param objs: objects that extend the buffer
-        :type param: list<object>
+        :param values: objects that extend the buffer
+        :type values: list<object>
         :param initial_idx: at which index append the first object,
             the rest of them will be assigned the next consecutive indexes,
             None means assign at the end of the buffer
-        :type idx: int
+        :type initial_idx: int
         """
         if initial_idx is None:
             initial_idx = self._next_idx
@@ -191,7 +187,7 @@ class SardanaBuffer(EventGenerator):
         try:
             return self._buffer.pop(idx)
         except KeyError:
-            msg = "value with %s index is not in buffer"
+            msg = "value with %s index is not in buffer" % idx
             raise KeyError(msg)
 
     def fire_add_event(self, propagate=1):
