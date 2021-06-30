@@ -719,15 +719,13 @@ class MeasurementConfiguration(object):
             # The external controllers should not have synchronizer
 
             if external:
-                if 'synchronizer' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have synchronizer')
-                if 'monitor' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have monitor')
-                if 'timer' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have timer')
+                for parameter in ['synchronizer', 'timer', 'monitor']:
+                    if parameter in ctrl_data:
+                        msg = (
+                            '{} is deprecated for external controllers '
+                            'e.g. Tango, since 3.0.3. Re-apply configuration '
+                            'in order to upgrade.').format(parameter)
+                    self._parent.warning(msg)
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
                 if synchronizer is None or synchronizer == 'software':
