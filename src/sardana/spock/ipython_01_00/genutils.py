@@ -64,6 +64,7 @@ from IPython.utils.io import ask_yes_no as _ask_yes_no
 from IPython.utils.process import arg_split
 from IPython.utils.coloransi import TermColors
 from IPython.terminal.ipapp import TerminalIPythonApp, launch_new_instance
+from prompt_toolkit import prompt as prompt_input
 
 try:
     # IPython 4.x
@@ -168,7 +169,7 @@ def ask_yes_no(prompt, default=None):
 
 
 def spock_input(prompt='',  ps2='... '):
-    return input(prompt)
+    return prompt_input(prompt)
 
 
 def translate_version_str2int(version_str):
