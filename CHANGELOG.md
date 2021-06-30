@@ -40,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Ensure controller, element and group state are set to Fault and details are reported in the status
   whenever plugin code i.e. controller library, is missing (#1588)
 * Stop/abort element in `ct` macro when used with channels (#1595)
+* Hang of IPython when macro input gives timeout (#1614)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
