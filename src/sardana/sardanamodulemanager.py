@@ -36,6 +36,7 @@ __docformat__ = 'restructuredtext'
 import imp
 import sys
 import threading
+import importlib
 
 from taurus.core import ManagerState
 from taurus.core.util.log import Logger
@@ -273,7 +274,7 @@ class ModuleManager(Singleton, Logger):
         with PathContext(path):
             self.info("loading module %s...", module_name)
             try:
-                module = __import__(module_name, globals(), locals(), -1)
+                module = importlib.import_module(module_name)
             except:
                 self.error("Error loading module %s", module_name)
                 self.debug("Details:", exc_info=1)
