@@ -490,6 +490,9 @@ class MeasurementConfiguration(object):
         # provide back. compatibility for value_ref_{enabled,pattern}
         # config parameters created with Sardana < 3.
         self._value_ref_compat = False
+        # provide back. compatibility for synchronizer, timer and monitor
+        # config parameters set on external channels created with Sardana < 3.
+        self._external_ctrl_compat = False
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -721,12 +724,17 @@ class MeasurementConfiguration(object):
             if external:
                 for parameter in ['synchronizer', 'timer', 'monitor']:
                     if parameter in ctrl_data:
-                        msg = (
-                            '{} is deprecated for external controllers '
-                            'e.g. Tango, since 3.0.3. Re-apply configuration '
-                            'in order to upgrade.'
-                        ).format(parameter)
-                        self._parent.warning(msg)
+                        if self._external_ctrl_compat:
+                            msg = (
+                                '{} is deprecated for external controllers '
+                                'e.g. Tango, since 3.0.3. Re-apply configuration '
+                                'in order to upgrade.'
+                            ).format(parameter)
+                            self._parent.warning(msg)
+                        else:
+                            raise ValueError(
+                                'External controller does not allow '
+                                'to have {}'.format(parameter))
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
                 if synchronizer is None or synchronizer == 'software':
