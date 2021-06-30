@@ -1595,10 +1595,22 @@ class CScan(GScan):
             min_dec_time = motor.getAcceleration()
         return min_dec_time
 
-    def set_max_top_velocity(self, motor):
-        """Helper method to set the maximum top velocity for the motor to
-        its maximum allowed limit."""
+    def set_max_top_velocity(self, moveable):
+        """Helper method to set the maximum top velocity for the moveable to
+        its maximum allowed limit.
 
+        :param moveable: moveable (motor or pseudo motor) on which to set
+            the max top velocity
+        :type moveable: `sardana.taurus.core.tango.sardana.BaseSardanaElement`
+        """
+        if moveable.type == "PseudoMotor":
+            for name in moveable.physical_elements:
+                motor = self.macro.getMotor(name)
+                self._set_max_top_velocity(motor)
+        else:
+            self._set_max_top_velocity(moveable)
+
+    def _set_max_top_velocity(self, motor):
         v = self.get_max_top_velocity(motor)
         try:
             motor.setVelocity(v)
