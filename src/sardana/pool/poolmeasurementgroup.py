@@ -724,8 +724,9 @@ class MeasurementConfiguration(object):
                         msg = (
                             '{} is deprecated for external controllers '
                             'e.g. Tango, since 3.0.3. Re-apply configuration '
-                            'in order to upgrade.').format(parameter)
-                    self._parent.warning(msg)
+                            'in order to upgrade.'
+                        ).format(parameter)
+                        self._parent.warning(msg)
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
                 if synchronizer is None or synchronizer == 'software':
