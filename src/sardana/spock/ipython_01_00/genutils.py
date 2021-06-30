@@ -1117,8 +1117,12 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
         class SpockPrompts(Prompts):
 
             def in_prompt_tokens(self, cli=None):
+                door_state = self.shell.user_ns.get("DOOR_STATE")
+                door_state_suffix = ""
+                if door_state is not None:
+                    door_state_suffix += door_state
                 return [
-                    (Token.Prompt, door_alias),
+                    (Token.Prompt, door_alias + door_state_suffix),
                     (Token.Prompt, ' ['),
                     (Token.PromptNum, str(self.shell.execution_count)),
                     (Token.Prompt, ']: '),
