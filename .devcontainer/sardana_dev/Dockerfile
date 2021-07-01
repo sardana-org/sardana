@@ -12,7 +12,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends pkg-config make build-essential \
     iputils-ping git libgl1-mesa-glx
 
-COPY environment.yml /root/environment.yml
+ADD environment.yml /root/
 # RUN micromamba env update -n base -f /root/environment.yml && rm /root/environment.yml
 RUN micromamba install -y -n base -f /root/environment.yml && micromamba clean --all --yes
 # [Optional] Uncomment to install a different version of Python than the default
