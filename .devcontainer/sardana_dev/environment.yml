@@ -7,9 +7,11 @@ dependencies:
   - boost
   - boost-cpp
   - pip=21.1
-  - taurus
   - itango
   - pyqtgraph
   - matplotlib
   - h5py
+  - pip:
+    # Temporarily install taurus from repo to include MR!1191
+    - git+https://gitlab.com/taurus-org/taurus.git@9a3043ad
 prefix: /opt/conda
