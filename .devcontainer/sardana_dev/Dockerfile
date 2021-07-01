@@ -17,6 +17,6 @@ RUN micromamba install -y -n base -f /root/environment.yml && micromamba clean -
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends pkg-config make build-essential \
-    iputils-ping git
+    iputils-ping git libgl1-mesa-glx
 
 # RUN sed -i 's/${gitbranch}//'  /root/.bashrc
