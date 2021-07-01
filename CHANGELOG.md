@@ -18,7 +18,8 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
- * Add devcontainer for VS Code IDE (Remote Containers) (#1598)
+* Allow to run Sardana scripts as Python modules (#1627)
+* Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
 ### Changed
 
