@@ -9,4 +9,7 @@ dependencies:
   - pip=21.1
   - taurus
   - itango
+  - pyqtgraph
+  - matplotlib
+  - h5py
 prefix: /opt/conda
