@@ -1,0 +1,91 @@
+# 
+# Docker compose file for Sardana development with TANGO database and database device server
+#
+# Defines:
+#   - sardana_dev: A development sardana machine with all dependencies already installed
+#   - tangodb: MariaDB database with TANGO schema
+#   - databaseds: TANGO database device server
+#   - tangotest: A useful DeviceServer to do tests.
+
+version: '3'
+
+volumes:
+  tangodb: {}
+
+networks:
+  sardana:
+
+services:
+  sardana_dev:
+    hostname: sardana
+    environment:
+      TANGO_HOST: databaseds:10000
+      DISPLAY: "unix:0"
+    build:
+      context: ./sardana_dev
+      args: 
+        INSTALL_NODE: "false"
+    cap_add:
+        - SYS_PTRACE
+    security_opt:
+        - seccomp:unconfined
+    networks:
+      - sardana
+    volumes:
+      - ..:/workspace:cached
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    command: /bin/sh -c "while sleep 1000; do :; done"
+  tangodb:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-db:latest
+    container_name: ${CONTAINER_NAME_PREFIX}tangodb
+    networks:
+      - sardana
+    environment:
+        - MYSQL_ROOT_PASSWORD=secret
+        - MYSQL_DATABASE=tango
+        - MYSQL_USER=tango
+        - MYSQL_PASSWORD=tango
+    volumes:
+        - tangodb:/var/lib/mysql
+    restart: on-failure
+
+  databaseds:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-cpp:latest
+    container_name: ${CONTAINER_NAME_PREFIX}databaseds
+    networks:
+      - sardana
+    depends_on:
+        - tangodb
+    environment:
+        - MYSQL_HOST=tangodb:3306
+        - MYSQL_DATABASE=tango
+        - MYSQL_USER=tango
+        - MYSQL_PASSWORD=tango
+    entrypoint:
+        - /usr/local/bin/wait-for-it.sh
+        - tangodb:3306
+        - --timeout=30
+        - --strict
+        - --
+        - /usr/local/bin/DataBaseds
+        - "2"
+        - -ORBendPoint
+        - giop:tcp::10000
+    restart: on-failure
+  
+  tangotest:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-java:latest
+    container_name: ${CONTAINER_NAME_PREFIX}tangotest
+    networks:
+      - sardana
+    environment:
+      - TANGO_HOST=databaseds:10000
+    entrypoint:
+      - /usr/local/bin/wait-for-it.sh
+      - databaseds:10000
+      - --timeout=30
+      - --strict
+      - --
+      - /usr/local/bin/TangoTest
+      - test
+    restart: on-failure
