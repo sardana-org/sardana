@@ -31,6 +31,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 
 * `regscan`, `reg2scan` and `reg3scan` scan macro examples
+* `rfoo` (rconsole) usage in from MacroServer - no support for Python 3 (#1622)
 
 ### Fixed
 
