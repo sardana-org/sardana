@@ -38,10 +38,7 @@ import weakref
 
 import numpy
 
-import PyTango
-
 from sardana.taurus.core.tango.sardana import PlotType
-from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder import (BaseFileRecorder,
                                                BaseNAPI_FileRecorder,
                                                SaveModes)
@@ -57,6 +54,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         BaseFileRecorder.__init__(self)
         self.base_filename = filename
         self.macro = weakref.ref(macro) if macro else None
+        import PyTango
         self.db = PyTango.Database()
         if filename:
             self.setFileName(self.base_filename)
@@ -139,6 +137,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         env = self.macro().getAllEnv()
         if ('FlagFioWriteMotorPositions' in env
                 and env['FlagFioWriteMotorPositions']):
+            from sardana.macroserver.macro import Type
             all_motors = sorted(
                 self.macro().findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:

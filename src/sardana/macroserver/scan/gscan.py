@@ -39,7 +39,6 @@ import threading
 import weakref
 import numpy as np
 
-import PyTango
 import taurus
 import collections
 
@@ -47,11 +46,9 @@ from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
-from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
-from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -67,7 +64,6 @@ from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
 from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
-from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
 
 
 # ScanEndStatus enumeration indicates the reason of the scan end.
@@ -165,6 +161,7 @@ class TangoExtraData(ExtraData):
         if t is None:
             raise Exception("Could not determine type for unknown attribute "
                             "'%s'" % self._model)
+        from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
         return FROM_TANGO_TO_STR_TYPE[t]
 
     def getShape(self):
@@ -843,6 +840,8 @@ class GScan(Logger):
                  each including a "pre_scan_value" attribute with the read
                  value for that attr
         """
+        import PyTango
+
         manager = self.macro.getManager()
         all_elements_info = manager.get_elements_with_interface('Element')
         ret = []
@@ -1207,6 +1206,7 @@ class SScan(GScan):
         # allow scan to be stopped between motion and data acquisition
         self.macro.checkPoint()
 
+        from sardana.taurus.core.tango.sardana.pool import Ready
         if state != Ready:
             self.dump_information(n, step, self.motion.moveable_list)
             m = "Scan aborted after problematic motion: " \
@@ -2116,6 +2116,7 @@ class CAcquisition(object):
         .. todo:: add validation for psuedo counters
         """
         non_compatible_channels = []
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
         validator = TangoDeviceNameValidator()
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
@@ -2723,6 +2724,7 @@ class HScan(SScan):
 
         m_state, m_positions = motion.readState(), motion.readPosition()
 
+        from sardana.taurus.core.tango.sardana.pool import Ready
         if m_state != Ready:
             self.dump_information(n, step, motion.moveable_list)
             m = "Scan aborted after problematic motion: " \

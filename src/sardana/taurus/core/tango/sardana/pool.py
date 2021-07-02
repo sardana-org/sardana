@@ -26,10 +26,7 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
-
-__all__ = ["InterruptException", "StopException", "AbortException",
-           "ReleaseException",
-           "BaseElement", "ControllerClass", "ControllerLibrary",
+__all__ = ["BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
            "TwoDExpChannel", "PseudoCounter", "Motor", "PseudoMotor",
@@ -68,6 +65,9 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
 from sardana import sardanacustomsettings
+from sardana.sardanaexception import AbortException, StopException, \
+    ReleaseException
+
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
 
@@ -100,22 +100,6 @@ def _is_referable(channel):
     if isinstance(channel, str):
         channel = DeviceProxy(channel)
     return "valueref" in list(map(str.lower, channel.get_attribute_list()))
-
-
-class InterruptException(Exception):
-    pass
-
-
-class StopException(InterruptException):
-    pass
-
-
-class AbortException(InterruptException):
-    pass
-
-
-class ReleaseException(InterruptException):
-    pass
 
 
 class BaseElement(object):
@@ -882,7 +866,6 @@ class TimerableExpChannel(ExpChannel):
 class CTExpChannel(TimerableExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
-
 
 class ZeroDExpChannel(ExpChannel):
     """ Class encapsulating ZeroDExpChannel functionality."""
