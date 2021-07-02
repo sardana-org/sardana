@@ -38,7 +38,7 @@ __all__ = ["get_tango_version_str", "get_tango_version_number",
            "from_tango_state_to_state",
            "from_deviceattribute_value", "from_deviceattribute",
            "throw_sardana_exception",
-           "prepare_logging", "prepare_rconsole", "run_tango_server",
+           "prepare_logging", "run_tango_server",
            "run"]
 
 import sys
@@ -668,8 +668,6 @@ def prepare_cmdline(parser=None, args=None):
                  "case>/log.txt]. Ignored if --without-log-file is True"
     help_wflog = "When set to True disables logging into a file [default: " \
                  "%default]"
-    help_rfoo = "rconsole port number. [default: %default meaning rconsole " \
-                "NOT active]"
     parser.add_option("--log-level", dest="log_level", metavar="LOG_LEVEL",
                       help=help_olog, type="choice",
                       choices=log_level_choices, default="warning")
@@ -681,10 +679,6 @@ def prepare_cmdline(parser=None, args=None):
                       help=help_fnlog, type="str", default=None)
     parser.add_option("--without-log-file", dest="without_log_file",
                       help=help_wflog, default=False)
-
-    parser.add_option("--rconsole-port", dest="rconsole_port",
-                      metavar="RCONSOLE_PORT", help=help_rfoo, type="int",
-                      default=0)
 
     res = list(parser.parse_args(proc_args))
     tango_args = res[1][:2] + tango_args
@@ -1204,19 +1198,6 @@ def prepare_logging(options, args, tango_args, start_time=None,
                  sardana.Release.version, sardana.__path__[0])
 
 
-def prepare_rconsole(options, args, tango_args):
-    port = options.rconsole_port
-    if port is None or port == 0:
-        return
-    taurus.debug("Setting up rconsole on port %d...", port)
-    try:
-        import rfoo.utils.rconsole
-        rfoo.utils.rconsole.spawn_server(port=port)
-        taurus.debug("Finished setting up rconsole")
-    except Exception:
-        taurus.debug("Failed to setup rconsole", exc_info=1)
-
-
 def run_tango_server(tango_util=None, start_time=None):
     # Import here to avoid circular import
     from sardana.tango.core.SardanaDevice import SardanaDevice
@@ -1329,6 +1310,5 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     prepare_taurus(options, args, tango_args)
     prepare_logging(options, args, tango_args, start_time=start_time,
                     log_messages=log_messages)
-    prepare_rconsole(options, args, tango_args)
 
     run_tango_server(tango_util, start_time=start_time)
