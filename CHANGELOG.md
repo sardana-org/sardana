@@ -49,6 +49,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
+* Provide backwards compatibility for external ctrls measurement configuration
+  (timer, monitor, synchronizer) (#1624)
 
 ## [3.1.1] 2021-06-11
 
