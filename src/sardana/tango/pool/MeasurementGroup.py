@@ -240,8 +240,10 @@ class MeasurementGroup(PoolGroupDevice):
         util = Util.instance()
         if util.is_svr_starting():
             self.measurement_group._config._value_ref_compat = True
+            self.measurement_group._config._external_ctrl_compat = True
         else:
             self.measurement_group._config._value_ref_compat = False
+            self.measurement_group._config._external_ctrl_compat = False
         self.measurement_group.set_configuration_from_user(cfg)
         db = util.get_database()
         elem_ids = self.measurement_group.user_element_ids
