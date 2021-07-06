@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "cwd": "/workspace/src",
+            "name": "MacroServer",
+            "type": "python",
+            "request": "launch",
+            "module": "sardana.tango.macroserver",
+            "args": [
+                "test",
+                "--log-level=debug",
+            ]
+        },
+        {
+            "cwd": "/workspace/src",
+            "name": "Pool",
+            "type": "python",
+            "request": "launch",
+            "module": "sardana.tango.pool",
+            "args": [
+                "test",
+                "--log-level=debug",
+            ]
+        },
+        {
+            "cwd": "/workspace/src",
+            "name": "spock",
+            "type": "python",
+            "request": "launch",
+            "module": "sardana.spock",
+            "env": {
+                "XDG_RUNTIME_DIR": "/tmp/runtime-root",
+                "PYTHONPATH": "/workspace/src",
+            }
+        }
+    ]
+}

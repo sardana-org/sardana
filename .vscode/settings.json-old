@@ -1,0 +1,5 @@
+{
+    "python.autoComplete.extraPaths": [
+    "/host/code/sardana/src/sardana"
+    ]
+}
