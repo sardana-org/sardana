@@ -11,6 +11,15 @@ dependencies:
   - pyqtgraph
   - matplotlib
   - h5py
+  - qt
+  - pyqt
+  - libxcb
+  - pytest
+  - libxkbcommon
+  - spyder
+  - bitshuffle
+  - guiqwt
+  - lxml
   - pip:
     # Temporarily install taurus from repo to include MR!1191
     - git+https://gitlab.com/taurus-org/taurus.git@9a3043ad
