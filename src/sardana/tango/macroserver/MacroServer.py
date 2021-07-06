@@ -121,13 +121,6 @@ class MacroServer(SardanaDevice):
         macro_server.set_recorder_path(self.RecorderPath)
         macro_server.set_macro_path(self.MacroPath)
 
-        if self.RConsolePort:
-            try:
-                import rfoo.utils.rconsole
-                rfoo.utils.rconsole.spawn_server(port=self.RConsolePort)
-            except Exception:
-                self.warning("Failed to start rconsole")
-                self.debug("Details:", exc_info=1)
         self.set_state(DevState.ON)
 
     def sardana_init_hook(self):
@@ -373,10 +366,6 @@ class MacroServerClass(SardanaDeviceClass):
             [DevString,
              "The environment database (usually a plain file).",
              os.path.join(DefaultEnvBaseDir, DefaultEnvRelDir)],
-        'RConsolePort':
-            [DevLong,
-             "The rconsole port number",
-             None],
         'LogReportFilename':
             [DevString,
              "Filename (absolute) which contains user log reports [default: "

@@ -18,15 +18,20 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* Allow to run Sardana scripts as Python modules (#1627)
+* Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
 ### Changed
 
 * Execute post-scan also in case of an exception (#1538)
+* `IntegrationTime`, `MonitorCount`, `NbStarts` and `SynchDescription`
+  MeasurementGroup's Tango attributes to not memorized (#1611)
 
 
 ### Removed
 
 * `regscan`, `reg2scan` and `reg3scan` scan macro examples
+* `rfoo` (rconsole) usage in from MacroServer - no support for Python 3 (#1622)
 
 ### Fixed
 
@@ -38,11 +43,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Ensure controller, element and group state are set to Fault and details are reported in the status
   whenever plugin code i.e. controller library, is missing (#1588)
 * Stop/abort element in `ct` macro when used with channels (#1595)
+* Hang of IPython when macro input gives timeout (#1614)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
+* Provide backwards compatibility for external ctrls measurement configuration
+  (timer, monitor, synchronizer) (#1624)
 
 ## [3.1.1] 2021-06-11
 

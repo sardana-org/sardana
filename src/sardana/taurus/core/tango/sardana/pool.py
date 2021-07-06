@@ -3690,7 +3690,7 @@ class Pool(TangoDevice, MoveableSource):
     # End of MoveableSource interface
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
-    def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
+    def _wait_for_element_in_container(self, container, elem_name, timeout=1.5,
                                        contains=True):
         start = time.time()
         cond = True

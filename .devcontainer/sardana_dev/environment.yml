@@ -1,0 +1,17 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8.5
+  - pytango=9.3.3
+  - boost
+  - boost-cpp
+  - pip=21.1
+  - itango
+  - pyqtgraph
+  - matplotlib
+  - h5py
+  - pip:
+    # Temporarily install taurus from repo to include MR!1191
+    - git+https://gitlab.com/taurus-org/taurus.git@9a3043ad
+prefix: /opt/conda
