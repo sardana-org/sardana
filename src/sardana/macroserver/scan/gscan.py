@@ -52,6 +52,8 @@ from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+from taurus.console import Alignment
+from taurus.console.list import List
 
 from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -2470,6 +2472,12 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
+            # Output some helpful info about the settings that are to be used
+            Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
+            out = List(cols=["Motor", "Velocity", "Acceleration", "Deceleration", "Start", "End"],
+                       text_alignment=[Left, Right, Right, Right, Right, Right],
+                       max_col_width=[-1, -1, -1, -1, -1, -1])
+
             # prepare motor(s) to move with their maximum velocity
             for path in motion_paths:
                 motor = path.moveable
@@ -2480,6 +2488,12 @@ class CTScan(CScan, CAcquisition):
                                  'end: %f; ' % path.final_pos +
                                  'ds: %f' % (path.final_pos -
                                              path.initial_pos))
+                out.appendRow([motor.getName(),
+                               path.max_vel,
+                               path.max_vel_time,
+                               path.min_vel_time,
+                               path.initial_pos,
+                               path.final_pos])
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2492,6 +2506,9 @@ class CTScan(CScan, CAcquisition):
                 except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
+
+            for line in out.genOutput():
+                self.output(line)
 
             if macro.isStopped():
                 self.on_waypoints_end()
