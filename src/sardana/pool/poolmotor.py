@@ -403,6 +403,7 @@ class PoolMotor(PoolElement):
 
     def set_offset(self, offset, propagate=1):
         self._offset.set_value(offset, propagate=propagate)
+        self.debug("Set attribute offset = {}".format(offset))
 
     offset = property(get_offset, set_offset, doc="motor offset")
 
@@ -428,6 +429,7 @@ class PoolMotor(PoolElement):
             value = ls.value
             value = value[0], value[2], value[1]
             self._set_limit_switches(value, propagate=propagate)
+        self.debug("Set attribute sign = {}".format(sign))
 
     sign = property(get_sign, set_sign, doc="motor sign")
 
@@ -446,6 +448,7 @@ class PoolMotor(PoolElement):
             raise Exception("Step per unit must be > 0.0")
         self.controller.set_axis_par(self.axis, "step_per_unit", step_per_unit)
         self._set_step_per_unit(step_per_unit, propagate=propagate)
+        self.debug("Set attribute step_per_unit = {}".format(step_per_unit))
 
     def _set_step_per_unit(self, step_per_unit, propagate=1):
         self._step_per_unit = step_per_unit
