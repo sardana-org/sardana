@@ -278,8 +278,11 @@ def reservedOperation(fn):
                 raise AbortException("aborted before calling %s" % fn.__name__)
         try:
             return fn(*args, **kwargs)
+        except AbortException:
+            self._clearEventWait()
+            raise
         except:
-            print("Exception occurred in reserved operation:"
+            self.debug("Exception occurred in reserved operation:"
                   " clearing events...")
             self._clearEventWait()
             raise
@@ -515,7 +518,8 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         try:
             evt_wait.waitForEvent((DevState.MOVING, ), after=id, equal=False,
-                                  timeout=timeout, reactivity=0.1)
+                                  timeout=timeout, reactivity=0.1, 
+                                  control_exceptions=[AbortException])
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
