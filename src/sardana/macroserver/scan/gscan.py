@@ -2251,7 +2251,6 @@ class CTScan(CScan, CAcquisition):
                             time of all the motors
                 - active_time: time interval while all the physical motors will
                                maintain constant velocity"""
-
         positions = waypoint['positions']
         active_time = waypoint["active_time"]
 
@@ -2279,7 +2278,10 @@ class CTScan(CScan, CAcquisition):
                 zip(self._physical_moveables, start_positions, positions):
             total_displacement = abs(end - start)
             direction = 1 if end > start else -1
-            interval_displacement = total_displacement / self.macro.nr_interv
+            if self.macro.nr_interv:
+                interval_displacement = total_displacement / self.macro.nr_interv
+            else:
+                interval_displacement = 0.
             # move further in order to acquire the last point at constant
             # velocity
             end = end + direction * interval_displacement
@@ -2294,7 +2296,7 @@ class CTScan(CScan, CAcquisition):
             backup_vel = moveable.getVelocity(force=True)
             ideal_max_vel = try_vel = ideal_path.max_vel
             try:
-                while True:
+                while self.macro.nr_interv:
                     moveable.setVelocity(try_vel)
                     get_vel = moveable.getVelocity(force=True)
                     if get_vel < ideal_max_vel:
@@ -2400,7 +2402,7 @@ class CTScan(CScan, CAcquisition):
                 return
 
             # at least one motor must have different start and final positions
-            if all(self.macro.starts == self.macro.finals):
+            if self.macro.nb_points > 1 and all(self.macro.starts == self.macro.finals):
                 if len(self.macro.starts) > 1:
                     msg = "Scan start and end must be different for at " \
                           "least one motor"
@@ -2434,7 +2436,10 @@ class CTScan(CScan, CAcquisition):
             final = path._final_user_pos
             total_position = (final - start) / repeats
             initial_position = start
-            total_time = abs(total_position) / path.max_vel
+            if self.macro.nb_points > 1:
+                total_time = abs(total_position) / path.max_vel
+            else:
+                total_time = 0.
             delay_time = path.max_vel_time
             delay_position = start - path.initial_user_pos
             synch = [
