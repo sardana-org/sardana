@@ -3519,13 +3519,6 @@ class Pool(TangoDevice, MoveableSource):
                                   _pool_data=data)
         return obj
 
-    def _delObject(self, element):
-        elem_type = element.getType()
-        if elem_type in ('ControllerClass', 'ControllerLibrary', 'Instrument'):
-            return
-        obj = element.getObj()
-        obj.factory().removeExistingDevice(obj)
-
     def on_elements_changed(self, evt_src, evt_type, evt_value):
         if evt_type == TaurusEventType.Error:
             msg = evt_value
@@ -3560,15 +3553,6 @@ class Pool(TangoDevice, MoveableSource):
             element = self.getElementInfo(element_data['full_name'])
             try:
                 elements.removeElement(element)
-                # Ideally this object should disappear without the need to
-                # call _delObject() - there should be no references to it.
-                # Most probably due to the complex circular references
-                # between the element and its attributes, as it is in the case
-                # of the measurement group, we need to explicitly remove the
-                # object so it does not remain on the client side (Taurus
-                # factory)
-                # See more details in #145, #1528.
-                self._delObject(element)
             except:
                 self.warning("Failed to remove %s", element_data)
         for element_data in elems.get('change', ()):
@@ -3690,7 +3674,7 @@ class Pool(TangoDevice, MoveableSource):
     # End of MoveableSource interface
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
-    def _wait_for_element_in_container(self, container, elem_name, timeout=1.5,
+    def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
                                        contains=True):
         start = time.time()
         cond = True
