@@ -677,6 +677,9 @@ class GScan(Logger):
              'user': user,
              'title': self.macro.getCommand()})
 
+        env['startts'] = ts = time.time()
+        env['starttime'] = datetime.datetime.fromtimestamp(ts)
+
         # Initialize the data_desc list (and add the point number column)
         data_desc = [
             ColumnDesc(name='point_nb', label='#Pt No', dtype='int64')
@@ -993,8 +996,6 @@ class GScan(Logger):
     def start(self):
         self.do_backup()
         env = self._env
-        env['startts'] = ts = time.time()
-        env['starttime'] = datetime.datetime.fromtimestamp(ts)
         env['acqtime'] = 0
         env['motiontime'] = 0
         env['deadtime'] = 0
