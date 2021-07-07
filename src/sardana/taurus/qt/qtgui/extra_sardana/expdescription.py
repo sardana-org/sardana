@@ -671,7 +671,18 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             else:
                 full_name = nfo.full_name
                 display = nfo.name
+            if full_name in [fn for fn, _ in preScanList]:
+                msg = ("'{}' defined more than once in snapshot.\n"
+                       + "Only one entry will be kept").format(display)
+                Qt.QMessageBox.warning(
+                    self, "Duplicated entry", msg, Qt.QMessageBox.Ok
+                )
+                continue
             preScanList.append((full_name, display))
+        if len(preScanList) != len(items):
+            # refresh the preScanList removing duplicated entries (if any)
+            self.ui.preScanList.clear()
+            self.ui.preScanList.addModels(preScanList)
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)
 
