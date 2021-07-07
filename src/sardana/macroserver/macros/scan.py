@@ -127,7 +127,10 @@ class aNscan(Hookable):
 
         self.motors = motorlist
         self.starts = numpy.array(startlist, dtype='d')
-        self.finals = numpy.array(endlist, dtype='d')
+        if scan_length:
+            self.finals = numpy.array(endlist, dtype='d')
+        else:
+            self.finals = numpy.array(startlist, dtype='d')
         self.mode = mode
         self.integ_time = integ_time
         self.opts = opts
@@ -156,7 +159,11 @@ class aNscan(Hookable):
         if mode == StepMode:
             self.nr_interv = scan_length
             self.nb_points = self.nr_interv + 1
-            self.interv_sizes = (self.finals - self.starts) / self.nr_interv
+            if self.nr_interv:
+                self.interv_sizes = (self.finals - self.starts) / self.nr_interv
+            else:
+                self.interv_sizes = (self.finals - self.starts) * 0
+
             self.name = opts.get('name', 'a%iscan' % self.N)
             self._gScan = SScan(self, self._stepGenerator,
                                 moveables, env, constrains, extrainfodesc)
@@ -310,7 +317,10 @@ class aNscan(Hookable):
                 path = MotionPath(v_motor, 0, length)
                 max_step0_time = max(max_step0_time, path0.duration)
                 max_step_time = max(max_step_time, path.duration)
-            motion_time = max_step0_time + self.nr_interv * max_step_time
+            if self.nr_interv:
+                motion_time = max_step0_time + self.nr_interv * max_step_time
+            else:
+                motion_time = max_step0_time
             # calculate acquisition time
             acq_time = self.nb_points * self.integ_time
             total_time = motion_time + acq_time
@@ -2055,7 +2065,7 @@ class meshct(Macro, Hookable):
 
 class timescan(Macro, Hookable):
     """Do a time scan over the specified time intervals. The scan starts
-    immediately. The number of data points collected will be nr_interv + 1.
+    immediately. The number of data points collected will be nr_points.
     Count time is given by integ_time. Latency time will be the longer one
     of latency_time and measurement group latency time.
     """
@@ -2064,13 +2074,13 @@ class timescan(Macro, Hookable):
                                                  'post-acq', 'post-scan')}
 
     param_def = [
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['nb_points', Type.Integer, None, 'Number of scan points'],
         ['integ_time', Type.Float, None, 'Integration time'],
         ['latency_time', Type.Float, 0, 'Latency time']]
 
-    def prepare(self, nr_interv, integ_time, latency_time):
-        self.nr_interv = nr_interv
-        self.nb_points = nr_interv + 1
+    def prepare(self, nb_points, integ_time, latency_time):
+        self.nr_interv = nb_points - 1
+        self.nb_points = nb_points
         self.integ_time = integ_time
         self.latency_time = latency_time
         self._gScan = TScan(self)
