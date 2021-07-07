@@ -273,8 +273,6 @@ class set_lim(Macro):
             except Exception as e:
                 self.debug("exception occured during setting user limits %s" % e)
 
-            
-
 
 class set_lm(Macro):
     """Sets the dial limits on the specified motor"""
