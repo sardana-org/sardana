@@ -18,6 +18,7 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* History log message for motor attributes (sign, offset and step_per_unit) (#1630)
 * Allow to run Sardana scripts as Python modules (#1627)
 * Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
