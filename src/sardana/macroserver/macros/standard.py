@@ -263,9 +263,17 @@ class set_lim(Macro):
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting user limits for %s" % name)
-        motor.getPositionObj().setLimits(low, high)
-        self.output("%s limits set to %.4f %.4f (user units)" %
-                    (name, low, high))
+        if low > high:
+            raise Exception('set_lim exception: lower limit can not be a higher value than the high limit')
+        else:
+            try:
+                motor.getPositionObj().setLimits(low, high)
+                self.output("%s limits set to %.4f %.4f (user units)" %
+                (name, low, high))
+            except Exception as e:
+                self.debug("exception occured during setting user limits %s" % e)
+
+            
 
 
 class set_lm(Macro):
@@ -279,9 +287,15 @@ class set_lm(Macro):
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting dial limits for %s" % name)
-        motor.getDialPositionObj().setLimits(low, high)
-        self.output("%s limits set to %.4f %.4f (dial units)" %
-                    (name, low, high))
+        if low > high:
+            raise Exception('set_lm exception: lower limit can not be a higher value than the high limit')
+        else:
+            try:
+                motor.getDialPositionObj().setLimits(low, high)
+                self.output("%s limits set to %.4f %.4f (dial units)" %
+                (name, low, high))
+            except Exception as e:
+                self.debug("exception occured during setting dial limits %s" % e)   
 
 
 class set_pos(Macro):
