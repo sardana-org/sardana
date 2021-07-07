@@ -1451,11 +1451,7 @@ class MacroExecutor(Logger):
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
         for macro, objs in list(self._reserved_macro_objs.items()):
-            stopped_macro_objs = []
-            try:
-                stopped_macro_objs = self._stopped_macro_objs[macro]
-            except KeyError:
-                self.debug("Aborting {} which is not stopped!".format(macro._name))
+            stopped_macro_objs = self._stopped_macro_objs[macro]
             for obj in objs:
                 if obj in stopped_macro_objs:
                     continue
@@ -1498,7 +1494,7 @@ class MacroExecutor(Logger):
         # carefull: Inside this method never call a method that has the
         # mAPI decorator
         self._aborted = True
-        if self._stopped and not self._isStopDone():
+        if not self._isStopDone():
             Logger.debug(self, "Break stopping...")
             raise_in_thread(ReleaseException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)

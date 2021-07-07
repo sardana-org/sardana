@@ -421,8 +421,6 @@ def build_measurement_configuration(user_elements):
         if elem_type == ElementType.External:
             external_user_elements.append((index, element))
             continue
-        if elem_type == ElementType.TriggerGate:
-            continue
 
         ctrl = element.controller
         ctrl_data = controllers.get(ctrl.full_name)
@@ -490,9 +488,6 @@ class MeasurementConfiguration(object):
         # provide back. compatibility for value_ref_{enabled,pattern}
         # config parameters created with Sardana < 3.
         self._value_ref_compat = False
-        # provide back. compatibility for synchronizer, timer and monitor
-        # config parameters set on external channels created with Sardana < 3.
-        self._external_ctrl_compat = False
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -654,13 +649,6 @@ class MeasurementConfiguration(object):
             Raise exceptions when setting _Synchronization_ parameter for
             external channels, 0D and PSeudoCounters.
         """
-        if not self._parent._is_online(cfg):
-            self._parent.error("Some controllers of this measurement group are offline!")
-            # Return because it won't be possible to know the controller types.
-            # Before returning, assign "user configuration" to at least be able to
-            # read it from the client (spock etc.).
-            self._user_config = cfg
-            return
 
         pool = self._parent.pool
 
@@ -722,19 +710,15 @@ class MeasurementConfiguration(object):
             # The external controllers should not have synchronizer
 
             if external:
-                for parameter in ['synchronizer', 'timer', 'monitor']:
-                    if parameter in ctrl_data:
-                        if self._external_ctrl_compat:
-                            msg = (
-                                '{} is deprecated for external controllers '
-                                'e.g. Tango, since 3.0.3. Re-apply configuration '
-                                'in order to upgrade.'
-                            ).format(parameter)
-                            self._parent.warning(msg)
-                        else:
-                            raise ValueError(
-                                'External controller does not allow '
-                                'to have {}'.format(parameter))
+                if 'synchronizer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have synchronizer')
+                if 'monitor' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have monitor')
+                if 'timer' in ctrl_data:
+                    raise ValueError('External controller does not allow '
+                                     'to have timer')
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
                 if synchronizer is None or synchronizer == 'software':
@@ -1401,22 +1385,8 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def abort(self):
         self._pending_starts = 0
-        self.acquisition._synch._synch_soft.abort()
         PoolGroupElement.abort(self)
 
-    # -------------------------------------------------------------------------
-    # utils
-    # -------------------------------------------------------------------------
-
-    def _is_online(self, cfg):
-        pool = self.pool
-        for ctrl_name in cfg['controllers']:
-            external = ctrl_name in ['__tango__']
-            if not external:
-                ctrl = pool.get_element_by_full_name(ctrl_name)
-                if not ctrl.is_online():
-                    return False
-        return True
     # --------------------------------------------------------------------------
     # release
     # --------------------------------------------------------------------------
