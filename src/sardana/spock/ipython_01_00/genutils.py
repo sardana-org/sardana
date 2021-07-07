@@ -502,8 +502,7 @@ def clean_up():
 
 def get_taurus_core_version():
     try:
-        import taurus
-        return taurus.core.release.version
+        return taurus.Release.version
     except:
         import traceback
         traceback.print_exc()
