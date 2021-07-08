@@ -2474,7 +2474,7 @@ class CTScan(CScan, CAcquisition):
 
             # Output some helpful info about the settings that are to be used
             Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
-            out = List(cols=["Motor", "Velocity", "Acceleration", "Deceleration", "Start", "End"],
+            out = List(["Motor", "Velocity", "Acceleration", "Deceleration", "Start", "End"],
                        text_alignment=[Left, Right, Right, Right, Right, Right],
                        max_col_width=[-1, -1, -1, -1, -1, -1])
 
@@ -2508,7 +2508,7 @@ class CTScan(CScan, CAcquisition):
                     raise ScanException(msg)
 
             for line in out.genOutput():
-                self.output(line)
+                self.macro.output(line)
 
             if macro.isStopped():
                 self.on_waypoints_end()
