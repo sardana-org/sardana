@@ -120,14 +120,15 @@ def get_gui_mode():
     except ImportError:
         return None
 
-    # Check for running without an X-session
-    # No display environment
-    if os.environ.get("DISPLAY") is None:
-        ret_val = None
+    # Check for running without an X-session on linux
+    if sys.platform.startswith("linux"):
+        # No display environment
+        if os.environ.get("DISPLAY") is None:
+            ret_val = None
 
-    # In docker without X-session auth
-    elif not os.path.exists("/tmp/.X11-unix"):
-        ret_val = None
+        # In docker without X-session auth
+        elif not os.path.exists("/tmp/.X11-unix"):
+            ret_val = None
 
     return ret_val
 
