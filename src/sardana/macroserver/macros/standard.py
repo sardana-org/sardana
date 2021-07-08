@@ -265,7 +265,7 @@ class set_lim(Macro):
         name = motor.getName()
         self.debug("Setting user limits for %s" % name)
         if low > high:
-            raise ValueError("lower limit must be lower than the higher limit")
+            raise ValueError("lower limit must be lower than the upper limit")
         motor.getPositionObj().setLimits(low, high)
         self.output(
             "%s limits set to %.4f %.4f (user units)" % (name, low, high)
@@ -285,7 +285,7 @@ class set_lm(Macro):
         name = motor.getName()
         self.debug("Setting dial limits for %s" % name)
         if low > high:
-            raise Exception("lower limit must be lower than the higher limit")
+            raise Exception("lower limit must be lower than the upper limit")
         motor.getDialPositionObj().setLimits(low, high)
         self.output(
             "%s limits set to %.4f %.4f (dial units)" % (name, low, high)
