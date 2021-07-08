@@ -110,9 +110,9 @@ class _lsobj(_ls):
 
     subtype = Macro.All
 
-    cols = 'Name', 'State', 'Type', 'Controller', 'Axis'
-    width = -1, -1, -1, -1, -1
-    align = Right, Right, Right, Right, Right
+    cols = 'Name', 'Type', 'Controller', 'Axis'  # , 'State'
+    width = -1,     -1,           -1,     -1  # ,      -1
+    align = Right,  Right,        Right,  Right  # ,   Right
 
     show_overwritten_msg = False
 
@@ -133,8 +133,6 @@ class _lsobj(_ls):
                     value = "[*] " + value
                     if self.show_overwritten_msg is False:
                         self.show_overwritten_msg = True
-            elif col == 'state':
-                value = o.stateObj.read().rvalue.name
             else:
                 value = getattr(o, col)
                 if value is None:
@@ -268,9 +266,9 @@ class lsmeas(_lsobj):
 
     type = Type.MeasurementGroup
 
-    cols = 'Active', 'Name', 'State', 'Timer', 'Experim. channels'
-    width = -1, -1, -1, -1, 60
-    align = HCenter, Right, Right, Right, Left
+    cols = 'Active', 'Name', 'Timer', 'Experim. channels'
+    width = -1,     -1,      -1,                  60
+    align = HCenter,  Right,   Right,                Left
 
     def prepare(self, filter, **opts):
         try:
@@ -283,10 +281,7 @@ class lsmeas(_lsobj):
             active = '*'
         else:
             active = ' '
-        state = o.stateObj.read().rvalue.name
-        timer = o.getTimerName()
-        channels = ", ".join(o.getChannelLabels())
-        return active, o.name, state, timer, channels
+        return active, o.name, o.getTimerName(), ", ".join(o.getChannelLabels())
 
 
 class lsmac(_lsobj):
