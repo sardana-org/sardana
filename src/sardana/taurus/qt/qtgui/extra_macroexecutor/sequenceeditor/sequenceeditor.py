@@ -85,6 +85,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     macroNameChanged = Qt.pyqtSignal('QString')
     macroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
+    macroListEmpty = Qt.pyqtSignal()
 
     def __init__(self, parent=None):
         Qt.QTreeView.__init__(self, parent)
@@ -233,6 +234,8 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 #        self._idIndexDict.pop(node.id())
         self.expandAll()
         self.expanded()
+        if len(self.model().root()) == 0:
+            self.macroListEmpty.emit()
 
     def upMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -499,6 +502,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.macroComboBox.currentIndexChanged.connect(
             self.onMacroComboBoxChanged)
         self.tree.macroChanged.connect(self.setMacroParametersRootIndex)
+        self.tree.macroListEmpty.connect(self.onEmptyList)
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
@@ -808,6 +812,10 @@ class TaurusSequencerWidget(TaurusWidget):
             self.playSequenceAction.setEnabled(True)
             self.pauseSequenceAction.setEnabled(False)
             self.stopSequenceAction.setEnabled(True)
+
+    def onEmptyList(self):
+        self.saveSequenceAction.setEnabled(False)
+        self.playSequenceAction.setEnabled(False)
 
     def setMacroParametersRootIndex(self, sourceIndex):
         parametersModel = self.standardMacroParametersEditor.tree.model()
