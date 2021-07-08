@@ -580,7 +580,7 @@ class TaurusSequencerWidget(TaurusWidget):
                                    Qt.QMessageBox.No) == Qt.QMessageBox.Yes:
             self.onSaveSequence()
         self.tree.clearTree()
-        self.newSequenceAction.setEnabled(False)
+        self.playSequenceAction.setEnabled(False)
         self.saveSequenceAction.setEnabled(False)
         self.currentMacroChanged.emit(None)
 
