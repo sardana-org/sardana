@@ -47,6 +47,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hang of IPython when macro input gives timeout (#1614)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
+* sequencer action buttons (new, save and play) state (enabled/disabled) (#305, #1643)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
