@@ -34,8 +34,7 @@ def xsession_available():
     """
     Checks if an X-session is available.
 
-    Returns:
-        bool: True when an X-session is available. False when not.
+    :returns: True when an X-session is available. False when not.
     """
 
     ret_val = True
