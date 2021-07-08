@@ -131,6 +131,12 @@ class aNscan(Hookable):
             self.finals = numpy.array(endlist, dtype='d')
         else:
             self.finals = numpy.array(startlist, dtype='d')
+        if scan_length < 0:
+            self.do_last_point = False
+            scan_length = -scan_length
+        else:
+            self.do_last_point = True
+
         self.mode = mode
         self.integ_time = integ_time
         self.opts = opts
@@ -342,7 +348,10 @@ class aNscan(Hookable):
         nb_of_points = self.nb_points
         scan = self._gScan
         nb_of_records = len(scan.data.records)
-        missing_records = nb_of_points - nb_of_records
+        if not hasattr(self, "do_last_point") or self.do_last_point:
+            missing_records = nb_of_points - nb_of_records
+        else:
+            missing_records = nb_of_points - nb_of_records - 1
         scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
@@ -1946,6 +1955,7 @@ class meshct(Macro, Hookable):
         self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
         self.finals = numpy.array([m1_final_pos, m2_final_pos], dtype='d')
         self.nr_intervs = numpy.array([m1_nr_interv, m2_nr_interv], dtype='i')
+        self.do_last_point = True
 
         # Number of intervals of the first motor which is doing the
         # continuous scan.
