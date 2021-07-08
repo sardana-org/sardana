@@ -289,7 +289,7 @@ class set_pos(Macro):
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
-        ['pos',   Type.Float, None, 'Value to calibrate the position to']
+        ['pos',   Type.Float, None, 'Position to move to']
     ]
 
     def run(self, motor, pos):
@@ -305,7 +305,7 @@ class set_user_pos(Macro):
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
-        ['pos',   Type.Float, None, 'Value to calibrate the position to']
+        ['pos',   Type.Float, None, 'Position to move to']
     ]
 
     def run(self, motor, pos):
@@ -839,11 +839,14 @@ class uct(Macro, _ct):
 
         self.channels = []
         self.values = []
+        names = []
         if self.countable_elem.type == Type.MeasurementGroup:
-            names = self.countable_elem.getChannelLabels()
+            meas_grp = self.countable_elem
+            for channel_info in meas_grp.getChannelsEnabledInfo():
+                names.append(channel_info.label)
             self.names = [[n] for n in names]
-            for channel_info in self.countable_elem.getChannels():
-                full_name = channel_info["full_name"]
+            for channel_info in meas_grp.getChannelsEnabledInfo():
+                full_name = channel_info.full_name
                 channel = Device(full_name)
                 self.channels.append(channel)
                 value = channel.getValue(force=True)
