@@ -116,10 +116,20 @@ ENV_NAME = "_E"
 def get_gui_mode():
     try:
         import taurus.external.qt.Qt
-        return 'qt'
+        ret_val = 'qt'
     except ImportError:
         return None
 
+    # Check for running without an X-session
+    # No display environment
+    if os.environ.get("DISPLAY") is None:
+        ret_val = None
+
+    # In docker without X-session auth
+    elif not os.path.exists("/tmp/.X11-unix"):
+        ret_val = None
+
+    return ret_val
 
 def get_pylab_mode():
     return get_app().pylab
