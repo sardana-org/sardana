@@ -76,6 +76,7 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 
+from sardana.util.graphics import xsession_available
 import taurus
 #from taurus.core import Release as TCRelease
 
@@ -121,14 +122,8 @@ def get_gui_mode():
         return None
 
     # Check for running without an X-session on linux
-    if sys.platform.startswith("linux"):
-        # No display environment
-        if os.environ.get("DISPLAY") is None:
-            ret_val = None
-
-        # In docker without X-session auth
-        elif not os.path.exists("/tmp/.X11-unix"):
-            ret_val = None
+    if not xsession_available():
+        ret_val = None
 
     return ret_val
 
