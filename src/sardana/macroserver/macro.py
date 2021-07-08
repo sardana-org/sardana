@@ -32,6 +32,7 @@ import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
+           "MoveMacro", "movemacro",
            "MacroFunc", "Type", "Table", "List", "ViewOption",
            "LibraryError", "Optional", "StopException", "AbortException",
            "InterruptException"]
@@ -65,6 +66,7 @@ from sardana.macroserver.msexception import StopException, AbortException, \
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
+from sardana import sardanacustomsettings
 
 
 class OverloadPrint(object):
@@ -2528,3 +2530,12 @@ class MacroFunc(Macro):
 
     def run(self, *args):
         return self._function(self, *args)
+
+
+class MoveMacro(Macro, Hookable):
+
+    hints = {'allowsHooks': ('pre-move', 'post-move')}
+
+    enable_hooks = getattr(sardanacustomsettings,
+                           'PRE_POST_MOVE_HOOK_IN_MV',
+                           True)
