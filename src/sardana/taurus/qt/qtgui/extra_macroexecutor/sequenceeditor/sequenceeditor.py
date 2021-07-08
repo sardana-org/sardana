@@ -368,7 +368,7 @@ class TaurusSequencerWidget(TaurusWidget):
             Qt.QIcon.fromTheme("document-new"), "New", self)
         self.newSequenceAction.triggered.connect(self.onNewSequence)
         self.newSequenceAction.setToolTip("New sequence")
-        self.newSequenceAction.setEnabled(False)
+        self.newSequenceAction.setEnabled(True)
         newSequenceButton = Qt.QToolButton()
         newSequenceButton.setDefaultAction(self.newSequenceAction)
         actionsLayout.addWidget(newSequenceButton)
