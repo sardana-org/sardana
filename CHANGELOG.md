@@ -19,6 +19,7 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
+* Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
 * Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
