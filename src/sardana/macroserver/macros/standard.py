@@ -289,7 +289,7 @@ class set_pos(Macro):
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
-        ['pos',   Type.Float, None, 'Position to move to']
+        ['pos',   Type.Float, None, 'Value to calibrate the position to']
     ]
 
     def run(self, motor, pos):
@@ -305,7 +305,7 @@ class set_user_pos(Macro):
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
-        ['pos',   Type.Float, None, 'Position to move to']
+        ['pos',   Type.Float, None, 'Value to calibrate the position to']
     ]
 
     def run(self, motor, pos):
