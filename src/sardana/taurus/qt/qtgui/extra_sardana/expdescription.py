@@ -427,7 +427,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         conf = door.getExperimentConfiguration()
         self._originalConfiguration = copy.deepcopy(conf)
         self.setLocalConfig(conf)
-        self._setDirty(False)
+        # Flag as "dirty" if some config was changed during the set-up
+        self._setDirty(self._localConfig != self._originalConfiguration)
         self._dirtyMntGrps = set()
         # set a list of available channels
         avail_channels = {}
