@@ -42,12 +42,16 @@ UNITTEST_POOL_NAME = "pool/demo1/1"
 POOL_LOG_FILES_SIZE = 1e7
 #: The MacroServer device server will use these values for its logs.
 MS_LOG_FILES_SIZE = 1e7
+#: The Sardana device server will use these values for its logs.
+SARDANA_LOG_FILES_SIZE = 1e7
 
 #: Number of rotating backups of the log files.
 #: The Pool device server will use these values for its logs.
 POOL_LOG_BCK_COUNT = 5
 #: The MacroServer device server will use these values for its logs.
 MS_LOG_BCK_COUNT = 5
+#: The Sardana device server will use these values for its logs.
+SARDANA_LOG_BCK_COUNT = 5
 
 #: Input handler for spock interactive macros. Accepted values are:
 #:
