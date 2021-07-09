@@ -2472,11 +2472,12 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
-            # Output some helpful info about the settings that are to be used
-            Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
-            out = List(["Motor", "Velocity", "Acceleration", "Deceleration", "Start", "End"],
-                       text_alignment=[Left, Right, Right, Right, Right, Right],
-                       max_col_width=[-1, -1, -1, -1, -1, -1])
+            # a table of motor settings
+            motor_table = List(["Motor", "Velocity", "Acceleration",
+                                "Deceleration", "Start", "End"],
+                               header_separator=None,
+                               text_alignment=[Alignment.HCenter] * 6,
+                               max_col_width=[-1] * 6)
 
             # prepare motor(s) to move with their maximum velocity
             for path in motion_paths:
@@ -2488,12 +2489,13 @@ class CTScan(CScan, CAcquisition):
                                  'end: %f; ' % path.final_pos +
                                  'ds: %f' % (path.final_pos -
                                              path.initial_pos))
-                out.appendRow([motor.getName(),
-                               path.max_vel,
-                               path.max_vel_time,
-                               path.min_vel_time,
-                               path.initial_pos,
-                               path.final_pos])
+                cell_format = "%g"  # TODO is this the proper format to use?
+                motor_table.appendRow([motor.getName(),
+                                       cell_format % path.max_vel,
+                                       cell_format % path.max_vel_time,
+                                       cell_format % path.min_vel_time,
+                                       cell_format % path.initial_pos,
+                                       cell_format % path.final_pos])
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2507,8 +2509,9 @@ class CTScan(CScan, CAcquisition):
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
 
-            for line in out.genOutput():
+            for line in motor_table.genOutput():
                 self.macro.output(line)
+            self.macro.output("")
 
             if macro.isStopped():
                 self.on_waypoints_end()
