@@ -2293,7 +2293,8 @@ class CTScan(CScan, CAcquisition):
                 interval_displacement = 0.
             # move further in order to acquire the last point at constant
             # velocity
-            end = end + direction * interval_displacement
+            if self.macro.do_last_point:
+                end = end + direction * interval_displacement
 
             base_vel = moveable.getBaseRate()
             ideal_vmotor = VMotor(accel_time=acc_time,
@@ -2611,8 +2612,7 @@ class CTScan(CScan, CAcquisition):
         """
         self.macro.debug("on_waypoints_end() entering...")
         self.set_all_waypoints_finished(True)
-        if restore_positions is not None and \
-           (not hasattr(self.macro, "do_last_point") or self.macro.do_last_point):
+        if restore_positions is not None:
             self._restore_motors()  # first restore motors backup
             self._setFastMotions()  # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
