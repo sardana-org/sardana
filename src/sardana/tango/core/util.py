@@ -1165,7 +1165,10 @@ def prepare_logging(options, args, tango_args, start_time=None,
             elif tangods == "MacroServer":
                 maxBytes = getattr(sardanacustomsettings, 'MS_LOG_FILES_SIZE', 1E7)
                 backupCount = getattr(sardanacustomsettings, 'MS_LOG_BCK_COUNT', 5)
-                
+            elif tangods == "Sardana":
+                maxBytes = getattr(sardanacustomsettings, 'SARDANA_LOG_FILES_SIZE', 1E7)
+                backupCount = getattr(sardanacustomsettings, 'SARDANA_LOG_BCK_COUNT', 5)
+
             fmt = Logger.getLogFormat()
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
                                                        maxBytes=maxBytes,
