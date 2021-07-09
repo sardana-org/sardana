@@ -85,6 +85,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     macroNameChanged = Qt.pyqtSignal('QString')
     macroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
+    macroTreeChanged = Qt.pyqtSignal()
 
     def __init__(self, parent=None):
         Qt.QTreeView.__init__(self, parent)
@@ -189,6 +190,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def clearTree(self):
         self.model().clearSequence()
+        self.macroTreeChanged.emit()
 
     def toXmlString(self, pretty=False, withId=True):
         return self.model().toXmlString(pretty=pretty, withId=withId)
@@ -225,6 +227,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.setCurrentIndex(newProxyIndex)
         self.expandAll()
         self.expanded()
+        self.macroTreeChanged.emit()
 
     def deleteMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -233,6 +236,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 #        self._idIndexDict.pop(node.id())
         self.expandAll()
         self.expanded()
+        self.macroTreeChanged.emit()
 
     def upMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -244,6 +248,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.setCurrentIndex(newProxyIndex)
         self.expandAll()
 #        self.expanded()
+        self.macroTreeChanged.emit()
 
     def downMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -255,6 +260,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.setCurrentIndex(newProxyIndex)
         self.expandAll()
 #        self.expanded()
+        self.macroTreeChanged.emit()
 
     def leftMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -266,6 +272,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.setCurrentIndex(newProxyIndex)
         self.expandAll()
         self.expanded()
+        self.macroTreeChanged.emit()
 
     def rightMacro(self):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -277,6 +284,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.setCurrentIndex(newProxyIndex)
         self.expandAll()
         self.expanded()
+        self.macroTreeChanged.emit()
 
     def prepareMacroIds(self):
         model = self.model()
@@ -368,7 +376,7 @@ class TaurusSequencerWidget(TaurusWidget):
             Qt.QIcon.fromTheme("document-new"), "New", self)
         self.newSequenceAction.triggered.connect(self.onNewSequence)
         self.newSequenceAction.setToolTip("New sequence")
-        self.newSequenceAction.setEnabled(False)
+        self.newSequenceAction.setEnabled(True)
         newSequenceButton = Qt.QToolButton()
         newSequenceButton.setDefaultAction(self.newSequenceAction)
         actionsLayout.addWidget(newSequenceButton)
@@ -499,6 +507,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.macroComboBox.currentIndexChanged.connect(
             self.onMacroComboBoxChanged)
         self.tree.macroChanged.connect(self.setMacroParametersRootIndex)
+        self.tree.macroTreeChanged.connect(self.onMacroTreeChanged)
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
@@ -576,7 +585,7 @@ class TaurusSequencerWidget(TaurusWidget):
                                    Qt.QMessageBox.No) == Qt.QMessageBox.Yes:
             self.onSaveSequence()
         self.tree.clearTree()
-        self.newSequenceAction.setEnabled(False)
+        self.playSequenceAction.setEnabled(False)
         self.saveSequenceAction.setEnabled(False)
         self.currentMacroChanged.emit(None)
 
@@ -808,6 +817,11 @@ class TaurusSequencerWidget(TaurusWidget):
             self.playSequenceAction.setEnabled(True)
             self.pauseSequenceAction.setEnabled(False)
             self.stopSequenceAction.setEnabled(True)
+
+    def onMacroTreeChanged(self):
+        if self.isEmptySequence():
+            self.saveSequenceAction.setEnabled(False)
+            self.playSequenceAction.setEnabled(False)
 
     def setMacroParametersRootIndex(self, sourceIndex):
         parametersModel = self.standardMacroParametersEditor.tree.model()

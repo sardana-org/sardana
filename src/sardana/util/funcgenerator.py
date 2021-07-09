@@ -177,6 +177,8 @@ class FunctionGenerator(EventGenerator, Logger):
     def stop(self):
         self._stopped = True
 
+    abort = stop
+
     def is_started(self):
         return self._started
 

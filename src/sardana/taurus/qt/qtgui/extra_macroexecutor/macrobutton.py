@@ -138,6 +138,18 @@ class MacroButton(TaurusWidget):
             self._doorStateChanged)
         self.door.getAttribute('State').addListener(self.door_state_listener)
 
+    def _updateToolTip(self):
+
+        state = self.door.stateObj.read().rvalue
+        tooltip = "{} {}".format(self.macro_name, ' '.join(self.macro_args))
+
+        if state in [PyTango.DevState.ON, PyTango.DevState.ALARM]:
+            tooltip = "Run " + tooltip
+        elif state in [PyTango.DevState.RUNNING, PyTango.DevState.STANDBY]:
+            tooltip = "Stop " + tooltip
+
+        self.setToolTip(tooltip)
+
     def _doorStateChanged(self, state):
         '''slot called on door state changes'''
         color = '#' + DEVICE_STATE_PALETTE.hex(state)
@@ -150,6 +162,7 @@ class MacroButton(TaurusWidget):
         if state not in [PyTango.DevState.ON, PyTango.DevState.ALARM] and not self.ui.button.isChecked():
             door_available = False
 
+        self._updateToolTip()
         self.ui.button.setEnabled(door_available)
         self.ui.progress.setEnabled(door_available)
 
@@ -220,7 +233,7 @@ class MacroButton(TaurusWidget):
         '''
         self.macro_name = str(name)
         # update tooltip
-        self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
+        self._updateToolTip()
 
     def updateMacroArgument(self, index, value):
         '''change a given argument
@@ -239,8 +252,7 @@ class MacroButton(TaurusWidget):
             value = '"{0}"'.format(value)
         # update the given argument
         self.macro_args[index] = value
-        # update tooltip
-        self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
+        self._updateToolTip()
 
     @staticmethod
     def __isSignal(obj):
