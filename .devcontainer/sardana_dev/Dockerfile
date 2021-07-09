@@ -10,7 +10,7 @@ FROM mambaorg/micromamba:0.13.1
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends pkg-config make build-essential \
-    iputils-ping git libgl1-mesa-glx
+    iputils-ping git libgl1-mesa-glx ssh
 
 ADD environment.yml /root/
 # RUN micromamba env update -n base -f /root/environment.yml && rm /root/environment.yml
