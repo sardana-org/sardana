@@ -2473,8 +2473,9 @@ class CTScan(CScan, CAcquisition):
                 return
 
             # a table of motor settings
-            motor_table = List(["Motor", "Velocity", "Acceleration",
-                                "Deceleration", "Start", "End"],
+            # ("u" is short for "unit", to save space)
+            motor_table = List(["Motor", "Velocity[u/s]", "Acceleration[s]",
+                                "Deceleration[s]", "Start[u]", "End[u]"],
                                header_separator=None,
                                text_alignment=[Alignment.HCenter] * 6,
                                max_col_width=[-1] * 6)
@@ -2509,6 +2510,7 @@ class CTScan(CScan, CAcquisition):
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
 
+            self.macro.output("")
             for line in motor_table.genOutput():
                 self.macro.output(line)
             self.macro.output("")
