@@ -30,22 +30,43 @@ import os
 import sys
 
 
-def xsession_available():
+def display_available():
     """
-    Checks if an X-session is available.
+    Checks if a graphical display is available.
 
-    :returns: True when an X-session is available. False when not.
+    :returns: True when a display is available. False when not.
+    :rtype: bool
+
+    .. note ::
+        This is only used for linux since it can run without graphical
+         sessions.
+        For Windows this always returns True since it can not run without.
     """
 
     ret_val = True
 
     if sys.platform.startswith("linux"):
-        # No display environment
-        if os.environ.get("DISPLAY") is None:
-            ret_val = False
+        ret_val = xsession_available()
 
-        # In docker without X-session auth
-        elif not os.path.exists("/tmp/.X11-unix"):
-            ret_val = False
+    return ret_val
+
+
+def xsession_available():
+    """
+    Checks if an X-session is available.
+
+    :returns: True when an X-session is available. False when not.
+    :rtype: bool
+    """
+
+    ret_val = True
+
+    # No display environment
+    if os.environ.get("DISPLAY") is None:
+        ret_val = False
+
+    # In docker without X-session auth
+    elif not os.path.exists("/tmp/.X11-unix"):
+        ret_val = False
 
     return ret_val

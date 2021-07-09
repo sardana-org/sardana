@@ -76,7 +76,7 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 
-from sardana.util.graphics import xsession_available
+from sardana.util.graphics import display_available
 import taurus
 #from taurus.core import Release as TCRelease
 
@@ -122,7 +122,7 @@ def get_gui_mode():
         return None
 
     # Check for running without an X-session on linux
-    if not xsession_available():
+    if not display_available():
         ret_val = None
 
     return ret_val

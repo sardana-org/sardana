@@ -31,7 +31,7 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'post_mortem', 'macrodata', 'edmac', 'spock_late_startup_hook',
            'spock_pre_prompt_hook']
 
-from sardana.util.graphics import xsession_available
+from sardana.util.graphics import display_available
 from sardana.util.whichpython import which_python_executable
 from .genutils import MSG_DONE, MSG_FAILED
 from .genutils import get_ipapi
@@ -52,10 +52,13 @@ def expconf(self, parameter_s=''):
         return
 
     try:
-        if not xsession_available():
+        if not display_available():
             raise RuntimeError
     except RuntimeError:
-        print("No X-session available. ExpConf cannot work without it.")
+        print(
+            "Running without graphical user interface support."
+            " ExpConf cannot work without it."
+        )
         return
 
     try:
@@ -107,10 +110,13 @@ def showscan(self, parameter_s=''):
         return
 
     try:
-        if not xsession_available():
+        if not display_available():
             raise RuntimeError
     except RuntimeError:
-        print("No X-session available. Showscan cannot work without it.")
+        print(
+            "Running without graphical user interface support."
+            " Showscan cannot work without it."
+        )
         return
 
     params = parameter_s.split()
@@ -135,10 +141,13 @@ def spsplot(self, parameter_s=''):
         return
 
     try:
-        if not xsession_available():
+        if not display_available():
             raise RuntimeError
     except RuntimeError:
-        print("No X-session available. SPSplot cannot work without it.")
+        print(
+            "Running without graphical user interface support."
+            " SPSplot cannot work without it."
+        )
         return
 
     get_door().plot()
