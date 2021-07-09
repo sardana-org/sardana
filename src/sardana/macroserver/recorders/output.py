@@ -224,6 +224,7 @@ class OutputRecorder(DataRecorder):
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
+        setuptime = recordlist.getEnvironValue('setuptime')
         motiontime = recordlist.getEnvironValue('motiontime')
         totaltime = endtime - starttime
         endtime = endtime.ctime()
@@ -239,11 +240,12 @@ class OutputRecorder(DataRecorder):
         startts = recordlist.getEnvironValue('startts')
         totaltimets = endts - startts
         deadtime_perc = deadtime * 100 / totaltimets
+        setuptime_perc = setuptime * 100 / totaltimets
         motiontime_perc = motiontime * 100 / totaltimets
         info_string = 'Scan #%s ended at %s, taking %s. ' + \
-                      'Dead time %.1f%% (motion dead time %.1f%%)'
+                      'Dead time %.1f%% (setup time %.1f%%, motion dead time %.1f%%)'
         self._stream().info(info_string % (serialno, endtime, totaltime,
-                                         deadtime_perc, motiontime_perc))
+                                         deadtime_perc, setuptime_perc, motiontime_perc))
 
     def _writeRecord(self, record):
         cells = []

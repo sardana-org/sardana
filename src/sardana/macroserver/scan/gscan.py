@@ -677,6 +677,9 @@ class GScan(Logger):
              'user': user,
              'title': self.macro.getCommand()})
 
+        env['startts'] = ts = time.time()
+        env['starttime'] = datetime.datetime.fromtimestamp(ts)
+
         # Initialize the data_desc list (and add the point number column)
         data_desc = [
             ColumnDesc(name='point_nb', label='#Pt No', dtype='int64')
@@ -993,27 +996,31 @@ class GScan(Logger):
     def start(self):
         self.do_backup()
         env = self._env
-        env['startts'] = ts = time.time()
-        env['starttime'] = datetime.datetime.fromtimestamp(ts)
+        env['scanstartts'] = ts = time.time()
+        env['scanstarttime'] = datetime.datetime.fromtimestamp(ts)
         env['acqtime'] = 0
         env['motiontime'] = 0
         env['deadtime'] = 0
+        env['setuptime'] = ts - env['startts'] 
         self.data.start()
 
     def end(self):
         env = self._env
         env['endts'] = end_ts = time.time()
         env['endtime'] = datetime.datetime.fromtimestamp(end_ts)
-        total_time = end_ts - env['startts']
+        # total macro time, including snapshots
+        # total_time = end_ts - env['startts']
+        # time to run actual scan
+        total_scan_time = end_ts - env['scanstartts']
         # estimated = env['estimatedtime']
         acq_time = env['acqtime']
         # env['deadtime'] = 100.0 * (total_time - estimated) / total_time
 
-        env['deadtime'] = total_time - acq_time
+        env['deadtime'] = total_scan_time - acq_time
         if 'delaytime' in env:
-            env['motiontime'] = total_time - acq_time - env['delaytime']
+            env['motiontime'] = total_scan_time - acq_time - env['delaytime']
         elif 'motiontime' in env:
-            env['delaytime'] = total_time - acq_time - env['motiontime']
+            env['delaytime'] = total_scan_time - acq_time - env['motiontime']
 
         self.data.end()
         try:
