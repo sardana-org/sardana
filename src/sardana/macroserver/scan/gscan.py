@@ -2293,7 +2293,7 @@ class CTScan(CScan, CAcquisition):
                 interval_displacement = 0.
             # move further in order to acquire the last point at constant
             # velocity
-            if self.macro.do_last_point:
+            if not hasattr(self.macro, "do_last_point") or self.macro.do_last_point:
                 end = end + direction * interval_displacement
 
             base_vel = moveable.getBaseRate()
