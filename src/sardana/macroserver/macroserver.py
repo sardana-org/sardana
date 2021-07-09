@@ -447,8 +447,10 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         new_elements, changed_elements, deleted_elements = [], [], []
 
         new_lib = manager.reloadMacroLib(lib_name)
+        
         if new_lib.has_errors():
-            return new_lib
+            exc_type, exc_value, exc_traceback = new_lib.get_error()
+            raise exc_type(exc_value).with_traceback(exc_traceback)
 
         if old_lib is None:
             new_elements.extend(new_lib.get_macros())
