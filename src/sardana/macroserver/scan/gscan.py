@@ -1391,8 +1391,7 @@ class CScan(GScan):
         (either because no more waypoints or because a macro abort was
         triggered)"""
         self.set_all_waypoints_finished(True)
-        if restore_positions is not None and \
-           (not hasattr(self.macro, "do_last_point") or self.macro.do_last_point):
+        if restore_positions is not None:
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
