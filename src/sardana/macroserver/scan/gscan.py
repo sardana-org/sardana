@@ -2623,6 +2623,25 @@ class CTScan(CScan, CAcquisition):
         self.join_thread_pool()
         self.macro.debug("All data events are processed")
 
+        # Note: The commented out code below works, but due to an issue with
+        # output of the last measurement point, it should not be enabled yet.
+        # See https://github.com/sardana-org/sardana/issues/1651
+
+        # # Output the restored motor settings
+        # out = List(["Motor", "Velocity", "Acceleration", "Deceleration"],
+        #            header_separator=None,
+        #            text_alignment=[Alignment.HCenter] * 4,
+        #            max_col_width=[-1] * 4)
+        # cell_format = "%g"
+        # for motor_backup in self._backup:
+        #     out.appendRow([motor_backup["moveable"].getName(),
+        #                    cell_format % motor_backup["velocity"],
+        #                    cell_format % motor_backup["acceleration"],
+        #                    cell_format % motor_backup["deceleration"]])
+        # self.macro.output("")
+        # for line in out.genOutput():
+        #     self.macro.output(line)
+
     def scan_loop(self):
         macro = self.macro
         # manager = macro.getManager()
