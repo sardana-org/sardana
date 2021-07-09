@@ -52,6 +52,8 @@ from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+from taurus.console import Alignment
+from taurus.console.list import List
 
 from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -2477,6 +2479,14 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
+            # a table of motor settings
+            # ("u" is short for "unit", to save space)
+            motor_table = List(["Motor", "Velocity[u/s]", "Acceleration[s]",
+                                "Deceleration[s]", "Start[u]", "End[u]"],
+                               header_separator=None,
+                               text_alignment=[Alignment.HCenter] * 6,
+                               max_col_width=[-1] * 6)
+
             # prepare motor(s) to move with their maximum velocity
             for path in motion_paths:
                 motor = path.moveable
@@ -2487,6 +2497,13 @@ class CTScan(CScan, CAcquisition):
                                  'end: %f; ' % path.final_pos +
                                  'ds: %f' % (path.final_pos -
                                              path.initial_pos))
+                cell_format = "%g"  # TODO is this the proper format to use?
+                motor_table.appendRow([motor.getName(),
+                                       cell_format % path.max_vel,
+                                       cell_format % path.max_vel_time,
+                                       cell_format % path.min_vel_time,
+                                       cell_format % path.initial_pos,
+                                       cell_format % path.final_pos])
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2499,6 +2516,11 @@ class CTScan(CScan, CAcquisition):
                 except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
+
+            self.macro.output("")
+            for line in motor_table.genOutput():
+                self.macro.output(line)
+            self.macro.output("")
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2609,6 +2631,25 @@ class CTScan(CScan, CAcquisition):
         self.wait_value_buffer()
         self.join_thread_pool()
         self.macro.debug("All data events are processed")
+
+        # Note: The commented out code below works, but due to an issue with
+        # output of the last measurement point, it should not be enabled yet.
+        # See https://github.com/sardana-org/sardana/issues/1651
+
+        # # Output the restored motor settings
+        # out = List(["Motor", "Velocity", "Acceleration", "Deceleration"],
+        #            header_separator=None,
+        #            text_alignment=[Alignment.HCenter] * 4,
+        #            max_col_width=[-1] * 4)
+        # cell_format = "%g"
+        # for motor_backup in self._backup:
+        #     out.appendRow([motor_backup["moveable"].getName(),
+        #                    cell_format % motor_backup["velocity"],
+        #                    cell_format % motor_backup["acceleration"],
+        #                    cell_format % motor_backup["deceleration"]])
+        # self.macro.output("")
+        # for line in out.genOutput():
+        #     self.macro.output(line)
 
     def scan_loop(self):
         macro = self.macro
