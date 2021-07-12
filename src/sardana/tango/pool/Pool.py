@@ -989,7 +989,7 @@ class Pool(PyTango.LatestDeviceImpl, Logger):
         lib = manager.getControllerLib(name)
         if lib is None:
             raise Exception("Unknown controller file '%s'", name)
-        return lib.f_path, "".join(lib.getCode())
+        return lib.path, "".join(lib.get_code())
 
     def PutFile(self, file_data):
         p = self.pool

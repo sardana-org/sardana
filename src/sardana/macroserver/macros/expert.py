@@ -248,14 +248,15 @@ class edctrlcls(Macro):
     hints = {'commit_cmd': 'commit_ctrllib'}
 
     def run(self, ctrlclass):
-        f_name = ctrlclass.file
-        pool = ctrlclass.getPool()
+        f_name = ctrlclass.f_name
+        pool = ctrlclass.getPoolObj()
         data = pool.GetFile(f_name)
-        data = array.array('B', data).tostring()
+        data = data[0] + data[1]
         line_nb = 1
+        ctrlname = " " +  ctrlclass.name + "("
         for line in data.splitlines():
             line = line.strip(' \t')
-            if line.startswith('class') and line.find(ctrlclass.name) > 0 and \
+            if line.startswith('class') and line.find(ctrlname) > 0 and \
                     line.endswith(":"):
                 break
             line_nb = line_nb + 1
@@ -277,9 +278,10 @@ class edctrllib(Macro):
     hints = {'commit_cmd': 'commit_ctrllib'}
 
     def run(self, filename):
-        pool = self.getManager().getPool()
+        pool = self.getPools()[0]
         data = pool.GetFile(filename)
-        return [filename, array.array('B', data).tostring(), 0]
+        data = data[0] + data[1]
+        return [filename, data, 0]
 
 
 class commit_ctrllib(Macro):
