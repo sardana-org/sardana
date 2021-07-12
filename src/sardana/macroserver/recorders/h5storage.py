@@ -302,6 +302,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
+            if label in _snap:
+                self.warning(
+                    "PreScanSnapShot: skipping duplicated label'{}'".format(
+                        label
+                    )
+                )
+                continue
             dtype = dd.dtype
             pre_scan_value = dd.pre_scan_value
             if dd.dtype == 'bool':
