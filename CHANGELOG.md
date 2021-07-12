@@ -18,6 +18,8 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* Print in form of a table relevant motion parameters used during continuous scans
+  before the scan starts (#692, #1652)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
 * Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
