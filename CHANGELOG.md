@@ -23,6 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
 * Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
+* Allow user to control Pool, MacroServer and Sardana servers log files size & number (#141, #1654)
 * Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
 ### Changed
