@@ -40,16 +40,20 @@ UNITTEST_POOL_NAME = "pool/demo1/1"
 #: Size of rotating backups of the log files.
 #: The Pool device server will use these values for its logs.
 POOL_LOG_FILES_SIZE = 1e7
+#: Size of rotating backups of the log files.
 #: The MacroServer device server will use these values for its logs.
 MS_LOG_FILES_SIZE = 1e7
+#: Size of rotating backups of the log files.
 #: The Sardana device server will use these values for its logs.
 SARDANA_LOG_FILES_SIZE = 1e7
 
 #: Number of rotating backups of the log files.
 #: The Pool device server will use these values for its logs.
 POOL_LOG_BCK_COUNT = 5
+#: Number of rotating backups of the log files.
 #: The MacroServer device server will use these values for its logs.
 MS_LOG_BCK_COUNT = 5
+#: Number of rotating backups of the log files.
 #: The Sardana device server will use these values for its logs.
 SARDANA_LOG_BCK_COUNT = 5
 
