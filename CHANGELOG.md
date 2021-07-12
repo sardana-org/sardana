@@ -62,6 +62,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
 * Provide backwards compatibility for external ctrls measurement configuration
   (timer, monitor, synchronizer) (#1624)
+* Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
 
 ## [3.1.1] 2021-06-11
 
