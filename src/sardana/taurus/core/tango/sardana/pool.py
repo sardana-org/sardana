@@ -518,8 +518,7 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         try:
             evt_wait.waitForEvent((DevState.MOVING, ), after=id, equal=False,
-                                  timeout=timeout, reactivity=0.1,
-                                  control_exceptions=[AbortException])
+                                  timeout=timeout, reactivity=0.1)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time

@@ -41,10 +41,20 @@ class UtilsForTests():
     def parsingOutputPoints(self, log_output):
         """A helper method to know if points are ordered based on log_output.
         """
-        first_data_line = 1
         scan_index = 0
         list_points = []
-        for line, in log_output[first_data_line:]:
+        processing_motor_params_table = False
+        for line, in log_output:
+            line = line.lstrip()
+            if line.startswith("Motor"):
+                processing_motor_params_table = True
+                continue
+            if processing_motor_params_table:
+                if len(line) == 0:
+                    processing_motor_params_table = False
+                continue
+            if line.startswith("#Pt") or len(line) == 0:
+                continue
             # Get a list of elements without white spaces between them
             columns = line.split()
 
@@ -52,7 +62,7 @@ class UtilsForTests():
             columns[scan_index] = int(columns[scan_index])
             list_points.append(columns[scan_index])
         nb_points = len(list_points)
-
+        
         ordered_points = 0
         for i in range(len(list_points) - 1):
             if list_points[i + 1] >= list_points[i]:
