@@ -50,6 +50,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hang of IPython when macro input gives timeout (#1614)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
+* Avoid problems with duplicated pre-scan snapshots (#87, #1637)
+   * Make `NXscanH5_FileRecorder` robust agains duplicated pre-scan snapshots
+   * Make `expconf`:
+      * prevent from duplicating pre-scan snapshots
+      * sanitize already duplicated pre-scan snapshots and offer applying samitized configuration
 * Respect enabled flag in `uct` macro (#1202, #1649)
 * sequencer action buttons (new, save and play) state (enabled/disabled) (#305, #1643)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
