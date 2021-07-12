@@ -278,8 +278,11 @@ def reservedOperation(fn):
                 raise AbortException("aborted before calling %s" % fn.__name__)
         try:
             return fn(*args, **kwargs)
+        except AbortException:
+            self._clearEventWait()
+            raise
         except:
-            print("Exception occurred in reserved operation:"
+            self.debug("Exception occurred in reserved operation:"
                   " clearing events...")
             self._clearEventWait()
             raise

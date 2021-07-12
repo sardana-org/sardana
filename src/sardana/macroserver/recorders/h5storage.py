@@ -227,6 +227,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                     self.__class__.__name__)
         _pname = nxentry.create_dataset('program_name', data=program_name)
         _pname.attrs['version'] = sardana.release.version
+        # TODO check if this should be "starttime" or "scanstarttime"
         nxentry.create_dataset('start_time', data=env['starttime'].isoformat())
         timedelta = (env['starttime'] - datetime(1970, 1, 1))
         try:
@@ -301,6 +302,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
+            if label in _snap:
+                self.warning(
+                    "PreScanSnapShot: skipping duplicated label'{}'".format(
+                        label
+                    )
+                )
+                continue
             dtype = dd.dtype
             pre_scan_value = dd.pre_scan_value
             if dd.dtype == 'bool':

@@ -18,8 +18,12 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* Print in form of a table relevant motion parameters used during continuous scans
+  before the scan starts (#692, #1652)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
+* Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
+* Allow user to control Pool, MacroServer and Sardana servers log files size & number (#141, #1654)
 * Add devcontainer for VS Code IDE (Remote Containers) (#1598)
 
 ### Changed
@@ -47,11 +51,19 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hang of IPython when macro input gives timeout (#1614)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
+* Avoid problems with duplicated pre-scan snapshots (#87, #1637)
+   * Make `NXscanH5_FileRecorder` robust agains duplicated pre-scan snapshots
+   * Make `expconf`:
+      * prevent from duplicating pre-scan snapshots
+      * sanitize already duplicated pre-scan snapshots and offer applying samitized configuration
+* Respect enabled flag in `uct` macro (#1202, #1649)
+* sequencer action buttons (new, save and play) state (enabled/disabled) (#305, #1643)
 * Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
 * Remove usage of taurus deprecated features (#1552)
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
 * Provide backwards compatibility for external ctrls measurement configuration
   (timer, monitor, synchronizer) (#1624)
+* Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
 
 ## [3.1.1] 2021-06-11
 

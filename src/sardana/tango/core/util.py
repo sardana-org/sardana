@@ -1156,8 +1156,18 @@ def prepare_logging(options, args, tango_args, start_time=None,
                 os.makedirs(path, 0o777)
 
             from sardana import sardanacustomsettings
-            maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)
-            backupCount = getattr(sardanacustomsettings, 'LOG_BCK_COUNT', 5)
+
+            tangods = args[0]
+            
+            if tangods == "Pool":
+                maxBytes = getattr(sardanacustomsettings, 'POOL_LOG_FILES_SIZE', 1E7)
+                backupCount = getattr(sardanacustomsettings, 'POOL_LOG_BCK_COUNT', 5)
+            elif tangods == "MacroServer":
+                maxBytes = getattr(sardanacustomsettings, 'MS_LOG_FILES_SIZE', 1E7)
+                backupCount = getattr(sardanacustomsettings, 'MS_LOG_BCK_COUNT', 5)
+            elif tangods == "Sardana":
+                maxBytes = getattr(sardanacustomsettings, 'SARDANA_LOG_FILES_SIZE', 1E7)
+                backupCount = getattr(sardanacustomsettings, 'SARDANA_LOG_BCK_COUNT', 5)
 
             fmt = Logger.getLogFormat()
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
