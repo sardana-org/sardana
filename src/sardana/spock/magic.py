@@ -53,8 +53,10 @@ def expconf(self, parameter_s=''):
 
     if not display_available():
         print(
-            "Running without graphical user interface support."
-            " ExpConf cannot work without it."
+            "Running without graphical user interface support. "
+            "ExpConf cannot work without it. "
+            "(hint: maybe you want to use experiment configuration macros? "
+            "https://sardana-controls.org/users/standard_macro_catalog.html#experiment-configuration-macros)"
         )
         return
 
