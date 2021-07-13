@@ -38,6 +38,7 @@ from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
 from sardana.util.parser import ParamParser
+from sardana.util.graphics import display_available
 from sardana import sardanacustomsettings
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
@@ -518,6 +519,11 @@ class SpockBaseDoor(BaseDoor):
                     from taurus.external.qt import Qt
                 except ImportError:
                     print("Qt binding is not available. Macro plotting cannot work without it.")
+                    return
+                if not display_available():
+                    print("Running without graphical user interface support."
+                          " Macro plotting cannot work without it."
+                    )
                     return
                 func_name = self.MathFrontend + "." + func_name
             args = data['args']
