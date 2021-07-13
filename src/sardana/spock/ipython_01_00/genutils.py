@@ -76,6 +76,7 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 
+from sardana.util.graphics import display_available
 import taurus
 #from taurus.core import Release as TCRelease
 
@@ -116,10 +117,15 @@ ENV_NAME = "_E"
 def get_gui_mode():
     try:
         import taurus.external.qt.Qt
-        return 'qt'
+        ret_val = 'qt'
     except ImportError:
         return None
 
+    # Check for running without an X-session on linux
+    if not display_available():
+        ret_val = None
+
+    return ret_val
 
 def get_pylab_mode():
     return get_app().pylab
@@ -1303,6 +1309,11 @@ def prepare_input_handler():
         except ImportError:
             raise Exception("Cannot use Spock Qt input handler!")
 
+        if not display_available():
+            raise Exception(
+                "Running without graphical user interface support."
+                " Cannot use Spock Qt input handler!"
+            )
 
 def prepare_cmdline(argv=None):
     if argv is None:
