@@ -1305,6 +1305,11 @@ def prepare_input_handler():
         except ImportError:
             raise Exception("Cannot use Spock Qt input handler!")
 
+        if not display_available():
+            raise Exception(
+                "Running without graphical user interface support."
+                " Cannot use Spock Qt input handler!"
+            )
 
 def prepare_cmdline(argv=None):
     if argv is None:
