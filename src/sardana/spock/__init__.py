@@ -31,4 +31,6 @@ from .genutils import (load_ipython_extension, unload_ipython_extension,  # noqa
 
 
 def main():
+    import taurus
+    taurus.setLogLevel(getattr(taurus, "Warning"))
     run()
