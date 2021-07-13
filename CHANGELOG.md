@@ -49,6 +49,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   whenever plugin code i.e. controller library, is missing (#1588)
 * Stop/abort element in `ct` macro when used with channels (#1595)
 * Hang of IPython when macro input gives timeout (#1614)
+* Spock prompt informs when the Door is offline (#1625)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Avoid problems with duplicated pre-scan snapshots (#87, #1637)
