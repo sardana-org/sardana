@@ -51,10 +51,7 @@ def expconf(self, parameter_s=''):
               "https://sardana-controls.org/users/standard_macro_catalog.html#experiment-configuration-macros)")
         return
 
-    try:
-        if not display_available():
-            raise RuntimeError
-    except RuntimeError:
+    if not display_available():
         print(
             "Running without graphical user interface support."
             " ExpConf cannot work without it."
@@ -109,10 +106,7 @@ def showscan(self, parameter_s=''):
         print("Qt binding is not available. Showscan cannot work without it.")
         return
 
-    try:
-        if not display_available():
-            raise RuntimeError
-    except RuntimeError:
+    if not display_available():
         print(
             "Running without graphical user interface support."
             " Showscan cannot work without it."
@@ -140,10 +134,7 @@ def spsplot(self, parameter_s=''):
         print("Qt binding is not available. SPSplot cannot work without it.")
         return
 
-    try:
-        if not display_available():
-            raise RuntimeError
-    except RuntimeError:
+    if not display_available():
         print(
             "Running without graphical user interface support."
             " SPSplot cannot work without it."
