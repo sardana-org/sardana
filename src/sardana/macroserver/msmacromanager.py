@@ -1068,11 +1068,6 @@ class MacroExecutor(Logger):
         self._door = door
         self._macro_counter = 0
 
-        # dict<PoolElement, set<Macro>>
-        # key PoolElement - reserved object
-        # value set<Macro> macros that reserved the object
-        self._reserved_objs = {}
-
         # dict<Macro, seq<PoolElement>>
         # key Macro - macro object
         # value - sequence of reserverd objects by the macro
@@ -1579,11 +1574,6 @@ class MacroExecutor(Logger):
                        macro script
         :return: (lxml.etree.Element) the xml representation of the running macro
         """
-        # dict<PoolElement, set<Macro>>
-        # key PoolElement - reserved object
-        # value set<Macro> macros that reserved the object
-        self._reserved_objs = {}
-
         # dict<Macro, seq<PoolElement>>
         # key Macro - macro object
         # value - sequence of reserved objects by the macro
@@ -1847,10 +1837,6 @@ class MacroExecutor(Logger):
             else:
                 objs.append(obj)
 
-        # Fill _reserved_objs
-        macros = self._reserved_objs[obj] = self._reserved_objs.get(obj, set())
-        macros.add(macro_obj)
-
         # Tell the object that it is reserved by a new macro
         if hasattr(obj, 'reserve'):
             obj.reserve(macro_obj)
@@ -1882,11 +1868,3 @@ class MacroExecutor(Logger):
         objs.remove(obj)
         if len(objs) == 0:
             del self._reserved_macro_objs[macro_obj]
-
-        try:
-            macros = self._reserved_objs[obj]
-            macros.remove(macro_obj)
-            if not len(macros):
-                del self._reserved_objs[obj]
-        except KeyError:
-            self.debug("Unexpected KeyError trying to remove reserved object")
