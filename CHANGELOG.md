@@ -47,6 +47,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   correctly reports the channels involved in the measurement group (#145, #1528, #1607)
 * Ensure controller, element and group state are set to Fault and details are reported in the status
   whenever plugin code i.e. controller library, is missing (#1588)
+* Stop motion only once in scans (#1578, #1579)
 * Stop/abort element in `ct` macro when used with channels (#1595)
 * Hang of IPython when macro input gives timeout (#1614)
 * Spock prompt informs when the Door is offline (#1621, #1625)
