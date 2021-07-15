@@ -40,6 +40,7 @@ from PyTango import LatestDeviceImpl, DeviceClass, Util, DevState, \
 
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.log import Logger
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana.tango.core.util import to_tango_state, NO_DB_MAP
 
@@ -132,27 +133,10 @@ class SardanaDevice(LatestDeviceImpl, Logger):
         :return: this device full name
         :rtype: :obj:`str`
         """
-        db = self.get_database()
-        if db.get_from_env_var():
-            db_name = ApiUtil.get_env_var("TANGO_HOST")
-        else:
-            if db.is_dbase_used():
-                db_name = db.get_db_host() + ":" + db.get_db_port()
-            else:
-                db_name = db.get_file_name()
-                full_name = db_name + "/" + self.get_name()
-                return full_name
-        # try to use Taurus 4 to retrieve FQDN
-        try:
-            from taurus.core.tango.tangovalidator import \
-                TangoAuthorityNameValidator
-            db_name = "//%s" % db_name
-            db_name, _, _ = TangoAuthorityNameValidator().getNames(db_name)
-        # if Taurus3 in use just continue
-        except ImportError:
-            pass
-        full_name = "{0}/{1}".format(db_name, self.get_name())
-        return full_name
+
+        validator = TangoDeviceNameValidator()
+        names = validator.getNames(self.get_name())
+        return names[0]
 
     def init_device(self):
         """Initialize the device. Called during startup after :meth:`init` and
