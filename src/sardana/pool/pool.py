@@ -538,9 +538,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def rename_element(self, old_name, new_name):
-        PoolContainer.rename_element(self, old_name, new_name)
-
         elem = self.get_element_by_name(old_name)
+        PoolContainer.rename_element(self, old_name, new_name)
+        
         if type(elem) == PoolMeasurementGroup:
             elem.rename_element(old_name, new_name)
         else:
