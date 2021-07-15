@@ -296,8 +296,6 @@ class lsmeas(_lsobj):
 
         return active, o.name, o.getTimerName(), ', '.join(channels)
 
-        #", ".join(o.getChannelAlias())
-
 
 class lsmac(_lsobj):
     """Lists existing macros"""
