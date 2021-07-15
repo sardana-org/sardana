@@ -53,35 +53,21 @@ class PoolBaseExternalObject(PoolBaseObject):
 class PoolTangoObject(PoolBaseExternalObject):
     """TODO"""
 
-    def __init__(self, **kwargs):
-        scheme = kwargs.pop('scheme', 'tango')
-        attribute_name = kwargs.pop('_shortattrname')
-        host, port = kwargs.pop('host', None), kwargs.pop('port', None)
-        devalias = kwargs.pop('_devalias', None)
-        device_name = kwargs.pop('devname', None)
-        if host is None:
-            db = PyTango.Database()
-            host, port = db.get_db_host(), db.get_db_port()
-        else:
-            db = PyTango.Database(host, port)
-        full_name = "<unknown>"
-        if device_name is None:
-            if devalias is not None:
-                try:
-                    device_name = db.get_device_alias(devalias)
-                    full_name = "tango://{0}:{1}/{2}/{3}".format(
-                        host, port, device_name, attribute_name)
-                except:
-                    full_name = "{0}/{1}".format(devalias, attribute_name)
-        else:
-            full_name = "tango://{0}:{1}/{2}/{3}".format(
-                host, port, device_name, attribute_name)
-        self._device_name = device_name
-        self._attribute_name = attribute_name
+    def __init__(self, pool, name):
+        validator = TangoAttributeNameValidator()
+        params = validator.getUriGroups(name)
+        full_name = "{}:{}{}".format(params['scheme'], params['authority'], params['path'])
+        name = "{}/{}".format(params['devname'], params['_shortattrname'])
+        self._device_name = params['devname']
+        self._attribute_name = params['_shortattrname']
         self._config = None
         self._device = None
+
         # TODO evaluate to use alias instead of device_name
-        kwargs['name'] = '{0}/{1}'.format(device_name, attribute_name)
+        kwargs = {}
+        kwargs['scheme'] = params['scheme']
+        kwargs['pool'] = pool
+        kwargs['name'] = name
         kwargs['full_name'] = full_name
         PoolBaseExternalObject.__init__(self, **kwargs)
 
