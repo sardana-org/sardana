@@ -33,8 +33,9 @@ __docformat__ = 'restructuredtext'
 import PyTango
 
 from sardana import ElementType
+import sardana
 from sardana.pool.poolbaseobject import PoolBaseObject
-
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 class PoolBaseExternalObject(PoolBaseObject):
     """TODO"""
@@ -104,7 +105,19 @@ _SCHEME_CLASS = {'tango': PoolTangoObject,
                  None: PoolTangoObject}
 
 
-def PoolExternalObject(**kwargs):
-    scheme = kwargs.get('scheme', 'tango')
-    klass = _SCHEME_CLASS[scheme]
-    return klass(**kwargs)
+def PoolExternalObject(pool, name):
+    """
+    Factory of Pool external objects.
+
+    :param pool: The pool object.
+    :type pool: `sardana.pool.Pool`
+    :param name: The name of the external object (Any name accepted by Taurus
+        validators.).
+    :type name: `str`
+    :return: Pool external object.
+    :rtype: `sardana.pool.poolexternal.PoolBaseExternalObject`
+    """
+
+    scheme = name.split(":")[0]
+    klass = _SCHEME_CLASS.get(scheme, PoolTangoObject)
+    return klass(pool, name)

@@ -794,11 +794,8 @@ class MeasurementConfiguration(object):
                 user_config_ctrl['channels'] = user_config_channel = {}
             for ch_name, ch_data in list(ctrl_data['channels'].items()):
                 if external:
-                    validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getUriGroups(full_name)
-                    params['pool'] = pool
-                    channel = PoolExternalObject(**params)
+                    channel = PoolExternalObject(pool, full_name)
                 else:
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
