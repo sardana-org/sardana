@@ -16,7 +16,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 ADD environment.yml /root/
-# RUN micromamba env update -n base -f /root/environment.yml && rm /root/environment.yml
 RUN mamba env update -n base -f /root/environment.yml && mamba clean --all --yes
 
 # Install jive and its dependencies
