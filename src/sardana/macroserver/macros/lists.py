@@ -26,6 +26,7 @@
 """This is the lists macro module"""
 
 
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 __all__ = ["ls0d", "ls1d", "ls2d", "lsa", "lscom", "lsct", "lsctrl",
            "lsctrllib", "lsdef", "lsexp", "lsi", "lsior", "lsm", "lsmeas",
            "lsp", "lspc", "lspm", "lsmac", "lsmaclib", "lstg"]
@@ -270,6 +271,8 @@ class lsmeas(_lsobj):
     width = -1,     -1,      -1,                  60
     align = HCenter,  Right,   Right,                Left
 
+    validator = TangoAttributeNameValidator()
+
     def prepare(self, filter, **opts):
         try:
             self.mnt_grp = self.getEnv('ActiveMntGrp').lower() or None
@@ -281,7 +284,19 @@ class lsmeas(_lsobj):
             active = '*'
         else:
             active = ' '
-        return active, o.name, o.getTimerName(), ", ".join(o.getChannelLabels())
+
+        channels = []
+        for ch in o.getChannels():
+            if '_controller_name' in ch:
+                name = self.getExpChannel(ch['full_name']).name
+            else:
+                name = self.validator.getNames(ch['full_name'])[1]
+
+            channels.append(name)
+
+        return active, o.name, o.getTimerName(), ', '.join(channels)
+
+        #", ".join(o.getChannelAlias())
 
 
 class lsmac(_lsobj):
