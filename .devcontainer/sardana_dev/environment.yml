@@ -11,6 +11,8 @@ dependencies:
   - pyqtgraph
   - matplotlib
   - h5py
+  - autopep8
+  - flake8
   - qt
   - pyqt
   - libxcb
