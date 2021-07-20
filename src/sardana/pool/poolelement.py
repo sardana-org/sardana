@@ -89,6 +89,14 @@ class PoolElement(PoolBaseElement):
         return "{0}/{1}".format(self.full_name, self.get_default_acquisition_channel())
 
     def get_dependent_elements(self):
+        """Get elements which depend on this element.
+        
+        Get elements e.g. pseudo elements or groups, which depend on this
+        element.
+        
+        :return: dependent elements
+        :rtype: seq<sardana.pool.poolbaseelement.PoolBaseElement>
+        """
         dependent_elements = []
         for listener in self.get_listeners():
             try:
@@ -96,7 +104,7 @@ class PoolElement(PoolBaseElement):
             except AttributeError:
                 continue
             if isinstance(elem, PoolBaseElement):
-                dependent_elements.append(elem.name)
+                dependent_elements.append(elem)
         
         return dependent_elements
 
