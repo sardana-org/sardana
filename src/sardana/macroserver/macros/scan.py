@@ -855,7 +855,7 @@ class fscan(Macro, Hookable):
 
 
     >>> fscan "x=[1,3,5,7,9],y=arange(5)" 0.1 motor1 x**2 motor2 sqrt(y*x+3)
-    >>> fscan "x=[1,3,5,7,9],y=arange(5)" [0.1,0.2,0.3,0.4,0.5] motor1 x**2 \
+    >>> fscan "x=[1,3,5,7,9],y=arange(5)" "[0.1,0.2,0.3,0.4,0.5]" motor1 x**2 \
 motor2 sqrt(y*x+3)
     """
 
@@ -1252,6 +1252,7 @@ class scanhist(Macro):
         start, end, total_time = start.ctime(), end.ctime(), str(total_time)
         scan_dir, scan_file = h['ScanDir'], h['ScanFile']
         deadtime = '%.1f%%' % h['deadtime']
+        setuptime = '%.1f%%' % h['setuptime']
 
         user = h['user']
         store = "Not stored!"
@@ -1263,8 +1264,8 @@ class scanhist(Macro):
 
         channels = ", ".join(h['channels'])
         cols = ["#", "Title", "Start time", "End time", "Took", "Dead time",
-                "User", "Stored", "Channels"]
-        data = [serialno, title, start, end, total_time, deadtime, user, store,
+                "Setup time", "User", "Stored", "Channels"]
+        data = [serialno, title, start, end, total_time, deadtime, setuptime, user, store,
                 channels]
 
         table = Table([data], row_head_str=cols, row_head_fmt='%*s',

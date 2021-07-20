@@ -31,10 +31,12 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'post_mortem', 'macrodata', 'edmac', 'spock_late_startup_hook',
            'spock_pre_prompt_hook']
 
+from sardana.util.graphics import display_available
 from sardana.util.whichpython import which_python_executable
 from .genutils import MSG_DONE, MSG_FAILED
 from .genutils import get_ipapi
 from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
+
 
 
 def expconf(self, parameter_s=''):
@@ -47,6 +49,15 @@ def expconf(self, parameter_s=''):
         print("Qt binding is not available. ExpConf cannot work without it."
               "(hint: maybe you want to use experiment configuration macros? "
               "https://sardana-controls.org/users/standard_macro_catalog.html#experiment-configuration-macros)")
+        return
+
+    if not display_available():
+        print(
+            "Running without graphical user interface support. "
+            "ExpConf cannot work without it. "
+            "(hint: maybe you want to use experiment configuration macros? "
+            "https://sardana-controls.org/users/standard_macro_catalog.html#experiment-configuration-macros)"
+        )
         return
 
     try:
@@ -97,6 +108,13 @@ def showscan(self, parameter_s=''):
         print("Qt binding is not available. Showscan cannot work without it.")
         return
 
+    if not display_available():
+        print(
+            "Running without graphical user interface support."
+            " Showscan cannot work without it."
+        )
+        return
+
     params = parameter_s.split()
     door = get_door()
     scan_nb = None
@@ -116,6 +134,13 @@ def spsplot(self, parameter_s=''):
         from taurus.external.qt import Qt
     except ImportError:
         print("Qt binding is not available. SPSplot cannot work without it.")
+        return
+
+    if not display_available():
+        print(
+            "Running without graphical user interface support."
+            " SPSplot cannot work without it."
+        )
         return
 
     get_door().plot()

@@ -263,6 +263,13 @@ class Motion(BaseMotion):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.names) + ")"
 
+    def __eq__(self, other):
+        if not hasattr(other, "_moveable_full_name_list"):
+            return False
+        else:
+            return set(self._moveable_full_name_list) \
+                   == set(other._moveable_full_name_list)
+
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
         # TODO: Optimize this. Dont call init_by_names. It its possible to do it
         # manually with some performance gain
@@ -299,6 +306,7 @@ class Motion(BaseMotion):
 
         # list<Moveable>
         self.moveable_list = moveable_list
+        self._moveable_full_name_list = [m.full_name for m in moveable_list]
 
         # list<tuple(int moveable_index, int position_index)>
         # the list index itself is the position index for this motion

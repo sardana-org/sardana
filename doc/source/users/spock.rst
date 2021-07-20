@@ -149,7 +149,7 @@ A similar macro exists that only shows the desired motor positions
      Low            5.0     -100.0
 
 To get the list of all existing macros use
-:class:`~sardana.macroserver.macros.expert.lsmac`:
+:class:`~sardana.macroserver.macros.expert.lsdef`:
 
 .. sourcecode:: spock
 
@@ -169,6 +169,8 @@ To get the list of all existing macros use
                      wa      standard                                     Show all motor position.
                      wm      standard                   Show the position of the specified motors.
     <...>
+
+You can also use :class:`~sardana.macroserver.macros.expert.lsmac` if you want to know a macro's location.
 
 Miscellaneous
 ~~~~~~~~~~~~~

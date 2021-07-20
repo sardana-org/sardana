@@ -40,7 +40,8 @@ from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.containers import CaselessDict
 
 from sardana import InvalidId, ElementType, TYPE_ACQUIRABLE_ELEMENTS, \
-    TYPE_PSEUDO_ELEMENTS, TYPE_PHYSICAL_ELEMENTS, TYPE_MOVEABLE_ELEMENTS
+    TYPE_PSEUDO_ELEMENTS, TYPE_PHYSICAL_ELEMENTS, TYPE_MOVEABLE_ELEMENTS, \
+    sardanacustomsettings
 from sardana.sardanamanager import SardanaElementManager, SardanaIDManager
 from sardana.sardanamodulemanager import ModuleManager
 from sardana.sardanaevent import EventType
@@ -139,6 +140,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         PoolObject.__init__(self, full_name=full_name, name=name, id=InvalidId,
                             pool=self, elem_type=ElementType.Pool)
         self._monitor = PoolMonitor(self, "PMonitor", auto_start=False)
+        # To be used if the user wants to use sardana without tango.
         # self.init_local_logging()
         ControllerManager().set_pool(self)
 
@@ -149,12 +151,14 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         log.propagate = 0
         path = os.path.join(os.sep, "tmp", "tango")
         log_file_name = os.path.join(path, 'controller.log.txt')
+        maxBytes = getattr(sardanacustomsettings, 'POOL_LOG_FILES_SIZE', 1E7)
+        backupCount = getattr(sardanacustomsettings, 'POOL_LOG_BCK_COUNT', 5)
         try:
             if not os.path.exists(path):
                 os.makedirs(path, 0o777)
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
-                                                       maxBytes=1E7,
-                                                       backupCount=5)
+                                                       maxBytes=maxBytes,
+                                                       backupCount=backupCount)
 
             f_h.setFormatter(self.getLogFormat())
             log.addHandler(f_h)

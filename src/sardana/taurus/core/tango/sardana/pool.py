@@ -278,8 +278,11 @@ def reservedOperation(fn):
                 raise AbortException("aborted before calling %s" % fn.__name__)
         try:
             return fn(*args, **kwargs)
+        except AbortException:
+            self._clearEventWait()
+            raise
         except:
-            print("Exception occurred in reserved operation:"
+            self.debug("Exception occurred in reserved operation:"
                   " clearing events...")
             self._clearEventWait()
             raise
@@ -3690,7 +3693,7 @@ class Pool(TangoDevice, MoveableSource):
     # End of MoveableSource interface
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
-    def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
+    def _wait_for_element_in_container(self, container, elem_name, timeout=1.5,
                                        contains=True):
         start = time.time()
         cond = True
