@@ -557,10 +557,15 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             except:
                 raise Exception("There is no element with name '%s'" % name)
 
-        elem_type = elem.get_type()
+        # TODO: most probably due to some cycle-reference the psuedo counter
+        #  objects are not being deleted when undefining them, as a workaround
+        #  try to delete them with gc.collect()
         dependent_elements = elem.get_dependent_elements()
-        if len(dependent_elements) > 0:
-            gc.collect()
+        for dependent_element in dependent_elements:
+            if dependent_element.get_type() == ElementType.PseudoCounter:
+                gc.collect()
+                break
+
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
             names = [elem.name for elem in dependent_elements]
@@ -571,7 +576,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 "DeleteElement(<motor_group_name>) command on the Pool e.g. "
                 "Pool_demo1_1.DeleteElement('_mg_ms_20671_1') in Spock."
                 .format(name, ", ".join(names)))
-            
+        
+        elem_type = elem.get_type()    
         if elem_type == ElementType.Controller:
             if len(elem.get_elements()) > 0:
                 raise Exception("Cannot delete controller with elements. "
