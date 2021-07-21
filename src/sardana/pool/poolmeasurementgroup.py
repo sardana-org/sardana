@@ -800,7 +800,12 @@ class MeasurementConfiguration(object):
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
-                    channel = pool.get_element_by_full_name(ch_name)
+                    try:
+                        channel = pool.get_element_by_full_name(ch_name)
+                    except KeyError:
+                        raise ValueError(
+                            '{} is not defined'.format(ch_data['name']))
+
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
                 ch_item = ChannelConfiguration(channel, ch_data)
@@ -958,7 +963,11 @@ class MeasurementConfiguration(object):
             for conf_synch in conf_synch_ctrl.get_channels(enabled=True):
                 user_elem_ids_list.append(conf_synch.id)
         self._parent.set_user_element_ids(user_elem_ids_list)
-
+        # force assignment of user elements to the measurement group
+        # in order to update the list of dependent elements (listeners)
+        # of the element e.g. to prevent undefinition of an element added
+        # to the measurement group.
+        self._parent.get_user_elements()
         self.changed = True
 
     def _fill_channel_data(self, channel, channel_data):
