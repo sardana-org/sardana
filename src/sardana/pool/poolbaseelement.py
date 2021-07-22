@@ -103,6 +103,9 @@ class PoolBaseElement(PoolObject):
     def get_dependent_elements(self):
         return []
 
+    def has_dependent_elements(self):
+        return False
+
     # --------------------------------------------------------------------------
     # simulation mode
     # --------------------------------------------------------------------------
