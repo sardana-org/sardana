@@ -40,6 +40,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Delettion of Pool element now checks if dependent elements exists (#1586, #1615)
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
