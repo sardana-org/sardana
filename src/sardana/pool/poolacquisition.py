@@ -561,7 +561,7 @@ class PoolAcquisition(PoolAction):
             # clean also the pseudo counters, even the ones that do not
             # participate directly in the acquisition
             for pseudo_elem in elem.get_pseudo_elements():
-                pseudo_elem.clear_value_buffer()
+                pseudo_elem().clear_value_buffer()
 
         if self._hw_acq_args is not None:
             self._hw_acq._wait()

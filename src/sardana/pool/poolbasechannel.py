@@ -30,6 +30,8 @@ __all__ = ["Value", "PoolBaseChannel"]
 
 __docformat__ = 'restructuredtext'
 
+import weakref
+
 from sardana.sardanadefs import AttrQuality, ElementType
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
@@ -40,6 +42,7 @@ from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
     ControllerConfiguration
 from sardana.sardanaevent import EventType
 from sardana.pool import AcqSynch, AcqMode
+
 
 class ValueBuffer(SardanaBuffer):
 
@@ -53,7 +56,7 @@ class ValueBuffer(SardanaBuffer):
         :rtype: bool
         """
         for element in self.obj.get_pseudo_elements():
-            if element.get_value_buffer().next_idx <= idx:
+            if element().get_value_buffer().next_idx <= idx:
                 return True
         return False
 
@@ -135,8 +138,8 @@ class PoolBaseChannel(PoolElement):
         """Returns list of pseudo elements e.g. pseudo counters that this
         channel belongs to.
 
-        :return: pseudo elements
-        :rtype: seq<:class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`>
+        :return: weak references to pseudo elements
+        :rtype: seq<:class:`weakref.ref`>
         """
         return self._pseudo_elements
 
@@ -150,7 +153,7 @@ class PoolBaseChannel(PoolElement):
         """
         if not self.has_pseudo_elements():
             self.get_value_buffer().persistent = True
-        self._pseudo_elements.append(element)
+        self._pseudo_elements.append(weakref.ref(element))
 
     def remove_pseudo_element(self, element):
         """Removes pseudo element e.g. pseudo counters that this channel
@@ -160,10 +163,17 @@ class PoolBaseChannel(PoolElement):
         :type element:
             :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
         """
-
-        self._pseudo_elements.remove(element)
-        if not self.has_pseudo_elements():
-            self.get_value_buffer().persistent = False
+        for pseudo_element in self._pseudo_elements:
+            if pseudo_element() == element:
+                self._pseudo_elements.remove(pseudo_element)
+                if not self.has_pseudo_elements():
+                    self.get_value_buffer().persistent = False
+                break
+        else:
+            raise ValueError(
+                "{} is not a pseudo element of {}".format(
+                    element.name, self.name)
+            )
 
     def get_value_attribute(self):
         """Returns the value attribute object for this experiment channel

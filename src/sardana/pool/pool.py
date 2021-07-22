@@ -32,6 +32,7 @@ __all__ = ["Pool"]
 
 __docformat__ = 'restructuredtext'
 
+import gc
 import os.path
 import logging.handlers
 
@@ -559,8 +560,25 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 elem = self.get_element(full_name=name)
             except:
                 raise Exception("There is no element with name '%s'" % name)
+        
+        # cycle-reference may exist between the element and a traceback
+        # stored in SardanaValue or SardanaAttribute as a consequence of
+        # getting sys.exc_info() - try to delete them with gc.collect()
+        if elem.has_dependent_elements():
+            gc.collect()
 
-        elem_type = elem.get_type()
+        dependent_elements = elem.get_dependent_elements()
+        if len(dependent_elements) > 0:
+            names = [elem.name for elem in dependent_elements]
+            raise Exception(
+                "The element {} can't be deleted because {} depend on it."
+                "\n\nIf the name of the dependent element starts with " 
+                "'_mg_ms_*' it means that are motor groups, execute "
+                "DeleteElement(<motor_group_name>) command on the Pool e.g. "
+                "Pool_demo1_1.DeleteElement('_mg_ms_20671_1') in Spock."
+                .format(name, ", ".join(names)))
+        
+        elem_type = elem.get_type()    
         if elem_type == ElementType.Controller:
             if len(elem.get_elements()) > 0:
                 raise Exception("Cannot delete controller with elements. "

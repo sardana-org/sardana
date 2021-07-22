@@ -1525,6 +1525,8 @@ class MGConfiguration(object):
         tg_attr_validator = TangoAttributeNameValidator()
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
+            if not channel_data.get("enabled", True):
+                continue
             data_source = channel_data['source']
             params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
