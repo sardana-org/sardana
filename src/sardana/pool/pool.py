@@ -560,15 +560,12 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 elem = self.get_element(full_name=name)
             except:
                 raise Exception("There is no element with name '%s'" % name)
-
-        # TODO: most probably due to some cycle-reference the psuedo counter
-        #  objects are not being deleted when undefining them, as a workaround
-        #  try to delete them with gc.collect()
-        dependent_elements = elem.get_dependent_elements()
-        for dependent_element in dependent_elements:
-            if dependent_element.get_type() == ElementType.PseudoCounter:
-                gc.collect()
-                break
+        
+        # cycle-reference may exist between the element and a traceback
+        # stored in SardanaValue or SardanaAttribute as a consequence of
+        # getting sys.exc_info() - try to delete them with gc.collect()
+        if elem.has_dependent_elements():
+            gc.collect()
 
         dependent_elements = elem.get_dependent_elements()
         if len(dependent_elements) > 0:
