@@ -1273,7 +1273,9 @@ class SScan(GScan):
         if 'extrainfo' in step:
             data_line.update(step['extrainfo'])
 
-        self.data.addRecord(data_line)
+        if not hasattr(self.macro, "do_last_point") or \
+           self.macro.do_last_point or n + 1 != self.macro.nb_points:
+            self.data.addRecord(data_line)
 
         # post-step hooks
         for hook in step.get('post-step-hooks', ()):
@@ -1913,7 +1915,6 @@ class CSScan(CScan):
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
-
         while not self._all_waypoints_finished:
 
             # wait for motor to reach start position
@@ -2011,7 +2012,9 @@ class CSScan(CScan):
                     if 'extrainfo' in step:
                         data_line.update(step['extrainfo'])
 
-                    self.data.addRecord(data_line)
+                    if not hasattr(self.macro, "do_last_point") or \
+                       self.macro.do_last_point or point_nb + 1 != nb_points:
+                        self.data.addRecord(data_line)
 
                     if scream:
                         yield ((point_nb + 1) / nb_points) * 100
@@ -2061,6 +2064,9 @@ class CAcquisition(object):
             return
 
         full_name = channel.getFullName()
+        if hasattr(self.macro, "do_last_point") and not self.macro.do_last_point \
+           and self.macro.nb_points - 1 in value_buffer['index']:
+            return
 
         info = {'label': full_name}
         if self._index_offset != 0:
@@ -2089,6 +2095,9 @@ class CAcquisition(object):
         full_name = channel.getFullName()
 
         info = {'label': full_name}
+        if hasattr(self.macro, "do_last_point") and not self.macro.do_last_point \
+           and self.macro.nb_points - 1 in value_ref_buffer['index']:
+            return
         if self._index_offset != 0:
             idx = np.array(value_ref_buffer['index'])
             idx += self._index_offset
@@ -2260,7 +2269,6 @@ class CTScan(CScan, CAcquisition):
                             time of all the motors
                 - active_time: time interval while all the physical motors will
                                maintain constant velocity"""
-
         positions = waypoint['positions']
         active_time = waypoint["active_time"]
 
@@ -2288,10 +2296,14 @@ class CTScan(CScan, CAcquisition):
                 zip(self._physical_moveables, start_positions, positions):
             total_displacement = abs(end - start)
             direction = 1 if end > start else -1
-            interval_displacement = total_displacement / self.macro.nr_interv
+            if self.macro.nr_interv:
+                interval_displacement = total_displacement / self.macro.nr_interv
+            else:
+                interval_displacement = 0.
             # move further in order to acquire the last point at constant
             # velocity
-            end = end + direction * interval_displacement
+            if not hasattr(self.macro, "do_last_point") or self.macro.do_last_point:
+                end = end + direction * interval_displacement
 
             base_vel = moveable.getBaseRate()
             ideal_vmotor = VMotor(accel_time=acc_time,
@@ -2303,7 +2315,7 @@ class CTScan(CScan, CAcquisition):
             backup_vel = moveable.getVelocity(force=True)
             ideal_max_vel = try_vel = ideal_path.max_vel
             try:
-                while True:
+                while self.macro.nr_interv:
                     moveable.setVelocity(try_vel)
                     get_vel = moveable.getVelocity(force=True)
                     if get_vel < ideal_max_vel:
@@ -2365,6 +2377,9 @@ class CTScan(CScan, CAcquisition):
             " theoretical values"
         )
         for i, waypoint in waypoints:
+            if hasattr(self.macro, "do_last_point") and \
+               not self.macro.do_last_point and i + 1 == self.macro.nb_points:
+                break
             self.macro.debug("Waypoint iteration...")
 
             start_positions = waypoint.get('start_positions')
@@ -2409,7 +2424,7 @@ class CTScan(CScan, CAcquisition):
                 return
 
             # at least one motor must have different start and final positions
-            if all(self.macro.starts == self.macro.finals):
+            if self.macro.nb_points > 1 and all(self.macro.starts == self.macro.finals):
                 if len(self.macro.starts) > 1:
                     msg = "Scan start and end must be different for at " \
                           "least one motor"
@@ -2443,7 +2458,10 @@ class CTScan(CScan, CAcquisition):
             final = path._final_user_pos
             total_position = (final - start) / repeats
             initial_position = start
-            total_time = abs(total_position) / path.max_vel
+            if self.macro.nb_points > 1:
+                total_time = abs(total_position) / path.max_vel
+            else:
+                total_time = 0.
             delay_time = path.max_vel_time
             delay_position = start - path.initial_user_pos
             synch = [
@@ -2543,8 +2561,11 @@ class CTScan(CScan, CAcquisition):
                                                        nb_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
             for index, data in list(theoretical_positions.items()):
-                data.update(theoretical_timestamps[index])
-                initial_data[index + self._index_offset] = data
+                if not hasattr(self.macro, "do_last_point") or \
+                   self.macro.do_last_point or index + 1 != len(theoretical_positions):
+                    data.update(theoretical_timestamps[index])
+                    initial_data[index + self._index_offset] = data
+
             # TODO: this changes the initial data on-the-fly - seems like not
             # the best practice
             self.data.initial_data = initial_data
@@ -2789,7 +2810,9 @@ class HScan(SScan):
         if 'extrainfo' in step:
             data_line.update(step['extrainfo'])
 
-        self.data.addRecord(data_line)
+        if not hasattr(self.macro, "do_last_point") or \
+           self.macro.do_last_point or n + 1 != self.macro.nb_points:
+            self.data.addRecord(data_line)
 
         # post-step hooks
         for hook in step.get('post-step-hooks', ()):
@@ -2906,7 +2929,10 @@ class TScan(GScan, CAcquisition):
         # fill record list with dummy records for the final padding
         nb_points = self.macro.nb_points
         records = len(self.data.records)
-        missing_records = nb_points - records
+        if not hasattr(self.macro, "do_last_point") or self.macro.do_last_point:
+            missing_records = nb_points - records
+        else:
+            missing_records = nb_points - records - 1
         self.data.initRecords(missing_records)
 
     def _estimate(self):

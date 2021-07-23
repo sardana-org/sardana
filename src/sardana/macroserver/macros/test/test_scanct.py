@@ -137,8 +137,9 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                "Checked using macro output")
         self.assertEqual(obtained_nb_points, expected_nb_points, msg)
 
-        msg = "Scan points are NOT in good order.\nChecked using macro output"
-        self.assertTrue(ordered_points, msg)
+        if expected_nb_points > 1:
+            msg = "Scan points are NOT in good order.\nChecked using macro output"
+            self.assertTrue(ordered_points, msg)
 
     def check_using_data(self, expected_nb_points):
         # Test data from macro (macro_executor.getData())
@@ -156,9 +157,10 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                "\nChecked using macro data.")
         self.assertEqual(obtained_nb_points_data, expected_nb_points, msg)
 
-        msg = ("Scan points are NOT in good order."
-               "\nChecked using macro data.")
-        self.assertTrue(order_points_data, msg)
+        if expected_nb_points > 1:
+            msg = ("Scan points are NOT in good order."
+                   "\nChecked using macro data.")
+            self.assertTrue(order_points_data, msg)
 
     def check_stopped(self):
         self.assertStopped('Macro %s did not stop' % self.macro_name)
@@ -236,6 +238,7 @@ mg_config4 = {
     }
 }
 ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
+ascanct_params_2 = ['_test_mt_1_1', '10', '10', '0', '0.1']
 
 
 @testRun(meas_config=mg_config1, macro_params=ascanct_params_1,
@@ -245,6 +248,8 @@ ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 @testRun(meas_config=mg_config3, macro_params=ascanct_params_1,
          wait_timeout=30)
 @testRun(meas_config=mg_config4, macro_params=ascanct_params_1,
+         wait_timeout=30)
+@testRun(meas_config=mg_config4, macro_params=ascanct_params_2,
          wait_timeout=30)
 @testStop(meas_config=mg_config1, macro_params=ascanct_params_1,
           stop_delay=5, wait_timeout=20)

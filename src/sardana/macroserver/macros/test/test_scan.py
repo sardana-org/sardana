@@ -144,6 +144,61 @@ class AscanTest(ANscanTest, unittest.TestCase):
         self.assertAlmostEqual(data[last_pos][value], expected_final_pos, 7,
                                "Final possition differs from set value (using getLog)")
 
+@testRun(macro_params=[_m1, '0', '5', '0', '.1'], wait_timeout=30.0)
+@testStop(macro_params=[_m1, '0', '5', '0', '.1'])
+class AscanOnePointTest(ANscanTest, unittest.TestCase):
+
+    """Test of ascan macro. See :class:`ANscanTest` for requirements.
+    It verifies that macro ascan can be executed and stoped and tests
+    the output of the ascan using data from log system and macro data.
+    """
+    macro_name = 'ascan'
+
+    def macro_runs(self, macro_params=None, wait_timeout=30.0):
+        """Reimplementation of macro_runs method for ascan macro.
+        It verifies using double checking, with log output and data from
+        the macro:
+
+            - The motor initial and final positions of the scan are the
+              ones given as input.
+
+            - Intervals in terms of motor position between one point and
+              the next one are equidistant.
+        """
+        # call the parent class implementation
+        ANscanTest.macro_runs(self, macro_params=macro_params,
+                              wait_timeout=wait_timeout)
+
+        mot_name = macro_params[0]
+        expected_init_pos = float(macro_params[1])
+        expected_final_pos = float(macro_params[2])
+        self.steps = int(macro_params[-2])
+
+        # Test data from macro (macro_executor.getData())
+        data = self.macro_executor.getData()
+        mot_init_pos = data[min(data.keys())].data[mot_name]
+        mot_final_pos = data[max(data.keys())].data[mot_name]
+        pre = mot_init_pos
+
+
+        self.assertAlmostEqual(mot_init_pos, expected_init_pos, 7,
+                               "Initial possition differs from set value (using getData)")
+        self.assertAlmostEqual(mot_final_pos, expected_init_pos, 7,
+                               "Final possition differs from set value (using getData)")
+
+        # Test data from log_output (macro_executor.getLog('output'))
+        log_output = self.macro_executor.getLog('output')
+        data = parsing_log_output(log_output)
+        init_pos = 0
+        last_pos = -1
+        value = 1
+        pre = data[init_pos]
+
+        self.assertAlmostEqual(data[init_pos][value], expected_init_pos, 7,
+                               "Initial possition differs from set value (using getLog)")
+        self.assertAlmostEqual(data[last_pos][value], expected_init_pos, 7,
+                               "Final possition differs from set value (using getLog)")
+
 
 @testRun(macro_params=[_m1, '-1', '1', '2', '.1'], wait_timeout=30)
 @testStop(macro_params=[_m1, '1', '-1', '3', '.1'])
