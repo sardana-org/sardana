@@ -465,20 +465,23 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Channel:  # channel column is not editable
             return flags
-        elif taurus_role in (ChannelView.Timer,
-                             ChannelView.Monitor,
-                             ChannelView.Synchronizer,
-                             ChannelView.Synchronization):
-            ch_name, ch_data = index.internalPointer().itemData()
-            if not ch_data['_controller_name'].startswith("__"):
-                ch_info = self.getAvailableChannels()[ch_name]
-                # only timerable channels accept these configurations
-                if ch_info['type'] in ('CTExpChannel',
-                                       'OneDExpChannel',
-                                       'TwoDExpChannel'):
-                    flags |= Qt.Qt.ItemIsEditable
-        else:
-            flags |= Qt.Qt.ItemIsEditable
+        ch_name, ch_data = index.internalPointer().itemData()
+        external = ch_data['_controller_name'].startswith("__")
+        if not external:
+            ch_info = self.getAvailableChannels().get(ch_name)        
+            defined = ch_info is not None
+            if not defined:
+                return flags
+            timerable = ch_info['type'] in ('CTExpChannel',
+                                            'OneDExpChannel',
+                                            'TwoDExpChannel')
+        if taurus_role in (ChannelView.Timer,
+                           ChannelView.Monitor,
+                           ChannelView.Synchronizer,
+                           ChannelView.Synchronization):
+            if external or not timerable:
+                return flags        
+        flags |= Qt.Qt.ItemIsEditable
         return flags
 
     def data(self, index, role=Qt.Qt.DisplayRole):
@@ -498,10 +501,11 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ctrlname = ch_data['_controller_name']
             if ctrlname.startswith("__"):
                 return None
-            ch_info = self.getAvailableChannels()[ch_name]
-            if ch_info['type'] not in ('CTExpChannel',
-                                       'OneDExpChannel',
-                                       'TwoDExpChannel'):
+            ch_info = self.getAvailableChannels().get(ch_name)
+            if (ch_info is not None
+                    and ch_info['type'] not in ('CTExpChannel',
+                                                'OneDExpChannel',
+                                                'TwoDExpChannel')):
                 return None
             unitdict = self.getPyData(ctrlname=ctrlname)
             key = self.data_keys_map[taurus_role]
@@ -512,8 +516,11 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ctrlname = ch_data['_controller_name']
             if ctrlname.startswith("__"):
                 return None
-            ch_info = self.getAvailableChannels()[ch_name]
-            if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
+            ch_info = self.getAvailableChannels().get(ch_name)
+            if (ch_info is not None
+                    and ch_info['type'] in ('CTExpChannel',
+                                            'OneDExpChannel',
+                                            'TwoDExpChannel')):
                 unitdict = self.getPyData(ctrlname=ctrlname)
                 key = self.data_keys_map[taurus_role]
                 master_full_name = unitdict.get(key, None)
