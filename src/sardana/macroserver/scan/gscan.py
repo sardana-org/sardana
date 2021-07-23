@@ -1173,24 +1173,63 @@ class SScan(GScan):
         self._env['acqtime'] = self._sum_acq_time
 
     def stepUp(self, n, step, lstep):
-        motion, mg = self.motion, self.measurement_group
+        mg = self.measurement_group
         startts = self._env['startts']
 
-        # pre-move hooks
-        for hook in step.get('pre-move-hooks', ()):
-            hook()
-            try:
-                step['extrainfo'].update(hook.getStepExtraInfo())
-            except InterruptException:
-                raise
-            except Exception:
-                pass
+        def pre_move_hooks():
+            # pre-move hooks
+            for hook in step.get('pre-move-hooks', ()):
+                hook()
+                try:
+                    step['extrainfo'].update(hook.getStepExtraInfo())
+                except InterruptException:
+                    raise
+                except Exception:
+                    pass
 
         # Move
         self.debug("[START] motion")
         move_start_time = time.time()
         try:
-            state, positions = motion.move(step['positions'])
+            nans = []
+            for idx, step_value in enumerate(step['positions']):
+                if step_value is None or np.isnan(step_value):
+                    nans.append(idx)
+            if len(nans) == 0:  # all motors will be moved
+                # if number of motors to move has changed update macro info
+                if len(self.motion.moveable_list) != len(step['positions']):
+                    self.macro.returnObj(self._motion)
+                    motion = self.macro.getMotion(
+                        [m.name for m in self.moveables])
+                    self._motion = motion
+                    self.macro.motors = self.moveables
+                pre_move_hooks()
+                state, positions = self.motion.move(step['positions'])
+            elif len(nans) == len(step['positions']):  # no motor will be moved
+                state = self.motion.readState()
+                positions = self.motion.readPosition()
+            else:  # only some motors will be moved
+                # if number of motors to move has changed update macro info
+                if len(self.motion.moveable_list) != len(step['positions']):
+                    moveables = []
+                    motors_moved = []
+                    motors_positions = []
+                    for idx, moveable in enumerate(self.moveables):
+                        if idx not in nans:
+                            moveables.append(moveable)
+                            motors_moved.append(moveable.name)
+                            motors_positions.append(step['positions'][idx])
+                    self.macro.returnObj(self._motion)
+                    motion = self.macro.getMotion(motors_moved)  # does addObj
+                    self._motion = motion
+                    self.macro.motors = moveables
+                pre_move_hooks()
+                state, positions = motion.move(motors_positions)
+                for idx in nans:  # fill the gaps of not moved motors
+                    moveable = self.moveables[idx]
+                    motor = self.macro.getMoveable(moveable.name)
+                    pos = motor.position
+                    positions.insert(idx, pos)
             self._sum_motion_time += time.time() - move_start_time
             self._env['motiontime'] = self._sum_motion_time
         except InterruptException:
