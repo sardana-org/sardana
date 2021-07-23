@@ -109,7 +109,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
             value = self.calculate_tango_status(event_value)
         elif name == "valuebuffer":
             value = self._encode_value_chunk(event_value)
-        elif name == "value":
+        else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
