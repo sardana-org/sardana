@@ -793,37 +793,31 @@ class MeasurementConfiguration(object):
             if 'channels' in ctrl_data:
                 user_config_ctrl['channels'] = user_config_channel = {}
             for ch_name, ch_data in list(ctrl_data['channels'].items()):
-                if external:
-                    validator = TangoAttributeNameValidator()
-                    full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getUriGroups(full_name)
-                    params['pool'] = pool
-                    channel = PoolExternalObject(**params)
-                else:
-                    try:
-                        channel = pool.get_element_by_full_name(ch_name)
-                    except KeyError:
-                        raise ValueError(
-                            '{} is not defined'.format(ch_data['name']))
-
-                ch_data = self._fill_channel_data(channel, ch_data)
-                user_config_channel[ch_name] = ch_data
-                ch_item = ChannelConfiguration(channel, ch_data)
-                ch_item.controller = ctrl_item
-                ctrl_item.add_channel(ch_item)
-                if ch_item.enabled:
+                if ch_data.get('enabled', True):
                     if external:
+                        validator = TangoAttributeNameValidator()
+                        full_name = ch_data.get('full_name', ch_name)
+                        params = validator.getUriGroups(full_name)
+                        params['pool'] = pool
+                        channel = PoolExternalObject(**params)
                         id_ = channel.full_name
                     else:
+                        try:
+                            channel = pool.get_element_by_full_name(ch_name)
+                        except KeyError:
+                            raise ValueError(
+                                '{} is not defined'.format(ch_data['name']))
                         id_ = channel.id
+                    ch_data = self._fill_channel_data(channel, ch_data)
+                    ch_item = ChannelConfiguration(channel, ch_data)
+                    ch_item.controller = ctrl_item
+                    ctrl_item.add_channel(ch_item)                    
                     user_elem_ids[ch_item.index] = id_
-
-                if ch_item.enabled:
                     ctrl_enabled = True
-
-                if acq_synch is not None:
-                    channel_acq_synch[channel] = acq_synch
-
+                    if acq_synch is not None:
+                        channel_acq_synch[channel] = acq_synch
+                user_config_channel[ch_name] = ch_data
+                
             if not external and ctrl.is_timerable():
                 ctrl_item.update_timer()
                 ctrl_item.update_monitor()
