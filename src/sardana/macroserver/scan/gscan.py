@@ -1297,6 +1297,16 @@ class CScan(GScan):
 
     def __init__(self, macro, generator=None, moveables=[],
                  env={}, constraints=[], extrainfodesc=[]):
+        
+        # Read ScanOvershootCorrection before instatiating GScan -
+        # it is necessary for the scan time estimation.
+        # In case it is not defined apply the overshoot correction
+        # for backward compatibility.
+        try:
+            self._apply_overshoot_correction = \
+                macro.getEnv('ScanOvershootCorrection')
+        except UnknownEnv:
+            self._apply_overshoot_correction = True
         GScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
@@ -1308,14 +1318,6 @@ class CScan(GScan):
         self._moveables_trees, \
             physical_moveables_names, \
             self._physical_moveables = data_structures
-
-        # Read ScanOvershootCorrection in case of not defined the scan will
-        # apply the overshoot correction for backward compatibility
-        try:
-            self._apply_overshoot_correction = \
-                self.macro.getEnv('ScanOvershootCorrection')
-        except UnknownEnv:
-            self._apply_overshoot_correction = True
 
         # The physical motion object contains only physical motors - no pseudo
         # motors (in case the pseudomotors are involved in the scan,
