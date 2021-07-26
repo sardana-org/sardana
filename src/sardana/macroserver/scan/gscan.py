@@ -1297,6 +1297,16 @@ class CScan(GScan):
 
     def __init__(self, macro, generator=None, moveables=[],
                  env={}, constraints=[], extrainfodesc=[]):
+        
+        # Read ScanOvershootCorrection before instatiating GScan -
+        # it is necessary for the scan time estimation.
+        # In case it is not defined apply the overshoot correction
+        # for backward compatibility.
+        try:
+            self._apply_overshoot_correction = \
+                macro.getEnv('ScanOvershootCorrection')
+        except UnknownEnv:
+            self._apply_overshoot_correction = True
         GScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
@@ -1308,6 +1318,7 @@ class CScan(GScan):
         self._moveables_trees, \
             physical_moveables_names, \
             self._physical_moveables = data_structures
+
         # The physical motion object contains only physical motors - no pseudo
         # motors (in case the pseudomotors are involved in the scan,
         # it comprarises the underneath physical motors)
@@ -1399,7 +1410,8 @@ class CScan(GScan):
         triggered)"""
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
-            self._setFastMotions()
+            self._restore_motors()  # first restore motors backup
+            self._setFastMotions()  # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
         self.motion_end_event.set()
@@ -1470,15 +1482,16 @@ class CScan(GScan):
 
             last_end_positions = end_path
 
-        # add correct overshoot time
-        overshoot_duration = 0
-        for _path, start, end in zip(motion_paths, last_end_positions,
-                                     positions):
-            v_motor = _path.motor
-            path = MotionPath(v_motor, start, end)
-            overshoot_duration = max(overshoot_duration, path.duration)
+        # add overshoot correction time
+        if self._apply_overshoot_correction:
+            overshoot_duration = 0
+            for _path, start, end in zip(motion_paths, last_end_positions,
+                                         positions):
+                v_motor = _path.motor
+                path = MotionPath(v_motor, start, end)
+                overshoot_duration = max(overshoot_duration, path.duration)
 
-        total_duration += overshoot_duration
+            total_duration += overshoot_duration
         return total_duration
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
@@ -1884,7 +1897,10 @@ class CSScan(CScan):
             if start_positions is None:
                 last_positions = positions
 
-        self.on_waypoints_end(positions)
+        if self._apply_overshoot_correction:
+            self.on_waypoints_end(positions)
+        else:
+            self.on_waypoints_end()
 
     def scan_loop(self):
         motion = self.motion
@@ -2606,7 +2622,10 @@ class CTScan(CScan, CAcquisition):
             if start_positions is None:
                 last_positions = positions
 
-        self.on_waypoints_end(positions)
+        if self._apply_overshoot_correction:
+            self.on_waypoints_end(positions)
+        else:
+            self.on_waypoints_end()
 
     def on_waypoints_end(self, restore_positions=None):
         """To be called by the waypoint thread to handle the end of waypoints

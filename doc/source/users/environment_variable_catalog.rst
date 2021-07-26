@@ -311,6 +311,17 @@ Enable/disable HDF5 SWMR mode when using HDF5 *write sessions* with
 :ref:`sardana-users-scan-data-storage-nxscanh5_filerecorder`.
 
 
+.. _scanovershootcorrection:
+
+ScanOvershootCorrection
+~~~~~~~~~~~~~~~~~~~~~~~
+*Not mandatory, set by user*
+
+Its value must be of type boolean and it indicates whether the continuous
+scan overshoot correction is performed at the end of the scan.
+If not defined the overshoot correction will be applied.
+
+
 .. _scanrecorder:
 
 ScanRecorder
