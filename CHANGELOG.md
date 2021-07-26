@@ -18,6 +18,8 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `Release` Tango command to Pool element devices
    * `release()` method to the Taurus extensions
    * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* Possibility to disable overshoot correction in continuous scans (#1043, #1576)
+   * `ScanOvershootCorrection` environment variable
 * Print in form of a table relevant motion parameters used during continuous scans
   before the scan starts (#692, #1652)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
