@@ -1312,10 +1312,10 @@ class CScan(GScan):
         # Read ScanOvershootCorrection in case of not defined the scan will
         # apply the overshoot correction for backward compatibility
         try:
-            self._apply_overshoot = \
+            self._apply_overshoot_correction = \
                 self.macro.getEnv('ScanOvershootCorrection')
-        except Exception as e:
-            self._apply_overshoot = True
+        except UnknownEnv:
+            self._apply_overshoot_correction = True
 
         # The physical motion object contains only physical motors - no pseudo
         # motors (in case the pseudomotors are involved in the scan,
@@ -1480,8 +1480,8 @@ class CScan(GScan):
 
             last_end_positions = end_path
 
-        # add correct overshoot time
-        if self._apply_overshoot:
+        # add overshoot correction time
+        if self._apply_overshoot_correction:
             overshoot_duration = 0
             for _path, start, end in zip(motion_paths, last_end_positions,
                                          positions):
@@ -1895,7 +1895,7 @@ class CSScan(CScan):
             if start_positions is None:
                 last_positions = positions
 
-        if self._apply_overshoot:
+        if self._apply_overshoot_correction:
             self.on_waypoints_end(positions)
         else:
             self.on_waypoints_end()
@@ -2620,7 +2620,7 @@ class CTScan(CScan, CAcquisition):
             if start_positions is None:
                 last_positions = positions
 
-        if self._apply_overshoot:
+        if self._apply_overshoot_correction:
             self.on_waypoints_end(positions)
         else:
             self.on_waypoints_end()
