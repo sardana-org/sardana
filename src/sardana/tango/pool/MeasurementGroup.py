@@ -68,6 +68,7 @@ class MeasurementGroup(PoolGroupDevice):
         mg = self.measurement_group
         if mg is not None:
             mg.remove_listener(self.on_measurement_group_changed)
+        self.measurement_group = None
 
     @DebugIt()
     def init_device(self):
@@ -240,9 +241,15 @@ class MeasurementGroup(PoolGroupDevice):
         util = Util.instance()
         if util.is_svr_starting():
             self.measurement_group._config._value_ref_compat = True
+            self.measurement_group._config._external_ctrl_compat = True
         else:
             self.measurement_group._config._value_ref_compat = False
+            self.measurement_group._config._external_ctrl_compat = False
         self.measurement_group.set_configuration_from_user(cfg)
+        db = util.get_database()
+        elem_ids = self.measurement_group.user_element_ids
+        data = {"elements": elem_ids}
+        db.put_device_property(self.get_name(), data)
 
     def read_NbStarts(self, attr):
         nb_starts = self.measurement_group.nb_starts
@@ -331,10 +338,10 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
     #    Attribute definitions
     attr_list = {
         'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE],
-                            {'Memorized': "true",
+                            {'Memorized': "false",
                              'Display level': DispLevel.OPERATOR}],
         'MonitorCount': [[DevLong, SCALAR, READ_WRITE],
-                         {'Memorized': "true",
+                         {'Memorized': "false",
                           'Display level': DispLevel.OPERATOR}],
         'AcquisitionMode': [[DevString, SCALAR, READ_WRITE],
                             {'Memorized': "true",
@@ -343,14 +350,14 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                           {'Memorized': "true",
                            'Display level': DispLevel.EXPERT}],
         'NbStarts': [[DevLong, SCALAR, READ_WRITE],
-                     {'Memorized': "true",
+                     {'Memorized': "false",
                       'Display level': DispLevel.OPERATOR}],
+        # TODO: Does it have sense to memorize Moveable?
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
-        # TODO: Does it have sense to memorize SynchDescription?
         'SynchDescription': [[DevString, SCALAR, READ_WRITE],
-                             {'Memorized': "true",
+                             {'Memorized': "false",
                               'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],

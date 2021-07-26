@@ -64,6 +64,7 @@ from IPython.utils.io import ask_yes_no as _ask_yes_no
 from IPython.utils.process import arg_split
 from IPython.utils.coloransi import TermColors
 from IPython.terminal.ipapp import TerminalIPythonApp, launch_new_instance
+from prompt_toolkit import prompt as prompt_input
 
 try:
     # IPython 4.x
@@ -75,6 +76,7 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 
+from sardana.util.graphics import display_available
 import taurus
 #from taurus.core import Release as TCRelease
 
@@ -115,10 +117,15 @@ ENV_NAME = "_E"
 def get_gui_mode():
     try:
         import taurus.external.qt.Qt
-        return 'qt'
+        ret_val = 'qt'
     except ImportError:
         return None
 
+    # Check for running without an X-session on linux
+    if not display_available():
+        ret_val = None
+
+    return ret_val
 
 def get_pylab_mode():
     return get_app().pylab
@@ -168,7 +175,7 @@ def ask_yes_no(prompt, default=None):
 
 
 def spock_input(prompt='',  ps2='... '):
-    return input(prompt)
+    return prompt_input(prompt)
 
 
 def translate_version_str2int(version_str):
@@ -501,8 +508,7 @@ def clean_up():
 
 def get_taurus_core_version():
     try:
-        import taurus
-        return taurus.core.release.version
+        return taurus.Release.version
     except:
         import traceback
         traceback.print_exc()
@@ -1116,8 +1122,12 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
         class SpockPrompts(Prompts):
 
             def in_prompt_tokens(self, cli=None):
+                door_state = self.shell.user_ns.get("DOOR_STATE")
+                door_state_suffix = ""
+                if door_state is not None:
+                    door_state_suffix += door_state
                 return [
-                    (Token.Prompt, door_alias),
+                    (Token.Prompt, door_alias + door_state_suffix),
                     (Token.Prompt, ' ['),
                     (Token.PromptNum, str(self.shell.execution_count)),
                     (Token.Prompt, ']: '),
@@ -1299,6 +1309,11 @@ def prepare_input_handler():
         except ImportError:
             raise Exception("Cannot use Spock Qt input handler!")
 
+        if not display_available():
+            raise Exception(
+                "Running without graphical user interface support."
+                " Cannot use Spock Qt input handler!"
+            )
 
 def prepare_cmdline(argv=None):
     if argv is None:

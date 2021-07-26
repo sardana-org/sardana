@@ -70,6 +70,7 @@ class MotorGroup(PoolGroupDevice):
         motor_group = self.motor_group
         if motor_group is not None:
             motor_group.remove_listener(self.on_motor_group_changed)
+        self.motor_group = None
 
     @DebugIt()
     def init_device(self):

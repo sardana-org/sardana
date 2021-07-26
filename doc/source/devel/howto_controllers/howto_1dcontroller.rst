@@ -1,13 +1,10 @@
 .. currentmodule:: sardana.pool.controller
 
-.. _sardana-1dcontroller-howto-basics:
+.. _sardana-1dcontroller-howto:
 
 ============================
 How to write a 1D controller
 ============================
-
-The basics
-----------
 
 This chapter provides the necessary information to write a one dimensional (1D)
 experimental channel controller in Sardana.

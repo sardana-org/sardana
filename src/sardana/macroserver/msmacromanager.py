@@ -1068,11 +1068,6 @@ class MacroExecutor(Logger):
         self._door = door
         self._macro_counter = 0
 
-        # dict<PoolElement, set<Macro>>
-        # key PoolElement - reserved object
-        # value set<Macro> macros that reserved the object
-        self._reserved_objs = {}
-
         # dict<Macro, seq<PoolElement>>
         # key Macro - macro object
         # value - sequence of reserverd objects by the macro
@@ -1088,7 +1083,7 @@ class MacroExecutor(Logger):
 #        self._xml_stack = None
         self._macro_stack = []
         self._xml_stack = []
-        self._macro_pointer = None
+        self._last_macro = None
         self._abort_thread = None
         self._aborted = False
         self._stop_thread = None
@@ -1118,6 +1113,13 @@ class MacroExecutor(Logger):
     @property
     def macro_manager(self):
         return self.macro_server.macro_manager
+
+    @property
+    def macro_pointer(self):
+        macro_stack = self._macro_stack
+        if not macro_stack:
+            return None
+        return macro_stack[-1]
 
     def getGeneralHooks(self):
         """Get data structure containing definition of the general hooks.
@@ -1397,14 +1399,27 @@ class MacroExecutor(Logger):
         return macro_obj, prepare_result
 
     def getRunningMacro(self):
-        return self._macro_pointer
+        return self.macro_pointer
+
+    def getLastMacro(self):
+        return self._last_macro
 
     def clearRunningMacro(self):
         """Clear pointer to the running macro.
 
         ..warning:: Do not call it while the macro is running.
+
+        .. deprecated: Use clearMacroStack() instead.
         """
-        self._macro_pointer = None
+        self.warning("Deprecated since 3.1.1. Use clearMacroStack() instead.")
+        self._macro_stack = []
+
+    def clearMacroStack(self):
+        """Clear macro stack
+
+        ..warning:: Do not call it while the macro is running.
+        """
+        self._macro_stack = []
 
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
@@ -1431,7 +1446,11 @@ class MacroExecutor(Logger):
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
         for macro, objs in list(self._reserved_macro_objs.items()):
-            stopped_macro_objs = self._stopped_macro_objs[macro]
+            stopped_macro_objs = []
+            try:
+                stopped_macro_objs = self._stopped_macro_objs[macro]
+            except KeyError:
+                self.debug("Aborting {} which is not stopped!".format(macro._name))
             for obj in objs:
                 if obj in stopped_macro_objs:
                     continue
@@ -1441,6 +1460,10 @@ class MacroExecutor(Logger):
                     obj.abort()
                 except AttributeError:
                     pass
+                except ReleaseException:
+                    self.warning("Unable to abort {} - it may be hung. "
+                                 "Releasing it.".format(obj))
+                    obj.release()
                 except:
                     self.warning("Unable to abort %s" % obj)
                     self.debug("Details:", exc_info=1)
@@ -1470,7 +1493,7 @@ class MacroExecutor(Logger):
         # carefull: Inside this method never call a method that has the
         # mAPI decorator
         self._aborted = True
-        if not self._isStopDone():
+        if self._stopped and not self._isStopDone():
             Logger.debug(self, "Break stopping...")
             raise_in_thread(ReleaseException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)
@@ -1551,11 +1574,6 @@ class MacroExecutor(Logger):
                        macro script
         :return: (lxml.etree.Element) the xml representation of the running macro
         """
-        # dict<PoolElement, set<Macro>>
-        # key PoolElement - reserved object
-        # value set<Macro> macros that reserved the object
-        self._reserved_objs = {}
-
         # dict<Macro, seq<PoolElement>>
         # key Macro - macro object
         # value - sequence of reserved objects by the macro
@@ -1564,7 +1582,6 @@ class MacroExecutor(Logger):
         # reset the stacks
         self._macro_stack = []
         self._xml_stack = []
-        self._macro_pointer = None
         self._stop_done = threading.Event()
         self._abort_done = threading.Event()
         self._aborted = False
@@ -1582,7 +1599,6 @@ class MacroExecutor(Logger):
             return self._xml
         else:
             self.__runXML()
-            # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
         self.debug("Job ended (stopped=%s, aborted=%s)",
@@ -1598,8 +1614,8 @@ class MacroExecutor(Logger):
         except Exception:
             self.sendState(Macro.Exception)
         finally:
-            self._macro_stack = None
-            self._xml_stack = None
+            self._macro_stack = []
+            self._xml_stack = []
 
     def __runStatelessXML(self, xml=None):
         if xml is None:
@@ -1650,7 +1666,6 @@ class MacroExecutor(Logger):
         macro_exp, tb, result = None, None, None
         try:
             self.debug("[START] runMacro %s" % desc)
-            self._macro_pointer = macro_obj
             self._macro_stack.append(macro_obj)
             for step in macro_obj.exec_():
                 self.sendMacroStatus((step,))
@@ -1697,7 +1712,7 @@ class MacroExecutor(Logger):
             macro_obj._stopOnError()
             self.sendMacroStatusStop()
 
-        self.returnObjs(self._macro_pointer)
+        self.returnObjs(self.macro_pointer)
 
         # From this point on don't call any method of macro_obj which is part
         # of the mAPI (methods decorated with @mAPI) to avoid throwing an
@@ -1718,7 +1733,6 @@ class MacroExecutor(Logger):
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
-        self._popMacro()
 
         # decide whether to preserve the macro data
         env_var_name = 'PreserveMacroData'
@@ -1726,11 +1740,14 @@ class MacroExecutor(Logger):
             preserve_macro_data = macro_obj.getEnv(env_var_name)
         except UnknownEnv:
             preserve_macro_data = True
-        if not preserve_macro_data:
+        if preserve_macro_data:
+            self._last_macro = self.macro_pointer
+        else:
             self.debug('Macro data will not be preserved. ' +
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
-            self._macro_pointer = None
+            self._last_macro = None
+        self._popMacro()
 
         log_macro_manager.disable()
 
@@ -1738,9 +1755,6 @@ class MacroExecutor(Logger):
 
     def _popMacro(self):
         self._macro_stack.pop()
-        length = len(self._macro_stack)
-        if length > 0:
-            self._macro_pointer = self._macro_stack[-1]
 
     def sendState(self, state):
         return self.door.set_state(state)
@@ -1752,7 +1766,7 @@ class MacroExecutor(Logger):
         return self.door.set_result(result)
 
     def getLastMacroStatus(self):
-        return self._macro_pointer._getMacroStatus()
+        return self.macro_pointer._getMacroStatus()
 
     def sendMacroStatusFinish(self):
         ms = self.getLastMacroStatus()
@@ -1823,10 +1837,6 @@ class MacroExecutor(Logger):
             else:
                 objs.append(obj)
 
-        # Fill _reserved_objs
-        macros = self._reserved_objs[obj] = self._reserved_objs.get(obj, set())
-        macros.add(macro_obj)
-
         # Tell the object that it is reserved by a new macro
         if hasattr(obj, 'reserve'):
             obj.reserve(macro_obj)
@@ -1858,11 +1868,3 @@ class MacroExecutor(Logger):
         objs.remove(obj)
         if len(objs) == 0:
             del self._reserved_macro_objs[macro_obj]
-
-        try:
-            macros = self._reserved_objs[obj]
-            macros.remove(macro_obj)
-            if not len(macros):
-                del self._reserved_objs[obj]
-        except KeyError:
-            self.debug("Unexpected KeyError trying to remove reserved object")

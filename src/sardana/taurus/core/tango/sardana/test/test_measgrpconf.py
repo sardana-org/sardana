@@ -1,3 +1,4 @@
+import os
 import uuid
 import unittest
 from taurus import Device
@@ -90,7 +91,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(resutl, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_output(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                     "_test_2d_1_3",
@@ -145,7 +147,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(is_output, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
@@ -193,7 +196,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                       "_test_ct_1_3", "_test_2d_1_3",
@@ -267,7 +271,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, full_names, expected_result)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                    "_test_ct_1_3",
@@ -279,8 +284,9 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             mg = Device(mg_name)
 
             result = mg.getTimer("_test_mt_1_3/position")
-            with self.assertRaises(Exception):
-                mg.setTimer("_test_mt_1_3/position")
+            if os.name != "nt":
+                with self.assertRaises(Exception):
+                    mg.setTimer("_test_mt_1_3/position")
             self._assertResult(result,  ["_test_mt_1_3/position"], None)
             mg.setTimer('_test_ct_1_3')
             result = mg.getTimer(*elements)
@@ -311,7 +317,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(result, full_names, "_test_ct_1_2")
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                      "_test_ct_1_3", "_test_2d_1_1",
@@ -323,8 +330,9 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
         try:
             mg = Device(mg_name)
 
-            with self.assertRaises(Exception):
-                mg.setMonitor("_test_mt_1_3/position")
+            if os.name != "nt":
+                with self.assertRaises(Exception):
+                    mg.setMonitor("_test_mt_1_3/position")
 
             mg.setMonitor('_test_2d_1_2')
             mg.setMonitor("_test_ct_1_3")
@@ -352,7 +360,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertMultipleResults(result, full_names, expected)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                           "_test_ct_1_3", "_test_2d_1_1",
@@ -365,8 +374,10 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             result = mg.getSynchronizer()
             expected = ['software', 'software', 'software', 'software', None]
             self._assertMultipleResults(result, elements, expected)
-            with self.assertRaises(Exception):
-                mg.setSynchronizer('_test_tg_1_2', "_test_mt_1_3/position")
+
+            if os.name != "nt":
+                with self.assertRaises(Exception):
+                    mg.setSynchronizer('_test_tg_1_2', "_test_mt_1_3/position")
 
             mg.setSynchronizer('_test_tg_1_2', "_test_ct_ctrl_1",
                                "_test_2d_ctrl_1")
@@ -400,7 +411,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_Synchronization(self, elements=["_test_ct_1_1", "_test_ct_1_2",
                                              "_test_ct_1_3", "_test_2d_1_1",
@@ -452,7 +464,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
@@ -512,7 +525,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
             self._assertResult(enabled, full_names, True)
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)
 
     def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
                                              "_test_ct_1_3",
@@ -565,4 +579,5 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, unittest.TestCase):
 
         finally:
             mg.cleanUp()
-            self.pool.DeleteElement(mg_name)
+            if os.name != "nt":
+                self.pool.DeleteElement(mg_name)

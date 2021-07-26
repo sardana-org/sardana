@@ -149,7 +149,7 @@ A similar macro exists that only shows the desired motor positions
      Low            5.0     -100.0
 
 To get the list of all existing macros use
-:class:`~sardana.macroserver.macros.expert.lsmac`:
+:class:`~sardana.macroserver.macros.expert.lsdef`:
 
 .. sourcecode:: spock
 
@@ -169,6 +169,8 @@ To get the list of all existing macros use
                      wa      standard                                     Show all motor position.
                      wm      standard                   Show the position of the specified motors.
     <...>
+
+You can also use :class:`~sardana.macroserver.macros.expert.lsmac` if you want to know a macro's location.
 
 Miscellaneous
 ~~~~~~~~~~~~~
@@ -218,9 +220,6 @@ scene with informative messages:
     Motion(['mot01']) stopped
     Stopping mntgrp_expconf reserved by ascan
     mntgrp_expconf stopped
-    Stopping /monitor reserved by ascan
-    Stopping /mirror reserved by ascan
-    Stopping /slit reserved by ascan
     Operation saved in /tmp/test.h5 (HDF5::NXscan)
     Scan #342 ended at Wed Sep  9 23:01:15 2020, taking 0:00:01.055814. Dead time 33.7% (motion dead time 12.8%)
     Executing ascan.on_stop method...
@@ -230,6 +229,8 @@ Exiting spock
 -------------
 
 To exit spock type :kbd:`Control+d` or :samp:`exit()` inside a spock console.
+
+.. _sardana-spock-gettinghelp:
 
 Getting help
 ------------
@@ -478,6 +479,8 @@ Example accesing scan data:
 .. |br| raw:: html
 
     <br>
+
+.. _sardana-spock-viewoptions:
 
 Changing appearance with View Options
 -------------------------------------

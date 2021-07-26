@@ -421,6 +421,8 @@ def build_measurement_configuration(user_elements):
         if elem_type == ElementType.External:
             external_user_elements.append((index, element))
             continue
+        if elem_type == ElementType.TriggerGate:
+            continue
 
         ctrl = element.controller
         ctrl_data = controllers.get(ctrl.full_name)
@@ -488,6 +490,9 @@ class MeasurementConfiguration(object):
         # provide back. compatibility for value_ref_{enabled,pattern}
         # config parameters created with Sardana < 3.
         self._value_ref_compat = False
+        # provide back. compatibility for synchronizer, timer and monitor
+        # config parameters set on external channels created with Sardana < 3.
+        self._external_ctrl_compat = False
 
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
@@ -649,6 +654,13 @@ class MeasurementConfiguration(object):
             Raise exceptions when setting _Synchronization_ parameter for
             external channels, 0D and PSeudoCounters.
         """
+        if not self._parent._is_online(cfg):
+            self._parent.error("Some controllers of this measurement group are offline!")
+            # Return because it won't be possible to know the controller types.
+            # Before returning, assign "user configuration" to at least be able to
+            # read it from the client (spock etc.).
+            self._user_config = cfg
+            return
 
         pool = self._parent.pool
 
@@ -710,15 +722,19 @@ class MeasurementConfiguration(object):
             # The external controllers should not have synchronizer
 
             if external:
-                if 'synchronizer' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have synchronizer')
-                if 'monitor' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have monitor')
-                if 'timer' in ctrl_data:
-                    raise ValueError('External controller does not allow '
-                                     'to have timer')
+                for parameter in ['synchronizer', 'timer', 'monitor']:
+                    if parameter in ctrl_data:
+                        if self._external_ctrl_compat:
+                            msg = (
+                                '{} is deprecated for external controllers '
+                                'e.g. Tango, since 3.0.3. Re-apply configuration '
+                                'in order to upgrade.'
+                            ).format(parameter)
+                            self._parent.warning(msg)
+                        else:
+                            raise ValueError(
+                                'External controller does not allow '
+                                'to have {}'.format(parameter))
             else:
                 synchronizer = ctrl_data.get('synchronizer', 'software')
                 if synchronizer is None or synchronizer == 'software':
@@ -784,7 +800,12 @@ class MeasurementConfiguration(object):
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
-                    channel = pool.get_element_by_full_name(ch_name)
+                    try:
+                        channel = pool.get_element_by_full_name(ch_name)
+                    except KeyError:
+                        raise ValueError(
+                            '{} is not defined'.format(ch_data['name']))
+
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
                 ch_item = ChannelConfiguration(channel, ch_data)
@@ -942,7 +963,11 @@ class MeasurementConfiguration(object):
             for conf_synch in conf_synch_ctrl.get_channels(enabled=True):
                 user_elem_ids_list.append(conf_synch.id)
         self._parent.set_user_element_ids(user_elem_ids_list)
-
+        # force assignment of user elements to the measurement group
+        # in order to update the list of dependent elements (listeners)
+        # of the element e.g. to prevent undefinition of an element added
+        # to the measurement group.
+        self._parent.get_user_elements()
         self.changed = True
 
     def _fill_channel_data(self, channel, channel_data):
@@ -1336,16 +1361,13 @@ class PoolMeasurementGroup(PoolGroupElement):
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
-        kwargs = {'head': self}
-
         self.acquisition.prepare(self.configuration,
                                  self.acquisition_mode,
                                  value,
                                  self._synch_description,
                                  self._moveable_obj,
                                  self.sw_synch_initial_domain,
-                                 self.nb_starts,
-                                 **kwargs)
+                                 self.nb_starts)
 
     def start_acquisition(self, value=None):
         """Start measurement.
@@ -1356,7 +1378,9 @@ class PoolMeasurementGroup(PoolGroupElement):
         if self._pending_starts == 0:
             msg = "prepare is mandatory before starting acquisition"
             raise RuntimeError(msg)
+        self._stopped = False
         self._aborted = False
+        self._released = False
         self._pending_starts -= 1
         if not self._simulation_mode:
             self.acquisition.run()
@@ -1383,4 +1407,35 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def abort(self):
         self._pending_starts = 0
+        self.acquisition._synch._synch_soft.abort()
         PoolGroupElement.abort(self)
+
+    # -------------------------------------------------------------------------
+    # utils
+    # -------------------------------------------------------------------------
+
+    def _is_online(self, cfg):
+        pool = self.pool
+        for ctrl_name in cfg['controllers']:
+            external = ctrl_name in ['__tango__']
+            if not external:
+                ctrl = pool.get_element_by_full_name(ctrl_name)
+                if not ctrl.is_online():
+                    return False
+        return True
+    # --------------------------------------------------------------------------
+    # release
+    # --------------------------------------------------------------------------
+
+    def release(self):
+        # override PoolBaseElement.releaes() cause the PoolAcquisition action
+        # is composed from many sub-actions and the default
+        # PoolBaseElement.get_operation() is not able to get the top action
+        operation = self.acquisition
+        if not operation.is_running():
+            self.warning("Operation is not running, can not release")
+            return
+        self._released = True
+        self._state_event = None
+        self.info("Release!")
+        operation.release_action()

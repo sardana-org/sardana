@@ -150,6 +150,18 @@ class PoolDevice(SardanaDevice):
         :rtype: bool"""
         return self.get_state() != DevState.UNKNOWN
 
+    def Release(self):
+        """The tango release command. Release the active operation"""
+        self.element.release()
+
+    def is_Release_allowed(self):
+        """Returns True if it is allowed to execute the tango release command
+
+        :return: True if it is allowed to execute the tango release command or
+                 False otherwise
+        :rtype: bool"""
+        return self.get_state() != DevState.UNKNOWN
+
     def _is_allowed(self, req_type):
         """Generic is_allowed"""
 #        state = self.get_state()
@@ -545,6 +557,7 @@ class PoolDeviceClass(SardanaDeviceClass):
     cmd_list = {
         'Stop': [[DevVoid, ""], [DevVoid, ""]],
         'Abort': [[DevVoid, ""], [DevVoid, ""]],
+        'Release': [[DevVoid, ""], [DevVoid, ""]],
         'Restore': [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(SardanaDeviceClass.cmd_list)

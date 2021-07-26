@@ -278,8 +278,11 @@ def reservedOperation(fn):
                 raise AbortException("aborted before calling %s" % fn.__name__)
         try:
             return fn(*args, **kwargs)
+        except AbortException:
+            self._clearEventWait()
+            raise
         except:
-            print("Exception occurred in reserved operation:"
+            self.debug("Exception occurred in reserved operation:"
                   " clearing events...")
             self._clearEventWait()
             raise
@@ -447,6 +450,10 @@ class PoolElement(BaseElement, TangoDevice):
         """Returns the TangoAttributeEG object"""
         return self._attrEG.get(name)
 
+    def removeAttrEG(self, name):
+        """Remove the TangoAttributeEG object"""
+        self._attrEG.pop(name)
+
     def getAttrObj(self, name):
         """Returns the taurus.core.tangoattribute.TangoAttribute object"""
         attrEG = self._attrEG.get(name)
@@ -478,7 +485,10 @@ class PoolElement(BaseElement, TangoDevice):
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
         try:
-            evt_wait.waitEvent(DevState.MOVING, equal=False)
+            if not evt_wait.waitForEvent((DevState.ON, DevState.ALARM),
+                                         timeout=3, reactivity=.1):
+                raise RuntimeError(
+                    "{} is Moving, can not proceed to start".format(self.name))
             # Clear event set to not confuse the value coming from the
             # connection with the event of of end of the operation
             # in the next wait event. This was observed on Windows where
@@ -488,7 +498,7 @@ class PoolElement(BaseElement, TangoDevice):
             self.__go_start_time = ts1 = time.time()
             self._start(*args, **kwargs)
             ts2 = time.time()
-            evt_wait.waitEvent(DevState.MOVING, after=ts1)
+            evt_wait.waitForEvent((DevState.MOVING, ), after=ts1)
         except:
             evt_wait.disconnect()
             raise
@@ -503,22 +513,12 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        if timeout is None:
-            # 0.1 s of timeout with infinite retries facilitates aborting
-            # by raising exceptions from a different threads
-            timeout = 0.1
-            retries = -1
-        else:
-            # Due to taurus-org/taurus #573 we need to divide the timeout
-            # in two intervals
-            timeout = timeout / 2
-            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         try:
-            evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=retries)
+            evt_wait.waitForEvent((DevState.MOVING, ), after=id, equal=False,
+                                  timeout=timeout, reactivity=0.1)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
@@ -561,6 +561,18 @@ class PoolElement(BaseElement, TangoDevice):
                 self.waitReady(timeout=timeout)
         finally:
             state.unlock()
+
+    def release(self):
+        """Release hung element from its operation and make cleanup.
+
+        Before releasing you should try stopping/aborting the element.
+        """
+        # Remove state event generator to force subscription
+        # and synchronous state readout on the next start.
+        # This allows to reuse the element if the cause of the hung
+        # was fixed.
+        self.removeAttrEG("State")
+        self.command_inout("Release")
 
     def information(self, tab='    '):
         msg = self._information(tab=tab)
@@ -1042,7 +1054,7 @@ class Motor(PoolElement, Moveable):
         evt_wait.connect(state)
         evt_wait.lock()
         try:
-            # evt_wait.waitEvent(DevState.MOVING, equal=False)
+            # evt_wait.waitForEvent((DevState.MOVING, ), equal=False)
             time_stamp = time.time()
             try:
                 self.getPositionObj().write(new_pos)
@@ -1056,8 +1068,8 @@ class Motor(PoolElement, Moveable):
             # putting timeout=0.1 and retries=1 is a patch for the case when
             # the initial moving event doesn't arrive do to an unknown
             # tango/pytango error at the time
-            evt_wait.waitEvent(DevState.MOVING, time_stamp,
-                               timeout=0.1, retries=1)
+            evt_wait.waitForEvent((DevState.MOVING, ), time_stamp,
+                                  timeout=0.2, reactivity=0.1)
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()
@@ -1513,6 +1525,8 @@ class MGConfiguration(object):
         tg_attr_validator = TangoAttributeNameValidator()
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
+            if not channel_data.get("enabled", True):
+                continue
             data_source = channel_data['source']
             params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
@@ -3510,6 +3524,13 @@ class Pool(TangoDevice, MoveableSource):
                                   _pool_data=data)
         return obj
 
+    def _delObject(self, element):
+        elem_type = element.getType()
+        if elem_type in ('ControllerClass', 'ControllerLibrary', 'Instrument'):
+            return
+        obj = element.getObj()
+        obj.factory().removeExistingDevice(obj)
+
     def on_elements_changed(self, evt_src, evt_type, evt_value):
         if evt_type == TaurusEventType.Error:
             msg = evt_value
@@ -3544,6 +3565,15 @@ class Pool(TangoDevice, MoveableSource):
             element = self.getElementInfo(element_data['full_name'])
             try:
                 elements.removeElement(element)
+                # Ideally this object should disappear without the need to
+                # call _delObject() - there should be no references to it.
+                # Most probably due to the complex circular references
+                # between the element and its attributes, as it is in the case
+                # of the measurement group, we need to explicitly remove the
+                # object so it does not remain on the client side (Taurus
+                # factory)
+                # See more details in #145, #1528.
+                self._delObject(element)
             except:
                 self.warning("Failed to remove %s", element_data)
         for element_data in elems.get('change', ()):
@@ -3665,7 +3695,7 @@ class Pool(TangoDevice, MoveableSource):
     # End of MoveableSource interface
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
-    def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
+    def _wait_for_element_in_container(self, container, elem_name, timeout=1.5,
                                        contains=True):
         start = time.time()
         cond = True

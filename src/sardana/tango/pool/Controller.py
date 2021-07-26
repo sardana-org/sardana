@@ -72,6 +72,7 @@ class Controller(PoolDevice):
     @DebugIt()
     def delete_device(self):
         PoolDevice.delete_device(self)
+        self.ctrl = None
 
     @DebugIt()
     def init_device(self):

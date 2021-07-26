@@ -23,6 +23,8 @@
 ##
 ##############################################################################
 
+import os
+
 import PyTango
 import taurus
 
@@ -91,15 +93,10 @@ class SarTestTestCase(BasePoolTestCase):
     def setUp(self, pool_properties=None):
         BasePoolTestCase.setUp(self, pool_properties)
 
-        # due to problems with factory cleanup in Taurus 3
-        # we must skip these tests temporarily, whenever Taurus 3 support will
-        # be dropped, re-enable them
-        if taurus.core.release.version_info[0] < 4:
-            self.skipTest("Taurus 3 has problems with factory cleanup")
-
-
         self.ctrl_list = []
         self.elem_list = []
+        self.pseudo_ctrl_list = []
+        self.pseudo_elem_list = []
         try:
             # physical controllers and elements
             for sar_type, lib, cls, prefix, postfix, nelem in self.cls_list:
@@ -143,56 +140,68 @@ class SarTestTestCase(BasePoolTestCase):
                     print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTestCase: %s' % (msg))
-                self.ctrl_list.append(ctrl_name)
+                self.pseudo_ctrl_list.append(ctrl_name)
                 for role in roles:
                     elem = role.split("=")[1]
                     if elem not in self.elem_list:
-                        self.elem_list.append(elem)
+                        self.pseudo_elem_list.append(elem)
         except Exception as e:
             # force tearDown in order to eliminate the Pool
             BasePoolTestCase.tearDown(self)
             print(e)
 
+    def _delete_elem(self, elem_name):
+        # Cleanup eventual taurus devices. This is especially important
+        # if the sardana-taurus extensions are in use since this
+        # devices are created and destroyed within the testsuite.
+        # Persisting taurus device may react on API_EventTimeouts, enabled
+        # polling, etc.
+        if elem_name in self.f.tango_alias_devs:
+            _cleanup_device(elem_name)
+        try:
+            if os.name != "nt":
+                self.pool.DeleteElement(elem_name)
+                print(elem_name)
+        except Exception as e:
+            print(e)
+            self.dirty_elems.append(elem_name)
+
+    def _delete_ctrl(self, ctrl_name):
+        # Cleanup eventual taurus devices. This is especially important
+        # if the sardana-taurus extensions are in use since this
+        # devices are created and destroyed within the testsuite.
+        # Persisting taurus device may react on API_EventTimeouts, enabled
+        # polling, etc.
+        if ctrl_name in self.f.tango_alias_devs:
+            _cleanup_device(ctrl_name)
+        try:
+            if os.name != "nt":
+                self.pool.DeleteElement(ctrl_name)
+                print(ctrl_name)
+        except:
+            self.dirty_ctrls.append(ctrl_name)
+
     def tearDown(self):
         """Remove the elements and the controllers
         """
-        dirty_elems = []
-        dirty_ctrls = []
-        f = taurus.Factory()
+        self.dirty_elems = []
+        self.dirty_ctrls = []
+        self.f = taurus.Factory()
+        for elem_name in self.pseudo_elem_list:
+            self._delete_elem(elem_name)
+        for ctrl_name in self.pseudo_ctrl_list:
+            self._delete_ctrl(ctrl_name)
         for elem_name in self.elem_list:
-            # Cleanup eventual taurus devices. This is especially important
-            # if the sardana-taurus extensions are in use since this
-            # devices are created and destroyed within the testsuite.
-            # Persisting taurus device may react on API_EventTimeouts, enabled
-            # polling, etc.
-            if elem_name in f.tango_alias_devs:
-                _cleanup_device(elem_name)
-            try:
-                self.pool.DeleteElement(elem_name)
-            except Exception as e:
-                print(e)
-                dirty_elems.append(elem_name)
-
+            self._delete_elem(elem_name)
         for ctrl_name in self.ctrl_list:
-            # Cleanup eventual taurus devices. This is especially important
-            # if the sardana-taurus extensions are in use since this
-            # devices are created and destroyed within the testsuite.
-            # Persisting taurus device may react on API_EventTimeouts, enabled
-            # polling, etc.
-            if ctrl_name in f.tango_alias_devs:
-                _cleanup_device(ctrl_name)
-            try:
-                self.pool.DeleteElement(ctrl_name)
-            except:
-                dirty_ctrls.append(ctrl_name)
-
+            self._delete_ctrl(ctrl_name)
         _cleanup_device(self.pool_name)
 
         BasePoolTestCase.tearDown(self)
 
-        if dirty_elems or dirty_ctrls:
+        if self.dirty_elems or self.dirty_ctrls:
             msg = "Cleanup failed. Database may be left dirty." + \
-                "\n\tCtrls : %s\n\tElems : %s" % (dirty_ctrls, dirty_elems)
+                "\n\tCtrls : %s\n\tElems : %s" % (self.dirty_ctrls, self.dirty_elems)
             raise Exception(msg)
 
 

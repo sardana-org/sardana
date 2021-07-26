@@ -71,6 +71,7 @@ class PseudoCounter(PoolExpChannelDevice):
         pseudo_counter = self.pseudo_counter
         if pseudo_counter is not None:
             pseudo_counter.remove_listener(self.on_pseudo_counter_changed)
+        self.pseudo_counter = None
 
     @DebugIt()
     def init_device(self):

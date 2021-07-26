@@ -29,6 +29,9 @@ __all__ = ['SpockInputHandler']
 
 __docformat__ = 'restructuredtext'
 
+import threading
+
+from sardana.util.thread import raise_in_thread
 from sardana.taurus.core.tango.sardana.macroserver import BaseInputHandler
 
 from sardana.spock import genutils
@@ -39,8 +42,10 @@ class SpockInputHandler(BaseInputHandler):
     def __init__(self):
         # don't call super __init__ on purpose
         self._input = genutils.spock_input
+        self._input_thread = None
 
     def input(self, input_data=None):
+        self._input_thread = threading.current_thread()
         if input_data is None:
             input_data = {}
         prompt = input_data.get('prompt')
@@ -58,4 +63,5 @@ class SpockInputHandler(BaseInputHandler):
         return ret
 
     def input_timeout(self, input_data):
-        print("SpockInputHandler input timeout")
+        raise_in_thread(KeyboardInterrupt, self._input_thread)
+        print("Input timeout reached!")

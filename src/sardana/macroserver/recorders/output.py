@@ -141,6 +141,7 @@ class OutputRecorder(DataRecorder):
             cols = None
         self._columns = cols
         self._output_block = output_block
+        self._header_shown = False
 
     def _startRecordList(self, recordlist):
         starttime = recordlist.getEnvironValue('starttime').ctime()
@@ -215,15 +216,14 @@ class OutputRecorder(DataRecorder):
         self._scan_line_t = [(col_names[0], '%%(%s)8d' % col_names[0])]
         self._scan_line_t += [(name, cell_t_number % name)
                               for name in col_names[1:]]
-
-        self._stream()._output(header)
-        self._stream()._flushOutput()
+        self._header = header
 
     def _endRecordList(self, recordlist):
         self._stream()._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
+        setuptime = recordlist.getEnvironValue('setuptime')
         motiontime = recordlist.getEnvironValue('motiontime')
         totaltime = endtime - starttime
         endtime = endtime.ctime()
@@ -239,13 +239,19 @@ class OutputRecorder(DataRecorder):
         startts = recordlist.getEnvironValue('startts')
         totaltimets = endts - startts
         deadtime_perc = deadtime * 100 / totaltimets
+        setuptime_perc = setuptime * 100 / totaltimets
         motiontime_perc = motiontime * 100 / totaltimets
         info_string = 'Scan #%s ended at %s, taking %s. ' + \
-                      'Dead time %.1f%% (motion dead time %.1f%%)'
+                      'Dead time %.1f%% (setup time %.1f%%, motion dead time %.1f%%)'
         self._stream().info(info_string % (serialno, endtime, totaltime,
-                                         deadtime_perc, motiontime_perc))
+                                           deadtime_perc, setuptime_perc, motiontime_perc))
 
     def _writeRecord(self, record):
+        if not self._header_shown:
+            # show column headers
+            self._stream()._output(self._header)
+            self._stream()._flushOutput()
+            self._header_shown = True
         cells = []
         for i, (name, cell) in enumerate(self._scan_line_t):
             cell_data = record.data[name]

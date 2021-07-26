@@ -254,34 +254,42 @@ class pwa(Macro):
 
 class set_lim(Macro):
     """Sets the software limits on the specified motor hello"""
+
     param_def = [
-        ['motor', Type.Moveable, None, 'Motor name'],
-        ['low',   Type.Float, None, 'lower limit'],
-        ['high',   Type.Float, None, 'upper limit']
+        ["motor", Type.Moveable, None, "Motor name"],
+        ["low", Type.Float, None, "lower limit"],
+        ["high", Type.Float, None, "upper limit"],
     ]
 
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting user limits for %s" % name)
+        if low > high:
+            raise ValueError("lower limit must be lower than the upper limit")
         motor.getPositionObj().setLimits(low, high)
-        self.output("%s limits set to %.4f %.4f (user units)" %
-                    (name, low, high))
+        self.output(
+            "%s limits set to %.4f %.4f (user units)" % (name, low, high)
+            )
 
 
 class set_lm(Macro):
     """Sets the dial limits on the specified motor"""
+
     param_def = [
-        ['motor', Type.Motor, None, 'Motor name'],
-        ['low',   Type.Float, None, 'lower limit'],
-        ['high',   Type.Float, None, 'upper limit']
+        ["motor", Type.Motor, None, "Motor name"],
+        ["low", Type.Float, None, "lower limit"],
+        ["high", Type.Float, None, "upper limit"],
     ]
 
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting dial limits for %s" % name)
+        if low > high:
+            raise Exception("lower limit must be lower than the upper limit")
         motor.getDialPositionObj().setLimits(low, high)
-        self.output("%s limits set to %.4f %.4f (dial units)" %
-                    (name, low, high))
+        self.output(
+            "%s limits set to %.4f %.4f (dial units)" % (name, low, high)
+            ) 
 
 
 class set_pos(Macro):
@@ -589,8 +597,12 @@ class umv(Macro, Hookable):
             self.printAllPos()
 
     def printAllPos(self):
-        motor_width = 10
-        table = Table(self.all_pos, elem_fmt=['%*.4f'],
+        motor_width = 10      
+        pos_format = self.getViewOption(ViewOption.PosFormat)
+        fmt = '%*.4f'
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
+        table = Table(self.all_pos, elem_fmt=[fmt],
                       col_head_str=self.all_names, col_head_width=motor_width)
         self.outputBlock(table.genOutput())
         self.flushOutput()
@@ -746,11 +758,9 @@ class ct(Macro, Hookable, _ct):
                 self.countable_elem_name = self.getEnv('ActiveMntGrp')
             except UnknownEnv:
                 return
-            self.countable_elem = self.getObj(
-                self.countable_elem_name, type_class=Type.MeasurementGroup)
         else:
             self.countable_elem_name = countable_elem.name
-            self.countable_elem = countable_elem
+        self.countable_elem = self.getObj(self.countable_elem_name)
 
     def run(self, integ_time, countable_elem):
         if self.countable_elem is None:
@@ -837,11 +847,14 @@ class uct(Macro, _ct):
 
         self.channels = []
         self.values = []
+        names = []
         if self.countable_elem.type == Type.MeasurementGroup:
-            names = self.countable_elem.getChannelLabels()
+            meas_grp = self.countable_elem
+            for channel_info in meas_grp.getChannelsEnabledInfo():
+                names.append(channel_info.label)
             self.names = [[n] for n in names]
-            for channel_info in self.countable_elem.getChannels():
-                full_name = channel_info["full_name"]
+            for channel_info in meas_grp.getChannelsEnabledInfo():
+                full_name = channel_info.full_name
                 channel = Device(full_name)
                 self.channels.append(channel)
                 value = channel.getValue(force=True)

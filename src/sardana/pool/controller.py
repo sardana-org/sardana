@@ -263,12 +263,12 @@ class Controller(object):
     #:                                 Description : 'motor encoder source', },
     #:         }
     #:
-    #:         def getAxisPar(self, axis, name):
+    #:         def getAxisExtraPar(self, axis, name):
     #:             name = name.lower()
     #:             if name == 'encodersource':
     #:                 return self._encodersource[axis]
     #:
-    #:         def setAxisPar(self, axis, name, value):
+    #:         def setAxisExtraPar(self, axis, name, value):
     #:             name = name.lower()
     #:             if name == 'encodersource':
     #:                 self._encodersource[axis] = value

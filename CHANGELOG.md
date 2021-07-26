@@ -3,7 +3,84 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-## [Unreleased] 
+## [Unreleased]
+
+### Added
+
+* `rscan`, `r2scan` and `r3scan` scan macros (formerly available as examples
+   under different names `regscan`, `reg2scan` and `reg3scan`)
+   * added _hooks_ and _scan data_ support to these macros
+   * changed `region_nr_intervals` macro parameter type to integer
+   * moved `integ_time` macro parameter at the end of the parameters list
+* `lsp` macro: list Pools the MacroServer is connected to (#1599)
+* Possibility to _release_ hung operations e.g. motion or acquisition due to a hung element (#1582)
+   * _release_ element and _release_ action concepts to the core
+   * `Release` Tango command to Pool element devices
+   * `release()` method to the Taurus extensions
+   * macro release will automatically release the element hung on aborting (3rd Ctrl+C)
+* Print in form of a table relevant motion parameters used during continuous scans
+  before the scan starts (#692, #1652)
+* History log message for motor attributes (sign, offset and step_per_unit) (#1630)
+* Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
+* Allow to run Sardana scripts as Python modules (#1627)
+* Allow user to control Pool, MacroServer and Sardana servers log files size & number (#141, #1654)
+* Add devcontainer for VS Code IDE (Remote Containers) (#1598)
+
+### Changed
+
+* Execute post-scan also in case of an exception (#1538)
+* `IntegrationTime`, `MonitorCount`, `NbStarts` and `SynchDescription`
+  MeasurementGroup's Tango attributes to not memorized (#1611)
+
+
+### Removed
+
+* `regscan`, `reg2scan` and `reg3scan` scan macro examples
+* `rfoo` (rconsole) usage in from MacroServer - no support for Python 3 (#1622)
+
+### Fixed
+
+* Delettion of Pool element now checks if dependent elements exists (#1586, #1615)
+* Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
+* Prevent start of operation e.g. motion or acquisition already on the client side when the
+  state is not On or Alarm (#1592, #1594)
+* Allow to recreate measurement group with the same name but other channels so the MacroServer
+  correctly reports the channels involved in the measurement group (#145, #1528, #1607)
+* Ensure controller, element and group state are set to Fault and details are reported in the status
+  whenever plugin code i.e. controller library, is missing (#1588)
+* Consider events from not standard 0D channel attributes e.g. shape (#1618, #1620)
+* Stop motion only once in scans (#1578, #1579)
+* Stop/abort element in `ct` macro when used with channels (#1595)
+* Hang of IPython when macro input gives timeout (#1614)
+* Spock prompt informs when the Door is offline (#1621, #1625)
+* Spock running without an X-session on Linux (#1106, #1648)
+* Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
+* Do not reserve _instruments_ in scans what avoids stopping them (#1577)
+* Avoid problems with duplicated pre-scan snapshots (#87, #1637)
+   * Make `NXscanH5_FileRecorder` robust agains duplicated pre-scan snapshots
+   * Make `expconf`:
+      * prevent from duplicating pre-scan snapshots
+      * sanitize already duplicated pre-scan snapshots and offer applying samitized configuration
+* Respect enabled flag in `uct` macro (#1202, #1649)
+* sequencer action buttons (new, save and play) state (enabled/disabled) (#305, #1643)
+* Make PMTV relative move combobox accept only positive numbers (#1571, #1572)
+* Remove usage of taurus deprecated features (#1552)
+* Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
+* Provide backwards compatibility for external ctrls measurement configuration
+  (timer, monitor, synchronizer) (#1624)
+* Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
+
+## [3.1.1] 2021-06-11
+
+### Fixed
+
+* Allow to stop/abort macro executing other hooked macros (#1603, #1608)
+
+### Deprecated
+
+* `MacroExecutor.clearRunningMacro()` in favor of `MacroExecutor.clearMacroStack()` (#1608)
+
+## [3.1.0] 2021-05-17
 
 ### Added
 
@@ -24,30 +101,41 @@ This file follows the formats and conventions from [keepachangelog.com]
   * Add `PrepareOne()` to TriggerGate controller.
   * Call TriggerGate controller preparation methods in the _acquision action_
 * Add `ScanUser` environment variable (#1355)
+* Support `PosFormat` _ViewOption_ in `umv` macro (#176, #1555)
 * Allow to programmatically disable *deterministic scan* optimization (#1426, #1427)
 * Initial delay in position domain to the synchronization description
   in *ct* like continuous scans (#1428)
 * Avoid double printing of user units in PMTV: read widget and units widget (#1424)
 * Allowed hooks to macro description in Spock (#1523)
 * Assert motor sign is -1 or 1 (#1345, #1507)
+* _last macro_ concept to the `MacroExecutor` (kernel) #1559
 * Documentation on how to write 1D and 2D controllers (#1494)
-* Machanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
+* Mechanism to call `SardanaDevice.sardana_init_hook()` before entering in the server event loop (#674, #1545)
 * Missing documentation of SEP18 concepts to how-to counter/timer controller (#995, #1492)
 * Document how to properly deal with exceptions in macros in order to not interfer 
   with macro stopping/aborting (#1461)
 * Documentation on how to start Tango servers on fixed IP - ORBendPoint (#1470)
 * Documentation example on how to more efficiently access Tango with PyTango
   in macros/controllers (#1456)
+* "What's new?" section to docs (#1584)
+* More clear installation instructions (#727, #1580)
 * napoleon extension to the sphinx configuration (#1533)
 * LICENSE file to python source distribution (#1490)
 
+### Changed
+
+* Experimental channel shape is now considered as a result of the configuration
+  and not part of the measurement group configuration (#1296, #1466)
+* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
+  devices (#1214, #1301, #1531)
+* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
+* Bump taurus requirement to >= 4.7.1.1 on Windows (#1583)
+
+### Removed
+
+* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
+
 ### Fixed
-
-#### Jul21
-
-* make PMTV relative move combobox accept only positive numbers (#1571, #1572)
-
-#### Jan21
 
 * Subscribing to Pool's Elements attribute at Sardana server startup (#674, #1545)
 * Execute per measurement preparation in `mesh` scan macro (#1437)
@@ -59,11 +147,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Storing string values in PreScanSnapshot in NXscanH5_FileRecorder (#1486)
 * Storing string values as custom data in NXscanH5_FileRecorder (#1485)
 * Stopping/aborting grouped movement when backlash correction would be applied (#1421, #1474, #1539)
+* Storing string datasets with `h5py` > 3 (#1510)
 * Fill parent_macro in case of executing XML hooks e.g. in sequencer (#1497)
 * Remove redundant print of positions at the end of umv (#1526)
 * Problems with macro id's when `sequencer` executes from _plain text_ files (#1215, #1216)
 * `sequencer` loading of plain text sequences in spock syntax with macro functions (#1422)
+* MacroServer crash at exit on Windows by avoiding the abort of the already finished macro (#1077, #1559)
 * Allow running Spock without Qt bindings (#1462, #1463)
+* Spock issues at startup on Windows (#536)
 * Fix getting macroserver from remote door in Sardana-Taurus Door extension (#1506)
 * MacroServer opening empty environment files used with dumb backend (#1425, #1514, #1517, #1520)
 * Respect timer/monitor passed in measurement group configuration (#1516, #1521)
@@ -72,6 +163,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   sections in the macro description in Spock (#1524)
 * Apply position formatting (configured with `PosFormat` _view option_)
   to the limits in the `wm` macro (#1529, #1530)
+* Prompt in QtSpock when used with new versions of the `traitlets` package (#1566)
 * Use equality instead of identity checks for numbers and strings (#1491)
 * Docstring of QtSpockWidget (#1484)
 * Recorders tests helpers (#1439)
@@ -79,19 +171,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `createMacro()` and `prepareMacro()` docstring (#1460, #1444)
 * Make write of MeasurementGroup (Taurus extension) integration time more robust (#1473)
 * String formatting when rising exceptions in pseudomotors (#1469)
-
-
-### Changed
-
-* Experimental channel shape is now considered as a result of the configuration
-  and not part of the measurement group configuration (#1296, #1466)
-* Use `LatestDeviceImpl` (currently `Device_5Impl`) for as a base class of the Sardana Tango
-  devices (#1214, #1301, #1531)
-* Read experimental channel's `value` in serial mode to avoid involvement of a worker thread (#1512)
-
-### Removed
-
-* `shape` from the measurement group configuration and `expconf` (#1296, #1466)
+* h5storage tests so they pass on Windows and mark the `test_VDS` as xfail (#1562, #1563).
+* Recorder test on Windows - use `os.pathsep` as recorder paths separator (#1556)
+* Measurement group tango tests - wrong full name composition (#1557)
+* Avoid crashes of certain combinations of tests on Windows at process exit (#1558)
+* Skip execution of Pool's `DeleteElement` Tango command in tests for Windows in order to
+  avoid server crashes (#540, #1567)
+* Skip QtSpock `test_get_value` test if qtconsole >= 4.4.0 (#1564)
+* Increase timeout for QtSpock tests (#1568)
 
 ## [3.0.3] 2020-09-18
 
@@ -1037,7 +1124,9 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/3.0.3...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.0...HEAD
+[3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
+[3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
 [2.8.6]: https://github.com/sardana-org/sardana/compare/2.8.6...2.8.5
 [2.8.5]: https://github.com/sardana-org/sardana/compare/2.8.5...2.8.4

@@ -69,7 +69,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
-    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
+    try:
+        str_dt = h5py.string_dtype()
+    except AttributeError:
+        # h5py < 3
+        str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
     byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
@@ -223,6 +227,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                     self.__class__.__name__)
         _pname = nxentry.create_dataset('program_name', data=program_name)
         _pname.attrs['version'] = sardana.release.version
+        # TODO check if this should be "starttime" or "scanstarttime"
         nxentry.create_dataset('start_time', data=env['starttime'].isoformat())
         timedelta = (env['starttime'] - datetime(1970, 1, 1))
         try:
@@ -297,6 +302,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
+            if label in _snap:
+                self.warning(
+                    "PreScanSnapShot: skipping duplicated label'{}'".format(
+                        label
+                    )
+                )
+                continue
             dtype = dd.dtype
             pre_scan_value = dd.pre_scan_value
             if dd.dtype == 'bool':
@@ -368,8 +380,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
-                first_reference = measurement[label][0]
-
+                try:
+                    dataset = measurement[label].asstr()
+                except AttributeError:
+                    # h5py < 3
+                    dataset = measurement[label]
+                first_reference = dataset[0]
                 group = re.match(self.pattern, first_reference)
                 if group is None:
                     msg = 'Unsupported reference %s' % first_reference
@@ -395,7 +411,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                             dtype=dd_env.dtype)
 
                 for i in range(nb_points):
-                    reference = measurement[label][i]
+                    reference = dataset[i]
                     group = re.match(self.pattern, reference)
                     if group is None:
                         msg = 'Unsupported reference %s' % first_reference
@@ -403,8 +419,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                         continue
                     uri_groups = group.groupdict()
                     filename = uri_groups["filepath"]
-                    dataset = uri_groups.get("dataset", "dataset")
-                    vsource = h5py.VirtualSource(filename, dataset,
+                    remote_dataset_name = uri_groups["dataset"]
+                    if remote_dataset_name is None:
+                        remote_dataset_name = "dataset"
+                    vsource = h5py.VirtualSource(filename, remote_dataset_name,
                                                  shape=(dim_1, dim_2))
                     layout[i] = vsource
 

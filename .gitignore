@@ -5,3 +5,4 @@
 /src/sardana.egg-info
 *.pyc
 .idea/
+.vscode/

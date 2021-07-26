@@ -52,6 +52,8 @@ from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
 from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+from taurus.console import Alignment
+from taurus.console.list import List
 
 from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -102,7 +104,7 @@ def _get_shape(channel):
         if attr_conf.data_format == PyTango.AttrDataFormat.SCALAR:
             return []
         try:
-            value = channel.read().value
+            value = channel.read().rvalue.magnitude
         except Exception:
             return [n for n in (attr_conf.max_dim_x,
                                 attr_conf.max_dim_y) if n > 0]
@@ -677,6 +679,9 @@ class GScan(Logger):
              'user': user,
              'title': self.macro.getCommand()})
 
+        env['startts'] = ts = time.time()
+        env['starttime'] = datetime.datetime.fromtimestamp(ts)
+
         # Initialize the data_desc list (and add the point number column)
         data_desc = [
             ColumnDesc(name='point_nb', label='#Pt No', dtype='int64')
@@ -720,8 +725,8 @@ class GScan(Logger):
                 except Exception:
                     instrument = ''
             try:
-                instrumentFullName = self.macro.findObjs(
-                    instrument, type_class=Type.Instrument)[0].getFullName()
+                instrumentFullName = \
+                    self.macro.getInstrument(instrument).getFullName()
             except InterruptException:
                 raise
             except Exception:
@@ -822,7 +827,7 @@ class GScan(Logger):
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
         env['instrumentlist'] = self.macro.findObjs(
-            '.*', type_class=Type.Instrument)
+            '.*', type_class=Type.Instrument, reserve=False)
 
         # env.update(self._getExperimentConfiguration) #add all the info from
         # the experiment configuration to the environment
@@ -993,27 +998,31 @@ class GScan(Logger):
     def start(self):
         self.do_backup()
         env = self._env
-        env['startts'] = ts = time.time()
-        env['starttime'] = datetime.datetime.fromtimestamp(ts)
+        env['scanstartts'] = ts = time.time()
+        env['scanstarttime'] = datetime.datetime.fromtimestamp(ts)
         env['acqtime'] = 0
         env['motiontime'] = 0
         env['deadtime'] = 0
+        env['setuptime'] = ts - env['startts'] 
         self.data.start()
 
     def end(self):
         env = self._env
         env['endts'] = end_ts = time.time()
         env['endtime'] = datetime.datetime.fromtimestamp(end_ts)
-        total_time = end_ts - env['startts']
+        # total macro time, including snapshots
+        # total_time = end_ts - env['startts']
+        # time to run actual scan
+        total_scan_time = end_ts - env['scanstartts']
         # estimated = env['estimatedtime']
         acq_time = env['acqtime']
         # env['deadtime'] = 100.0 * (total_time - estimated) / total_time
 
-        env['deadtime'] = total_time - acq_time
+        env['deadtime'] = total_scan_time - acq_time
         if 'delaytime' in env:
-            env['motiontime'] = total_time - acq_time - env['delaytime']
+            env['motiontime'] = total_scan_time - acq_time - env['delaytime']
         elif 'motiontime' in env:
-            env['delaytime'] = total_time - acq_time - env['motiontime']
+            env['delaytime'] = total_scan_time - acq_time - env['motiontime']
 
         self.data.end()
         try:
@@ -1066,10 +1075,9 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus == ScanEndStatus.Normal:
-                if hasattr(macro, 'getHooks'):
-                    for hook in macro.getHooks('post-scan'):
-                        hook()
+            if hasattr(macro, 'getHooks'):
+                for hook in macro.getHooks('post-scan'):
+                    hook()
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
@@ -2485,6 +2493,14 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
+            # a table of motor settings
+            # ("u" is short for "unit", to save space)
+            motor_table = List(["Motor", "Velocity[u/s]", "Acceleration[s]",
+                                "Deceleration[s]", "Start[u]", "End[u]"],
+                               header_separator=None,
+                               text_alignment=[Alignment.HCenter] * 6,
+                               max_col_width=[-1] * 6)
+
             # prepare motor(s) to move with their maximum velocity
             for path in motion_paths:
                 motor = path.moveable
@@ -2495,6 +2511,13 @@ class CTScan(CScan, CAcquisition):
                                  'end: %f; ' % path.final_pos +
                                  'ds: %f' % (path.final_pos -
                                              path.initial_pos))
+                cell_format = "%g"  # TODO is this the proper format to use?
+                motor_table.appendRow([motor.getName(),
+                                       cell_format % path.max_vel,
+                                       cell_format % path.max_vel_time,
+                                       cell_format % path.min_vel_time,
+                                       cell_format % path.initial_pos,
+                                       cell_format % path.final_pos])
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2507,6 +2530,11 @@ class CTScan(CScan, CAcquisition):
                 except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
+
+            self.macro.output("")
+            for line in motor_table.genOutput():
+                self.macro.output(line)
+            self.macro.output("")
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2620,6 +2648,25 @@ class CTScan(CScan, CAcquisition):
         self.wait_value_buffer()
         self.join_thread_pool()
         self.macro.debug("All data events are processed")
+
+        # Note: The commented out code below works, but due to an issue with
+        # output of the last measurement point, it should not be enabled yet.
+        # See https://github.com/sardana-org/sardana/issues/1651
+
+        # # Output the restored motor settings
+        # out = List(["Motor", "Velocity", "Acceleration", "Deceleration"],
+        #            header_separator=None,
+        #            text_alignment=[Alignment.HCenter] * 4,
+        #            max_col_width=[-1] * 4)
+        # cell_format = "%g"
+        # for motor_backup in self._backup:
+        #     out.appendRow([motor_backup["moveable"].getName(),
+        #                    cell_format % motor_backup["velocity"],
+        #                    cell_format % motor_backup["acceleration"],
+        #                    cell_format % motor_backup["deceleration"]])
+        # self.macro.output("")
+        # for line in out.genOutput():
+        #     self.macro.output(line)
 
     def scan_loop(self):
         macro = self.macro

@@ -28,7 +28,7 @@
 
 __all__ = ["ls0d", "ls1d", "ls2d", "lsa", "lscom", "lsct", "lsctrl",
            "lsctrllib", "lsdef", "lsexp", "lsi", "lsior", "lsm", "lsmeas",
-           "lspc", "lspm", "lsmac", "lsmaclib", "lstg"]
+           "lsp", "lspc", "lspm", "lsmac", "lsmaclib", "lstg"]
 
 __docformat__ = 'restructuredtext'
 
@@ -170,6 +170,15 @@ class _lsobj(_ls):
         if (self.show_overwritten_msg is True
             and hasattr(self, "overwritten_msg")):
             self.warning(self.overwritten_msg)
+
+
+class lsp(_lsobj):
+    """Lists all pools"""
+
+    cols = 'Name',
+    width = -1,
+    align = Right,
+    type = Type.Pool
 
 
 class lsm(_lsobj):

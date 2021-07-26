@@ -427,7 +427,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         conf = door.getExperimentConfiguration()
         self._originalConfiguration = copy.deepcopy(conf)
         self.setLocalConfig(conf)
-        self._setDirty(False)
+        # Flag as "dirty" if some config was changed during the set-up
+        self._setDirty(self._localConfig != self._originalConfiguration)
         self._dirtyMntGrps = set()
         # set a list of available channels
         avail_channels = {}
@@ -671,7 +672,18 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             else:
                 full_name = nfo.full_name
                 display = nfo.name
+            if full_name in [fn for fn, _ in preScanList]:
+                msg = ("'{}' defined more than once in snapshot.\n"
+                       + "Only one entry will be kept").format(display)
+                Qt.QMessageBox.warning(
+                    self, "Duplicated entry", msg, Qt.QMessageBox.Ok
+                )
+                continue
             preScanList.append((full_name, display))
+        if len(preScanList) != len(items):
+            # refresh the preScanList removing duplicated entries (if any)
+            self.ui.preScanList.clear()
+            self.ui.preScanList.addModels(preScanList)
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)
 
