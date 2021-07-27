@@ -2637,7 +2637,7 @@ class CTScan(CScan, CAcquisition):
                   instead of _motion or in both cases: CSScan and CTScan
                   coordinate the physical motors' velocit.
         """
-        self.macro.debug("on_waypoints_end() entering...")
+        self.debug("on_waypoints_end() entering...")
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
             self._restore_motors()  # first restore motors backup
