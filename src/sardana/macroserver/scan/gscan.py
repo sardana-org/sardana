@@ -2650,6 +2650,7 @@ class CTScan(CScan, CAcquisition):
         self.wait_value_buffer()
         self.join_thread_pool()
         self.debug("All data events are processed")
+        self.data.endRecords()
 
         # Note: The commented out code below works, but due to an issue with
         # output of the last measurement point, it should not be enabled yet.
@@ -2915,6 +2916,7 @@ class TScan(GScan, CAcquisition):
         self.join_thread_pool()
         self.debug("All data events are processed")
         self._fill_missing_records()
+        self.data.endRecords()
         yield 100
 
         if hasattr(macro, 'getHooks'):
