@@ -2646,10 +2646,10 @@ class CTScan(CScan, CAcquisition):
             self._physical_motion.move(restore_positions)
         self.motion_end_event.set()
         self.cleanup()
-        self.macro.debug("Waiting for data events to be processed")
+        self.debug("Waiting for data events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
-        self.macro.debug("All data events are processed")
+        self.debug("All data events are processed")
 
         # Note: The commented out code below works, but due to an issue with
         # output of the last measurement point, it should not be enabled yet.
@@ -2913,7 +2913,7 @@ class TScan(GScan, CAcquisition):
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
-        self.macro.checkPoint()
+        self.debug("All data events are processed")
         self._fill_missing_records()
         yield 100
 
