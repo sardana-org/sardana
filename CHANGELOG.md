@@ -71,6 +71,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Provide backwards compatibility for external ctrls measurement configuration
   (timer, monitor, synchronizer) (#1624)
 * Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
+* Import errors of plugin modules using `clr` module of pythonnet - Python.NET (#1623)
 
 ## [3.1.1] 2021-06-11
 
