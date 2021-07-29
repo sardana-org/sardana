@@ -24,11 +24,9 @@
 ##############################################################################
 
 import pytest
-
 from sardana import State
-from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolMotor, dummyPoolMotorCtrlConf01,
-                               dummyMotorConf01)
+from sardana.pool.test import (FakePool, createPoolController, createPoolMotor,
+                               dummyMotorConf01, dummyPoolMotorCtrlConf01)
 
 
 def StateOne_state(self, axis):

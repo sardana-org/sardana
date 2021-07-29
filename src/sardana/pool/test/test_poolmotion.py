@@ -23,13 +23,16 @@
 ##
 ##############################################################################
 
+import threading
+import time
 import unittest
 
+from sardana import ElementType
 from sardana.pool.poolmotion import PoolMotion
+from sardana.pool.test import (FakePool, createPoolController, createPoolMotor,
+                               dummyMotorConf01, dummyMotorConf02,
+                               dummyPoolMotorCtrlConf01)
 from sardana.sardanadefs import State
-from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolMotor, dummyPoolMotorCtrlConf01,
-                               dummyMotorConf01, dummyMotorConf02)
 
 
 class PoolMotionTestCase(unittest.TestCase):
@@ -121,3 +124,29 @@ class PoolMotionTestCase(unittest.TestCase):
         self.cfg = None
         self.dummy_mot = None
         unittest.TestCase.tearDown(self)
+
+
+def test_stop_moveables_with_backlash(moveable):
+    motion_done = threading.Event()
+
+    def on_motor_group_changed(event_source, event_type, event_value):
+        name = event_type.name.lower()
+        if name == "state":
+            if event_value == State.On:
+                motion_done.set()
+
+    if "motgrp" in str(moveable):
+        for motor in moveable._physical_elements:
+            motor.backlash = -1
+        target_position = [100, 100]
+    else:
+        moveable.backlash = -1
+        target_position = 100
+
+    moveable.position = target_position
+    moveable.add_listener(on_motor_group_changed)
+    time.sleep(0.5)
+    moveable.stop()
+    motion_done.wait()
+
+    assert moveable.position.value != target_position
