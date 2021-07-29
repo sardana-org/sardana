@@ -764,7 +764,6 @@ class BaseDoor(MacroServerDevice):
     def write(self, msg, stream=None):
         if self.isSilent():
             return
-        self._output_stream = sys.stdout
         out = self._output_stream
         if stream is not None:
             start, stop = self.log_start.get(stream), self.log_stop.get(stream)
