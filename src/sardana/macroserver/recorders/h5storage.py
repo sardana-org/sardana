@@ -35,6 +35,7 @@ __docformat__ = 'restructuredtext'
 import os
 import re
 import posixpath
+import weakref
 from datetime import datetime
 import numpy
 import h5py
@@ -84,6 +85,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
         BaseFileRecorder.__init__(self, **pars)
 
+        if macro is not None:
+            macro = weakref.ref(macro)
         self.macro = macro
         self.overwrite = overwrite
         if filename:
@@ -628,7 +631,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         except ValueError as e:
             msg = 'Error writing %s. Reason: %s' % (name, e)
             self.warning(msg)
-            self.macro.warning(msg)
+            if self.macro is not None:
+                self.macro().warning(msg)
 
         # flush
         self.fd.flush()
