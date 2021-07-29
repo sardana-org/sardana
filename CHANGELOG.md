@@ -43,6 +43,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Fixed
 
 * Delettion of Pool element now checks if dependent elements exists (#1586, #1615)
+* _Memory leak_ in scan using `NXscanH5_FileRecorder` by avoid cycle reference between this
+  recorder and the macro (#1669, #1095)
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
