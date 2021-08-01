@@ -494,6 +494,9 @@ class amultiscan(aNscan, Macro):
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
+    Syntax: 
+    amultiscan  [[mot01 1 10][mot02 2 2]] 10 1
+    Without brackets it does not work.
     """
 
     param_def = [
@@ -507,12 +510,13 @@ class amultiscan(aNscan, Macro):
     ]
 
     def prepare(self, *args, **opts):
-        motors = args[0:-2:3]
-        starts = args[1:-2:3]
-        ends = args[2:-2:3]
-        nr_interv = args[-2]
-        integ_time = args[-1]
-
+        motors = []
+        starts = []
+        ends = []
+        for i in range(0, len(args[0])):
+            motors.append(args[0][i][0])
+            starts.append(args[0][i][1])
+            ends.append(args[0][i][2])
         self._prepare(motors, starts, ends, nr_interv, integ_time, **opts)
 
 
