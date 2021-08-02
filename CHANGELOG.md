@@ -77,6 +77,11 @@ This file follows the formats and conventions from [keepachangelog.com]
   parameters set for _non-referable_ channels (#1672)
 * Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
 * Import errors of plugin modules using `clr` module of pythonnet - Python.NET (#1623)
+## [3.1.2] 2021-08-02
+
+### Fixed
+
+* Memory leak in MacroServer when executing ascanct, meshct, etc. continuous scan macros (#1664)
 
 ## [3.1.1] 2021-06-11
 
@@ -1132,7 +1137,11 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
+<<<<<<< HEAD
 [Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.0...HEAD
+=======
+[3.1.2]: https://github.com/sardana-org/sardana/compare/3.1.2...3.1.1
+>>>>>>> hotfix-3.1.2
 [3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6

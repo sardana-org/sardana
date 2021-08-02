@@ -2149,6 +2149,22 @@ class CAcquisition(object):
                 non_compatible_channels.append(name)
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
+    
+    def _fill_missing_records(self, start_record=0):
+        """Fill missing records in scan data.
+        
+        Usefull for final padding at the end of the waypoint/scan.
+
+        :param start_record: record number from which start calculating
+            missing records (usefull to multi-waypoints scans)
+        :type start_record: int
+        """
+        # in multi-waypoint scans e.g. meshct, nb_points is per waypoint
+        expected_records = self.macro.nb_points
+        total_records = len(self.data.records)
+        records = total_records - start_record
+        missing_records = expected_records - records
+        self.data.initRecords(missing_records)
 
 
 def generate_timestamps(synch_description, initial_timestamp=0):
@@ -2619,6 +2635,9 @@ class CTScan(CScan, CAcquisition):
             for hook in waypoint.get('post-move-hooks', []):
                 hook()
 
+            # fill record list with empty records for the final padding of waypoint
+            self._fill_missing_records(start_record=nb_points * i)
+
             if start_positions is None:
                 last_positions = positions
 
@@ -2920,13 +2939,6 @@ class TScan(GScan, CAcquisition):
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-acq'):
                 hook()
-
-    def _fill_missing_records(self):
-        # fill record list with dummy records for the final padding
-        nb_points = self.macro.nb_points
-        records = len(self.data.records)
-        missing_records = nb_points - records
-        self.data.initRecords(missing_records)
 
     def _estimate(self):
         with_time = hasattr(self.macro, "getTimeEstimation")
