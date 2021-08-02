@@ -58,6 +58,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hang of IPython when macro input gives timeout (#1614)
 * Spock prompt informs when the Door is offline (#1621, #1625)
 * Spock running without an X-session on Linux (#1106, #1648)
+* `amultiscan` parameters interpretation (#1673)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Avoid problems with duplicated pre-scan snapshots (#87, #1637)
