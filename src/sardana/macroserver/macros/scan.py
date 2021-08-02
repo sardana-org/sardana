@@ -517,6 +517,8 @@ class amultiscan(aNscan, Macro):
             motors.append(args[0][i][0])
             starts.append(args[0][i][1])
             ends.append(args[0][i][2])
+        nr_interv = args[1]
+        integ_time = args[2]
         self._prepare(motors, starts, ends, nr_interv, integ_time, **opts)
 
 
