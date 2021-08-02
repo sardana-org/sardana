@@ -510,13 +510,7 @@ class amultiscan(aNscan, Macro):
     ]
 
     def prepare(self, *args, **opts):
-        motors = []
-        starts = []
-        ends = []
-        for i in range(0, len(args[0])):
-            motors.append(args[0][i][0])
-            starts.append(args[0][i][1])
-            ends.append(args[0][i][2])
+        motors, starts, ends = zip(*args[0])
         nr_interv = args[1]
         integ_time = args[2]
         self._prepare(motors, starts, ends, nr_interv, integ_time, **opts)
