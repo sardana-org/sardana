@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
+## [3.1.2] 2021-08-02
+
+### Fixed
+
+* Memory leak in MacroServer when executing ascanct, meshct, etc. continuous scan macros (#1664)
+
 ## [3.1.1] 2021-06-11
 
 ### Fixed
@@ -1057,6 +1063,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
+[3.1.2]: https://github.com/sardana-org/sardana/compare/3.1.2...3.1.1
 [3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
