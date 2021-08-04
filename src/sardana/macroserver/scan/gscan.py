@@ -1572,9 +1572,8 @@ class CScan(GScan):
 
         top_vel_obj = motor.getVelocityObj()
         _, max_top_vel = top_vel_obj.getRange()
-        try:
-            max_top_vel = float(max_top_vel)
-        except ValueError:
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if np.isinf(max_top_vel):
             try:
                 # hack to avoid recursive velocity reduction
                 self._maxVelDict = getattr(self, '_maxVelDict', {})
@@ -1583,9 +1582,6 @@ class CScan(GScan):
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:
                 pass
-        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if np.isinf(max_top_vel):
-            max_top_vel = motor.getVelocity()
         return max_top_vel
 
     def get_min_acc_time(self, motor):
@@ -1620,15 +1616,29 @@ class CScan(GScan):
             min_dec_time = motor.getAcceleration()
         return min_dec_time
 
-    def set_max_top_velocity(self, motor):
-        """Helper method to set the maximum top velocity for the motor to
-        its maximum allowed limit."""
+    def set_max_top_velocity(self, moveable):
+        """Helper method to set the maximum top velocity for the moveable to
+        its maximum allowed limit.
 
+        :param moveable: moveable (motor or pseudo motor) on which to set
+            the max top velocity
+        :type moveable: `sardana.taurus.core.tango.sardana.BaseSardanaElement`
+        """
+        if moveable.type == "PseudoMotor":
+            for name in moveable.physical_elements:
+                motor = self.macro.getMotor(name)
+                self._set_max_top_velocity(motor)
+        else:
+            self._set_max_top_velocity(moveable)
+
+    def _set_max_top_velocity(self, motor):
         v = self.get_max_top_velocity(motor)
         try:
             motor.setVelocity(v)
         except Exception:
-            pass
+            self.warning(
+                "failed setting max top velocity {} for {}".format(
+                    v, motor.name), exc_info=True)
 
     def get_min_pos(self, motor):
         '''Helper method to find the minimum position for a given motor.
