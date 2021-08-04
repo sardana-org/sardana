@@ -50,6 +50,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   state is not On or Alarm (#1592, #1594)
 * Allow to recreate measurement group with the same name but other channels so the MacroServer
   correctly reports the channels involved in the measurement group (#145, #1528, #1607)
+* Fix restoring velocity in software (`ascanc`) continuous scans (#1574, #1575)
 * Ensure controller, element and group state are set to Fault and details are reported in the status
   whenever plugin code i.e. controller library, is missing (#1588)
 * Consider events from not standard 0D channel attributes e.g. shape (#1618, #1620)
