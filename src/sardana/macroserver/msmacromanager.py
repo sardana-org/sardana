@@ -50,6 +50,7 @@ from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
+from taurus.core.util.threadpool import ThreadPool
 
 from sardana.sardanadefs import ElementType
 from sardana.sardanamodulemanager import ModuleManager
@@ -1099,6 +1100,11 @@ class MacroExecutor(Logger):
         name = "%s.%s" % (str(door), self.__class__.__name__)
         self._macro_status_codec = CodecFactory().getCodec('json')
         self.call__init__(Logger, name)
+        # ThreadPool to execute macros asynchronously
+        self._thread_pool = ThreadPool(Psize=1)
+    
+    def add_job(self, job, callback=None, *args, **kw):
+        self._thread_pool.add(job, callback, *args, **kw)
 
     def getDoor(self):
         return self._door
@@ -1594,7 +1600,7 @@ class MacroExecutor(Logger):
 
         if asynch:
             # start the job of actually running the macro
-            self.macro_server.add_job(self.__runXML, self._jobEnded)
+            self.add_job(self.__runXML, self._jobEnded)
             # return the proper xml
             return self._xml
         else:
