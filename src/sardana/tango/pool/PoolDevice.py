@@ -201,7 +201,7 @@ class PoolDevice(SardanaDevice):
         attr_data = self.get_dynamic_attributes()
 
         std_attrs, dyn_attrs = attr_data
-        self.remove_unwanted_dynamic_attributes(std_attrs, dyn_attrs)
+        #self.remove_unwanted_dynamic_attributes(std_attrs, dyn_attrs)
 
         if std_attrs is not None:
             read = self.__class__._read_DynamicAttribute
@@ -220,11 +220,54 @@ class PoolDevice(SardanaDevice):
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in list(dyn_attrs.items()):
                 attr_name, data_info, attr_info = data_info
-                attr = self.add_dynamic_attribute(attr_name, data_info,
+                if not self.check_dynamic_attribute_conflicts(attr_name, data_info):
+                    attr = self.add_dynamic_attribute(attr_name, data_info,
                                                   attr_info, read,
                                                   write, is_allowed)
-                attrs[attr.get_name()] = None
+                    attrs[attr.get_name()] = None
         return attrs
+
+    def check_dynamic_attribute_conflicts(self, name, data_info):
+        """Check if an attribute conflicts with an existing definition in the class"""
+        new_attr_name = name.lower()
+        dev_class = self.get_device_class()
+        multi_attr = self.get_device_attr()
+        multi_class_attr = dev_class.get_class_attr()
+        static_attr_names = \
+            list(map(str.lower, list(dev_class.attr_list.keys())))
+        static_attr_names.extend(('state', 'status'))
+        klass_attr_names = []
+        klass_attrs = multi_class_attr.get_attr_list()
+        for ind in range(len(klass_attrs)):
+            klass_attr_names.append(klass_attrs[ind].get_name())
+
+        if new_attr_name in klass_attr_names:
+            if new_attr_name in static_attr_names:
+                return False
+            # if new dynamic attribute is in class attributes then check that the definition matches.
+            attr = multi_class_attr.get_attr(new_attr_name)
+            old_type = CmdArgType(attr.get_type())
+            old_format = attr.get_format()
+            old_access = attr.get_writable()
+            new_type, new_format, new_access = data_info[0][:3]
+            differ = new_type != old_type or \
+                new_format != old_format or \
+                new_access != old_access
+            if differ:
+                self.error("Conflicting attribute '%s'\n"
+                            "Unable to add this attribute because an attribute with the same name"
+                            "and a different definition already exists in this class.", new_attr_name)
+                self.info("existing type: %s, new type: %s",
+                            old_type, new_type)
+                self.info("existing format: %s, new format: %s",
+                            old_format, new_format)
+                self.info("existing access: %s, new access: %s",
+                            old_access, new_access)
+                return True
+            else:
+                self.info("Using existing definition of attribute '%s'", new_attr_name)
+            return False
+
 
     def remove_unwanted_dynamic_attributes(self, new_std_attrs, new_dyn_attrs):
         """Removes unwanted dynamic attributes from previous device creation"""
