@@ -30,6 +30,12 @@ __all__ = ["ExpDescriptionEditor"]
 
 
 import json
+
+try:
+    # import QtWebEngineWidgets before QApplication is instantiated
+    from taurus.external.qt import QtWebEngineWidgets  # noqa
+except ImportError:
+    pass
 from taurus.external.qt import Qt, QtCore, QtGui, compat
 import copy
 import taurus
