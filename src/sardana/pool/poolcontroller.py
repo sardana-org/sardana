@@ -555,7 +555,7 @@ class PoolController(PoolBaseController):
 
     @staticmethod
     def _format_exception(exc_info):
-        fmt_exc = traceback.format_exception_only(*exc_info[:2])
+        fmt_exc = traceback.format_exception(*exc_info)
         fmt_exc = "".join(fmt_exc)
         if fmt_exc.endswith("\n"):
             fmt_exc = fmt_exc[:-1]
