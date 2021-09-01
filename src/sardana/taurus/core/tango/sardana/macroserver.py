@@ -527,10 +527,12 @@ class BaseDoor(MacroServerDevice):
         finally:
             evt_wait.unlock()
             evt_wait.disconnect()
+    
+
+    def _clearLogBuffer(self):
+        list(map(LogAttr.clearLogBuffer, list(self._log_attr.values())))
 
     def _clearRunMacro(self):
-        # Clear the log buffer
-        list(map(LogAttr.clearLogBuffer, list(self._log_attr.values())))
         self._running_macros = None
         self._running_macro = None
         self._user_xml = None
@@ -551,6 +553,7 @@ class BaseDoor(MacroServerDevice):
         return macro_node.toXml()
 
     def preRunMacro(self, obj, parameters):
+        self._clearLogBuffer()
         self._clearRunMacro()
 
         xml_root = None
