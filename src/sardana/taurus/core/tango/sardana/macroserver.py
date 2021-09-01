@@ -104,6 +104,9 @@ class Attr(Logger, EventGenerator):
 
     def getTaurusAttribute(self):
         return self._attr
+    
+    def read(self, cache=False):
+        return self._attr.read(cache)
 
     def __getattr__(self, name):
         return getattr(self._attr, name)
