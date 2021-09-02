@@ -80,6 +80,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   parameters set for _non-referable_ channels (#1672)
 * Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
 * Import errors of plugin modules using `clr` module of pythonnet - Python.NET (#1623)
+* Avoid QtWebEngineWidgets-related warning from taurus (#1681)
+
 ## [3.1.2] 2021-08-02
 
 ### Fixed
