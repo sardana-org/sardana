@@ -42,6 +42,7 @@ from taurus.core.util.containers import CaselessDict
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS,\
     TYPE_PSEUDO_ELEMENTS
 from sardana.sardanaevent import EventType
+from sardana.sardanaexception import clear_exception_context
 from sardana.sardanavalue import SardanaValue
 from sardana.sardanautils import is_non_str_seq, is_number
 
@@ -555,6 +556,9 @@ class PoolController(PoolBaseController):
 
     @staticmethod
     def _format_exception(exc_info):
+        exc = exc_info[1]
+        clear_exception_context(exc)
+        exc_info = exc_info[0], exc, exc_info[2]
         fmt_exc = traceback.format_exception(*exc_info)
         fmt_exc = "".join(fmt_exc)
         if fmt_exc.endswith("\n"):
