@@ -135,7 +135,7 @@ def sar_demo(self, elements):
             final_elements[elem_type] = elem_quant
         else:
             # Throw error if the element isn't configured by default
-            self.error("Element type '" + elem_type + "' is not recognised")
+            self.error("Element type '" + elem[0] + "' is not recognised")
             return
 
     mot_ctrl_name = get_free_names(db, "motctrl", 1)[0]
