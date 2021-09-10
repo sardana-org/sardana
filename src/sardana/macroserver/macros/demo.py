@@ -94,9 +94,26 @@ def clear_sar_demo(self):
 
     self.print("DONE!")
 
+# Default sar_demo's elements quantity
+default_elements = {
+    "motors": 4,
+    "ctexpchannel": 4,
+    "zerodexpchannel": 4,
+    "onedexpchannel": 1,
+    "twodexpchannel": 1,
+    "triggergate": 1,
+    "iorregister": 2
+}
 
+@macro([ 
+    ["elements",[
+        ["elem_type", Type.String, None, "Element type"],
+        ["elem_quant", Type.Integer, 0, "Element quantity"], 
+        {'min': 0, 'max': None}
+    ], None, "Pair list of elements "]
+])
 @macro()
-def sar_demo(self):
+def sar_demo(self, elements):
     """Sets up a demo environment. It creates many elements for testing"""
 
     try:
@@ -108,6 +125,19 @@ def sar_demo(self):
 
     db = PyTango.Database()
 
+    final_elements = default_elements.copy()
+
+    for elem in elements:
+        elem_type = elem[0].lower() 
+        elem_quant = elem[1]
+        if elem_type in final_elements:
+            # Replace the default quantity with the configured one
+            final_elements[elem_type] = elem_quant
+        else:
+            # Throw error if the element isn't configured by default
+            self.error("Element type '" + elem_type + "' is not recognised")
+            return
+
     mot_ctrl_name = get_free_names(db, "motctrl", 1)[0]
     ct_ctrl_name = get_free_names(db, "ctctrl", 1)[0]
     zerod_ctrl_name = get_free_names(db, "zerodctrl", 1)[0]
@@ -117,15 +147,15 @@ def sar_demo(self):
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     ior_ctrl_name = get_free_names(db, "iorctrl", 1)[0]
 
-    motor_names = get_free_names(db, "mot", 4)
-    ct_names = get_free_names(db, "ct", 4)
-    zerod_names = get_free_names(db, "zerod", 4)
-    oned_names = get_free_names(db, "oned", 1)
-    twod_names = get_free_names(db, "twod", 1)
-    tg_names = get_free_names(db, "tg", 1)
+    motor_names = get_free_names(db, "mot", final_elements["motors"])
+    ct_names = get_free_names(db, "ct", final_elements["ctexpchannel"])
+    zerod_names = get_free_names(db, "zerod", final_elements["zerodexpchannel"])
+    oned_names = get_free_names(db, "oned", final_elements["onedexpchannel"])
+    twod_names = get_free_names(db, "twod", final_elements["twodexpchannel"])
+    tg_names = get_free_names(db, "tg", final_elements["triggergate"])
     gap, offset = get_free_names(db, "gap", 1) + \
         get_free_names(db, "offset", 1)
-    ior_names = get_free_names(db, "ior", 2)
+    ior_names = get_free_names(db, "ior", final_elements["iorregister"])
     mg_name = get_free_names(db, "mntgrp", 1)[0]
 
     pools = self.getPools()
