@@ -2372,6 +2372,7 @@ class CTScan(CScan, CAcquisition):
             "Motor positions and relative timestamp (dt) columns contains"
             " theoretical values"
         )
+        start_record = 0
         for i, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
 
@@ -2426,7 +2427,7 @@ class CTScan(CScan, CAcquisition):
                 raise ScanException(msg)
 
             # Set the index offset used in CAcquisition class.
-            self._index_offset = i * self.macro.nb_points
+            self._index_offset = start_record
 
             startTimestamp = time.time()
 
@@ -2591,8 +2592,10 @@ class CTScan(CScan, CAcquisition):
             for hook in waypoint.get('post-move-hooks', []):
                 hook()
 
-            # fill record list with empty records for the final padding of waypoint
-            self._fill_missing_records(start_record=nb_points * i)
+            # fill record list with empty records for the final padding of
+            # waypoint
+            self._fill_missing_records(start_record=start_record)
+            start_record += nb_points
 
             if start_positions is None:
                 last_positions = positions
