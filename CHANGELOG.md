@@ -9,6 +9,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Start record index in CTScan when executing waypoint with not homogeneous number of points introduced on 3.1.2
 
+* Bug in mv and scan macros with Pseudomotors (#1686)
+
 ## [3.1.2] 2021-08-02
 
 ### Fixed
