@@ -268,8 +268,6 @@ class PoolMotorGroup(PoolGroupElement):
                 )
                 raise ValueError(msg) from e
 
-            element.calculate_motion(new_position, items=items,
-                                     calculated=calculated)
         for new_position, element in zip(new_positions, user_elements):
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)

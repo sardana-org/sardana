@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
+## [3.1.3] 2021-09-17
+
+### Fixed
+
+* Grouped move of pseudo motors proceeding from the same controller e.g. slit's gap and offset (#1686)
+* Filling missing records i.e. final padding in CTScan when executing waypoints with not homogeneous 
+  number of points, introduced on 3.1.2. (#1689)
+
 ## [3.1.2] 2021-08-02
 
 ### Fixed
@@ -1063,6 +1071,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
+[3.1.3]: https://github.com/sardana-org/sardana/compare/3.1.3...3.1.2
 [3.1.2]: https://github.com/sardana-org/sardana/compare/3.1.2...3.1.1
 [3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
