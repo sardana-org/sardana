@@ -33,25 +33,25 @@ import json
 from taurus.external.qt import Qt
 
 from taurus.core.taurusbasetypes import TaurusEventType
-from taurus.core.tango import TangoDevice
+from sardana.taurus.core.tango.sardana.pool import Pool, MeasurementGroup
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 
-class QPool(Qt.QObject, TangoDevice):
+class QPool(Qt.QObject, Pool):
 
     def __init__(self, name='', qt_parent=None, **kw):
-        self.call__init__(TangoDevice, name, **kw)
-        self.call__init__wo_kw(Qt.QObject, qt_parent)
+        self.call__init__(Pool, name, **kw)
+        self.call__init__(Qt.QObject, qt_parent, name=name)
 
 
-class QMeasurementGroup(Qt.QObject, TangoDevice):
+class QMeasurementGroup(Qt.QObject, MeasurementGroup):
 
     configurationChanged = Qt.pyqtSignal()
 
     def __init__(self, name='', qt_parent=None, **kw):
-        self.call__init__(TangoDevice, name, **kw)
-        self.call__init__wo_kw(Qt.QObject, qt_parent)
+        self.call__init__(MeasurementGroup, name, **kw)
+        self.call__init__(Qt.QObject, qt_parent, name=name)
 
         self._config = None
         self.__configuration = self.getAttribute("Configuration")
@@ -59,9 +59,18 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
 
     def __getattr__(self, name):
         try:
-            return Qt.QObject.__getattr__(self, name)
+            return Qt.QObject.__getattr__(self, name)        
         except AttributeError:
-            return TangoDevice.__getattr__(self, name)
+            return MeasurementGroup.__getattr__(self, name)
+        except RuntimeError:
+            # we can not access QObject if it was not initialized
+            # this raises a RuntimError;
+            # use this if-else just for the initialization phase
+            # when QObject is initilized after MeasurementGroup
+            if "QObject" in self.inited_class_list:
+                raise
+            else:
+                return MeasurementGroup.__getattr__(self, name)
 
     def _configurationChanged(self, s, t, v):
         if t == TaurusEventType.Config:
