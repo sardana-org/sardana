@@ -40,7 +40,7 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 class QPool(Qt.QObject, Pool):
 
-    def __init__(self, name='', qt_parent=None, **kw):
+    def __init__(self, name='', qt_parent=None, **kw):        
         self.call__init__(Pool, name, **kw)
         self.call__init__(Qt.QObject, qt_parent, name=name)
 
@@ -52,10 +52,9 @@ class QMeasurementGroup(Qt.QObject, MeasurementGroup):
     def __init__(self, name='', qt_parent=None, **kw):
         self.call__init__(MeasurementGroup, name, **kw)
         self.call__init__(Qt.QObject, qt_parent, name=name)
-
-        self._config = None
-        self.__configuration = self.getAttribute("Configuration")
-        self.__configuration.addListener(self._configurationChanged)
+        # emitting from the MeasurementGroup.__init__() failed 
+        # because QObject was not initilized yet - re-emit here
+        self.configurationChanged.emit()
 
     def __getattr__(self, name):
         try:
@@ -71,27 +70,17 @@ class QMeasurementGroup(Qt.QObject, MeasurementGroup):
                 raise
             else:
                 return MeasurementGroup.__getattr__(self, name)
-
-    def _configurationChanged(self, s, t, v):
-        if t == TaurusEventType.Config:
-            return
-        if TaurusEventType.Error:
-            self._config = None
-        else:
-            self._config = json.loads(v.value)
-        self.configurationChanged.emit()
-
-    def getConfiguration(self, cache=True):
-        if self._config is None or not cache:
-            try:
-                v = self.read_attribute("configuration")
-                self._config = json.loads(v.value)
-            except:
-                self._config = None
-        return self._config
-
-    def setConfiguration(self, config):
-        self.write_attribute("configuration", json.dumps(config))
+    
+    def on_configuration_changed(self, evt_src, evt_type, evt_value):
+        MeasurementGroup.on_configuration_changed(self, evt_src, evt_type, evt_value)
+        try:
+            self.configurationChanged.emit()
+        except RuntimeError:
+            # we can not access QObject if it was not initialized
+            # this raises a RuntimError when MeasurementGroup will call addListener()
+            # ignore exception if we have still not initialized QObject
+            if "QObject" in self.inited_class_list:
+                raise
 
 
 def registerExtensions():
