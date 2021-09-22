@@ -20,7 +20,7 @@ Fixed
 - Regression introduced in Sardana 3.0.3 affecting grouped move/scan of pseudo
   motors proceeding from the same controller e.g. slit's gap and offset, HKL pseudo motors.
   Such a grouped move was only sending set possition to the first pseudo motor.
-* Regression introduced in Sardana 3.1.2 affecting custom continuous scans composed from
+- Regression introduced in Sardana 3.1.2 affecting custom continuous scans composed from
   waypoints with non-homogeneous number of points. Such scans were producing erroneuous
   number of points due to an error in the final padding logic.
 
