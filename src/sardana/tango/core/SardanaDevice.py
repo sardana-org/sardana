@@ -91,20 +91,6 @@ class SardanaDevice(LatestDeviceImpl, Logger):
             self.init_device()
         finally:
             self.in_constructor = False
-            pass
-
-    def get_memorized_attibutes(self):
-        attrs = self.get_device_attr() # This returs a MultiAttribute
-        for i in range(0,attrs.get_attr_nb()): # Iterate over the attributes
-            memorized_attrs = {}
-            attr = attrs.get_attr_by_ind(i)
-            db = self.get_database()
-            attr_val = db.get_device_attribute_property(self.get_name(), attr.get_name()) # Get the attribute value
-            if hasattr(attr_val, "__value"):
-                # If the attribute has a memorized value, then add it to the dict
-                attr_value_val = attr_val["__value"]
-                memorized_attrs[attr.get_name()] = attr_value_val
-        return memorized_attrs
 
     def init(self, name):
         """initialize the device once in the object lifetime. Override when
@@ -528,7 +514,6 @@ class SardanaDeviceClass(DeviceClass):
     def __init__(self, name):
         DeviceClass.__init__(self, name)
         self.set_type(name)
-        
 
     def _get_class_properties(self):
         """Internal method"""

@@ -277,12 +277,6 @@ with this value is sent to clients using events.
         """Constructor"""
         self.in_write_position = False
         PoolElementDevice.__init__(self, dclass, name)
-        memorized_attrs = self.get_memorized_attibutes()
-        device_attrs = self.get_device_attr()
-        for attr_name in memorized_attrs:
-            mem_val = memorized_attrs[attr_name]
-            print(mem_val)
-        pass
 
     def init(self, name):
         PoolElementDevice.init(self, name)
