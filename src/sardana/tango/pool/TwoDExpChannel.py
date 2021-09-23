@@ -93,7 +93,9 @@ class TwoDExpChannel(PoolTimerableDevice):
     def on_twod_changed(self, event_source, event_type, event_value):
         try:
             self._on_twod_changed(event_source, event_type, event_value)
-        except not DevFailed:
+        except DevFailed:
+            raise
+        except:
             msg = 'Error occurred "on_twod_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
             self.error(msg, self.motor.name, event_type.name,

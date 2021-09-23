@@ -356,7 +356,9 @@ with this value is sent to clients using events.
     def on_motor_changed(self, event_source, event_type, event_value):
         try:
             self._on_motor_changed(event_source, event_type, event_value)
-        except not DevFailed:
+        except DevFailed:
+            raise
+        except:
             msg = 'Error occurred "on_motor_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
             self.error(msg, self.motor.name, event_type.name,
