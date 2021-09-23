@@ -78,6 +78,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (timer, monitor, synchronizer) (#1624)
 * Backward compatibility for measurement group configurations with `value_ref_*`
   parameters set for _non-referable_ channels (#1672)
+* Exception catching and reporting in Tango layer _on element changed_ callback (#1694)
 * Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
 * Import errors of plugin modules using `clr` module of pythonnet - Python.NET (#1623)
 * Avoid QtWebEngineWidgets-related warning from taurus (#1681)
