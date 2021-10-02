@@ -17,6 +17,8 @@ build-pypi-package:
 run-test:
   stage: test
   image: reszelaz/sardana-test
+  variables:
+    GIT_STRATEGY: none
   before_script:
     - python3 -m pip install dist/sardana-*.whl
     - export TANGO_HOST=$(hostname):10000
