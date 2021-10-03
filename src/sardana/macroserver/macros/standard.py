@@ -529,17 +529,26 @@ class mv(Macro, Hookable):
             self.debug("Starting %s movement to %s", m.getName(), p)
 
         motion = self.getMotion(self.motors)
-        state, pos = motion.move(positions)
+        try:
+            state, pos = motion.move(positions)
+        except Exception as e:
+            self.warning("Motion failed due to: {}".format(e))
+            self._log_information()
+            raise e
         if state != DevState.ON:
             self.warning("Motion ended in %s", state.name)
-            msg = []
-            for motor in self.motors:
-                msg.append(motor.information())
-            self.info("\n".join(msg))
+            self._log_information()
 
         if enable_hooks:
             for postMoveHook in self.getHooks('post-move'):
                 postMoveHook()
+
+    def _log_information(self):
+        msg = []
+        for motor in self.motors:
+            msg.append(motor.information())
+        self.info("\n".join(msg))
+
 
 
 class mstate(Macro):

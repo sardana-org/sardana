@@ -30,12 +30,25 @@ for sardana exceptions"""
 
 __all__ = ["AbortException", "SardanaException", "SardanaExceptionList",
            "UnknownCode", "UnknownLibrary", "LibraryError",
-           "format_exception_only", "format_exception_only_str"]
+           "format_exception_only", "format_exception_only_str",
+           "clear_exception_context"]
 
 __docformat__ = 'restructuredtext'
 
 import sys
 import traceback
+
+
+def clear_exception_context(exc):
+    """Clear expcetion __context__
+    
+    When exception's __cause__ is filled, then clear the
+    __context__ also for the causing exception, and so on
+    recursivelly. """
+    if exc.__cause__ == None:
+        exc.__context__ = None
+    else:
+        clear_exception_context(exc.__cause__)
 
 
 def format_exception_only(etype, value):

@@ -487,9 +487,8 @@ class PoolElement(BaseElement, TangoDevice):
         try:
             if not evt_wait.waitForEvent((DevState.ON, DevState.ALARM),
                                          timeout=3, reactivity=.1):
-                info = self.information()
                 raise RuntimeError(
-                    "{} state is different than ON or ALARM. Can not proceed to start. Full information:\n{}".format(self.name, info))
+                    "{} state is different than ON or ALARM. Can not proceed to start.".format(self.name))
             # Clear event set to not confuse the value coming from the
             # connection with the event of of end of the operation
             # in the next wait event. This was observed on Windows where
