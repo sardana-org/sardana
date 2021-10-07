@@ -294,7 +294,7 @@ class pt10_base(Macro):
         self.data = args
 
 class pt0_base(Macro):
-    """Macro counter.
+    """Test counter Macro.
     """
 
     def run(self, *args, **kwargs):
