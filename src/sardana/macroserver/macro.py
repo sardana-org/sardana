@@ -2346,8 +2346,10 @@ class Macro(Logger):
         # Avoid repeating same information on subsequent events. If, in the
         # future, clients that connect in the middle of macro execution need
         # this information, just simply remove the lines below
-        del macro_status['name']
-        del macro_status['macro_line']
+        if 'name' in macro_status:
+            del macro_status['name']
+        if 'macro_line' in macro_status:
+            del macro_status['macro_line']
 
         # allow any macro to be paused at the beginning of its execution
         self.pausePoint()
