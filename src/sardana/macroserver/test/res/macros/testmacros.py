@@ -71,6 +71,24 @@ class runMacro(Macro):
         msg = FAIL_MSG % (result, expected_params)
         assert expected_params == result, msg
 
+        params = "pt0_base"
+        macro, _ = self.prepareMacro(params)
+        expected_params = 1
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        expected_params = 2
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        expected_params = 3
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
 
 class createMacro(Macro):
     """
@@ -136,6 +154,24 @@ class createMacro(Macro):
         params = "pt10_base 91 True"
         expected_params = ([91], True)
         macro, _ = self.createMacro(params)
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
+        params = "pt0_base"
+        macro, _ = self.createMacro(params)
+        expected_params = 1
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        expected_params = 2
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        expected_params = 3
         self.runMacro(macro)
         result = macro.data
         msg = FAIL_MSG % (result, expected_params)
@@ -207,6 +243,21 @@ class execMacro(Macro):
         msg = FAIL_MSG % (result, expected_params)
         assert expected_params == result, msg
 
+        params = "pt0_base"
+        expected_params = 1
+        macro = self.execMacro(params)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        macro = self.execMacro(params)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+        macro = self.execMacro(params)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
 
 class pt6_base(Macro):
     """Macro with a number parameter followed by a list of numbers.
@@ -241,3 +292,13 @@ class pt10_base(Macro):
 
     def run(self, *args, **kwargs):
         self.data = args
+
+class pt0_base(Macro):
+    """Macro counter.
+    """
+
+    def run(self, *args, **kwargs):
+        try:
+            self.data += 1
+        except Exception as e:
+            self.data = 1
