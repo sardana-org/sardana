@@ -48,6 +48,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Reduce _memory leak_ of scans by executing them always in the same thread (per door)
   instead of using a pool with multiple threads (#1675, #1095)
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
+* Allow aborting macros without prior stoppting (#1644, #1657)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
 * Allow to recreate measurement group with the same name but other channels so the MacroServer
