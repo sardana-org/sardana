@@ -921,18 +921,21 @@ class GScan(Logger):
                         step = next(iterator)
                         end_pos = step['positions']
                         max_path_duration = 0.0
-                        for v_motor, start, stop in zip(v_motors,
-                                                        start_pos,
-                                                        end_pos):
+                        new_start_pos = start_pos.copy()
+                        for i, (v_motor, start, stop) in enumerate(
+                                zip(v_motors, start_pos, end_pos)):
+                            if stop is None or np.isnan(stop):
+                                continue
                             path = MotionPath(v_motor, start, stop)
                             max_path_duration = max(
                                 max_path_duration, path.duration)
+                            new_start_pos[i] = end_pos
                         integ_time = step.get("integ_time", 0.0)
                         acq_time += integ_time
                         motion_time += max_path_duration
                         total_time += integ_time + max_path_duration
                         point_nb += 1
-                        start_pos = end_pos
+                        start_pos = new_start_pos
                 finally:
                     if with_interval:
                         interval_nb = self.macro.getIntervalEstimation()
