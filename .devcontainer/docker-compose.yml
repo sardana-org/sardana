@@ -20,7 +20,7 @@ services:
     hostname: sardana
     environment:
       TANGO_HOST: databaseds:10000
-      DISPLAY: "unix:0"
+      DISPLAY: "unix:0" # for osx: host.docker.internal:0
     build:
       context: ./sardana_dev
       args: 
@@ -36,8 +36,8 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
     command: /bin/sh -c "while sleep 1000; do :; done"
   tangodb:
-    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-db:latest
-    container_name: ${CONTAINER_NAME_PREFIX}tangodb
+    image: nexus.engageska-portugal.pt/ska-docker/tango-db:latest
+    container_name: sardana_dev_tangodb
     networks:
       - sardana
     environment:
@@ -50,8 +50,8 @@ services:
     restart: on-failure
 
   databaseds:
-    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-cpp:latest
-    container_name: ${CONTAINER_NAME_PREFIX}databaseds
+    image: nexus.engageska-portugal.pt/ska-docker/tango-cpp:latest
+    container_name: sardana_dev_databaseds
     networks:
       - sardana
     depends_on:
@@ -74,8 +74,8 @@ services:
     restart: on-failure
   
   tangotest:
-    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/tango-java:latest
-    container_name: ${CONTAINER_NAME_PREFIX}tangotest
+    image: nexus.engageska-portugal.pt/ska-docker/tango-java:latest
+    container_name: sardana_dev_tangotest
     networks:
       - sardana
     environment:
