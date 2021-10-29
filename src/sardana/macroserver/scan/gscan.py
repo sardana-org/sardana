@@ -2674,7 +2674,6 @@ class CTScan(CScan, CAcquisition):
         if restore_positions is not None:
             self._restore_motors()  # first restore motors backup
             self._setFastMotions()  # then try to go even faster (limits)
-            self.macro.info("Correcting overshoot...")
             self._physical_motion.move(restore_positions)
         self.motion_end_event.set()
         self.cleanup()
@@ -2683,6 +2682,10 @@ class CTScan(CScan, CAcquisition):
         self.join_thread_pool()
         self.debug("All data events are processed")
         self.data.endRecords()
+        if restore_positions is not None:
+            self.macro.info("Overshoot was corrected")
+        else:
+            self.macro.info("Overshoot was not corrected")
 
         # Note: The commented out code below works, but due to an issue with
         # output of the last measurement point, it should not be enabled yet.
