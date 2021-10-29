@@ -22,6 +22,7 @@ This file follows the formats and conventions from [keepachangelog.com]
    * `ScanOvershootCorrection` environment variable
 * Print in form of a table relevant motion parameters used during continuous scans
   before the scan starts (#692, #1652)
+* Improve error handling for state read in `mv` and step scans (#1685)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
 * Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
