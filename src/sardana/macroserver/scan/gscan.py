@@ -1196,7 +1196,7 @@ class SScan(GScan):
         except InterruptException:
             raise
         except Exception:
-            self.dump_information(n, step, self.motion.moveable_list)
+            self.dump_information(n, step, self.macro.motors)
             raise
         self.debug("[ END ] motion")
 
