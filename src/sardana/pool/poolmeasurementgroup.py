@@ -803,6 +803,9 @@ class MeasurementConfiguration(object):
                     try:
                         channel = pool.get_element_by_full_name(ch_name)
                     except KeyError:
+                        if not ch_data['enabled']:
+                            user_config_channel[ch_name] = ch_data            
+                            continue
                         raise ValueError(
                             '{} is not defined'.format(ch_data['name']))
 
