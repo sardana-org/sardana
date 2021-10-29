@@ -930,7 +930,7 @@ class GScan(Logger):
                             path = MotionPath(v_motor, start, stop)
                             max_path_duration = max(
                                 max_path_duration, path.duration)
-                            new_start_pos[i] = end_pos
+                            new_start_pos[i] = stop
                         integ_time = step.get("integ_time", 0.0)
                         acq_time += integ_time
                         motion_time += max_path_duration
