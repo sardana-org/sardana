@@ -145,7 +145,7 @@ class ascanr(Macro, Hookable):
         self.repeat = repeat
         self.opts = opts
 
-        self.nb_points = nr_interv + 1
+        self.nb_points = (nr_interv + 1) * repeat
         self.interv_sizes = (self.finals - self.starts) / nr_interv
         self.name = 'ascanr'
 
@@ -166,13 +166,15 @@ class ascanr(Macro, Hookable):
             "post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINT_')
         step["post-step-hooks"] = self.getHooks('post-step')
         step["check_func"] = []
-        extrainfo = {"repetition": 0}  # !!!
-        step['extrainfo'] = extrainfo  # !!!
-        for point_no in range(self.nb_points):
+        for point_no in range(self.nb_points // self.repeat):
+            extrainfo = {"repetition": 0}  # !!!
+            step['extrainfo'] = extrainfo  # !!!
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
-            for i in range(self.repeat):
+            yield step
+            for i in range(1, self.repeat):
                 extrainfo["repetition"] = i  # !!!
+                step["positions"] = [None]
                 yield step
 
     def run(self, *args):
