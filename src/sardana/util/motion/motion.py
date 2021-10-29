@@ -193,7 +193,7 @@ class MotionPath(object):
 
                 # maximum velocity possible
                 cnst = 2 * accel * decel * displacement / (decel - accel)
-                max_vel_2 = pow(motor.min_vel, 2) + abs(cnst)
+                max_vel_2 = pow(motor.min_vel, 2) + cnst
 
                 max_vel = sqrt(abs(max_vel_2))
 
