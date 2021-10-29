@@ -199,8 +199,9 @@ class GScan(Logger):
     The generator must be a function yielding a dictionary with the following
     content (minimum) at each step of the scan:
 
-    - 'positions' : In a step scan, the position where the moveables
-      should go
+    - 'positions' : In a step scan, a sequence with position(s) where 
+      the moveable(s) should go. ``None`` or ``float("NaN")`` in the sequence
+      means do not move a given moveable.
     - 'integ_time' : In a step scan, a number representing the integration
       time for the step (in seconds)
     - 'integ_time' : In a continuous scan, the time between acquisitions
