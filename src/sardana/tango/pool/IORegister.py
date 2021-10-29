@@ -120,7 +120,9 @@ class IORegister(PoolElementDevice):
     def on_ior_changed(self, event_source, event_type, event_value):
         try:
             self._on_ior_changed(event_source, event_type, event_value)
-        except not DevFailed:
+        except DevFailed:
+            raise
+        except:
             msg = 'Error occurred "on_ior_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
             self.error(msg, self.ior.name, event_type.name,

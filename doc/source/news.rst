@@ -7,6 +7,39 @@ For a complete list of changes consult the Sardana `CHANGELOG.md \
 <https://github.com/sardana-org/sardana/blob/develop/CHANGELOG.md>`_ file.
 
 ****************************
+What's new in Sardana 3.1.3?
+****************************
+
+Date: 2021-09-17
+
+Type: hotfix release
+
+Fixed
+=====
+
+- Regression introduced in Sardana 3.0.3 affecting grouped move/scan of pseudo
+  motors proceeding from the same controller e.g. slit's gap and offset, HKL pseudo motors.
+  Such a grouped move was only sending set possition to the first pseudo motor.
+- Regression introduced in Sardana 3.1.2 affecting custom continuous scans composed from
+  waypoints with non-homogeneous number of points. Such scans were producing erroneuous
+  number of points due to an error in the final padding logic.
+
+****************************
+What's new in Sardana 3.1.2?
+****************************
+
+Date: 2021-08-02
+
+Type: hotfix release
+
+Fixed
+=====
+
+- Avoid *memory leak* in continuous scans (``ascanct``, ``meshct``, etc.).
+  The MacroServer process memory was growing on each scan execution by the
+  amount corresponding to storing in the memory the scan data.
+
+****************************
 What's new in Sardana 3.1.1?
 ****************************
 

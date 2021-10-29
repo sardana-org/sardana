@@ -1572,9 +1572,8 @@ class CScan(GScan):
 
         top_vel_obj = motor.getVelocityObj()
         _, max_top_vel = top_vel_obj.getRange()
-        try:
-            max_top_vel = float(max_top_vel)
-        except ValueError:
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if np.isinf(max_top_vel):
             try:
                 # hack to avoid recursive velocity reduction
                 self._maxVelDict = getattr(self, '_maxVelDict', {})
@@ -1583,9 +1582,6 @@ class CScan(GScan):
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:
                 pass
-        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if np.isinf(max_top_vel):
-            max_top_vel = motor.getVelocity()
         return max_top_vel
 
     def get_min_acc_time(self, motor):
@@ -1620,15 +1616,29 @@ class CScan(GScan):
             min_dec_time = motor.getAcceleration()
         return min_dec_time
 
-    def set_max_top_velocity(self, motor):
-        """Helper method to set the maximum top velocity for the motor to
-        its maximum allowed limit."""
+    def set_max_top_velocity(self, moveable):
+        """Helper method to set the maximum top velocity for the moveable to
+        its maximum allowed limit.
 
+        :param moveable: moveable (motor or pseudo motor) on which to set
+            the max top velocity
+        :type moveable: `sardana.taurus.core.tango.sardana.BaseSardanaElement`
+        """
+        if moveable.type == "PseudoMotor":
+            for name in moveable.physical_elements:
+                motor = self.macro.getMotor(name)
+                self._set_max_top_velocity(motor)
+        else:
+            self._set_max_top_velocity(moveable)
+
+    def _set_max_top_velocity(self, motor):
         v = self.get_max_top_velocity(motor)
         try:
             motor.setVelocity(v)
         except Exception:
-            pass
+            self.warning(
+                "failed setting max top velocity {} for {}".format(
+                    v, motor.name), exc_info=True)
 
     def get_min_pos(self, motor):
         '''Helper method to find the minimum position for a given motor.
@@ -2149,6 +2159,22 @@ class CAcquisition(object):
                 non_compatible_channels.append(name)
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
+    
+    def _fill_missing_records(self, start_record=0):
+        """Fill missing records in scan data.
+        
+        Usefull for final padding at the end of the waypoint/scan.
+
+        :param start_record: record number from which start calculating
+            missing records (usefull to multi-waypoints scans)
+        :type start_record: int
+        """
+        # in multi-waypoint scans e.g. meshct, nb_points is per waypoint
+        expected_records = self.macro.nb_points
+        total_records = len(self.data.records)
+        records = total_records - start_record
+        missing_records = expected_records - records
+        self.data.initRecords(missing_records)
 
 
 def generate_timestamps(synch_description, initial_timestamp=0):
@@ -2380,6 +2406,7 @@ class CTScan(CScan, CAcquisition):
             "Motor positions and relative timestamp (dt) columns contains"
             " theoretical values"
         )
+        start_record = 0
         for i, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
 
@@ -2434,7 +2461,7 @@ class CTScan(CScan, CAcquisition):
                 raise ScanException(msg)
 
             # Set the index offset used in CAcquisition class.
-            self._index_offset = i * self.macro.nb_points
+            self._index_offset = start_record
 
             startTimestamp = time.time()
 
@@ -2618,6 +2645,11 @@ class CTScan(CScan, CAcquisition):
             # execute post-move hooks
             for hook in waypoint.get('post-move-hooks', []):
                 hook()
+
+            # fill record list with empty records for the final padding of
+            # waypoint
+            self._fill_missing_records(start_record=start_record)
+            start_record += nb_points
 
             if start_positions is None:
                 last_positions = positions
@@ -2922,13 +2954,6 @@ class TScan(GScan, CAcquisition):
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-acq'):
                 hook()
-
-    def _fill_missing_records(self):
-        # fill record list with dummy records for the final padding
-        nb_points = self.macro.nb_points
-        records = len(self.data.records)
-        missing_records = nb_points - records
-        self.data.initRecords(missing_records)
 
     def _estimate(self):
         with_time = hasattr(self.macro, "getTimeEstimation")

@@ -1006,8 +1006,8 @@ class MeasurementConfiguration(object):
                       'for non-referable channels since 3.0.3. Re-apply ' \
                       'configuration in order to upgrade.'
                 self._parent.warning(msg)
-                channel_data.pop('value_ref_enabled')
-                channel_data.pop('value_ref_pattern')
+                channel_data.pop('value_ref_enabled', None)
+                channel_data.pop('value_ref_pattern', None)
             else:
                 msg = ('The channel {} is not referable. You can not set '
                        'the enabled and/or the pattern parameters.').format(

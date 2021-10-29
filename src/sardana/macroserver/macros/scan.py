@@ -249,7 +249,7 @@ class aNscan(Hookable):
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         post_move_hooks = self.getHooks(
-            'post-move') + [self._fill_missing_records]
+            'post-move')
         step["post-move-hooks"] = post_move_hooks
         step["pre-acq-hooks"] = self.getHooks('pre-acq')
         step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
@@ -326,14 +326,6 @@ class aNscan(Hookable):
             return self.nr_interv
         elif mode == ContinuousMode:
             return self.nr_waypoints
-
-    def _fill_missing_records(self):
-        # fill record list with dummy records for the final padding
-        nb_of_points = self.nb_points
-        scan = self._gScan
-        nb_of_records = len(scan.data.records)
-        missing_records = nb_of_points - nb_of_records
-        scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
         msg = ("nr_points is deprecated since version 3.0.3. "
@@ -494,6 +486,9 @@ class amultiscan(aNscan, Macro):
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts.
+    Syntax: 
+    amultiscan  [[mot01 1 10][mot02 2 2]] 10 1
+    Without brackets it does not work.
     """
 
     param_def = [
@@ -507,12 +502,9 @@ class amultiscan(aNscan, Macro):
     ]
 
     def prepare(self, *args, **opts):
-        motors = args[0:-2:3]
-        starts = args[1:-2:3]
-        ends = args[2:-2:3]
-        nr_interv = args[-2]
-        integ_time = args[-1]
-
+        motors, starts, ends = zip(*args[0])
+        nr_interv = args[1]
+        integ_time = args[2]
         self._prepare(motors, starts, ends, nr_interv, integ_time, **opts)
 
 
@@ -2001,7 +1993,7 @@ class meshct(Macro, Hookable):
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         post_move_hooks = self.getHooks(
-            'post-move') + [self._fill_missing_records]
+            'post-move')
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
         step["active_time"] = self.nb_points * (self.integ_time
@@ -2035,15 +2027,6 @@ class meshct(Macro, Hookable):
 
     def getIntervalEstimation(self):
         return len(self.waypoints)
-
-    def _fill_missing_records(self):
-        # fill record list with dummy records for the final padding
-        nb_of_points = self.nb_points
-        scan = self._gScan
-        nb_of_total_records = len(scan.data.records)
-        nb_of_records = nb_of_total_records - self.point_id
-        missing_records = nb_of_points - nb_of_records
-        scan.data.initRecords(missing_records)
 
     def _get_nr_points(self):
         msg = ("nr_points is deprecated since version 3.0.3. "

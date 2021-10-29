@@ -43,11 +43,17 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Fixed
 
 * Delettion of Pool element now checks if dependent elements exists (#1586, #1615)
+* _Memory leak_ in scan using `NXscanH5_FileRecorder` by avoid cycle reference between this
+  recorder and the macro (#1669, #1095)
+* Reduce _memory leak_ of scans by executing them always in the same thread (per door)
+  instead of using a pool with multiple threads (#1675, #1095)
 * Make MeasurementGroup state readout evaluate states of the involved elements (#1316, #1591)
+* Allow aborting macros without prior stoppting (#1644, #1657)
 * Prevent start of operation e.g. motion or acquisition already on the client side when the
   state is not On or Alarm (#1592, #1594)
 * Allow to recreate measurement group with the same name but other channels so the MacroServer
   correctly reports the channels involved in the measurement group (#145, #1528, #1607)
+* Fix restoring velocity in software (`ascanc`) continuous scans (#1574, #1575)
 * Ensure controller, element and group state are set to Fault and details are reported in the status
   whenever plugin code i.e. controller library, is missing (#1588)
 * Consider events from not standard 0D channel attributes e.g. shape (#1618, #1620)
@@ -56,6 +62,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hang of IPython when macro input gives timeout (#1614)
 * Spock prompt informs when the Door is offline (#1621, #1625)
 * Spock running without an X-session on Linux (#1106, #1648)
+* `amultiscan` parameters interpretation (#1673)
 * Use `AttributeEventWait.waitForEvent()` instead of deprecated `AttributeEventWait.waitEvent()` (#1593)
 * Do not reserve _instruments_ in scans what avoids stopping them (#1577)
 * Avoid problems with duplicated pre-scan snapshots (#87, #1637)
@@ -70,7 +77,25 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Update MeasurementGroup's Elements property when Configuration attr is written (#1610)
 * Provide backwards compatibility for external ctrls measurement configuration
   (timer, monitor, synchronizer) (#1624)
+* Backward compatibility for measurement group configurations with `value_ref_*`
+  parameters set for _non-referable_ channels (#1672)
+* Exception catching and reporting in Tango layer _on element changed_ callback (#1694)
 * Avoid errors in `edctrlcls` and `edctrllib` macros (#317, #1635)
+* Import errors of plugin modules using `clr` module of pythonnet - Python.NET (#1623)
+* Avoid QtWebEngineWidgets-related warning from taurus (#1681)
+## [3.1.3] 2021-09-17
+
+### Fixed
+
+* Grouped move of pseudo motors proceeding from the same controller e.g. slit's gap and offset (#1686)
+* Filling missing records i.e. final padding in CTScan when executing waypoints with not homogeneous 
+  number of points, introduced on 3.1.2. (#1689)
+
+## [3.1.2] 2021-08-02
+
+### Fixed
+
+* Memory leak in MacroServer when executing ascanct, meshct, etc. continuous scan macros (#1664)
 
 ## [3.1.1] 2021-06-11
 
@@ -1126,7 +1151,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.0...HEAD
+
+[Unreleased]: https://github.com/sardana-org/sardana/compare/3.1.3...HEAD
+[3.1.3]: https://github.com/sardana-org/sardana/compare/3.1.3...3.1.2
+[3.1.2]: https://github.com/sardana-org/sardana/compare/3.1.2...3.1.1
 [3.1.1]: https://github.com/sardana-org/sardana/compare/3.1.1...3.1.0
 [3.1.0]: https://github.com/sardana-org/sardana/compare/3.1.0...3.0.3
 [3.0.3]: https://github.com/sardana-org/sardana/compare/3.0.3...2.8.6
