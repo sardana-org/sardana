@@ -26,7 +26,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
 * Allow to run Sardana scripts as Python modules (#1627)
 * Allow user to control Pool, MacroServer and Sardana servers log files size & number (#141, #1654)
-* Add devcontainer for VS Code IDE (Remote Containers) (#1598, #1659)
+* Tests for motion classes: Motor and MotionPath (#1656)
+* devcontainer for VS Code IDE (Remote Containers) (#1598, #1659)
 
 ### Changed
 
