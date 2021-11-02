@@ -41,8 +41,7 @@ from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.editor import TaurusBaseEditor
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 
-# consider adding an utility in taurusedirot to create actions
-from spyder.utils.qthelpers import create_action
+from sardana.taurus.qt.qtgui.extra_sardana.spyder_util import create_action
 
 from .macrotree import MacroSelectionDialog
 from .elementtree import SardanaElementTreeWidget
