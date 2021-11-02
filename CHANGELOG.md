@@ -25,6 +25,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Improve error handling for state read in `mv` and step scans (#1685)
 * History log message for motor attributes (sign, offset and step_per_unit) (#1630)
 * Validate new limit values before applying them in `set_lim` and `set_lm` macros (#1631)
+* Ability to pass a custom quantity of elements to `sar_demo` (#1687)
 * Allow to run Sardana scripts as Python modules (#1627)
 * Allow user to control Pool, MacroServer and Sardana servers log files size & number (#141, #1654)
 * Tests for motion classes: Motor and MotionPath (#1656)
