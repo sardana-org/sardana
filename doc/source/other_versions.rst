@@ -1,25 +1,20 @@
-
 ===============================
 Docs for other Sardana versions
 ===============================
 
-The `main Sardana docs <http://sardana-controls.org>`_ are generated for the
-most recent development version.
+The `default sardana docs <http://sardana-controls.org>`_ reflect the latest tagged
+version in the repository.
 
-You can still generate the docs for other versions of Sardana. In order to do that
-you first need to clone the `Sardana repository <https://github.com/sardana-org/sardana>`_,
-checkout the necessary version and build the docs (this may require you to install 
-some dependencies apart from the sardana ones, such as sphinx).
+Docs are also built as artifacts by the CI pipeline for each ref (branch or tag)
+pushed to the repository, and they can be browsed as well using the following
+URL change (REF) by the branch or tag name for which you want to see the docs:
 
-In continuation you can find an example of how to do it for version ``2.8.3``:
+`https://gitlab.com/sardana-org/sardana/-/jobs/artifacts/REF/file/public/index.html?job=doc`
 
-.. code-block:: console
+For example, to check the docs for the latest push to `develop`, visit:
 
-    git clone -b 2.8.3 https://github.com/sardana-org/sardana
-    cd sardana
-    python setup.py build_sphinx
-    firefox build/sphinx/html/index.html
+https://gitlab.com/sardana-org/sardana/-/jobs/artifacts/develop/file/public/index.html?job=doc
 
-.. note::
-   Sardana versions >= 3 work only with Python 3. Then you will need to build
-   the documentation with ``python3`` instead of ``python``.
+Note that the docs are also automatically built by the pipelines triggered by
+Merge Requests. They can be viewed using the "View App" button in the given
+Merge Request page.
