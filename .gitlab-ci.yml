@@ -1,0 +1,68 @@
+---
+stages:
+  - build
+  - test
+  - deploy
+
+build-pypi-package:
+  stage: build
+  image: python:3.9
+  script:
+    - python setup.py check sdist bdist_wheel
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
+
+run-test:
+  stage: test
+  image: reszelaz/sardana-test
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - python3 -m pip install dist/sardana-*.whl
+    - export TANGO_HOST=$(hostname):10000
+    - /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+    - sleep 10
+    - supervisorctl start Pool
+    - supervisorctl start MacroServer
+  script:
+    - xvfb-run -s '-screen 0 1920x1080x24' /bin/bash -c "pytest /usr/local/lib/python3.5/dist-packages/sardana"
+
+build-doc:
+  stage: test
+  image: reszelaz/sardana-test
+  script:
+    - xvfb-run sphinx-build -qW doc/source/ public
+    - echo "Documentation can be found at https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html"
+  artifacts:
+    paths:
+      - public
+  environment:
+    name: Docs-dev
+    url: "https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html"
+
+pages:
+  stage: deploy
+  image: alpine
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo "Deploying already-built docs"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+.*$/'
+
+release-pypi-package:
+  stage: deploy
+  image: python:3.9
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - pip install twine
+  script:
+    - twine upload dist/*
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+.*$/'
