@@ -124,3 +124,9 @@ MACROEXECUTOR_MAX_HISTORY = 100
 #:   places are not called in simple mv-based macros but only in scan-based
 #:   macros
 PRE_POST_MOVE_HOOK_IN_MV = True
+
+
+#: Default SPEC custom data format.
+#:
+#: For backward compatibility change to: '#C {name} : {value}\n'
+SPEC_CUSTOM_DATA_FORMAT = '#UVAR {name} {value}\n'

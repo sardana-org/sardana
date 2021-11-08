@@ -45,6 +45,7 @@ from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder import (BaseFileRecorder,
                                                BaseNAPI_FileRecorder,
                                                SaveModes)
+from sardana.sardanacustomsettings import SPEC_CUSTOM_DATA_FORMAT
 from taurus.core.util.containers import chunks
 
 
@@ -496,7 +497,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.fd.flush()
         self.fd.close()
 
-    def _addCustomData(self, value, name, **kwargs):
+    def _addCustomData(self, value, name, spec_custom_fmt=None, **kwargs):
         '''
         The custom data will be added as a comment line in the form::
 
@@ -526,7 +527,13 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 self.info(
                     'Custom data "%s" will not be stored in SPEC file. Reason: cannot open file', name)
                 return
-        self.fd.write(str('#C %s : %s\n' % (name, v)))
+        if spec_custom_fmt is None:
+            spec_custom_fmt = SPEC_CUSTOM_DATA_FORMAT
+
+        if '\n' not in spec_custom_fmt:
+            spec_custom_fmt += '\n'
+
+        self.fd.write(spec_custom_fmt.format(value=v, name=name))
         self.fd.flush()
         if fileWasClosed:
             self.fd.close()  # leave the file descriptor as found
