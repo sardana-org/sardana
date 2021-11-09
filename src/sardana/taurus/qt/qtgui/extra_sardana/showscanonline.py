@@ -36,6 +36,8 @@ __all__ = [
 import click
 import pkg_resources
 
+import taurus
+from taurus.core.taurusbasetypes import TaurusDevState
 from taurus.external.qt import Qt, uic
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.taurusgui import TaurusGui
@@ -234,6 +236,9 @@ class ScanWindow(Qt.QMainWindow):
         self.plot_widget.manager.newShortMessage.connect(sbar.showMessage)
 
     def setModel(self, model):
+        door = taurus.Device(model)
+        if door.state == TaurusDevState.NotReady:
+            raise RuntimeError("{} is not defined".format(model))
         self.plot_widget.setModel(model)
         self.info_form.setModel(model)
         self.point_form.setModel(model)
