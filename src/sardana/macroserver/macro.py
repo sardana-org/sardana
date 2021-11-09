@@ -2239,6 +2239,12 @@ class Macro(Logger):
         return self._parent_macro
 
     @property
+    def _command(self):
+        """**Unofficial Macro API**. Alternative to getCommand that does not
+        throw StopException in case of a Stop."""
+        return '%s %s' % (self._getName(), ' '.join([str(p) for p in self._in_pars]))
+
+    @property
     def description(self):
         """**Unofficial Macro API**. Alternative to :meth:`getDescription` that
         does not throw StopException in case of a Stop. This should be

@@ -303,9 +303,9 @@ class Door(SardanaDevice):
         macro = self.getRunningMacro()
         mstack = ''
         while macro is not None:
-            mstate = macro.getMacroStatus()['state']
-            mstack = '\n    -[%s]\t%s' % (mstate, macro.getCommand()) + mstack
-            macro = macro.getParentMacro()
+            mstate = macro._getMacroStatus()['state']
+            mstack = '\n    -[%s]\t%s' % (mstate, macro._command) + mstack
+            macro = macro.parent_macro
         self._status += mstack
         return self._status
 
