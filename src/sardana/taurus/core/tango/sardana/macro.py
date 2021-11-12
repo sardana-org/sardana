@@ -522,13 +522,12 @@ class SingleParamNode(ParamNode):
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
         self._defValue = None
-        if param is None:
-            return
-        self.setType(str(param.get('type')))
-        self.setDefValue(param.get('default_value', None))
-        if self.type() == "User":
-            self.setDefValue(USER_NAME)
         self._value = None
+        if param is not None:
+            self.setType(str(param.get('type')))
+            self.setDefValue(param.get('default_value', None))
+            if self.type() == "User":
+                self.setDefValue(USER_NAME)
 
     def __len__(self):
         return 0
@@ -536,7 +535,7 @@ class SingleParamNode(ParamNode):
     def __repr__(self):
         if self._value is None:
             return "None"
-        return self._value
+        return str(self._value)
 
     def value(self):
         return self._value
@@ -550,7 +549,11 @@ class SingleParamNode(ParamNode):
     def setDefValue(self, defValue):
         if defValue == "None":
             defValue = None
+        elif (isinstance(defValue, dict)
+                and '___optional_parameter__' in defValue):
+            defValue = None
         self._defValue = defValue
+        self._value = defValue
 
     def type(self):
         return self._type
@@ -889,7 +892,6 @@ class MacroNode(BranchNode):
             self.setHasParams(True)
             for param_info in params_def:
                 self.addParam(ParamFactory(param_info))
-
 
     def id(self):
         """
