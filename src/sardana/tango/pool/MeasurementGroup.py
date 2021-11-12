@@ -88,7 +88,7 @@ class MeasurementGroup(PoolGroupDevice):
         for i in range(len(self.Elements)):
             try:
                 self.Elements[i] = int(self.Elements[i])
-            except:
+            except Exception:
                 pass
         mg = self.measurement_group
         if mg is None:
@@ -110,7 +110,7 @@ class MeasurementGroup(PoolGroupDevice):
         try:
             self._on_measurement_group_changed(
                 event_source, event_type, event_value)
-        except:
+        except Exception:
             msg = 'Error occured "on_measurement_group_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
             self.error(msg, self.measurement_group.name, event_type.name,
@@ -309,7 +309,7 @@ class MeasurementGroup(PoolGroupDevice):
     def Start(self):
         try:
             self.wait_for_operation()
-        except:
+        except Exception:
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition()
 

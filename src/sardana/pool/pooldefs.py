@@ -69,7 +69,7 @@ class SynchDomain(SynchEnum):
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
     - Monitor - not used at the moment but foreseen for synchronization on
-      monitor
+                monitor
 
     .. note::
         The SynchDomain class has been included in Sardana
@@ -96,6 +96,7 @@ class SynchParam(SynchEnum):
     - Active - active interval (part of the total interval)
     - Repeats - number of repetitions within the group
     - Initial - initial point (absolute)
+    - Master - motor full name
 
     .. note::
         The SynchParam class has been included in Sardana
@@ -109,6 +110,7 @@ class SynchParam(SynchEnum):
     Active = 2
     Repeats = 3
     Initial = 4
+    Master = 5
 
 
 AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])

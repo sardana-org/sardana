@@ -2497,7 +2497,9 @@ class CTScan(CScan, CAcquisition):
                                      SynchDomain.Time: active_time},
                  SynchParam.Total: {SynchDomain.Position: total_position,
                                     SynchDomain.Time: total_time},
-                 SynchParam.Repeats: repeats}]
+                 SynchParam.Repeats: repeats,
+                 SynchParam.Master: {SynchDomain.Position: moveable}}]
+
             self.debug('SynchDescription: %s' % synch)
             measurement_group.setSynchDescription(synch)
             self.macro.checkPoint()
