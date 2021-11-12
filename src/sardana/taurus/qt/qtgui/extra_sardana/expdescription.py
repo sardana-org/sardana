@@ -539,6 +539,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if self.ui.channelEditor.getQModel().isDataChanged():
             self._dirtyMntGrps.add(self._localConfig['ActiveMntGrp'])
 
+        mgconfs = conf.get('MntGrpConfigs', {})
+        
+        for mgname in self._dirtyMntGrps:
+            mgconf = mgconfs[mgname]
+            mgconf.pop('timer', None)
+            mgconf.pop('monitor', None)
+            
         door = self.getModelObj()
         try:
             door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
