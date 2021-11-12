@@ -199,8 +199,9 @@ class GScan(Logger):
     The generator must be a function yielding a dictionary with the following
     content (minimum) at each step of the scan:
 
-    - 'positions' : In a step scan, the position where the moveables
-      should go
+    - 'positions' : In a step scan, a sequence with position(s) where 
+      the moveable(s) should go. ``None`` or ``float("NaN")`` in the sequence
+      means do not move a given moveable.
     - 'integ_time' : In a step scan, a number representing the integration
       time for the step (in seconds)
     - 'integ_time' : In a continuous scan, the time between acquisitions
@@ -921,18 +922,21 @@ class GScan(Logger):
                         step = next(iterator)
                         end_pos = step['positions']
                         max_path_duration = 0.0
-                        for v_motor, start, stop in zip(v_motors,
-                                                        start_pos,
-                                                        end_pos):
+                        new_start_pos = start_pos.copy()
+                        for i, (v_motor, start, stop) in enumerate(
+                                zip(v_motors, start_pos, end_pos)):
+                            if stop is None or np.isnan(stop):
+                                continue
                             path = MotionPath(v_motor, start, stop)
                             max_path_duration = max(
                                 max_path_duration, path.duration)
+                            new_start_pos[i] = stop
                         integ_time = step.get("integ_time", 0.0)
                         acq_time += integ_time
                         motion_time += max_path_duration
                         total_time += integ_time + max_path_duration
                         point_nb += 1
-                        start_pos = end_pos
+                        start_pos = new_start_pos
                 finally:
                     if with_interval:
                         interval_nb = self.macro.getIntervalEstimation()
@@ -1173,24 +1177,63 @@ class SScan(GScan):
         self._env['acqtime'] = self._sum_acq_time
 
     def stepUp(self, n, step, lstep):
-        motion, mg = self.motion, self.measurement_group
+        mg = self.measurement_group
         startts = self._env['startts']
 
-        # pre-move hooks
-        for hook in step.get('pre-move-hooks', ()):
-            hook()
-            try:
-                step['extrainfo'].update(hook.getStepExtraInfo())
-            except InterruptException:
-                raise
-            except Exception:
-                pass
+        def pre_move_hooks():
+            # pre-move hooks
+            for hook in step.get('pre-move-hooks', ()):
+                hook()
+                try:
+                    step['extrainfo'].update(hook.getStepExtraInfo())
+                except InterruptException:
+                    raise
+                except Exception:
+                    pass
 
         # Move
         self.debug("[START] motion")
         move_start_time = time.time()
         try:
-            state, positions = motion.move(step['positions'])
+            nans = []
+            for idx, step_value in enumerate(step['positions']):
+                if step_value is None or np.isnan(step_value):
+                    nans.append(idx)
+            if len(nans) == 0:  # all motors will be moved
+                # if number of motors to move has changed update macro info
+                if len(self.motion.moveable_list) != len(step['positions']):
+                    self.macro.returnObj(self._motion)
+                    motion = self.macro.getMotion(
+                        [m.name for m in self.moveables])
+                    self._motion = motion
+                    self.macro.motors = self.moveables
+                pre_move_hooks()
+                state, positions = self.motion.move(step['positions'])
+            elif len(nans) == len(step['positions']):  # no motor will be moved
+                state = self.motion.readState()
+                positions = self.motion.readPosition()
+            else:  # only some motors will be moved
+                # if number of motors to move has changed update macro info
+                if len(self.motion.moveable_list) != len(step['positions']):
+                    moveables = []
+                    motors_moved = []
+                    motors_positions = []
+                    for idx, moveable in enumerate(self.moveables):
+                        if idx not in nans:
+                            moveables.append(moveable)
+                            motors_moved.append(moveable.name)
+                            motors_positions.append(step['positions'][idx])
+                    self.macro.returnObj(self._motion)
+                    motion = self.macro.getMotion(motors_moved)  # does addObj
+                    self._motion = motion
+                    self.macro.motors = moveables
+                pre_move_hooks()
+                state, positions = motion.move(motors_positions)
+                for idx in nans:  # fill the gaps of not moved motors
+                    moveable = self.moveables[idx]
+                    motor = self.macro.getMoveable(moveable.name)
+                    pos = motor.position
+                    positions.insert(idx, pos)
             self._sum_motion_time += time.time() - move_start_time
             self._env['motiontime'] = self._sum_motion_time
         except InterruptException:

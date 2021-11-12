@@ -1463,7 +1463,7 @@ class Macro(Logger):
 
         :param obj: object to be released from the control
         :rtype: object"""
-        self.executor.returnObj(obj)
+        self.executor.returnObj(obj, self)
 
     @mAPI
     def getObj(self, name, type_class=All, subtype=All, pool=All, reserve=True):
