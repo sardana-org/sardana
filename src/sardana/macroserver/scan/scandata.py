@@ -492,8 +492,13 @@ class RecordList(dict):
 
     def addRecords(self, records):
         list(map(self.addRecord, records))
-
-    def end(self):
+    
+    def endRecords(self):
+        """Complete and add *initilized* records
+        
+        Complete (eventually apply interpolation) initilized
+        records and add them to the *data handler*.
+        """
         start = self.currentIndex
         for i in range(start, len(self.records)):
             rc = self.records[i]
@@ -502,6 +507,8 @@ class RecordList(dict):
                 self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
             self.currentIndex += 1
+
+    def end(self):
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):

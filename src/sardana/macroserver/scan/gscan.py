@@ -2669,19 +2669,23 @@ class CTScan(CScan, CAcquisition):
                   instead of _motion or in both cases: CSScan and CTScan
                   coordinate the physical motors' velocit.
         """
-        self.macro.debug("on_waypoints_end() entering...")
+        self.debug("on_waypoints_end() entering...")
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
             self._restore_motors()  # first restore motors backup
             self._setFastMotions()  # then try to go even faster (limits)
-            self.macro.info("Correcting overshoot...")
             self._physical_motion.move(restore_positions)
         self.motion_end_event.set()
         self.cleanup()
-        self.macro.debug("Waiting for data events to be processed")
+        self.debug("Waiting for data events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
-        self.macro.debug("All data events are processed")
+        self.debug("All data events are processed")
+        self.data.endRecords()
+        if restore_positions is not None:
+            self.macro.info("Overshoot was corrected")
+        else:
+            self.macro.info("Overshoot was not corrected")
 
         # Note: The commented out code below works, but due to an issue with
         # output of the last measurement point, it should not be enabled yet.
@@ -2945,8 +2949,9 @@ class TScan(GScan, CAcquisition):
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
-        self.macro.checkPoint()
+        self.debug("All data events are processed")
         self._fill_missing_records()
+        self.data.endRecords()
         yield 100
 
         if hasattr(macro, 'getHooks'):
