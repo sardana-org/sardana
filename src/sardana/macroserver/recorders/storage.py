@@ -316,7 +316,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
         # datetime object
         start_time = env['starttime']
-        epoch = time.strftime("%a %b %d %H:%M:%S %Y", start_time.timetuple())
+        date = time.strftime("%a %b %d %H:%M:%S %Y", start_time.timetuple())
         serialno = env['serialno']
 
         # store names for performance reason
@@ -365,7 +365,8 @@ class SPEC_FileRecorder(BaseFileRecorder):
             'serialno':  serialno,
             'title':     env['title'],
             'user':      env['user'],
-            'epoch':     epoch,
+            'date':      date,
+            'epoch':     int(start_time.timestamp()),
             'starttime': start_time.ctime(),
             'nocols':    len(names),
             'labels':    '  '.join(labels)
@@ -377,7 +378,8 @@ class SPEC_FileRecorder(BaseFileRecorder):
             header = ''
         header += '#S %(serialno)s %(title)s\n'
         header += '#U %(user)s\n'
-        header += '#D %(epoch)s\n'
+        header += '#D %(date)s\n'
+        header += '#E %(epoch)d\n'
         header += '#C Acquisition started at %(starttime)s\n'
         # add a pre-scan snapshot (sep is two spaces for labels!!)
         header += self._prepareMultiLines('O', '  ', snapshot_labels)
