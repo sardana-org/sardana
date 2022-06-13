@@ -224,10 +224,31 @@ class aNscan(Hookable):
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for point_no in range(self.nb_points):
-            step["positions"] = self.starts + point_no * self.interv_sizes
-            step["point_id"] = point_no
+        try:
+            general_condition = self.getEnv("GeneralCondition")
+            self._gScan.deterministic_scan = False
+        except UnknownEnv:
+            general_condition = None
+        repeated_points = 0
+        for point_nb in range(self.nb_points):
+            step["point_id"] = point_nb + repeated_points
+            step["positions"] = self.starts + point_nb * self.interv_sizes
             yield step
+            if not general_condition:
+                continue
+            while True:
+                try:
+                    condition_macro, _ = self.createMacro(general_condition)
+                    repeat = self.runMacro(condition_macro)
+                except Exception as e:
+                    repeat = False
+                if not repeat:
+                    break
+                repeated_points += 1
+                step["point_id"] = point_nb + repeated_points
+                # avoid moving motors to the same position
+                # step["positions"] = [None] * self.N
+                yield step
 
     def _waypoint_generator(self):
         step = {}
